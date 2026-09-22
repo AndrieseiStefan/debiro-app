@@ -17,8 +17,10 @@
 15. Create or update only documentation made current by the task.
 16. Update current status and roadmap where required.
 17. Inspect the final diff.
-18. Commit.
-19. Report the outcome, validation, and any material deviation.
+18. If all required validation passes, create the local task commit. If validation fails, do not create the final task commit or push; report the blocker.
+19. Do not push by default. Push only when the user explicitly authorized it; a generic request to implement, complete, validate, or commit is not authorization.
+20. If push is authorized, push only the intended current branch through its already configured remote. Do not create or change remotes, intentionally push unrelated commits or branches, force push, or rewrite history unless separately and explicitly requested.
+21. Report the outcome, validation, commit SHA and message, push status, and any material deviation. For a push, identify the explicit authorization used.
 
 ## Context principle
 

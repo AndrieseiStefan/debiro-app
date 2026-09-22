@@ -48,4 +48,11 @@ Every task must consider, where applicable: happy path, edge cases, validation, 
 
 Security-sensitive files and data must default to private, authorized access once document functionality is implemented. Never commit credentials or real secret-bearing environment files.
 
-Never rewrite Git history or force push unless explicitly authorized.
+## Git execution policy
+
+- After all required validation passes, create the task commit locally. If validation fails, do not create the final task commit and do not push; report the blocker.
+- The default is **do not push**. An instruction to implement, complete, validate, or commit a task does not authorize a push.
+- Push only when the user explicitly authorizes it in the task prompt or a subsequent instruction. Unambiguous wording such as "commit and push" or "push when everything passes" is authorization.
+- When authorized, push only the intended current branch using its already configured remote. Do not create or change remotes unless explicitly requested, and do not intentionally push unrelated commits or branches.
+- Never force push or rewrite Git history unless the user separately and explicitly authorizes that operation.
+- On successful completion, report the local commit SHA and message and state whether it was pushed. If it was pushed, identify the explicit authorization used.

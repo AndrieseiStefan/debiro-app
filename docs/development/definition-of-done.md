@@ -22,4 +22,10 @@ A task is complete only when all applicable conditions are true:
 - Documentation, current status, and roadmap are synchronized where relevant.
 - No unrelated changes are included.
 - The final diff is clean and inspected.
-- A commit is created.
+- All required validation passes before the final task commit is created.
+- Exactly one local task commit is created after successful validation.
+- The commit SHA and message are reported.
+- The task is not pushed unless the user explicitly authorized push; generic implementation, completion, validation, or commit instructions are not push authorization.
+- If push is authorized, only the intended current branch is pushed through its already configured remote, without intentionally pushing unrelated commits or branches.
+- Force push and history rewriting do not occur unless separately and explicitly authorized.
+- Final output states whether the commit was pushed and, if so, identifies the explicit authorization used.
