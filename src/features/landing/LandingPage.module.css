@@ -16,7 +16,6 @@
   display: grid;
   grid-template-columns: 250px minmax(0, 1fr) auto;
   height: 100%;
-  padding-inline: 36px;
 }
 
 .brandLink {
@@ -151,9 +150,8 @@
 
 .heroInner {
   display: grid;
-  gap: 56px;
-  grid-template-columns: minmax(0, 500px) minmax(0, 1fr);
-  padding-inline: 36px;
+  gap: 32px;
+  grid-template-columns: minmax(0, 555px) minmax(0, 1fr);
   position: relative;
   z-index: 1;
 }
@@ -331,12 +329,6 @@
   background: #fff;
   padding: 10px 0 0;
   position: relative;
-}
-
-.features > div,
-.proofInner,
-.pricingInner {
-  max-width: 1350px;
 }
 
 .sectionIntro {
@@ -721,7 +713,6 @@
     gap: 12px 20px;
     justify-content: space-between;
     padding-block: 12px;
-    padding-inline: var(--page-gutter);
   }
 
   .mainNav {
@@ -732,7 +723,6 @@
 
   .heroInner {
     grid-template-columns: minmax(0, 1fr);
-    padding-inline: var(--page-gutter);
   }
 
   .heroCopy {

@@ -2,7 +2,7 @@
 
 **Project stage:** Canonical UI implementation underway; full MVP epic sequence pending
 
-**Brand:** debiro
+**Visible brand:** DEBIRO (text-only; technical identifiers remain `debiro`)
 
 **Primary domain:** `debiro.ro`
 
@@ -20,7 +20,7 @@ Ten approved product mockups are present in `docs/design/mockups/`. They are can
 - Interaction fidelity as close to 1:1 as technically practical
 - Exact approved Romanian product copy
 - Close reproduction of typography and visual treatment
-- Replacement of placeholder branding with lowercase `debiro`
+- Replacement of placeholder branding with uppercase `DEBIRO`
 
 The final logo is not yet designed and must not be invented.
 
@@ -33,6 +33,7 @@ The final logo is not yet designed and must not be invented.
 - Romanian-default and English `next-intl` routing, foundation and landing catalogs, typed view-data convention
 - Reusable low-level UI/layout primitives, accessibility baseline, Vitest/RTL and Playwright test tooling, deterministic visual capture, development-only design-system preview
 - E1-001 canonical landing page at `/` (Romanian) and `/en` (English), using a typed static dashboard preview and no provider data; see [landing page](../features/landing-page.md)
+- Landing-page CTA alignment and shared 1350px/28px public content grid corrected; visible brand casing standardized to `DEBIRO`
 
 ## Architecture decision
 

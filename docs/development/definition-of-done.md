@@ -16,7 +16,7 @@ A task is complete only when all applicable conditions are true:
 - Interaction matches approved mockups.
 - Romanian product copy matches approved mockups exactly.
 - Typography closely matches approved mockups.
-- Placeholder branding is replaced with lowercase `debiro`.
+- Placeholder branding is replaced with uppercase visible `DEBIRO`; technical identifiers and `debiro.ro` remain lowercase.
 - Sample data is replaced with correct runtime data.
 - Every material deviation is minimized, justified, documented, and reported.
 - Documentation, current status, and roadmap are synchronized where relevant.

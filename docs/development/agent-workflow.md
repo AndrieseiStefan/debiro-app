@@ -10,7 +10,7 @@
 8. Preserve mockup visual fidelity.
 9. Preserve approved interactions.
 10. Preserve approved Romanian copy exactly.
-11. Replace placeholder branding with lowercase `debiro`.
+11. Replace placeholder branding with uppercase visible `DEBIRO`; preserve lowercase technical identifiers and `debiro.ro`.
 12. Add focused tests.
 13. Run relevant validation.
 14. Visually compare UI with its canonical mockup where applicable.

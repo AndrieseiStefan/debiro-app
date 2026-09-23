@@ -12,7 +12,7 @@ test('boots the Romanian and English landing routes', async ({page}) => {
 test('shows the development-only primitive preview without horizontal overflow', async ({page}) => {
   await page.goto('/__dev/design-system');
   await expect(page.getByRole('heading', {name: 'Previzualizare sistem de design'})).toBeVisible();
-  await expect(page.getByText('debiro')).toBeVisible();
+  await expect(page.getByText('DEBIRO')).toBeVisible();
   await page.setViewportSize({width: 375, height: 812});
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 });

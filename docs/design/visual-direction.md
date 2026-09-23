@@ -14,9 +14,9 @@ Preserve:
 - Interactions and transitions
 - Visible Romanian product copy
 
-Current mockups may show temporary `ComplyHub` branding. Implement it as lowercase `debiro`. This replacement is canonical and is not a deviation; do not change surrounding copy or layout.
+Current mockups may show temporary `ComplyHub` branding. Implement it as uppercase `DEBIRO`. This replacement is canonical and is not a deviation; do not change surrounding copy or layout.
 
-The final logo is TBD. Use only the plain lowercase textual brand and do not invent a logo, icon, wordmark treatment, or visual identity.
+The final logo is TBD. Use only the plain uppercase textual brand and do not invent a logo, icon, wordmark treatment, or visual identity.
 
 Mockup sample data is replaceable; approved product copy and typography are not. English translations must preserve the Romanian source meaning and hierarchy and require review before becoming canonical.
 

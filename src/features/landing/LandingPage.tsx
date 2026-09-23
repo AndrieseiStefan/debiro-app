@@ -21,7 +21,7 @@ export function LandingPage({locale, preview}: {locale: string; preview: Landing
     <div className={styles.page}>
       <header className={styles.siteHeader}>
         <PublicContainer className={styles.headerInner}>
-          <Link className={styles.brandLink} href="/" aria-label="debiro">
+          <Link className={styles.brandLink} href="/" aria-label="DEBIRO">
             <BrandWordmark />
           </Link>
           <nav className={styles.mainNav} aria-label={t('navigationLabel')}>

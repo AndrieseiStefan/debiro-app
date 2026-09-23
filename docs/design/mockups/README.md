@@ -32,7 +32,7 @@ These sample values are not canonical:
 - Dates and counts
 - Document values and other demo data
 
-Temporary branding must be replaced as follows: `ComplyHub` → `debiro` (lowercase).
+Temporary branding must be replaced as follows: `ComplyHub` → `DEBIRO` (uppercase visible text). Technical identifiers and `debiro.ro` stay lowercase.
 
 Every future mockup-backed UI task must:
 

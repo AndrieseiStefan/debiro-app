@@ -50,9 +50,9 @@ describe('foundation primitives', () => {
     expect(screen.getByRole('textbox', {name: 'Name'})).toHaveAttribute('readonly');
   });
 
-  it('renders only the approved plain lowercase brand text', () => {
+  it('renders only the approved plain uppercase brand text', () => {
     const {container} = render(<BrandWordmark />);
-    expect(screen.getByText('debiro')).toBeVisible();
+    expect(screen.getByText('DEBIRO')).toBeVisible();
     expect(container.querySelector('img, svg')).toBeNull();
   });
 

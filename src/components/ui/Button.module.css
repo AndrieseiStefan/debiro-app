@@ -19,6 +19,18 @@
   opacity: 0.54;
 }
 
+.content {
+  align-items: center;
+  display: inline-flex;
+  gap: inherit;
+  justify-content: center;
+}
+
+.content > svg {
+  display: block;
+  flex-shrink: 0;
+}
+
 .primary {
   background: var(--color-action-primary);
   box-shadow: 0 5px 12px rgb(8 82 201 / 11%);

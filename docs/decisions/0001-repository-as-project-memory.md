@@ -18,7 +18,7 @@ Future contributors and coding agents need to understand the product, accepted d
 
 Repository documentation is canonical project memory. It grows incrementally with current requirements, accepted decisions, and implementation. Detailed feature documentation must not be created before the task that defines or implements the feature.
 
-Approved mockups become canonical contracts for visual design, interaction, Romanian product copy, and typography. Relevant UI must target 1:1 fidelity as closely as technically practical. Temporary placeholder branding is replaced with lowercase `debiro`; sample data remains replaceable, and the final logo is not yet defined.
+Approved mockups become canonical contracts for visual design, interaction, Romanian product copy, and typography. Relevant UI must target 1:1 fidelity as closely as technically practical. Temporary placeholder branding is replaced with plain text; sample data remains replaceable, and the final logo is not yet defined. The initially lowercase visible-brand convention was superseded by the later `DEBIRO` casing decision; see [visual direction](../design/visual-direction.md).
 
 Git history preserves historical project evolution.
 

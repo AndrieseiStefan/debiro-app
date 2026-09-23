@@ -12,12 +12,12 @@ This file governs all work in this repository.
 
 ## Product and design contracts
 
-- The visible product brand is the plain lowercase text `debiro` until a dedicated branding task approves a final logo. Do not invent a logo, icon, wordmark treatment, or visual identity.
+- The visible product brand is the plain uppercase text `DEBIRO` until a dedicated branding task approves a final logo. Keep technical identifiers and the `debiro.ro` domain lowercase. Do not invent a logo, icon, wordmark treatment, or visual identity.
 - Approved mockups in `docs/design/mockups/` are canonical product contracts, not inspiration. For represented screens, target 1:1 fidelity as closely as technically practical.
 - The contract covers layout, hierarchy, spacing, sizing, visual treatment, interactions, typography, and visible Romanian product copy.
 - Approved Romanian mockup copy is locked. Do not silently paraphrase, shorten, expand, or replace it.
 - Approved typographic hierarchy and styling are part of the visual contract and must be reproduced closely.
-- Replace temporary mockup branding such as `ComplyHub` with lowercase `debiro`. This is the only currently approved intentional content change.
+- Replace temporary mockup branding such as `ComplyHub` with uppercase `DEBIRO`. This is the only currently approved intentional content change.
 - Mockup sample data (for example names, companies, dates, counts, emails, and document values) is not locked and must become runtime data.
 - Inspect every relevant approved mockup before implementing UI. Do not redesign an approved experience because another implementation is easier.
 - Material deviations are allowed only when required by accessibility, responsive adaptation, security, browser/platform constraints, technical impossibility, or explicit product-owner approval. Minimize, justify, document, and report them.

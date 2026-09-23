@@ -8,7 +8,7 @@ debiro is a B2B SaaS product initially focused on vendor and subcontractor compl
 
 The initial market focus is Romania, with Romanian and English product support. The commercial direction is a recurring subscription.
 
-Repository documentation is canonical project memory and must describe current truth. The ten approved mockups in `docs/design/mockups/` are canonical contracts for visual design, interaction, Romanian copy, and typography. Until a final logo is approved, visible branding is plain lowercase `debiro`; temporary mockup branding such as `ComplyHub` is replaced with `debiro` only.
+Repository documentation is canonical project memory and must describe current truth. The ten approved mockups in `docs/design/mockups/` are canonical contracts for visual design, interaction, Romanian copy, and typography. Until a final logo is approved, visible branding is plain uppercase `DEBIRO`; temporary mockup branding such as `ComplyHub` is replaced with `DEBIRO` only. Technical identifiers and `debiro.ro` remain lowercase.
 
 The current domain strategy is a single domain: public and future authenticated experiences use `debiro.ro`, without introducing `app.debiro.ro`. Domain-dependent URLs must later be configurable so the product is portable to another canonical domain.
 

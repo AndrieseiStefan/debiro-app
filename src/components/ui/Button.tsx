@@ -30,7 +30,7 @@ export function Button({
       aria-label={loading ? (loadingLabel ?? props['aria-label']) : props['aria-label']}
     >
       {loading && <span aria-hidden="true" className={styles.spinner} />}
-      <span>{children}</span>
+      <span className={styles.content}>{children}</span>
     </button>
   );
 }
