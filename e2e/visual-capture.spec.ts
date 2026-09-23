@@ -11,6 +11,7 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   await page.clock.setFixedTime(new Date('2025-01-15T12:00:00Z'));
   const response = await page.goto(route);
   expect(response?.status()).toBeLessThan(400);
+  await page.waitForLoadState('networkidle');
   await page.evaluate(async () => { await document.fonts.ready; });
 
   const name = route === '/' ? 'root' : route.replace(/^\/+|\/+$/g, '').replace(/[^a-zA-Z0-9_-]+/g, '-');

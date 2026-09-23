@@ -10,7 +10,7 @@
 
 **Domain strategy:** Single domain
 
-**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and landing page are implemented; backend/auth integrations are not.
+**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation, landing page, and onboarding first step are implemented; backend/auth integrations are not.
 
 ## Design state
 
@@ -30,9 +30,10 @@ The final logo is not yet designed and must not be invented.
 - High-level product, roadmap, design, decision, and development guidance
 - An accepted, documented architecture/stack and cost model; no external providers provisioned
 - Next.js/React/strict TypeScript application scaffold with CSS Modules and semantic mockup-derived tokens
-- Romanian-default and English `next-intl` routing, foundation and landing catalogs, typed view-data convention
+- Romanian-default and English `next-intl` routing, foundation and implemented-screen catalogs, typed view-data convention
 - Reusable low-level UI/layout primitives, accessibility baseline, Vitest/RTL and Playwright test tooling, deterministic visual capture, development-only design-system preview
 - E1-001 canonical landing page at `/` (Romanian) and `/en` (English), using a typed static dashboard preview and no provider data; see [landing page](../features/landing-page.md)
+- E1-002 canonical onboarding first step at `/onboarding` (Romanian) and `/en/onboarding` (English), using a typed form fixture and browser-local interactions only; see [onboarding](../features/onboarding.md)
 - Landing-page CTA alignment and shared 1350px public content grid corrected; visible brand casing standardized to `DEBIRO`; the three-mode responsive contract, stacked hero reflow, and boundary/safety viewport regression matrix are implemented in [UI foundation](../design/ui-foundation.md#responsive-contract)
 
 ## Architecture decision
@@ -41,7 +42,7 @@ TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to
 
 ## Not implemented
 
-- The nine remaining canonical screens (02–10) and their functional interactions
+- The eight remaining canonical screens (03–10), later onboarding steps, and functional backend workflows
 - Product-owner visual approval and approved regression baselines
 - Backend or API
 - Database, schemas, or migrations
@@ -53,4 +54,4 @@ TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to
 
 ## Next
 
-E1-002 — canonical onboarding is the next screen brief supplied with E1-001. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).
+E1-003 — Implement Canonical Dashboard Overview. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).
