@@ -34,6 +34,12 @@ Normal top-level page content uses the shared container implementation in `src/c
 
 The shell's responsive horizontal padding is 32px on desktop (≥1200px), 24px on tablet (768–1199px), and 16px on mobile (<768px). Below 1350px, the shell fills the available width with those gutters. Above 1350px, its width stops growing and equal automatic outer margins grow with the viewport; do not hardcode large-screen margins or duplicate shell rules in feature CSS. Page backgrounds and decorative layers may remain full bleed outside the content shell. Every future page starts with this shared shell unless its approved mockup explicitly requires a different outer geometry.
 
+## Shared Header Contract
+
+Landing and onboarding use one public/pre-auth `PublicHeader`, and future applicable pages must reuse it. Its inner content uses the same centered 1350px page shell and responsive gutters (32px desktop, 24px tablet, 16px mobile). The top brand area contains only the text wordmark `DEBIRO`; screen-specific taglines do not appear beneath it. At the same viewport and header state, the header background, shell edges, wordmark, compact locale switch, and common action positions match across pages.
+
+The single-row header has a deterministic 66px outer height with vertically centered content. Its approved local reflow hides navigation and optional page-specific actions below 864px without changing that height. Through 497px, brand, locale, authentication, and trial action remain on one row. At 496px and below, the shared two-row exception places `DEBIRO` and RO/EN on row one, then authentication and trial action together on row two; both pages gain the same height. This does not change the three global layout modes. Optional page actions, such as onboarding help, may be hidden when space is reduced but must not change the shared header geometry.
+
 ## Responsive Contract
 
 Product UI has exactly three global layout modes:

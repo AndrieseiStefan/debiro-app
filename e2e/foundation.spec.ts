@@ -29,9 +29,7 @@ test('centers the same border-box page shell on landing and onboarding', async (
         await page.setViewportSize({width, height: 1086});
         await page.goto(route);
         const shell = await page.evaluate((path) => {
-          const element = path === '/'
-            ? document.querySelector('header > div')!
-            : document.querySelector('header')!.parentElement!;
+          const element = document.querySelector('header > div')!;
           const box = element.getBoundingClientRect();
           const style = getComputedStyle(element);
           const backgroundLayer = path === '/'
@@ -67,5 +65,74 @@ test('centers the same border-box page shell on landing and onboarding', async (
 
   for (const margins of Object.values(wideMargins)) {
     expect(margins[1]).toBeGreaterThan(margins[0]);
+  }
+});
+
+test('keeps one shared public header geometry across landing and onboarding', async ({page}) => {
+  const widths = [1920, 1625, 1448, 1200, 1199, 1024, 768, 767, 640, 497, 496, 375, 320];
+
+  for (const width of widths) {
+    await test.step(`${width}px`, async () => {
+      await page.setViewportSize({width, height: 1086});
+      const layouts = [];
+
+      for (const route of ['/', '/onboarding']) {
+        await page.goto(route);
+        if (route === '/onboarding') {
+          await expect(page.locator('header')).not.toContainText('Parteneri siguri.');
+          if (width >= 864) {
+            await expect(page.getByRole('button', {name: 'Ai nevoie de ajutor?'})).toBeVisible();
+          } else {
+            await expect(page.getByRole('button', {name: 'Ai nevoie de ajutor?'})).toBeHidden();
+          }
+        }
+        layouts.push(await page.evaluate(() => {
+          const header = document.querySelector('header')!;
+          const shell = header.firstElementChild!;
+          const brand = shell.children[0];
+          const actions = shell.children[2];
+          const locale = actions.children[0];
+          const account = actions.children[1];
+          const rect = (element: Element) => {
+            const {x, y, width, height} = element.getBoundingClientRect();
+            return {x, y, width, height};
+          };
+          return {
+            header: rect(header),
+            shell: rect(shell),
+            brand: rect(brand),
+            locale: rect(locale),
+            login: rect(account.children[0]),
+            cta: rect(account.children[1]),
+            headerBackground: getComputedStyle(header).backgroundColor,
+            scrollWidth: document.documentElement.scrollWidth,
+            brandText: brand.textContent?.trim(),
+            clipped: [brand, locale, account.children[0], account.children[1]]
+              .some((element) => element.scrollWidth > element.clientWidth + 1)
+          };
+        }));
+      }
+
+      const [landing, onboarding] = layouts;
+      for (const property of ['header', 'shell', 'brand', 'locale', 'login', 'cta'] as const) {
+        for (const edge of ['x', 'y', 'width', 'height'] as const) {
+          expect(onboarding[property][edge]).toBeCloseTo(landing[property][edge], 0);
+        }
+      }
+      expect(onboarding.headerBackground).toBe(landing.headerBackground);
+      expect(landing.brandText).toBe('DEBIRO');
+      expect(onboarding.brandText).toBe('DEBIRO');
+      expect(landing.clipped).toBe(false);
+      expect(onboarding.clipped).toBe(false);
+      expect(landing.scrollWidth).toBeLessThanOrEqual(width);
+      expect(onboarding.scrollWidth).toBeLessThanOrEqual(width);
+      if (width <= 496) {
+        expect(landing.header.height).toBeGreaterThan(66);
+        expect(landing.login.y).toBeGreaterThan(landing.brand.y + landing.brand.height);
+      } else {
+        expect(landing.header.height).toBe(66);
+        expect(Math.abs(landing.locale.y - landing.brand.y)).toBeLessThan(10);
+      }
+    });
   }
 });

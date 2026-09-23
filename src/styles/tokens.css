@@ -43,6 +43,7 @@
   --shadow-dialog: 0 20px 60px rgb(12 34 67 / 15%);
   --sidebar-width: 260px;
   --header-height: 72px;
+  --public-header-height: 66px;
   --page-shell-max: 1350px;
   --page-gutter: 32px;
   --dialog-width: 502px;

@@ -1,12 +1,10 @@
 {
   "Landing": {
     "navigationLabel": "Main navigation",
-    "languageLabel": "Language",
     "navProduct": "Product",
     "navSolutions": "Solutions",
     "navPricing": "Pricing",
     "navResources": "Resources",
-    "login": "Log in",
     "tryFree": "Try for free",
     "heroEyebrow": "SIMPLER COMPLIANCE, SAFER BUSINESS",
     "heroTitleOne": "All your suppliers'",
@@ -76,10 +74,12 @@
       "statusLabels": {"expired": "Expired", "expiring": "Expiring soon", "missing": "Missing"}
     }
   },
-  "Onboarding": {
-    "brandTaglineOne": "Trusted partners.",
-    "brandTaglineTwo": "Stronger business.",
+  "PublicHeader": {
     "languageLabel": "Language",
+    "login": "Log in",
+    "tryFree": "Try for free"
+  },
+  "Onboarding": {
     "help": "Need help?",
     "welcomeEyebrow": "WELCOME TO DEBIRO",
     "introTitle": "Simpler compliance. Stronger partnerships.",

@@ -2,13 +2,12 @@
 
 import {useState, type FormEvent, type ReactNode} from 'react';
 import {useTranslations} from 'next-intl';
-import {BrandWordmark} from '@/components/brand/BrandWordmark';
 import {PageContainer} from '@/components/layout/PageContainer';
+import {PublicHeader} from '@/components/layout/PublicHeader';
 import {Button} from '@/components/ui/Button';
 import {Divider} from '@/components/ui/Divider';
 import {Field} from '@/components/ui/Field';
 import {Surface} from '@/components/ui/Surface';
-import {Link} from '@/i18n/navigation';
 import {OnboardingIcon} from './OnboardingIcon';
 import type {OnboardingFixture} from './fixtures';
 import styles from './OnboardingPage.module.css';
@@ -48,22 +47,8 @@ export function OnboardingPage({locale, fixture}: {locale: string; fixture: Onbo
 
   return (
     <div className={styles.page}>
+      <PublicHeader locale={locale} localePath="/onboarding" helpLabel={t('help')} />
       <PageContainer>
-        <header className={styles.header}>
-          <Link href="/" className={styles.brand} aria-label="DEBIRO">
-            <BrandWordmark />
-            <span>{t('brandTaglineOne')}<br />{t('brandTaglineTwo')}</span>
-          </Link>
-          <div className={styles.headerRight}>
-            <nav className={styles.languageSwitch} aria-label={t('languageLabel')}>
-              <Link href="/onboarding" locale="ro" aria-current={locale === 'ro' ? 'page' : undefined} className={locale === 'ro' ? styles.activeLocale : undefined}>RO</Link>
-              <Link href="/onboarding" locale="en" aria-current={locale === 'en' ? 'page' : undefined} className={locale === 'en' ? styles.activeLocale : undefined}>EN</Link>
-            </nav>
-            <span className={styles.headerDivider} aria-hidden="true" />
-            <button type="button" aria-disabled="true" className={styles.help}><OnboardingIcon name="help" size={21} />{t('help')}</button>
-          </div>
-        </header>
-
         <main className={styles.mainGrid}>
           <aside className={styles.introPanel} aria-labelledby="intro-heading">
             <div className={styles.introContent}>

@@ -5,84 +5,6 @@
   min-width: 320px;
 }
 
-.header {
-  align-items: flex-start;
-  display: flex;
-  height: 100px;
-  justify-content: space-between;
-  padding: 24px 16px 0;
-}
-
-.brand {
-  color: #0d1a38;
-  display: inline-flex;
-  flex-direction: column;
-  gap: 4px;
-  text-decoration: none;
-}
-
-.brand > span:last-child {
-  color: #526685;
-  font-size: 12px;
-  line-height: 1.18;
-}
-
-.headerRight,
-.languageSwitch,
-.help {
-  align-items: center;
-  display: flex;
-}
-
-.headerRight {
-  gap: 24px;
-  padding-top: 2px;
-}
-
-.languageSwitch {
-  background: #f0f5ff;
-  border-radius: 11px;
-  flex: 0 0 auto;
-  gap: 1px;
-  padding: 3px;
-  width: max-content;
-}
-
-.languageSwitch a {
-  border-radius: 8px;
-  color: #0755c7;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1;
-  min-width: 48px;
-  padding: 10px;
-  text-align: center;
-  text-decoration: none;
-}
-
-.languageSwitch .activeLocale {
-  background: #0563e9;
-  box-shadow: 0 2px 6px rgb(0 76 177 / 16%);
-  color: #fff;
-}
-
-.headerDivider {
-  background: #dce7f8;
-  height: 34px;
-  width: 1px;
-}
-
-.help {
-  background: transparent;
-  border: 0;
-  color: #075bd2;
-  font-size: 13px;
-  gap: 8px;
-  padding: 8px 0;
-  white-space: nowrap;
-}
-
-.help[aria-disabled='true'],
 .legalLink[aria-disabled='true'] {
   cursor: default;
 }
@@ -91,7 +13,7 @@
   display: grid;
   gap: 16px;
   grid-template-columns: 328px minmax(0, 1fr);
-  min-height: calc(100vh - 120px);
+  min-height: calc(100vh - var(--public-header-height) - 20px);
   padding-bottom: 20px;
 }
 
@@ -770,10 +692,6 @@
 }
 
 @media (max-width: 1199px) {
-  .header {
-    padding-inline: 0;
-  }
-
   .mainGrid {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -836,44 +754,6 @@
 }
 
 @media (max-width: 767px) {
-  .header {
-    display: grid;
-    gap: 8px;
-    grid-template-columns: minmax(0, 1fr) auto;
-    height: auto;
-    min-height: 102px;
-    padding: 16px 0 0;
-  }
-
-  .brand {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .brand > span:last-child {
-    font-size: 11px;
-  }
-
-  .headerRight {
-    display: contents;
-  }
-
-  .languageSwitch {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-  .headerDivider {
-    display: none;
-  }
-
-  .help {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    justify-self: end;
-    padding: 0;
-  }
-
   .mainGrid {
     gap: 16px;
     padding-bottom: 16px;

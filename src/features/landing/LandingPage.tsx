@@ -1,8 +1,7 @@
 import {useTranslations} from 'next-intl';
-import {BrandWordmark} from '@/components/brand/BrandWordmark';
 import {PublicContainer} from '@/components/layout/PublicContainer';
+import {PublicHeader} from '@/components/layout/PublicHeader';
 import {Button} from '@/components/ui/Button';
-import {Link} from '@/i18n/navigation';
 import {DashboardPreview} from './DashboardPreview';
 import {LandingIcon} from './LandingIcon';
 import type {LandingPreview} from './types';
@@ -19,29 +18,13 @@ export function LandingPage({locale, preview}: {locale: string; preview: Landing
 
   return (
     <div className={styles.page}>
-      <header className={styles.siteHeader}>
-        <PublicContainer className={styles.headerInner}>
-          <Link className={styles.brandLink} href="/" aria-label="DEBIRO">
-            <BrandWordmark />
-          </Link>
-          <nav className={styles.mainNav} aria-label={t('navigationLabel')}>
-            <button type="button" aria-disabled="true" className={styles.navItem}>{t('navProduct')} <LandingIcon name="chevron" size={12} /></button>
-            <button type="button" aria-disabled="true" className={styles.navItem}>{t('navSolutions')} <LandingIcon name="chevron" size={12} /></button>
-            <a className={styles.navItem} href="#preturi">{t('navPricing')}</a>
-            <button type="button" aria-disabled="true" className={styles.navItem}>{t('navResources')} <LandingIcon name="chevron" size={12} /></button>
-          </nav>
-          <div className={styles.headerActions}>
-            <nav className={styles.languageSwitch} aria-label={t('languageLabel')}>
-              <Link href="/" locale="ro" aria-current={locale === 'ro' ? 'page' : undefined} className={locale === 'ro' ? styles.activeLocale : undefined}>RO</Link>
-              <Link href="/" locale="en" aria-current={locale === 'en' ? 'page' : undefined} className={locale === 'en' ? styles.activeLocale : undefined}>EN</Link>
-            </nav>
-            <div className={styles.headerAccountActions}>
-              <button type="button" aria-disabled="true" className={styles.login}>{t('login')}</button>
-              <Button aria-disabled="true" className={styles.headerCta}>{t('tryFree')} <LandingIcon name="arrow" size={17} /></Button>
-            </div>
-          </div>
-        </PublicContainer>
-      </header>
+      <PublicHeader locale={locale} localePath="/" navigation={{
+        label: t('navigationLabel'),
+        product: t('navProduct'),
+        solutions: t('navSolutions'),
+        pricing: t('navPricing'),
+        resources: t('navResources')
+      }} />
 
       <main>
         <section className={styles.hero} aria-labelledby="landing-heading">
