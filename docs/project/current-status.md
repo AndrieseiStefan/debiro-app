@@ -1,6 +1,6 @@
 # Current Status
 
-**Project stage:** Repository / Product Foundation
+**Project stage:** Architecture selected; UI foundation next
 
 **Brand:** debiro
 
@@ -10,11 +10,11 @@
 
 **Domain strategy:** Single domain
 
-**Technical stack:** Undecided
+**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md); not yet implemented
 
 ## Design state
 
-Approved product mockups exist externally and will be manually added after TASK-001. Once present in `docs/design/mockups/`, they are canonical contracts requiring:
+Ten approved product mockups are present in `docs/design/mockups/`. They are canonical contracts requiring:
 
 - UI fidelity as close to 1:1 as technically practical
 - Interaction fidelity as close to 1:1 as technically practical
@@ -27,7 +27,12 @@ The final logo is not yet designed and must not be invented.
 ## Implemented
 
 - Canonical repository documentation and project-memory rules
-- High-level product, roadmap, design, architecture, decision, and development guidance
+- High-level product, roadmap, design, decision, and development guidance
+- An accepted, documented architecture/stack and cost model; no runtime or providers provisioned
+
+## Architecture decision
+
+TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to-real view boundary, same-origin JSON/API service boundary, Neon managed PostgreSQL with Drizzle, Better Auth, debiro-owned organization tenancy and PostgreSQL RLS, private R2 EU documents, pg-boss jobs drained by Railway cron, Poppler/Tesseract text processing, gated OpenAI structured extraction, Resend email, `next-intl`, Railway EU West hosting, Vitest and Playwright. See [architecture](../architecture/README.md), [ADR-0002](../decisions/0002-application-architecture-and-stack.md), and the [dated cost model](../architecture/cost-model.md).
 
 ## Not implemented
 
@@ -43,8 +48,4 @@ The final logo is not yet designed and must not be invented.
 
 ## Next
 
-TASK-002 — Architecture & Stack Decision.
-
-## User action after TASK-001
-
-Manually add approved mockup images under `docs/design/mockups/` using the expected mapping documented in that directory. Do not replace its README.
+TASK-003 — UI Foundation & Canonical Design System. After TASK-003, define the complete Epic sequence through MVP before E1-001.

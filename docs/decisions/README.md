@@ -19,3 +19,4 @@ Accepted ADRs describe current decisions. Git history preserves their evolution;
 ## Records
 
 - [ADR-0001 — Repository as Project Memory](0001-repository-as-project-memory.md) — Accepted
+- [ADR-0002 — Application Architecture and Stack](0002-application-architecture-and-stack.md) — Accepted

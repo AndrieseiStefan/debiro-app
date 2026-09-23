@@ -1,11 +1,12 @@
 # Architecture
 
-Architecture documentation grows incrementally as decisions become current truth. No technology, provider, or runtime architecture is selected in TASK-001.
+TASK-002 selected the application architecture; it did not implement it. Start with:
 
-Future architecture documentation may cover system architecture, domain boundaries, data ownership, API boundaries, authentication, authorization, security and privacy, object storage, document processing, background jobs, integrations, infrastructure, and observability. Create those documents only when the corresponding decision is accepted or behavior becomes current.
+- [System architecture](system-architecture.md): boundaries, flow, and intended repository shape.
+- [Technology stack](technology-stack.md): selected technologies and evaluated alternatives.
+- [Deployment](deployment.md): topology, environments, operations, and recovery.
+- [Security and data](security-and-data.md): tenancy, files, data location, and provider gates.
+- [Cost model](cost-model.md): dated official pricing, workload assumptions, and estimates.
+- [ADR-0002](../decisions/0002-application-architecture-and-stack.md): accepted decision and trade-offs.
 
-Major choices with meaningful alternatives should be recorded as architecture decision records in [`docs/decisions/`](../decisions/README.md).
-
-The current `debiro.ro` domain must not become a hardcoded business-domain dependency. When implementation begins, configurable base URLs must support a future canonical-domain change without altering business or domain logic.
-
-**Next architecture task:** TASK-002 — Architecture & Stack Decision.
+Documentation grows with accepted decisions and actual implementation. Do not create detailed feature contracts ahead of their defining tasks. Domain-dependent URLs must use configuration so a later change from `debiro.ro` does not change business logic.

@@ -1,6 +1,6 @@
 # Approved Mockups
 
-After TASK-001, this directory intentionally contains this README only. The user will manually add the approved images. Do not generate fake screenshots or use screenshots as functional UI.
+This directory contains the ten approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
 
 ## Expected initial mapping
 
