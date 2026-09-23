@@ -1,4 +1,5 @@
 import {expect, test} from '@playwright/test';
+import {viewports} from './support/viewports';
 
 test('boots the Romanian and English landing routes', async ({page}) => {
   await page.goto('/');
@@ -13,6 +14,6 @@ test('shows the development-only primitive preview without horizontal overflow',
   await page.goto('/__dev/design-system');
   await expect(page.getByRole('heading', {name: 'Previzualizare sistem de design'})).toBeVisible();
   await expect(page.getByText('DEBIRO')).toBeVisible();
-  await page.setViewportSize({width: 375, height: 812});
-  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+  await page.setViewportSize(viewports.mobile);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewports.mobile.width);
 });

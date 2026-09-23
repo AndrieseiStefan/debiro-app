@@ -311,8 +311,8 @@
 }
 
 .heroHandwriting {
-  bottom: -22px;
-  right: clamp(-69px, calc((var(--public-max) - 100vw) / 2 - 20px), 0px);
+  bottom: -24px;
+  right: 0;
   width: 132px;
 }
 
@@ -670,12 +670,16 @@
 
 @media (max-width: 1199px) {
   .headerInner {
+    gap: 16px;
     grid-template-columns: 170px minmax(0, 1fr) auto;
   }
 
-  .mainNav,
+  .mainNav {
+    gap: 16px;
+  }
+
   .headerActions {
-    gap: 18px;
+    gap: 16px;
   }
 
   .heroInner {
@@ -684,14 +688,17 @@
   }
 
   .heroCopy {
-    max-width: 600px;
-    padding-top: 30px;
+    padding-top: 32px;
+    width: 100%;
+  }
+
+  .heroDescription {
+    max-width: none;
   }
 
   .heroVisual {
-    margin-inline: auto;
     padding-top: 0;
-    width: min(100%, 700px);
+    width: 100%;
   }
 
   .hero {
@@ -725,42 +732,37 @@
   .featureGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .pricingInner {
+    padding-block: 24px;
+  }
+
+  .pricingCopy {
+    flex: 1 1 auto;
+  }
 }
 
-@media (max-width: 991px) {
+/* Header-only collision point: the full navigation needs 245px beside the actions. */
+@media (min-width: 768px) and (max-width: 863px) {
+  .headerInner {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .mainNav {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
   .siteHeader {
     height: auto;
   }
 
   .headerInner {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px 20px;
-    justify-content: space-between;
-    padding-block: 12px;
-  }
-
-  .mainNav {
-    flex-basis: 100%;
-    flex-wrap: wrap;
-    order: 3;
-  }
-
-  .pricingInner {
-    flex-wrap: wrap;
-    padding-block: 20px;
-  }
-
-  .pricingCopy {
-    flex: 1 1 350px;
-  }
-}
-
-@media (max-width: 767px) {
-  .headerInner {
     display: grid;
-    gap: 8px 12px;
+    gap: 8px 16px;
     grid-template-columns: minmax(0, 1fr) auto;
+    padding-block: 12px;
   }
 
   .brandLink {
@@ -809,7 +811,7 @@
   .heroActions {
     align-items: stretch;
     flex-direction: column;
-    gap: 11px;
+    gap: 8px;
   }
 
   .heroCta,
@@ -828,8 +830,18 @@
   }
 
   .featureCard {
+    gap: 16px;
+    grid-template-columns: 56px minmax(0, 1fr);
     min-height: 112px;
-    padding-bottom: 17px;
+    padding: 16px;
+  }
+
+  .featureIcon {
+    height: 56px;
+  }
+
+  .featureNumber {
+    font-size: 24px;
   }
 
   .sectionIntro h2 {
@@ -855,36 +867,22 @@
   }
 
   .pricingInner {
+    display: grid;
     align-items: flex-start;
-    gap: 12px;
+    gap: 16px;
+    grid-template-columns: 50px minmax(0, 1fr);
   }
 
   .pricingIcon {
-    flex-basis: 50px;
     height: 50px;
   }
 
   .pricingCopy {
-    flex: 1 1 220px;
-  }
-}
-
-@media (max-width: 479px) {
-  .featureCard {
-    gap: 12px;
-    grid-template-columns: 56px minmax(0, 1fr);
-    padding: 14px;
-  }
-
-  .featureIcon {
-    height: 56px;
-  }
-
-  .featureNumber {
-    font-size: 24px;
+    min-width: 0;
   }
 
   .pricingButton {
+    grid-column: 1 / -1;
     width: 100%;
   }
 }

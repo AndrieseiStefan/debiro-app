@@ -1,6 +1,6 @@
 # UI Foundation
 
-**Status:** Implemented for TASK-003. No canonical product screen or visual-regression baseline is approved.
+**Status:** Implemented for TASK-003 and responsive contract finalized in TASK-003A. No canonical product screen or visual-regression baseline is approved.
 
 ## Canonical source and scope
 
@@ -18,7 +18,7 @@ Inter Variable is self-hosted from `@fontsource-variable/inter`; the exact mocku
 
 `src/components/ui/` provides Button (primary, secondary, ghost, destructive, disabled, loading), Field (label/helper/error/required/readonly/disabled), Surface, StatusBadge (visual tones only), Divider, LoadingBlock, EmptyState, and ErrorState. StatusBadge deliberately does not encode document/business statuses. Button loading disables repeat activation. Field errors have text and associated semantics. The loading block reserves space and has a screen-reader label; no perpetual decorative animation is required.
 
-`src/components/layout/` provides PublicContainer (1350px maximum width; page gutters of 28px desktop, 24px tablet, 20px mobile, and 16px narrow mobile), PortalContainer, PageContainer, and a compositional AppShell. Shell slots are passed in; no navigation, tenancy, or authentication is embedded. `src/components/brand/BrandWordmark.tsx` renders only `DEBIRO` as text in the application font. No logo or icon package is present.
+`src/components/layout/` provides PublicContainer (1350px maximum width, with gutters defined by the responsive contract below), PortalContainer, PageContainer, and a compositional AppShell. Shell slots are passed in; no navigation, tenancy, or authentication is embedded. `src/components/brand/BrandWordmark.tsx` renders only `DEBIRO` as text in the application font. No logo or icon package is present.
 
 ## View data and localization
 
@@ -26,11 +26,29 @@ Each screen owns its view data beside the feature (for example `src/features/<fe
 
 `next-intl` uses `messages/ro.json` as source and `messages/en.json` as the secondary foundation catalog. Romanian is canonical at `/`; English is at `/en` (`localePrefix: 'as-needed'`). `/ro` redirects to `/`. Foundation-only keys use the `Foundation` namespace. Server pages resolve messages through the i18n layer; user-facing primitives receive text as props. Missing keys throw in development, and tests assert locale-key parity. Screen tasks must transcribe approved Romanian copy exactly and submit English copy for review; no mockup copy has been pretranslated here.
 
-## Responsive and accessibility baseline
+## Responsive Contract
 
-Containers and shell columns use bounded widths and `minmax(0, 1fr)` to avoid document-level horizontal overflow. The sidebar shell stacks below 800px; this is a safe structural fallback, not an approved mobile product design. Screen-specific layouts and tables must be validated when implemented. Focus-visible outlines, semantic buttons/landmarks, native disabled behavior, label/input associations, `aria-invalid`, text errors, and accessible loading/status treatment are present. No visual deviation from the approved desktop mockups was intentionally introduced for accessibility; future conflicts must be minimized and reported.
+Product UI has exactly three global layout modes:
 
-Future E1 screens must check representative canonical desktop, compact desktop, tablet, mobile, and narrow-mobile widths. The landing page uses a concrete matrix of 1448 × 1086, 1280 × 800, 1024 × 768, 950 × 833, 768 × 1024, 480 × 900, 375 × 812, and 320 × 700. Its content-driven layout boundaries are 1200px, 992px, 768px, and 480px. Checks cover document overflow, page gutters, content order, control visibility, and geometric collisions; they do not establish pixel-perfect mobile baselines. Future screens should use an equivalent representative matrix and reflow before their own content collides.
+| Mode | Width | Normal content gutter |
+| --- | --- | --- |
+| Desktop | 1200px and wider | 32px |
+| Tablet | 768–1199px | 24px |
+| Mobile | Below 768px | 16px |
+
+Public content has a 1350px maximum container width, including its gutters. Header, hero, and normal content sections share its left and right grid edges. Full-width backgrounds and decorative artwork may extend beyond that grid. New shared layout spacing follows an 8px rhythm where practical; 4px is available for small optical adjustments. Existing mockup-matched measurements are not changed mechanically.
+
+Desktop layouts preserve approved composition and reflow before content collides. On tablet, multi-column hero content stacks: copy expands to the available container width, remains left aligned, and precedes a proportionally scaled dashboard within the grid. Tablet headers stay on one row and hide their navigation below 864px, the measured header-only collision point; they must not wrap accidentally. On mobile, essential content remains in semantic order, controls and trust items stack, and the dashboard stays inside 16px gutters. Decorative elements remain anchored to their section or preview and may be hidden when they compete with functional content. Feature cards reduce column count before text or numbering collides. No mode permits avoidable document-level horizontal scrolling, clipping, or functional overlap.
+
+The primary visual matrix is desktop 1448 × 1086, tablet 1024 × 768, and mobile 375 × 812. Regression checks also cover the 1200/1199 and 768/767 transitions, plus 950px and 320px safety widths. `e2e/support/viewports.ts` centralizes these test dimensions. A component-local breakpoint is permitted only to prevent a demonstrated content collision; it must not create another global mode or serve pixel tweaking.
+
+For E1 UI tasks, broken reflow, inappropriate desktop text width after stacking, missing gutters, accidental header wrapping, detached decoration, overlap, clipping, incorrect order, unreadable controls, and page-level horizontal overflow block completion. Minor spacing, subtle alignment or typography differences, decorative placement, shadows, radii, and pixel-level responsive polish may wait for E2. E1-002 and later UI tasks must reference this contract rather than invent a new breakpoint system.
+
+## Accessibility baseline
+
+Containers and shell columns use bounded widths and `minmax(0, 1fr)` to avoid document-level horizontal overflow. The sidebar shell stacks below 800px; this is a component-local structural fallback, not a fourth global mode or an approved mobile product design. Screen-specific layouts and tables must be validated when implemented. Focus-visible outlines, semantic buttons/landmarks, native disabled behavior, label/input associations, `aria-invalid`, text errors, and accessible loading/status treatment are present. No visual deviation from the approved desktop mockups was intentionally introduced for accessibility; future conflicts must be minimized and reported.
+
+Responsive tests cover document overflow, page gutters, content order, control visibility, and geometric collisions; they do not establish pixel-perfect mobile baselines.
 
 ## Visual validation workflow
 

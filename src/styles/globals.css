@@ -96,19 +96,13 @@ p {
   line-height: 1.4;
 }
 
-@media (max-width: 991px) {
+@media (max-width: 1199px) {
   :root {
     --page-gutter: 24px;
   }
 }
 
 @media (max-width: 767px) {
-  :root {
-    --page-gutter: 20px;
-  }
-}
-
-@media (max-width: 479px) {
   :root {
     --page-gutter: 16px;
   }

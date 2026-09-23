@@ -1,4 +1,5 @@
 import {defineConfig, devices} from '@playwright/test';
+import {viewports} from './e2e/support/viewports';
 
 const baseURL = 'http://localhost:3210';
 
@@ -12,7 +13,7 @@ export default defineConfig({
   use: {
     ...devices['Desktop Chrome'],
     baseURL,
-    viewport: {width: 1448, height: 1086},
+    viewport: viewports.desktop,
     colorScheme: 'light',
     locale: 'ro-RO',
     timezoneId: 'Europe/Bucharest',

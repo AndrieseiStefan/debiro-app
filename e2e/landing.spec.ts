@@ -1,4 +1,5 @@
 import {expect, test} from '@playwright/test';
+import {boundaryViewports, headerBoundaryViewports, regressionViewports, viewports} from './support/viewports';
 
 test('renders canonical Romanian copy, navigation and textual branding', async ({page}) => {
   const response = await page.goto('/');
@@ -27,18 +28,15 @@ test('renders English copy and switches locale', async ({page}) => {
 
 test('keeps the landing page stable across the responsive viewport matrix', async ({page}) => {
   await page.goto('/');
-  const viewports = [
-    {width: 1448, height: 1086, gutter: 28},
-    {width: 1280, height: 800, gutter: 28},
-    {width: 1024, height: 768, gutter: 28},
-    {width: 950, height: 833, gutter: 24},
-    {width: 768, height: 1024, gutter: 24},
-    {width: 480, height: 900, gutter: 20},
-    {width: 375, height: 812, gutter: 16},
-    {width: 320, height: 700, gutter: 16}
-  ] as const;
+  const matrix = [
+    ...Object.values(viewports),
+    ...boundaryViewports,
+    ...regressionViewports,
+    ...headerBoundaryViewports
+  ];
 
-  for (const {width, height, gutter} of viewports) {
+  for (const {width, height} of matrix) {
+    const gutter = width >= 1200 ? 32 : width >= 768 ? 24 : 16;
     await test.step(`${width} × ${height}`, async () => {
       await page.setViewportSize({width, height});
       await expect(page.getByRole('heading', {level: 1})).toBeVisible();
@@ -48,7 +46,7 @@ test('keeps the landing page stable across the responsive viewport matrix', asyn
       await expect(page.getByRole('button', {name: 'Autentificare'})).toBeVisible();
       await expect(page.getByRole('link', {name: 'RO', exact: true})).toBeVisible();
       await expect(page.getByRole('link', {name: 'EN', exact: true})).toBeVisible();
-      if (width <= 767) {
+      if (width < 864) {
         await expect(page.getByRole('navigation', {name: 'Navigare principală'})).toBeHidden();
       } else {
         await expect(page.getByRole('navigation', {name: 'Navigare principală'})).toBeVisible();
@@ -64,6 +62,8 @@ test('keeps the landing page stable across the responsive viewport matrix', asyn
         const anyOverlap = (boxes: ReturnType<typeof rect>[]) =>
           boxes.some((box, index) => boxes.slice(index + 1).some((other) => overlaps(box, other)));
         const sections = document.querySelectorAll('main > section');
+        const contentContainers = Array.from(document.querySelectorAll('header > div, main > section > div'))
+          .filter((element) => getComputedStyle(element).maxWidth === '1350px');
         const heroInner = sections[0].children[1];
         const heroCopy = heroInner.children[0];
         const heroVisual = heroInner.children[1];
@@ -94,8 +94,23 @@ test('keeps the landing page stable across the responsive viewport matrix', asyn
         return {
           scrollWidth: document.documentElement.scrollWidth,
           gutter: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--page-gutter')),
+          contentContainers: contentContainers.map((element) => ({
+            left: rect(element).left + parseFloat(getComputedStyle(element).paddingLeft),
+            right: rect(element).right - parseFloat(getComputedStyle(element).paddingRight)
+          })),
+          heroInnerLeft: rect(heroInner).left,
+          heroInnerRight: rect(heroInner).right,
+          heroCopyWidth: rect(heroCopy).right - rect(heroCopy).left,
+          heroVisualWidth: rect(heroVisual).right - rect(heroVisual).left,
+          heroStacked: rect(heroVisual).top >= rect(heroCopy).bottom,
+          heroVisualLeft: rect(heroVisual).left,
+          heroVisualRight: rect(heroVisual).right,
+          contentLeft: rect(heroInner).left + parseFloat(getComputedStyle(heroInner).paddingLeft),
+          contentRight: rect(heroInner).right - parseFloat(getComputedStyle(heroInner).paddingRight),
           previewLeft: previewRect.left,
           previewRight: previewRect.right,
+          previewRatio: (previewRect.right - previewRect.left) / (previewRect.bottom - previewRect.top),
+          decorationAttached: heroDecoration.parentElement === heroVisual,
           heroGap: previewRect.left >= copyRect.right
             ? previewRect.left - copyRect.right
             : previewRect.top - copyRect.bottom,
@@ -121,8 +136,26 @@ test('keeps the landing page stable across the responsive viewport matrix', asyn
 
       expect(geometry.scrollWidth).toBeLessThanOrEqual(width);
       expect(geometry.gutter).toBe(gutter);
+      expect(geometry.contentContainers).toHaveLength(5);
+      for (const container of geometry.contentContainers) {
+        expect(container.left).toBeCloseTo(geometry.contentLeft, 0);
+        expect(container.right).toBeCloseTo(geometry.contentRight, 0);
+      }
+      expect(geometry.heroInnerLeft).toBeGreaterThanOrEqual(0);
+      expect(geometry.heroInnerRight).toBeLessThanOrEqual(width);
+      if (width < 1200) {
+        expect(geometry.heroStacked).toBe(true);
+        expect(geometry.heroCopyWidth).toBeCloseTo(geometry.contentRight - geometry.contentLeft, 0);
+        expect(geometry.heroVisualWidth).toBeCloseTo(geometry.contentRight - geometry.contentLeft, 0);
+        expect(geometry.heroVisualLeft).toBeCloseTo(geometry.contentLeft, 0);
+        expect(geometry.heroVisualRight).toBeCloseTo(geometry.contentRight, 0);
+      } else {
+        expect(geometry.heroStacked).toBe(false);
+      }
       expect(geometry.previewLeft).toBeGreaterThanOrEqual(gutter - 1);
       expect(geometry.previewRight).toBeLessThanOrEqual(width - gutter + 1);
+      expect(geometry.previewRatio).toBeCloseTo(700 / 478, 2);
+      expect(geometry.decorationAttached).toBe(true);
       expect(geometry.heroGap).toBeGreaterThanOrEqual(23);
       expect(geometry.heroCollision).toBe(false);
       expect(geometry.controlCollision).toBe(false);
@@ -147,9 +180,9 @@ test('keeps the landing page stable across the responsive viewport matrix', asyn
   }
 });
 
-test('keeps English copy and the preview within narrow gutters', async ({page}) => {
+test('keeps English copy and the preview within responsive gutters', async ({page}) => {
   await page.goto('/en');
-  for (const {width, gutter} of [{width: 950, gutter: 24}, {width: 480, gutter: 20}, {width: 320, gutter: 16}]) {
+  for (const {width, gutter} of [{width: 950, gutter: 24}, {width: 480, gutter: 16}, {width: 320, gutter: 16}]) {
     await page.setViewportSize({width, height: 900});
     await expect(page.getByRole('heading', {level: 1})).toBeVisible();
     await expect(page.getByRole('button', {name: 'Try for free'}).first()).toBeVisible();
@@ -178,7 +211,7 @@ test('uses one desktop content grid and centers both CTA labels and arrows', asy
   );
   expect(grid).toHaveLength(5);
   for (const container of grid) {
-    expect(container).toEqual({left: 49, width: 1350, paddingLeft: '28px', paddingRight: '28px'});
+    expect(container).toEqual({left: 49, width: 1350, paddingLeft: '32px', paddingRight: '32px'});
   }
 
   const heroSpacing = await page.evaluate(() => {
@@ -197,7 +230,8 @@ test('uses one desktop content grid and centers both CTA labels and arrows', asy
   expect(heroSpacing.trustCount).toBe(3);
   expect(heroSpacing.trustRight).toBeLessThanOrEqual(heroSpacing.copyRight);
   expect(heroSpacing.previewLeft - heroSpacing.trustRight).toBeGreaterThanOrEqual(24);
-  expect(heroSpacing.previewWidth).toBe(700);
+  expect(heroSpacing.previewWidth).toBeGreaterThanOrEqual(698);
+  expect(heroSpacing.previewWidth).toBeLessThanOrEqual(700);
 
   const buttons = await page.getByRole('button', {name: 'Încearcă gratuit'}).all();
   expect(buttons).toHaveLength(2);

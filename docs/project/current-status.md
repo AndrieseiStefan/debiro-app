@@ -33,7 +33,7 @@ The final logo is not yet designed and must not be invented.
 - Romanian-default and English `next-intl` routing, foundation and landing catalogs, typed view-data convention
 - Reusable low-level UI/layout primitives, accessibility baseline, Vitest/RTL and Playwright test tooling, deterministic visual capture, development-only design-system preview
 - E1-001 canonical landing page at `/` (Romanian) and `/en` (English), using a typed static dashboard preview and no provider data; see [landing page](../features/landing-page.md)
-- Landing-page CTA alignment and shared 1350px public content grid corrected; visible brand casing standardized to `DEBIRO`; content-driven responsive reflow and an eight-viewport regression matrix are implemented
+- Landing-page CTA alignment and shared 1350px public content grid corrected; visible brand casing standardized to `DEBIRO`; the three-mode responsive contract, stacked hero reflow, and boundary/safety viewport regression matrix are implemented in [UI foundation](../design/ui-foundation.md#responsive-contract)
 
 ## Architecture decision
 
