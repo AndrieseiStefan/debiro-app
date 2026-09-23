@@ -10,7 +10,7 @@
   display: flex;
   height: 100px;
   justify-content: space-between;
-  padding: 24px 36px 0;
+  padding: 24px 16px 0;
 }
 
 .brand {
@@ -92,7 +92,7 @@
   gap: 16px;
   grid-template-columns: 328px minmax(0, 1fr);
   min-height: calc(100vh - 120px);
-  padding: 0 20px 20px;
+  padding-bottom: 20px;
 }
 
 .introPanel {
@@ -771,12 +771,11 @@
 
 @media (max-width: 1199px) {
   .header {
-    padding-inline: 24px;
+    padding-inline: 0;
   }
 
   .mainGrid {
     grid-template-columns: minmax(0, 1fr);
-    padding-inline: 24px;
   }
 
   .introPanel {
@@ -843,7 +842,7 @@
     grid-template-columns: minmax(0, 1fr) auto;
     height: auto;
     min-height: 102px;
-    padding: 16px;
+    padding: 16px 0 0;
   }
 
   .brand {
@@ -877,7 +876,7 @@
 
   .mainGrid {
     gap: 16px;
-    padding: 0 16px 16px;
+    padding-bottom: 16px;
   }
 
   .introContent {

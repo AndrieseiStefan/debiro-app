@@ -34,7 +34,7 @@ The final logo is not yet designed and must not be invented.
 - Reusable low-level UI/layout primitives, accessibility baseline, Vitest/RTL and Playwright test tooling, deterministic visual capture, development-only design-system preview
 - E1-001 canonical landing page at `/` (Romanian) and `/en` (English), using a typed static dashboard preview and no provider data; see [landing page](../features/landing-page.md)
 - E1-002 canonical onboarding first step at `/onboarding` (Romanian) and `/en/onboarding` (English), using a typed form fixture and browser-local interactions only; see [onboarding](../features/onboarding.md)
-- Landing-page CTA alignment and shared 1350px public content grid corrected; visible brand casing standardized to `DEBIRO`; the three-mode responsive contract, stacked hero reflow, and boundary/safety viewport regression matrix are implemented in [UI foundation](../design/ui-foundation.md#responsive-contract)
+- Landing-page CTA alignment and visible brand casing standardized to `DEBIRO`; the three-mode responsive contract, shared centered 1350px page shell, stacked hero reflow, and boundary/safety viewport regression matrix are implemented in [UI foundation](../design/ui-foundation.md#page-shell-contract)
 
 ## Architecture decision
 

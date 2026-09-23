@@ -1,7 +1,8 @@
 import {defineConfig, devices} from '@playwright/test';
 import {viewports} from './e2e/support/viewports';
 
-const baseURL = 'http://localhost:3210';
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3210';
+const port = new URL(baseURL).port || '3210';
 
 export default defineConfig({
   testDir: './e2e',
@@ -23,7 +24,7 @@ export default defineConfig({
   },
   projects: [{name: 'chromium', use: {browserName: 'chromium'}}],
   webServer: {
-    command: 'npm run dev -- --hostname localhost --port 3210',
+    command: `npm run dev -- --hostname localhost --port ${port}`,
     url: `${baseURL}/en`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000

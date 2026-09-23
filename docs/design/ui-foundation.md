@@ -1,6 +1,6 @@
 # UI Foundation
 
-**Status:** Implemented for TASK-003 and responsive contract finalized in TASK-003A. No canonical product screen or visual-regression baseline is approved.
+**Status:** Implemented for TASK-003, responsive contract finalized in TASK-003A, and page-shell contract standardized in TASK-003B. No canonical product screen or visual-regression baseline is approved.
 
 ## Canonical source and scope
 
@@ -18,15 +18,21 @@ Inter Variable is self-hosted from `@fontsource-variable/inter`; the exact mocku
 
 `src/components/ui/` provides Button (primary, secondary, ghost, destructive, disabled, loading), Field (label/helper/error/required/readonly/disabled), Surface, StatusBadge (visual tones only), Divider, LoadingBlock, EmptyState, and ErrorState. StatusBadge deliberately does not encode document/business statuses. Button loading disables repeat activation. Field errors have text and associated semantics. The loading block reserves space and has a screen-reader label; no perpetual decorative animation is required.
 
-`src/components/layout/` provides PublicContainer (1350px maximum width, with gutters defined by the responsive contract below), PortalContainer, PageContainer, and a compositional AppShell. Shell slots are passed in; no navigation, tenancy, or authentication is embedded. `src/components/brand/BrandWordmark.tsx` renders only `DEBIRO` as text in the application font. No logo or icon package is present.
+`src/components/layout/` provides PublicContainer, PortalContainer, and PageContainer with one shared page-shell geometry, plus a compositional AppShell. Shell slots are passed in; no navigation, tenancy, or authentication is embedded. `src/components/brand/BrandWordmark.tsx` renders only `DEBIRO` as text in the application font. No logo or icon package is present.
 
-For each new canonical screen, inspect and reuse existing components before adding a primitive; compose existing pieces or keep screen-specific UI inside its feature. Implemented screens are regression-protected. Change shared components used by them only for a necessary reusable requirement, keep the change backward-compatible unless an explicit migration task says otherwise, and revalidate every affected existing screen. Do not refactor unrelated working UI as part of a new screen task.
+For each new canonical screen, inspect and reuse existing components and page containers before adding a primitive; compose existing pieces or keep screen-specific UI inside its feature. Implemented screens are regression-protected. Change shared components used by them only for a necessary reusable requirement, keep the change backward-compatible unless an explicit migration task says otherwise, and revalidate every affected existing screen. Do not refactor unrelated working UI as part of a new screen task.
 
 ## View data and localization
 
 Each screen owns its view data beside the feature (for example `src/features/<feature>/types.ts`). When an input-dependent source is needed, its page can use `ViewDataSource<TInput, TView>` from `src/lib/view-data.ts`. During visual-first work, deterministic fixtures provide the view; later a server/application adapter can provide the same view shape. Presentation components receive typed view props and never import fixtures, provider SDKs, or demo records directly. E1-001's landing page uses a typed static miniature-dashboard fixture, and E1-002's onboarding screen uses a typed first-step form fixture and local client state. Neither defines a business-domain schema.
 
 `next-intl` uses `messages/ro.json` as source and `messages/en.json` as the secondary catalog. Romanian is canonical at `/`; English is at `/en` (`localePrefix: 'as-needed'`). `/ro` redirects to `/`. Foundation-only keys use the `Foundation` namespace. Server pages resolve messages through the i18n layer; user-facing primitives receive text as props. Missing keys throw in development, and tests assert locale-key parity. Screen tasks transcribe approved Romanian copy exactly and supply English translations for review.
+
+## Page Shell Contract
+
+Normal top-level page content uses the shared container implementation in `src/components/layout/Containers.module.css`: `width: 100%`, `max-width: 1350px`, `margin-inline: auto`, and `box-sizing: border-box`. The 1350px cap is the complete outer box, including horizontal padding—not 1350px of content plus padding. Landing sections use PublicContainer; onboarding uses PageContainer. The existing PortalContainer has the same default geometry. Screen-specific inner widths belong inside this shell.
+
+The shell's responsive horizontal padding is 32px on desktop (≥1200px), 24px on tablet (768–1199px), and 16px on mobile (<768px). Below 1350px, the shell fills the available width with those gutters. Above 1350px, its width stops growing and equal automatic outer margins grow with the viewport; do not hardcode large-screen margins or duplicate shell rules in feature CSS. Page backgrounds and decorative layers may remain full bleed outside the content shell. Every future page starts with this shared shell unless its approved mockup explicitly requires a different outer geometry.
 
 ## Responsive Contract
 
@@ -38,7 +44,7 @@ Product UI has exactly three global layout modes:
 | Tablet | 768–1199px | 24px |
 | Mobile | Below 768px | 16px |
 
-Public content has a 1350px maximum container width, including its gutters. Header, hero, and normal content sections share its left and right grid edges. Full-width backgrounds and decorative artwork may extend beyond that grid. New shared layout spacing follows an 8px rhythm where practical; 4px is available for small optical adjustments. Existing mockup-matched measurements are not changed mechanically.
+Header, hero, and normal content sections share the page shell's left and right grid edges. New shared layout spacing follows an 8px rhythm where practical; 4px is available for small optical adjustments. Existing mockup-matched internal measurements are not changed mechanically.
 
 Desktop layouts preserve approved composition and reflow before content collides. On tablet, multi-column hero content stacks: copy expands to the available container width, remains left aligned, and precedes a proportionally scaled dashboard within the grid. Tablet headers stay on one row and hide their navigation below 864px, the measured header-only collision point; they must not wrap accidentally. The reduced header keeps brand, compact locale selector, authentication, and trial CTA on one row through 497px; at 496px and below, a second header-only collision point moves authentication and CTA together to a centered second row. Neither threshold creates another global layout mode. On mobile, essential content remains in semantic order, controls and trust items stack, and the dashboard stays inside 16px gutters. Decorative elements remain anchored to their section or preview and may be hidden when they compete with functional content. Feature cards reduce column count before text or numbering collides. No mode permits avoidable document-level horizontal scrolling, clipping, or functional overlap.
 
