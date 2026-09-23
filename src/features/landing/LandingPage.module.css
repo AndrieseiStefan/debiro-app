@@ -65,11 +65,17 @@
   gap: 31px;
 }
 
+.headerAccountActions {
+  display: contents;
+}
+
 .languageSwitch {
   background: #f0f5ff;
   border-radius: 11px;
+  flex: 0 0 auto;
   gap: 1px;
   padding: 3px;
+  width: max-content;
 }
 
 .languageSwitch a {
@@ -760,8 +766,9 @@
 
   .headerInner {
     display: grid;
-    gap: 8px 16px;
+    gap: 16px;
     grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 66px;
     padding-block: 12px;
   }
 
@@ -771,23 +778,8 @@
   }
 
   .headerActions {
-    display: contents;
-  }
-
-  .languageSwitch {
     grid-column: 2;
     grid-row: 1;
-  }
-
-  .login {
-    grid-column: 1;
-    grid-row: 2;
-    justify-self: start;
-  }
-
-  .headerCta {
-    grid-column: 2;
-    grid-row: 2;
   }
 
   .mainNav {
@@ -884,5 +876,32 @@
   .pricingButton {
     grid-column: 1 / -1;
     width: 100%;
+  }
+}
+
+/* Header-only collision point: all four reduced-header items need more than 496px. */
+@media (max-width: 496px) {
+  .headerInner {
+    row-gap: 8px;
+  }
+
+  .headerActions {
+    display: contents;
+  }
+
+  .languageSwitch {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .headerAccountActions {
+    align-items: center;
+    display: flex;
+    gap: 16px;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: center;
+    justify-self: center;
   }
 }

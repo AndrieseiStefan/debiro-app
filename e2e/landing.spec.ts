@@ -77,10 +77,12 @@ test('keeps the landing page stable across the responsive viewport matrix', asyn
         const heroDecoration = heroVisual.lastElementChild!;
         const pricingDecoration = pricingInner.lastElementChild!;
         const headerInner = document.querySelector('header > div')!;
+        const headerActions = headerInner.children[2];
         const headerItems = [
           headerInner.children[0],
           ...Array.from(headerInner.children[1].children),
-          ...Array.from(headerInner.children[2].children)
+          headerActions.children[0],
+          ...Array.from(headerActions.children[1].children)
         ].filter((element) => element.getBoundingClientRect().width > 0).map(rect);
         const previewRect = rect(preview);
         const copyRect = rect(heroCopy);
@@ -175,6 +177,66 @@ test('keeps the landing page stable across the responsive viewport matrix', asyn
         expect(bounds).not.toBeNull();
         expect(bounds!.x).toBeGreaterThanOrEqual(0);
         expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width);
+      }
+    });
+  }
+});
+
+test('reflows only the reduced header when its content needs a second row', async ({page}) => {
+  await page.goto('/');
+  const widths = [767, 700, 640, 600, 520, 497, 496, 495, 480, 375, 320];
+  const desktopLocaleWidth = await page.evaluate(() =>
+    document.querySelector('header > div')!.children[2].children[0].getBoundingClientRect().width
+  );
+
+  for (const width of widths) {
+    await test.step(`${width}px header`, async () => {
+      await page.setViewportSize({width, height: 812});
+      const layout = await page.evaluate(() => {
+        const header = document.querySelector('header > div')!;
+        const brand = header.children[0];
+        const actions = header.children[2];
+        const locale = actions.children[0];
+        const account = actions.children[1];
+        const login = account.children[0];
+        const cta = account.children[1];
+        const rect = (element: Element) => {
+          const {left, right, top, bottom, width} = element.getBoundingClientRect();
+          return {left, right, top, bottom, width, centerY: (top + bottom) / 2};
+        };
+        return {
+          brand: rect(brand),
+          locale: rect(locale),
+          login: rect(login),
+          cta: rect(cta),
+          loginClipped: login.scrollWidth > login.clientWidth + 1,
+          ctaClipped: cta.scrollWidth > cta.clientWidth + 1,
+          scrollWidth: document.documentElement.scrollWidth
+        };
+      });
+
+      expect(layout.locale.width).toBeCloseTo(desktopLocaleWidth, 0);
+      expect(layout.locale.width).toBeLessThan(100);
+      expect(layout.scrollWidth).toBeLessThanOrEqual(width);
+      expect(layout.brand.left).toBeGreaterThanOrEqual(16);
+      expect(layout.cta.right).toBeLessThanOrEqual(width - 16 + 1);
+      expect(layout.loginClipped).toBe(false);
+      expect(layout.ctaClipped).toBe(false);
+
+      if (width > 496) {
+        for (const item of [layout.locale, layout.login, layout.cta]) {
+          expect(Math.abs(item.centerY - layout.brand.centerY)).toBeLessThan(2);
+        }
+        expect(layout.locale.left).toBeGreaterThanOrEqual(layout.brand.right + 16 - 1);
+        expect(layout.login.left).toBeGreaterThanOrEqual(layout.locale.right + 16 - 1);
+        expect(layout.cta.left).toBeGreaterThanOrEqual(layout.login.right + 16 - 1);
+      } else {
+        expect(Math.abs(layout.locale.centerY - layout.brand.centerY)).toBeLessThan(2);
+        expect(layout.locale.right).toBeLessThanOrEqual(width - 16 + 1);
+        expect(layout.login.top).toBeGreaterThanOrEqual(layout.brand.bottom + 8 - 1);
+        expect(Math.abs(layout.login.centerY - layout.cta.centerY)).toBeLessThan(2);
+        expect(Math.abs((layout.login.left + layout.cta.right) / 2 - width / 2)).toBeLessThan(2);
+        expect(layout.cta.left).toBeGreaterThanOrEqual(layout.login.right + 16 - 1);
       }
     });
   }

@@ -35,8 +35,10 @@ export function LandingPage({locale, preview}: {locale: string; preview: Landing
               <Link href="/" locale="ro" aria-current={locale === 'ro' ? 'page' : undefined} className={locale === 'ro' ? styles.activeLocale : undefined}>RO</Link>
               <Link href="/" locale="en" aria-current={locale === 'en' ? 'page' : undefined} className={locale === 'en' ? styles.activeLocale : undefined}>EN</Link>
             </nav>
-            <button type="button" aria-disabled="true" className={styles.login}>{t('login')}</button>
-            <Button aria-disabled="true" className={styles.headerCta}>{t('tryFree')} <LandingIcon name="arrow" size={17} /></Button>
+            <div className={styles.headerAccountActions}>
+              <button type="button" aria-disabled="true" className={styles.login}>{t('login')}</button>
+              <Button aria-disabled="true" className={styles.headerCta}>{t('tryFree')} <LandingIcon name="arrow" size={17} /></Button>
+            </div>
           </div>
         </PublicContainer>
       </header>
