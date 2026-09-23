@@ -1,6 +1,6 @@
 # System Architecture
 
-**Status:** Accepted direction, not implemented. See [ADR-0002](../decisions/0002-application-architecture-and-stack.md).
+**Status:** Accepted direction, not implemented. See [ADR-0002](../decisions/0002-application-architecture-and-stack.md) and its authentication revision in [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md).
 
 ## Shape
 
@@ -15,7 +15,7 @@ Next.js web process (Railway EU West)
   ├─ typed view-data boundary ── fixture adapter now / real adapter later
   ├─ same-origin JSON route handlers: validate, authenticate, authorize
   └─ application services and domain modules
-       ├─ Better Auth sessions + organization membership
+       ├─ Clerk identity/session verification → debiro user + organization membership
        ├─ Drizzle → Neon PostgreSQL (EU; records, audit, pg-boss jobs)
        ├─ S3 adapter → private Cloudflare R2 EU bucket
        └─ email adapter → Resend
@@ -48,7 +48,7 @@ The diagram describes future topology, not an existing deployment. No applicatio
 | Application/server | Use cases, validation beyond shape, transactions, authorization decisions, orchestration. |
 | Domain modules | Business terminology and deterministic rules; no framework or provider dependencies. |
 | Persistence | Drizzle repositories, SQL migrations, organization scoping, auditable writes. |
-| Auth/session | Better Auth identity, email verification, password/reset lifecycle, database-backed sessions. |
+| Auth/session | Clerk owns identity, email verification, password/reset lifecycle and sessions; the server verifies the external subject and maps it to a debiro user. |
 | Authorization | Resolve the business organization and role for each request; enforce in service/repository and PostgreSQL RLS. |
 | Object storage | Private R2 staging/final objects, narrow presigned operations, lifecycle/deletion. |
 | Jobs/worker | PostgreSQL-backed enqueue, finite scheduled drain, retries, dead-letter handling, idempotent processing. |
@@ -96,7 +96,7 @@ One package is enough initially. Add packages only when an actual independent de
 ## Foundational conventions
 
 - TypeScript `strict`; descriptive English technical identifiers; `PascalCase` components/types and `camelCase` functions/values.
-- Use `organizationId` consistently for business ownership, `vendor` for supplier records, and explicit `Extracted`, `Confirmed`, `Verified` semantics. Do not equate auth-provider groups with business organizations.
+- Use `organizationId` consistently for business ownership, `vendor` for supplier records, and explicit `Extracted`, `Confirmed`, `Verified` semantics. Clerk Organizations are not the debiro business tenant model; a server-verified Clerk subject maps to a local debiro user whose memberships/roles are checked in PostgreSQL.
 - Name modules by business boundary, not by database table or framework layer. Keep side effects behind small adapter interfaces at real provider boundaries.
 - Commit reviewed, ordered SQL migrations. Do not use schema push against production. Keep test fixtures deterministic and separate from customer data.
 - Validate environment variables at startup. Keep public variables explicitly prefixed and never expose server credentials to the client.

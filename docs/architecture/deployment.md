@@ -10,10 +10,11 @@
 | Queue drain | Separate Railway cron service/command built from the same repository and container, every 10 minutes, exits after a bounded batch. pg-boss state is in Neon PostgreSQL. |
 | Scheduled maintenance | Separate idempotent daily Railway cron command for expiry/reminder evaluation, cleanup and reconciliation; enqueue durable jobs rather than doing all work in the scheduler. |
 | PostgreSQL | Neon Launch project in Frankfurt, production branch/database isolated from local/test data. Runtime uses pooled TLS connections; migration, dump and queue administration use a small direct connection pool. |
+| Authentication | Clerk-hosted identity/session service; server verifies Clerk identity, then loads debiro user/membership/role from PostgreSQL. Signed `email.created` events for verification/recovery go to a guarded webhook endpoint and Resend for Romanian/English delivery, with retries and no secret-bearing logs; prove this works on Hobby before launch. No Clerk Organizations for business tenancy. US identity-data transfer review before customer accounts. |
 | Document storage | Private Cloudflare R2 Standard buckets in the EU jurisdiction: untrusted staging, clean final objects, and encrypted backup copies with separated credentials. |
 | Email / AI | Resend and OpenAI adapters from server/worker only, gated as described in [security and data](security-and-data.md). |
 
-There is no Redis, Kubernetes, microservice fleet, WebSocket server, or always-on OCR worker at MVP. Railway cron has a five-minute minimum and skips overlap; queue durability and idempotency prevent losing work, while queue-age/error alerts reveal late processing ([Railway cron](https://docs.railway.com/cron-jobs)). If document latency or backlog becomes unacceptable, deploy the same worker command continuously before changing the job interface.
+There is no Redis, Kubernetes, microservice fleet, WebSocket server, or always-on OCR worker at MVP. Railway cron has a five-minute minimum and skips overlap; queue durability and idempotency prevent losing work, while queue-age/error alerts reveal late processing ([Railway cron](https://docs.railway.com/cron-jobs)). The web process must not run pg-boss's continuous supervision/polling/listener; finite worker and maintenance commands must be tested for retry, expiration and cleanup coverage. Otherwise the Neon scale-to-zero assumption in the [cost model](cost-model.md) fails. If document latency or backlog becomes unacceptable, deploy the same worker command continuously before changing the job interface and update the cost model.
 
 ## Release workflow
 
@@ -29,7 +30,7 @@ The current primary domain is `debiro.ro`. Configure canonical base URL, auth ca
 
 ## Configuration and secrets
 
-TASK-003 will check in only a non-secret `.env.example` documenting required keys. Actual local `.env.local` and credentials remain ignored; Railway stores production variables. Parse and validate required variables at process startup and fail closed when critical auth/storage/DB settings are absent. Never expose provider keys through `NEXT_PUBLIC_` variables. Keep separate least-privilege keys for production, previews, staging/final files, and backups. Rotate compromised keys and revoke signed URLs by waiting for their short expiry and invalidating associated capabilities where possible.
+TASK-003 will check in only a non-secret `.env.example` documenting required keys. Actual local `.env.local` and credentials remain ignored; Railway stores production variables. Parse and validate required variables at process startup and fail closed when critical Clerk/storage/DB settings are absent. Clerk's publishable key may be client-visible; its secret key must never enter `NEXT_PUBLIC_` variables or logs. Keep separate least-privilege keys for production, previews, staging/final files, and backups. Rotate compromised keys and revoke signed URLs by waiting for their short expiry and invalidating associated capabilities where possible.
 
 ## Operations and recovery
 

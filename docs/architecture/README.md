@@ -8,5 +8,6 @@ TASK-002 selected the application architecture; it did not implement it. Start w
 - [Security and data](security-and-data.md): tenancy, files, data location, and provider gates.
 - [Cost model](cost-model.md): dated official pricing, workload assumptions, and estimates.
 - [ADR-0002](../decisions/0002-application-architecture-and-stack.md): accepted decision and trade-offs.
+- [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md): cost and authentication reassessment; current authentication choice.
 
 Documentation grows with accepted decisions and actual implementation. Do not create detailed feature contracts ahead of their defining tasks. Domain-dependent URLs must use configuration so a later change from `debiro.ro` does not change business logic.

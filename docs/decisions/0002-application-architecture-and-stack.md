@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted on 2026-09-23. This is a decision, not an implementation or deployment.
+Accepted on 2026-09-23; **authentication only partially superseded by [ADR-0003](0003-cost-and-auth-architecture-review.md) on 2026-09-23**. The Better Auth selection below records the TASK-002 historical decision, not current stack truth. The original always-active Neon cost is now a ceiling rather than the expected low-traffic MVP case. This ADR is a decision history, not an implementation or deployment.
 
 ## Context
 

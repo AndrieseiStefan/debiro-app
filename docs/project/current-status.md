@@ -10,7 +10,7 @@
 
 **Domain strategy:** Single domain
 
-**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md); not yet implemented
+**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md); not yet implemented
 
 ## Design state
 
@@ -32,7 +32,7 @@ The final logo is not yet designed and must not be invented.
 
 ## Architecture decision
 
-TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to-real view boundary, same-origin JSON/API service boundary, Neon managed PostgreSQL with Drizzle, Better Auth, debiro-owned organization tenancy and PostgreSQL RLS, private R2 EU documents, pg-boss jobs drained by Railway cron, Poppler/Tesseract text processing, gated OpenAI structured extraction, Resend email, `next-intl`, Railway EU West hosting, Vitest and Playwright. See [architecture](../architecture/README.md), [ADR-0002](../decisions/0002-application-architecture-and-stack.md), and the [dated cost model](../architecture/cost-model.md).
+TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to-real view boundary, same-origin JSON/API service boundary, Neon managed PostgreSQL with Drizzle, Clerk identity/sessions only, debiro-owned organization tenancy and PostgreSQL RLS, private R2 EU documents, pg-boss jobs drained by Railway cron, Poppler/Tesseract text processing, gated OpenAI structured extraction, Resend email, `next-intl`, Railway EU West hosting, Vitest and Playwright. The revised Initial MVP model is ~$18.7/month gross at 60% Neon activity (~$26.5 always-active ceiling); US identity/email transfer review remains a production gate. See [architecture](../architecture/README.md), [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md), and the [dated cost model](../architecture/cost-model.md).
 
 ## Not implemented
 

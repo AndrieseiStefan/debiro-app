@@ -19,4 +19,5 @@ Accepted ADRs describe current decisions. Git history preserves their evolution;
 ## Records
 
 - [ADR-0001 — Repository as Project Memory](0001-repository-as-project-memory.md) — Accepted
-- [ADR-0002 — Application Architecture and Stack](0002-application-architecture-and-stack.md) — Accepted
+- [ADR-0002 — Application Architecture and Stack](0002-application-architecture-and-stack.md) — Accepted; authentication partially superseded by ADR-0003
+- [ADR-0003 — Cost and Authentication Architecture Review](0003-cost-and-auth-architecture-review.md) — Accepted; partially supersedes ADR-0002 authentication
