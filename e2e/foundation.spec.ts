@@ -1,12 +1,12 @@
 import {expect, test} from '@playwright/test';
 
-test('boots the Romanian placeholder and English route', async ({page}) => {
+test('boots the Romanian and English landing routes', async ({page}) => {
   await page.goto('/');
   await expect(page.locator('html')).toHaveAttribute('lang', 'ro');
-  await expect(page.getByRole('heading', {level: 1})).toContainText('Fundația interfeței');
+  await expect(page.getByRole('heading', {level: 1})).toContainText('Toate documentele');
   await page.goto('/en');
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-  await expect(page.getByRole('heading', {level: 1})).toContainText('interface foundation');
+  await expect(page.getByRole('heading', {level: 1})).toContainText("All your suppliers'");
 });
 
 test('shows the development-only primitive preview without horizontal overflow', async ({page}) => {

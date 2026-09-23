@@ -14,7 +14,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "e2e": "playwright test e2e/foundation.spec.ts",
+    "e2e": "playwright test e2e/foundation.spec.ts e2e/landing.spec.ts",
     "visual:capture": "playwright test e2e/visual-capture.spec.ts"
   },
   "dependencies": {

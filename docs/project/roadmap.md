@@ -8,17 +8,19 @@ This roadmap records direction only. Detailed requirements are created by the ta
 - Canonical mockup contract and ten approved images — complete
 - Architecture and stack decision — complete (TASK-002)
 - UI foundation and canonical design system tooling — complete (TASK-003); no product screens approved
+- E1-001 canonical landing page — implemented; product-owner visual approval remains pending
 
 ## Agreed delivery sequence
 
-1. **Next checkpoint:** Define and finalize the complete Epic sequence through MVP before E1-001. Do not create arbitrary implementation tasks immediately after TASK-003.
-2. Implement approved mockup screens using typed fixture data in the agreed sequence.
+1. E1-001 landing page — implemented under an explicit task brief. The earlier complete-MVP epic planning checkpoint remains open.
+2. Implement remaining approved mockup screens using typed fixture data; E1-002 onboarding is the next supplied screen brief.
 3. Visually and interactively compare them with the canonical mockups; obtain product-owner visual approval.
-4. Define data model and API contracts, then build backend/persistence and replace fixtures with real data.
-5. Add document processing, OCR/AI and other real integrations as their tasks define them.
-6. Harden for production and commercial readiness.
+4. Before expanding beyond the supplied E1 tasks, finalize the complete Epic sequence through MVP.
+5. Define data model and API contracts, then build backend/persistence and replace fixtures with real data.
+6. Add document processing, OCR/AI and other real integrations as their tasks define them.
+7. Harden for production and commercial readiness.
 
-This sequence makes UI delivery visual-first while preserving typed screen contracts and a separate application/domain layer. Exact epics and detailed features will be established at the next checkpoint, not here.
+This sequence makes UI delivery visual-first while preserving typed screen contracts and a separate application/domain layer. The complete MVP epic plan is not yet established here.
 
 ## Future product directions
 
@@ -33,4 +35,4 @@ These are roadmap directions, not detailed feature specifications or a finalized
 
 ## Next task
 
-Finalize the complete MVP epic sequence before E1-001; the UI foundation is complete, but canonical screens, backend, and auth are not.
+E1-002 — canonical onboarding screen, subject to its task brief. The broader MVP epic sequence still requires a planning checkpoint; backend and auth are not implemented.

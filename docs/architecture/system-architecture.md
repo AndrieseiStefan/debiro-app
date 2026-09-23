@@ -1,6 +1,6 @@
 # System Architecture
 
-**Status:** Accepted direction; only the frontend foundation is implemented. See [ADR-0002](../decisions/0002-application-architecture-and-stack.md), its authentication revision in [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md), and the [UI foundation](../design/ui-foundation.md).
+**Status:** Accepted direction; the frontend foundation and static landing page are implemented. Backend, auth, worker, and deployment topology remain future work. See [ADR-0002](../decisions/0002-application-architecture-and-stack.md), its authentication revision in [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md), and the [UI foundation](../design/ui-foundation.md).
 
 ## Shape
 
@@ -30,7 +30,7 @@ Railway scheduled worker command (separate process, shared application code)
 Railway structured logs/metrics + health checks + persistent job failures
 ```
 
-The diagram describes future topology, not an existing deployment. TASK-003 established only `/`, `/en`, and a development-only preview route; no product route or endpoint contract is defined here.
+The diagram describes future topology, not an existing deployment. E1-001 uses `/` and `/en` for the landing page; the development-only component preview remains separate. No authenticated product route or endpoint contract is defined here.
 
 ## Client and application boundary
 
@@ -73,7 +73,7 @@ The worker is a separate entry point and process even though it shares the monol
 
 ## Intended future repository shape
 
-The current frontend structure is `src/app/`, `src/components/`, `src/i18n/`, `src/lib/`, `src/styles/`, `src/test/`, root `messages/`, and `e2e/`. The following is a guide for later tasks; feature/domain, infrastructure, worker, fixture, and migration directories do not exist yet.
+The current frontend structure is `src/app/`, `src/components/`, `src/features/landing/`, `src/i18n/`, `src/lib/`, `src/styles/`, `src/test/`, root `messages/`, and `e2e/`. The following is a guide for later tasks; domain, infrastructure, worker, and migration directories do not exist yet.
 
 ```text
 src/

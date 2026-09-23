@@ -6,7 +6,7 @@ import en from '../../messages/en.json';
 
 function Message() {
   const t = useTranslations('Foundation');
-  return <span>{t('placeholderTitle')}</span>;
+  return <span>{t('previewTitle')}</span>;
 }
 
 function keys(value: Record<string, unknown>, prefix = ''): string[] {
@@ -21,9 +21,9 @@ describe('foundation localization', () => {
     const {rerender} = render(
       <NextIntlClientProvider locale="ro" messages={ro}><Message /></NextIntlClientProvider>
     );
-    expect(screen.getByText(ro.Foundation.placeholderTitle)).toBeVisible();
+    expect(screen.getByText(ro.Foundation.previewTitle)).toBeVisible();
     rerender(<NextIntlClientProvider locale="en" messages={en}><Message /></NextIntlClientProvider>);
-    expect(screen.getByText(en.Foundation.placeholderTitle)).toBeVisible();
+    expect(screen.getByText(en.Foundation.previewTitle)).toBeVisible();
   });
 
   it('keeps the committed foundation catalog keys aligned', () => {
