@@ -18,7 +18,7 @@ Inter Variable is self-hosted from `@fontsource-variable/inter`; the exact mocku
 
 `src/components/ui/` provides Button (primary, secondary, ghost, destructive, disabled, loading), Field (label/helper/error/required/readonly/disabled), Surface, StatusBadge (visual tones only), Divider, LoadingBlock, EmptyState, and ErrorState. StatusBadge deliberately does not encode document/business statuses. Button loading disables repeat activation. Field errors have text and associated semantics. The loading block reserves space and has a screen-reader label; no perpetual decorative animation is required.
 
-`src/components/layout/` provides PublicContainer (1350px maximum width, 28px desktop gutter, 16px at narrow widths), PortalContainer, PageContainer, and a compositional AppShell. Shell slots are passed in; no navigation, tenancy, or authentication is embedded. `src/components/brand/BrandWordmark.tsx` renders only `DEBIRO` as text in the application font. No logo or icon package is present.
+`src/components/layout/` provides PublicContainer (1350px maximum width; page gutters of 28px desktop, 24px tablet, 20px mobile, and 16px narrow mobile), PortalContainer, PageContainer, and a compositional AppShell. Shell slots are passed in; no navigation, tenancy, or authentication is embedded. `src/components/brand/BrandWordmark.tsx` renders only `DEBIRO` as text in the application font. No logo or icon package is present.
 
 ## View data and localization
 
@@ -29,6 +29,8 @@ Each screen owns its view data beside the feature (for example `src/features/<fe
 ## Responsive and accessibility baseline
 
 Containers and shell columns use bounded widths and `minmax(0, 1fr)` to avoid document-level horizontal overflow. The sidebar shell stacks below 800px; this is a safe structural fallback, not an approved mobile product design. Screen-specific layouts and tables must be validated when implemented. Focus-visible outlines, semantic buttons/landmarks, native disabled behavior, label/input associations, `aria-invalid`, text errors, and accessible loading/status treatment are present. No visual deviation from the approved desktop mockups was intentionally introduced for accessibility; future conflicts must be minimized and reported.
+
+Future E1 screens must check representative canonical desktop, compact desktop, tablet, mobile, and narrow-mobile widths. The landing page uses a concrete matrix of 1448 × 1086, 1280 × 800, 1024 × 768, 950 × 833, 768 × 1024, 480 × 900, 375 × 812, and 320 × 700. Its content-driven layout boundaries are 1200px, 992px, 768px, and 480px. Checks cover document overflow, page gutters, content order, control visibility, and geometric collisions; they do not establish pixel-perfect mobile baselines. Future screens should use an equivalent representative matrix and reflow before their own content collides.
 
 ## Visual validation workflow
 

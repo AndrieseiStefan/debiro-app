@@ -25,17 +25,142 @@ test('renders English copy and switches locale', async ({page}) => {
   await expect(page.locator('html')).toHaveAttribute('lang', 'ro');
 });
 
-test('avoids document-level horizontal overflow at desktop and narrow widths', async ({page}) => {
+test('keeps the landing page stable across the responsive viewport matrix', async ({page}) => {
   await page.goto('/');
-  for (const width of [1448, 375, 320]) {
-    await page.setViewportSize({width, height: 1086});
-    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-    for (const cta of await page.getByRole('button', {name: 'Încearcă gratuit'}).all()) {
-      const bounds = await cta.boundingBox();
-      expect(bounds).not.toBeNull();
-      expect(bounds!.x).toBeGreaterThanOrEqual(0);
-      expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width);
-    }
+  const viewports = [
+    {width: 1448, height: 1086, gutter: 28},
+    {width: 1280, height: 800, gutter: 28},
+    {width: 1024, height: 768, gutter: 28},
+    {width: 950, height: 833, gutter: 24},
+    {width: 768, height: 1024, gutter: 24},
+    {width: 480, height: 900, gutter: 20},
+    {width: 375, height: 812, gutter: 16},
+    {width: 320, height: 700, gutter: 16}
+  ] as const;
+
+  for (const {width, height, gutter} of viewports) {
+    await test.step(`${width} × ${height}`, async () => {
+      await page.setViewportSize({width, height});
+      await expect(page.getByRole('heading', {level: 1})).toBeVisible();
+      await expect(page.getByRole('heading', {name: 'Simplu. Automat. Fără bătăi de cap.'})).toBeVisible();
+      await expect(page.getByRole('heading', {name: 'Planuri flexibile pentru orice dimensiune de companie.'})).toBeVisible();
+      await expect(page.getByRole('link', {name: 'DEBIRO'})).toBeVisible();
+      await expect(page.getByRole('button', {name: 'Autentificare'})).toBeVisible();
+      await expect(page.getByRole('link', {name: 'RO', exact: true})).toBeVisible();
+      await expect(page.getByRole('link', {name: 'EN', exact: true})).toBeVisible();
+      if (width <= 767) {
+        await expect(page.getByRole('navigation', {name: 'Navigare principală'})).toBeHidden();
+      } else {
+        await expect(page.getByRole('navigation', {name: 'Navigare principală'})).toBeVisible();
+      }
+
+      const geometry = await page.evaluate(() => {
+        const rect = (element: Element) => {
+          const box = element.getBoundingClientRect();
+          return {left: box.left, right: box.right, top: box.top, bottom: box.bottom};
+        };
+        const overlaps = (a: ReturnType<typeof rect>, b: ReturnType<typeof rect>) =>
+          a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+        const anyOverlap = (boxes: ReturnType<typeof rect>[]) =>
+          boxes.some((box, index) => boxes.slice(index + 1).some((other) => overlaps(box, other)));
+        const sections = document.querySelectorAll('main > section');
+        const heroInner = sections[0].children[1];
+        const heroCopy = heroInner.children[0];
+        const heroVisual = heroInner.children[1];
+        const preview = heroVisual.firstElementChild!;
+        const controls = Array.from(heroCopy.querySelectorAll('button'));
+        const trustItems = Array.from(heroCopy.querySelector('ul')!.children);
+        const cards = Array.from(sections[1].querySelectorAll('article'));
+        const pricingInner = sections[3].children[1];
+        const pricingCopy = pricingInner.children[1];
+        const pricingButton = pricingInner.querySelector('button')!;
+        const heroDecoration = heroVisual.lastElementChild!;
+        const pricingDecoration = pricingInner.lastElementChild!;
+        const headerInner = document.querySelector('header > div')!;
+        const headerItems = [
+          headerInner.children[0],
+          ...Array.from(headerInner.children[1].children),
+          ...Array.from(headerInner.children[2].children)
+        ].filter((element) => element.getBoundingClientRect().width > 0).map(rect);
+        const previewRect = rect(preview);
+        const copyRect = rect(heroCopy);
+        const controlRects = controls.map(rect);
+        const trustRects = trustItems.map(rect);
+        const cardRects = cards.map(rect);
+        const pricingButtonRect = rect(pricingButton);
+        const decorations = [heroDecoration, pricingDecoration]
+          .filter((element) => getComputedStyle(element).display !== 'none')
+          .map(rect);
+        return {
+          scrollWidth: document.documentElement.scrollWidth,
+          gutter: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--page-gutter')),
+          previewLeft: previewRect.left,
+          previewRight: previewRect.right,
+          heroGap: previewRect.left >= copyRect.right
+            ? previewRect.left - copyRect.right
+            : previewRect.top - copyRect.bottom,
+          heroCollision: [...controlRects, ...trustRects].some((box) => overlaps(box, previewRect)),
+          controlCollision: anyOverlap(controlRects),
+          trustCollision: anyOverlap(trustRects),
+          trustOutsideCopy: trustRects.some((box) => box.right > copyRect.right + 1),
+          cardCollision: anyOverlap(cardRects),
+          numberCollision: cards.some((card) => {
+            const title = card.querySelector('h3')!;
+            return overlaps(rect(title), rect(title.nextElementSibling!));
+          }),
+          pricingCollision: overlaps(pricingButtonRect, rect(pricingCopy)),
+          pricingButtonLeft: pricingButtonRect.left,
+          pricingButtonRight: pricingButtonRect.right,
+          decorationCollision: decorations.some((box) =>
+            [...controlRects, ...trustRects, ...cardRects, rect(pricingCopy), pricingButtonRect]
+              .some((content) => overlaps(box, content))),
+          decorationOutsideViewport: decorations.some((box) => box.left < 0 || box.right > innerWidth),
+          headerCollision: anyOverlap(headerItems)
+        };
+      });
+
+      expect(geometry.scrollWidth).toBeLessThanOrEqual(width);
+      expect(geometry.gutter).toBe(gutter);
+      expect(geometry.previewLeft).toBeGreaterThanOrEqual(gutter - 1);
+      expect(geometry.previewRight).toBeLessThanOrEqual(width - gutter + 1);
+      expect(geometry.heroGap).toBeGreaterThanOrEqual(23);
+      expect(geometry.heroCollision).toBe(false);
+      expect(geometry.controlCollision).toBe(false);
+      expect(geometry.trustCollision).toBe(false);
+      expect(geometry.trustOutsideCopy).toBe(false);
+      expect(geometry.cardCollision).toBe(false);
+      expect(geometry.numberCollision).toBe(false);
+      expect(geometry.pricingCollision).toBe(false);
+      expect(geometry.pricingButtonLeft).toBeGreaterThanOrEqual(gutter - 1);
+      expect(geometry.pricingButtonRight).toBeLessThanOrEqual(width - gutter + 1);
+      expect(geometry.decorationCollision).toBe(false);
+      expect(geometry.decorationOutsideViewport).toBe(false);
+      expect(geometry.headerCollision).toBe(false);
+
+      for (const cta of await page.getByRole('button', {name: 'Încearcă gratuit'}).all()) {
+        const bounds = await cta.boundingBox();
+        expect(bounds).not.toBeNull();
+        expect(bounds!.x).toBeGreaterThanOrEqual(0);
+        expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width);
+      }
+    });
+  }
+});
+
+test('keeps English copy and the preview within narrow gutters', async ({page}) => {
+  await page.goto('/en');
+  for (const {width, gutter} of [{width: 950, gutter: 24}, {width: 480, gutter: 20}, {width: 320, gutter: 16}]) {
+    await page.setViewportSize({width, height: 900});
+    await expect(page.getByRole('heading', {level: 1})).toBeVisible();
+    await expect(page.getByRole('button', {name: 'Try for free'}).first()).toBeVisible();
+    const geometry = await page.evaluate(() => {
+      const preview = document.querySelector('main > section')!.children[1].children[1].firstElementChild!;
+      const bounds = preview.getBoundingClientRect();
+      return {scrollWidth: document.documentElement.scrollWidth, left: bounds.left, right: bounds.right};
+    });
+    expect(geometry.scrollWidth).toBeLessThanOrEqual(width);
+    expect(geometry.left).toBeGreaterThanOrEqual(gutter - 1);
+    expect(geometry.right).toBeLessThanOrEqual(width - gutter + 1);
   }
 });
 

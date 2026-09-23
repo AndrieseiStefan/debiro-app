@@ -86,10 +86,10 @@ export function LandingPage({locale, preview}: {locale: string; preview: Landing
                   <div className={`${styles.featureIcon} ${styles[feature.id]}`}><LandingIcon name={feature.icon} size={30} /></div>
                   <div className={styles.featureText}>
                     <h3>{t(`features.${feature.id}.title`)}</h3>
+                    <span className={styles.featureNumber} aria-hidden="true">{feature.number}</span>
                     <p>{t(`features.${feature.id}.description`)}</p>
                     <button type="button" aria-disabled="true" className={styles.learnMore}>{t('learnMore')} <LandingIcon name="arrow" size={16} /></button>
                   </div>
-                  <span className={styles.featureNumber} aria-hidden="true">{feature.number}</span>
                 </article>
               ))}
             </div>
