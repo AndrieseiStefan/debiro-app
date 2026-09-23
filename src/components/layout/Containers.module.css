@@ -1,0 +1,20 @@
+.public,
+.portal,
+.page {
+  margin-inline: auto;
+  min-width: 0;
+  padding-inline: var(--page-gutter);
+  width: 100%;
+}
+
+.public {
+  max-width: var(--public-max);
+}
+
+.portal {
+  max-width: var(--portal-max);
+}
+
+.page {
+  max-width: calc(var(--content-max) + 2 * var(--page-gutter));
+}

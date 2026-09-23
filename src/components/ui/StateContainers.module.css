@@ -1,0 +1,25 @@
+.state {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+  min-height: 120px;
+  padding: var(--space-5);
+}
+
+.title {
+  color: var(--color-text-primary);
+  font-size: var(--text-body);
+  font-weight: 700;
+}
+
+.description {
+  color: var(--color-text-secondary);
+  font-size: var(--text-body-small);
+}
+
+.action {
+  margin-top: var(--space-2);
+}

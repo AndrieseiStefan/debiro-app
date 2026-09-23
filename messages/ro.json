@@ -1,0 +1,33 @@
+{
+  "Foundation": {
+    "placeholderTitle": "Fundația interfeței este în lucru.",
+    "placeholderDescription": "Ecranele produsului vor fi implementate în etapele următoare.",
+    "previewTitle": "Previzualizare sistem de design",
+    "previewDescription": "Doar componentele de bază. Nu reprezintă un ecran al produsului.",
+    "typography": "Tipografie",
+    "actions": "Acțiuni",
+    "fields": "Câmpuri",
+    "statuses": "Stări vizuale",
+    "asyncStates": "Stări asincrone",
+    "primaryAction": "Acțiune principală",
+    "secondaryAction": "Acțiune secundară",
+    "textAction": "Acțiune text",
+    "dangerAction": "Acțiune periculoasă",
+    "disabledAction": "Dezactivat",
+    "loadingAction": "Se încarcă",
+    "fieldLabel": "Etichetă câmp",
+    "fieldHelper": "Text explicativ opțional.",
+    "fieldError": "Verifică valoarea introdusă.",
+    "statusSuccess": "Valid",
+    "statusWarning": "Expiră curând",
+    "statusDanger": "Expirat",
+    "statusNeutral": "Lipsește",
+    "statusInfo": "În curs de verificare",
+    "emptyTitle": "Nu există elemente",
+    "emptyDescription": "Conținutul va apărea aici când este disponibil.",
+    "errorTitle": "A apărut o problemă",
+    "errorDescription": "Încearcă din nou.",
+    "retry": "Reîncearcă",
+    "loadingLabel": "Se încarcă conținutul"
+  }
+}

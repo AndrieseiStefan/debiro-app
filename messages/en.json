@@ -1,0 +1,33 @@
+{
+  "Foundation": {
+    "placeholderTitle": "The interface foundation is in progress.",
+    "placeholderDescription": "Product screens will be implemented in later stages.",
+    "previewTitle": "Design system preview",
+    "previewDescription": "Foundation components only. This is not a product screen.",
+    "typography": "Typography",
+    "actions": "Actions",
+    "fields": "Fields",
+    "statuses": "Visual states",
+    "asyncStates": "Async states",
+    "primaryAction": "Primary action",
+    "secondaryAction": "Secondary action",
+    "textAction": "Text action",
+    "dangerAction": "Destructive action",
+    "disabledAction": "Disabled",
+    "loadingAction": "Loading",
+    "fieldLabel": "Field label",
+    "fieldHelper": "Optional helper text.",
+    "fieldError": "Check the entered value.",
+    "statusSuccess": "Valid",
+    "statusWarning": "Expiring soon",
+    "statusDanger": "Expired",
+    "statusNeutral": "Missing",
+    "statusInfo": "Under review",
+    "emptyTitle": "No items yet",
+    "emptyDescription": "Content will appear here when available.",
+    "errorTitle": "Something went wrong",
+    "errorDescription": "Please try again.",
+    "retry": "Try again",
+    "loadingLabel": "Loading content"
+  }
+}

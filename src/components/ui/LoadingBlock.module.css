@@ -1,0 +1,27 @@
+.block {
+  display: grid;
+  gap: var(--space-3);
+  min-height: 96px;
+  padding-block: var(--space-4);
+}
+
+.line,
+.lineShort {
+  background: var(--color-neutral-soft);
+  border-radius: var(--radius-field);
+  height: 18px;
+}
+
+.lineShort {
+  width: 62%;
+}
+
+.srOnly {
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}

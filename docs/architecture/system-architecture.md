@@ -1,6 +1,6 @@
 # System Architecture
 
-**Status:** Accepted direction, not implemented. See [ADR-0002](../decisions/0002-application-architecture-and-stack.md) and its authentication revision in [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md).
+**Status:** Accepted direction; only the frontend foundation is implemented. See [ADR-0002](../decisions/0002-application-architecture-and-stack.md), its authentication revision in [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md), and the [UI foundation](../design/ui-foundation.md).
 
 ## Shape
 
@@ -30,7 +30,7 @@ Railway scheduled worker command (separate process, shared application code)
 Railway structured logs/metrics + health checks + persistent job failures
 ```
 
-The diagram describes future topology, not an existing deployment. No application route path or endpoint contract is defined here.
+The diagram describes future topology, not an existing deployment. TASK-003 established only `/`, `/en`, and a development-only preview route; no product route or endpoint contract is defined here.
 
 ## Client and application boundary
 
@@ -73,19 +73,20 @@ The worker is a separate entry point and process even though it shares the monol
 
 ## Intended future repository shape
 
-This is a guide for TASK-003 and later tasks; no directories are created by TASK-002.
+The current frontend structure is `src/app/`, `src/components/`, `src/i18n/`, `src/lib/`, `src/styles/`, `src/test/`, root `messages/`, and `e2e/`. The following is a guide for later tasks; feature/domain, infrastructure, worker, fixture, and migration directories do not exist yet.
 
 ```text
 src/
   app/                 # Next.js routes/layouts and thin HTTP handlers
   components/          # mockup-backed, reusable UI
   i18n/                # locale loading and formatters
-  messages/            # ro source copy; reviewed en translations
   view/                # typed screen contracts and fixture/real adapters
   modules/             # domain + application code by business boundary
   infrastructure/      # database, auth, storage, email, AI, OCR adapters
   worker/              # finite queue-drain and scheduled commands
-  fixtures/            # deterministic demo data, never production source
+  fixtures/            # future deterministic demo data, never production source
+messages/               # ro source copy; en foundation translations
+e2e/                    # browser checks and visual capture
 db/migrations/         # reviewed SQL migrations
 tests/                 # integration and end-to-end tests
 docs/                  # canonical project memory and approved mockups

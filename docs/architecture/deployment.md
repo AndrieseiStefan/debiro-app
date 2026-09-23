@@ -30,7 +30,7 @@ The current primary domain is `debiro.ro`. Configure canonical base URL, auth ca
 
 ## Configuration and secrets
 
-TASK-003 will check in only a non-secret `.env.example` documenting required keys. Actual local `.env.local` and credentials remain ignored; Railway stores production variables. Parse and validate required variables at process startup and fail closed when critical Clerk/storage/DB settings are absent. Clerk's publishable key may be client-visible; its secret key must never enter `NEXT_PUBLIC_` variables or logs. Keep separate least-privilege keys for production, previews, staging/final files, and backups. Rotate compromised keys and revoke signed URLs by waiting for their short expiry and invalidating associated capabilities where possible.
+TASK-003 requires no runtime secrets, so there is no `.env.example` yet. A later integration task must check in a non-secret `.env.example` documenting its required keys. Actual local `.env.local` and credentials remain ignored; Railway stores production variables. Parse and validate required variables at process startup and fail closed when critical Clerk/storage/DB settings are absent. Clerk's publishable key may be client-visible; its secret key must never enter `NEXT_PUBLIC_` variables or logs. Keep separate least-privilege keys for production, previews, staging/final files, and backups. Rotate compromised keys and revoke signed URLs by waiting for their short expiry and invalidating associated capabilities where possible.
 
 ## Operations and recovery
 

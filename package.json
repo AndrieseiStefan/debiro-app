@@ -1,0 +1,40 @@
+{
+  "name": "debiro",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test e2e/foundation.spec.ts",
+    "visual:capture": "playwright test e2e/visual-capture.spec.ts"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "5.3.0",
+    "next": "16.3.6",
+    "next-intl": "4.14.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@types/node": "^24.0.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "^9.39.3",
+    "eslint-config-next": "16.3.6",
+    "jsdom": "30.1.1",
+    "typescript": "5.9.3",
+    "vitest": "5.0.1"
+  }
+}

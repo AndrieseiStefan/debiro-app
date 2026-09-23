@@ -1,0 +1,10 @@
+.wordmark {
+  color: inherit;
+  display: inline-block;
+  font-family: var(--font-ui);
+  font-size: 26px;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  white-space: nowrap;
+}

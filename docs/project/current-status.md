@@ -1,6 +1,6 @@
 # Current Status
 
-**Project stage:** Architecture selected; UI foundation next
+**Project stage:** UI foundation implemented; full MVP epic sequence pending
 
 **Brand:** debiro
 
@@ -10,7 +10,7 @@
 
 **Domain strategy:** Single domain
 
-**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md); not yet implemented
+**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). Only the frontend foundation is implemented.
 
 ## Design state
 
@@ -28,7 +28,10 @@ The final logo is not yet designed and must not be invented.
 
 - Canonical repository documentation and project-memory rules
 - High-level product, roadmap, design, decision, and development guidance
-- An accepted, documented architecture/stack and cost model; no runtime or providers provisioned
+- An accepted, documented architecture/stack and cost model; no external providers provisioned
+- Next.js/React/strict TypeScript application scaffold with CSS Modules and semantic mockup-derived tokens
+- Romanian-default and English `next-intl` routing, foundation-only catalogs, typed view-data convention
+- Reusable low-level UI/layout primitives, accessibility baseline, Vitest/RTL and Playwright test tooling, deterministic visual capture, development-only design-system preview
 
 ## Architecture decision
 
@@ -36,8 +39,8 @@ TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to
 
 ## Not implemented
 
-- Application runtime
-- Frontend or functional UI
+- The ten canonical product screens and their functional interactions
+- Product-owner visual approval and approved regression baselines
 - Backend or API
 - Database, schemas, or migrations
 - Authentication or authorization
@@ -48,4 +51,4 @@ TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to
 
 ## Next
 
-TASK-003 — UI Foundation & Canonical Design System. After TASK-003, define the complete Epic sequence through MVP before E1-001.
+Finalize the complete epic sequence through MVP before starting E1-001. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).
