@@ -18,7 +18,7 @@ export function LandingPage({locale, preview}: {locale: string; preview: Landing
 
   return (
     <div className={styles.page}>
-      <PublicHeader locale={locale} localePath="/" navigation={{
+      <PublicHeader locale={locale} localePath="/" showLogin showPrimaryCta navigation={{
         label: t('navigationLabel'),
         product: t('navProduct'),
         solutions: t('navSolutions'),

@@ -27,18 +27,24 @@ export function PublicHeader({
   locale,
   localePath,
   navigation,
-  helpLabel
+  helpLabel,
+  showLogin = false,
+  showPrimaryCta = false
 }: {
   locale: string;
   localePath: '/' | '/onboarding';
   navigation?: NavigationLabels;
   helpLabel?: string;
+  showLogin?: boolean;
+  showPrimaryCta?: boolean;
 }) {
   const t = useTranslations('PublicHeader');
+  const hasAccountActions = showLogin || showPrimaryCta;
+  const isHelpOnly = Boolean(helpLabel) && !navigation && !hasAccountActions;
 
   return (
     <header className={styles.siteHeader}>
-      <PublicContainer className={styles.headerInner}>
+      <PublicContainer className={`${styles.headerInner} ${hasAccountActions ? styles.accountHeader : ''} ${isHelpOnly ? styles.helpOnlyHeader : ''}`}>
         <Link className={styles.brandLink} href="/" aria-label="DEBIRO"><BrandWordmark /></Link>
         {navigation ? (
           <nav className={styles.mainNav} aria-label={navigation.label}>
@@ -55,10 +61,10 @@ export function PublicHeader({
             <Link href={localePath} locale="ro" aria-current={locale === 'ro' ? 'page' : undefined} className={locale === 'ro' ? styles.activeLocale : undefined}>RO</Link>
             <Link href={localePath} locale="en" aria-current={locale === 'en' ? 'page' : undefined} className={locale === 'en' ? styles.activeLocale : undefined}>EN</Link>
           </nav>
-          <div className={styles.headerAccountActions}>
-            <button type="button" aria-disabled="true" className={styles.login}>{t('login')}</button>
-            <Button aria-disabled="true" className={styles.headerCta}>{t('tryFree')} <HeaderIcon name="arrow" size={17} /></Button>
-          </div>
+          {hasAccountActions && <div className={styles.headerAccountActions}>
+            {showLogin && <button type="button" aria-disabled="true" className={styles.login}>{t('login')}</button>}
+            {showPrimaryCta && <Button aria-disabled="true" className={styles.headerCta}>{t('tryFree')} <HeaderIcon name="arrow" size={17} /></Button>}
+          </div>}
         </div>
       </PublicContainer>
     </header>

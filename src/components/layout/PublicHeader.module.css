@@ -134,12 +134,11 @@
 
 /* Existing header-local collision point. */
 @media (min-width: 768px) and (max-width: 863px) {
-  .headerInner {
+  .accountHeader {
     grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  .mainNav,
-  .help {
+  .mainNav {
     display: none;
   }
 }
@@ -167,35 +166,68 @@
     grid-row: 1;
   }
 
-  .mainNav,
-  .help {
+  .mainNav {
     display: none;
+  }
+
+  .helpOnlyHeader {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .helpOnlyHeader .help {
+    display: flex;
+    grid-column: 2;
+    grid-row: 1;
+    margin-right: 0;
+  }
+
+  .helpOnlyHeader .headerActions {
+    grid-column: 3;
   }
 }
 
 /* Existing header-local two-row collision point. */
 @media (max-width: 496px) {
-  .headerInner {
+  .accountHeader {
     row-gap: 8px;
   }
 
-  .headerActions {
+  .accountHeader .headerActions {
     display: contents;
   }
 
-  .languageSwitch {
+  .accountHeader .languageSwitch {
     grid-column: 2;
     grid-row: 1;
     justify-self: end;
   }
 
-  .headerAccountActions {
+  .accountHeader .headerAccountActions {
     align-items: center;
     display: flex;
     gap: 16px;
     grid-column: 1 / -1;
     grid-row: 2;
     justify-content: center;
+    justify-self: center;
+  }
+}
+
+/* The help-only configuration needs a second row only after its own content collides. */
+@media (max-width: 396px) {
+  .helpOnlyHeader {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 8px;
+  }
+
+  .helpOnlyHeader .headerActions {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .helpOnlyHeader .help {
+    grid-column: 1 / -1;
+    grid-row: 2;
     justify-self: center;
   }
 }

@@ -68,8 +68,8 @@ test('centers the same border-box page shell on landing and onboarding', async (
   }
 });
 
-test('keeps one shared public header geometry across landing and onboarding', async ({page}) => {
-  const widths = [1920, 1625, 1448, 1200, 1199, 1024, 768, 767, 640, 497, 496, 375, 320];
+test('configures page-specific actions within the shared public header', async ({page}) => {
+  const widths = [1920, 1625, 1448, 1200, 1199, 1024, 768, 767, 640, 600, 520, 497, 496, 480, 400, 397, 396, 375, 320];
 
   for (const width of widths) {
     await test.step(`${width}px`, async () => {
@@ -80,58 +80,77 @@ test('keeps one shared public header geometry across landing and onboarding', as
         await page.goto(route);
         if (route === '/onboarding') {
           await expect(page.locator('header')).not.toContainText('Parteneri siguri.');
-          if (width >= 864) {
-            await expect(page.getByRole('button', {name: 'Ai nevoie de ajutor?'})).toBeVisible();
-          } else {
-            await expect(page.getByRole('button', {name: 'Ai nevoie de ajutor?'})).toBeHidden();
-          }
+          await expect(page.getByRole('button', {name: 'Ai nevoie de ajutor?'})).toBeVisible();
+          await expect(page.getByRole('button', {name: 'Autentificare'})).toHaveCount(0);
+          await expect(page.getByRole('button', {name: 'Încearcă gratuit'})).toHaveCount(0);
+        } else {
+          await expect(page.getByRole('button', {name: 'Autentificare'})).toBeVisible();
+          await expect(page.getByRole('button', {name: 'Încearcă gratuit'}).first()).toBeVisible();
         }
         layouts.push(await page.evaluate(() => {
           const header = document.querySelector('header')!;
           const shell = header.firstElementChild!;
           const brand = shell.children[0];
+          const help = shell.children[1];
           const actions = shell.children[2];
           const locale = actions.children[0];
-          const account = actions.children[1];
           const rect = (element: Element) => {
-            const {x, y, width, height} = element.getBoundingClientRect();
-            return {x, y, width, height};
+            const {x, y, width, height, right, bottom} = element.getBoundingClientRect();
+            return {x, y, width, height, right, bottom};
           };
           return {
             header: rect(header),
             shell: rect(shell),
             brand: rect(brand),
+            help: rect(help),
             locale: rect(locale),
-            login: rect(account.children[0]),
-            cta: rect(account.children[1]),
+            accountActionCount: actions.children[1]?.children.length ?? 0,
             headerBackground: getComputedStyle(header).backgroundColor,
             scrollWidth: document.documentElement.scrollWidth,
             brandText: brand.textContent?.trim(),
-            clipped: [brand, locale, account.children[0], account.children[1]]
+            clipped: [brand, locale, ...(actions.children[1] ? Array.from(actions.children[1].children) : []), ...(help.tagName === 'BUTTON' ? [help] : [])]
               .some((element) => element.scrollWidth > element.clientWidth + 1)
           };
         }));
       }
 
       const [landing, onboarding] = layouts;
-      for (const property of ['header', 'shell', 'brand', 'locale', 'login', 'cta'] as const) {
-        for (const edge of ['x', 'y', 'width', 'height'] as const) {
-          expect(onboarding[property][edge]).toBeCloseTo(landing[property][edge], 0);
-        }
+      for (const edge of ['x', 'width'] as const) {
+        expect(onboarding.shell[edge]).toBeCloseTo(landing.shell[edge], 0);
+      }
+      for (const edge of ['x', 'width', 'height'] as const) {
+        expect(onboarding.brand[edge]).toBeCloseTo(landing.brand[edge], 0);
+      }
+      if (width > 496 || width <= 396) {
+        expect(onboarding.brand.y).toBeCloseTo(landing.brand.y, 0);
       }
       expect(onboarding.headerBackground).toBe(landing.headerBackground);
       expect(landing.brandText).toBe('DEBIRO');
       expect(onboarding.brandText).toBe('DEBIRO');
+      expect(landing.accountActionCount).toBe(2);
+      expect(onboarding.accountActionCount).toBe(0);
+      expect(onboarding.locale.width).toBeCloseTo(landing.locale.width, 0);
+      expect(onboarding.locale.width).toBeLessThan(100);
+      expect(onboarding.locale.right).toBeCloseTo(onboarding.shell.right - (width >= 1200 ? 32 : width >= 768 ? 24 : 16), 0);
       expect(landing.clipped).toBe(false);
       expect(onboarding.clipped).toBe(false);
       expect(landing.scrollWidth).toBeLessThanOrEqual(width);
       expect(onboarding.scrollWidth).toBeLessThanOrEqual(width);
       if (width <= 496) {
         expect(landing.header.height).toBeGreaterThan(66);
-        expect(landing.login.y).toBeGreaterThan(landing.brand.y + landing.brand.height);
       } else {
         expect(landing.header.height).toBe(66);
-        expect(Math.abs(landing.locale.y - landing.brand.y)).toBeLessThan(10);
+      }
+      if (width > 396) {
+        expect(onboarding.header.height).toBe(66);
+        expect(Math.abs(onboarding.help.y - onboarding.locale.y)).toBeLessThan(10);
+        expect(onboarding.help.x).toBeGreaterThanOrEqual(onboarding.brand.right + 16 - 1);
+        expect(onboarding.locale.x).toBeGreaterThanOrEqual(onboarding.help.right + 16 - 1);
+      } else {
+        expect(onboarding.header.height).toBeGreaterThan(66);
+        expect(onboarding.locale.y + onboarding.locale.height / 2).toBeCloseTo(onboarding.brand.y + onboarding.brand.height / 2, 0);
+        expect(onboarding.help.y).toBeGreaterThanOrEqual(onboarding.brand.bottom + 8 - 1);
+        expect((onboarding.help.x + onboarding.help.right) / 2).toBeCloseTo(width / 2, 0);
       }
     });
   }
