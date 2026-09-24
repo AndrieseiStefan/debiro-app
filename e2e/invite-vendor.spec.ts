@@ -39,7 +39,7 @@ test('validates locally, updates toggles and counter, and never claims an email 
   const dialog = await openDrawer(page);
   await expect(dialog.getByRole('textbox', {name: /Numele furnizorului/})).toHaveValue('Construct Pro SRL');
   await expect(dialog.getByRole('textbox', {name: /Email de contact/})).toHaveValue('ion.popescu@scconstruct.ro');
-  await expect(dialog.getByRole('textbox', {name: /Link de încărcare securizat/})).toHaveValue('https://debiro.ro/u/demo-construct-pro');
+  await expect(dialog.getByRole('textbox', {name: /Link de încărcare securizat/})).toHaveValue('https://debiro.ro/upload/demo-construct-pro');
   await dialog.getByRole('textbox', {name: /Numele furnizorului/}).fill('');
   await dialog.getByRole('textbox', {name: /Email de contact/}).fill('invalid');
   await dialog.getByRole('button', {name: 'Trimite invitația'}).click();
@@ -59,7 +59,7 @@ test('validates locally, updates toggles and counter, and never claims an email 
   await expect(dialog.getByRole('checkbox', {name: /Notifică-mă la încărcare/})).not.toBeChecked();
   await dialog.getByRole('button', {name: 'Copiază'}).click();
   await expect(dialog.getByRole('button', {name: 'Copiat'})).toBeVisible();
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('https://debiro.ro/u/demo-construct-pro');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('https://debiro.ro/upload/demo-construct-pro');
   await dialog.getByRole('button', {name: 'Trimite invitația'}).click();
   await expect(dialog.getByRole('status')).toContainText('invitația nu a fost trimisă');
 });

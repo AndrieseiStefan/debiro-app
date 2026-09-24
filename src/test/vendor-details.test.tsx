@@ -57,7 +57,8 @@ describe('vendor details', () => {
     expect(dialog).toBeVisible();
     expect(within(dialog).getByRole('textbox', {name: /Numele furnizorului/})).toHaveValue('Construct Pro SRL');
     expect(within(dialog).getByRole('textbox', {name: /Email de contact/})).toHaveValue('ion.popescu@scconstruct.ro');
-    expect(within(dialog).getByRole('textbox', {name: /Link de încărcare securizat/})).toHaveValue('https://debiro.ro/u/demo-construct-pro');
+    expect(within(dialog).getByRole('textbox', {name: /Link de încărcare securizat/})).toHaveValue('https://debiro.ro/upload/demo-construct-pro');
+    expect(within(dialog).getByRole('link', {name: /Previzualizează pagina de încărcare/})).toHaveAttribute('href', '/upload/demo-construct-pro');
     expect(within(dialog).getByText('140/500')).toBeVisible();
     expect(within(dialog).getByText('Linkul va expira la 14 mar. 2025.')).toBeVisible();
     fireEvent.change(within(dialog).getByRole('textbox', {name: /Numele furnizorului/}), {target: {value: ''}});

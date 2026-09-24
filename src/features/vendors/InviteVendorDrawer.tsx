@@ -6,6 +6,7 @@ import {useTranslations} from 'next-intl';
 import {AppIcon} from '@/components/layout/AppIcon';
 import {Button} from '@/components/ui/Button';
 import {Field} from '@/components/ui/Field';
+import {Link} from '@/i18n/navigation';
 import type {VendorDetailsViewModel} from './types';
 import styles from './InviteVendorDrawer.module.css';
 
@@ -139,7 +140,7 @@ export function InviteVendorDrawer({phase, onClose, onExited, triggerRef, vendor
             <label className={styles.option}><span className={styles.optionIcon}><AppIcon name="bell" size={19}/></span><span className={styles.optionCopy}><strong>{t('notifyOnUpload')}</strong><small>{t('notifyHelp')}</small></span><input type="checkbox" checked={notifyUpload} onChange={(event) => setNotifyUpload(event.target.checked)} /><span className={styles.switch} aria-hidden="true" /></label>
           </div>
 
-          <div className={styles.linkSection}><label htmlFor="invite-upload-link"><DrawerIcon name="link" />{t('secureLink')}</label><div className={styles.linkRow}><input id="invite-upload-link" readOnly value={preview.demoUploadUrl}/><Button variant="secondary" onClick={copyLink}><DrawerIcon name="copy" />{copyState === 'copied' ? t('copied') : t('copy')}</Button></div>{copyState === 'failed' && <span className={styles.error} role="alert">{t('copyFailed')}</span>}<button type="button" aria-disabled="true" className={styles.preview}><DrawerIcon name="eye" />{t('previewUpload')}<span aria-hidden="true">↗</span></button></div>
+          <div className={styles.linkSection}><label htmlFor="invite-upload-link"><DrawerIcon name="link" />{t('secureLink')}</label><div className={styles.linkRow}><input id="invite-upload-link" readOnly value={preview.demoUploadUrl}/><Button variant="secondary" onClick={copyLink}><DrawerIcon name="copy" />{copyState === 'copied' ? t('copied') : t('copy')}</Button></div>{copyState === 'failed' && <span className={styles.error} role="alert">{t('copyFailed')}</span>}<Link href={preview.demoUploadPath} locale={locale === 'en' ? 'en' : undefined} target="_blank" rel="noopener noreferrer" className={styles.preview}><DrawerIcon name="eye" />{t('previewUpload')}<span aria-hidden="true">↗</span></Link></div>
           <div className={styles.actions}><Button variant="secondary" onClick={onClose}>{t('cancel')}</Button><Button type="submit"><DrawerIcon name="send" />{t('sendInvitation')}</Button></div>
           {submitNote && <p className={styles.demoNote} role="status">{submitNote}</p>}
         </form>

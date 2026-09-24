@@ -54,6 +54,8 @@ export type VendorDetailsViewModel = {
   invitationPreview: {
     /** Deterministic display-only URL; not a generated access token. */
     demoUploadUrl: string;
+    /** Local route used only to preview the matching E1 supplier portal fixture. */
+    demoUploadPath: string;
     /** Fixed mockup reference date for calculating the local validity helper. */
     referenceDate: string;
   };

@@ -1,0 +1,150 @@
+.portal {background: #f7fbff; color: #132342; display: flex; flex-direction: column; min-height: 100dvh; min-width: 0;}
+.header {align-items: center; background: #fff; border-bottom: 1px solid #d4e2f5; display: flex; justify-content: space-between; min-height: 76px; padding: 12px 40px;}
+.headerBrand, .footerBrand {align-items: center; display: flex; gap: 29px; min-width: 0;}
+.headerBrand > span:last-child, .footerBrand > span:last-child {color: #4e6589; font-size: 14px; white-space: nowrap;}
+.brand {font-size: 28px; letter-spacing: -.04em;}
+.localeSwitch {background: #eff4ff; border-radius: 15px; display: flex; gap: 4px; padding: 4px;}
+.localeSwitch a {align-items: center; border-radius: 10px; color: #315584; display: inline-flex; font-size: 13px; height: 34px; justify-content: center; text-decoration: none; width: 64px;}
+.localeSwitch .activeLocale {background: #0b60e5; box-shadow: 0 2px 5px rgb(7 64 160 / 18%); color: #fff;}
+.main {display: grid; flex: 1; gap: 40px; grid-template-columns: minmax(0, 1fr) minmax(0, 418px); margin-inline: auto; max-width: 1600px; padding: 22px 24px 0 32px; width: 100%;}
+.contentColumn, .sideColumn {min-width: 0;}
+.intro {margin: 20px 8px 20px;}
+.eyebrow {color: #4a6590; font-size: 14px; font-weight: 700; letter-spacing: .015em;}
+.intro h1 {color: #131c37; font-size: clamp(35px, 3.4vw, 47px); font-weight: 760; letter-spacing: -.045em; line-height: 1.1; margin-top: 11px;}
+.intro > p:last-child {color: #49628c; font-size: 20px; line-height: 1.35; margin-top: 12px;}
+.identityCard, .documentsCard, .securityCard, .helpCard {background: #fff; border: 1px solid #d7e5fa; border-radius: 13px; box-shadow: 0 7px 22px rgb(38 91 174 / 3%);}
+.identityCard {display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); min-height: 120px; padding: 22px 27px;}
+.identityItem {align-items: center; display: flex; gap: 26px; min-width: 0; padding-right: 22px;}
+.identityItem + .identityItem {border-left: 1px solid #cddcf2; padding-left: 40px;}
+.identityIcon, .documentIcon, .infoIcon, .securityHero, .sideHeading li span {align-items: center; background: #e7f1ff; border-radius: 50%; color: #0d60df; display: inline-flex; flex: 0 0 auto; justify-content: center;}
+.identityIcon {height: 66px; width: 66px;}
+.identityItem > div {display: grid; min-width: 0;}
+.identityItem p {color: #52688c; font-size: 14px;}
+.identityItem strong {color: #152446; font-size: 17px; line-height: 1.3; margin-top: 2px; overflow-wrap: anywhere;}
+.identityItem small {color: #667c9c; font-size: 14px; line-height: 1.35; overflow-wrap: anywhere;}
+.documentsCard {margin-top: 22px; padding: 15px 15px 17px;}
+.documentsHeader {align-items: center; display: flex; gap: 20px; justify-content: space-between; min-height: 55px; padding: 0 13px 10px;}
+.documentsTitle {align-items: center; color: #2356a3; display: flex; gap: 17px; min-width: 0;}
+.documentsTitle h2 {color: #142758; font-size: 23px; font-weight: 750; letter-spacing: -.02em; line-height: 1.2;}
+.progressText {align-items: center; color: #2252a7; display: flex; flex: 0 0 auto; font-size: 14px; gap: 14px; white-space: nowrap;}
+.progressTrack {background: #e8eef9; border-radius: 99px; height: 8px; overflow: hidden; width: 168px;}
+.progressTrack span {background: #0860e3; border-radius: inherit; display: block; height: 100%;}
+.documentList {display: grid; gap: 9px;}
+.documentRow {align-items: center; border: 1px solid #d7e5fa; border-radius: 12px; display: grid; gap: 20px; grid-template-columns: 57px minmax(0, 1.23fr) minmax(0, .53fr) minmax(0, 1.34fr); min-height: 96px; padding: 14px 15px;}
+.documentIcon {height: 54px; width: 54px;}
+.documentCopy {min-width: 0;}
+.documentCopy h3 {color: #152751; font-size: 16px; font-weight: 700; line-height: 1.27; overflow-wrap: anywhere;}
+.documentCopy p {color: #55709a; font-size: 14px; line-height: 1.3; margin-top: 3px; overflow-wrap: anywhere;}
+.status {align-items: center; border-radius: 99px; display: inline-flex; font-size: 14px; gap: 7px; justify-self: start; line-height: 1.2; padding: 7px 11px; white-space: nowrap;}
+.status[data-status='uploaded'] {background: #dff7ec; color: #07825d;}
+.status[data-status='pending'] {background: #fff3d4; color: #bb7500;}
+.status[data-status='missing'] {background: #ffe6eb; color: #c8243c;}
+.status[data-status='selected'] {background: #e9f2ff; color: #0a5bc9;}
+.fileDetails {align-items: center; color: #4169a9; display: flex; gap: 10px; min-width: 0;}
+.fileDetails > div {display: grid; flex: 1; min-width: 0;}
+.fileDetails strong {font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.fileDetails small {color: #6d83a3; font-size: 12px; line-height: 1.3;}
+.moreAction {align-items: center; background: transparent; border: 0; color: #155ac7; display: inline-flex; flex: 0 0 auto; justify-content: center; min-height: 36px; min-width: 30px;}
+.uploadArea {display: grid; gap: 3px; justify-items: end; min-width: 0;}
+.uploadButton {align-items: center; background: #075ee9; border-radius: 8px; box-shadow: 0 4px 12px rgb(7 94 233 / 13%); color: #fff; cursor: pointer; display: inline-flex; font-size: 14px; font-weight: 650; gap: 11px; justify-content: center; min-height: 43px; padding: 0 16px; position: relative; white-space: nowrap;}
+.uploadButton:hover {background: #064fc6;}
+.uploadButton:focus-within {outline: 3px solid var(--color-focus); outline-offset: 3px;}
+.uploadButton input {cursor: pointer; height: 100%; inset: 0; opacity: 0; position: absolute; width: 100%;}
+.uploadArea > small {color: #55729b; font-size: 12px; text-align: right;}
+.selectedFile {align-items: center; color: #175ba9; display: flex; font-size: 12px; gap: 4px; max-width: 100%; min-width: 0;}
+.selectedFile span {overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.fileError {color: #b51c32; font-size: 12px; line-height: 1.25; text-align: right;}
+.afterUpload {align-items: center; background: #eaf4ff; border: 1px solid #e1efff; border-radius: 12px; display: grid; gap: 20px; grid-template-columns: 40px minmax(0, 1fr) 210px; margin-top: 10px; min-height: 83px; padding: 13px 24px;}
+.infoIcon {background: #2987ed; color: #fff; height: 31px; width: 31px;}
+.afterUpload p {color: #46638e; font-size: 14px; line-height: 1.4;}
+.afterUpload > div {border-left: 1px solid #cbdcf5; display: grid; font-size: 14px; gap: 3px; padding-left: 34px;}
+.afterUpload strong {font-weight: 700;}
+.afterUpload a {align-items: center; color: #075bcc; display: inline-flex; font-weight: 650; gap: 5px; text-decoration: none;}
+.localOnlyNotice {background: #fff8e7; border: 1px solid #f1d999; border-radius: 8px; color: #775100; font-size: 13px; margin-top: 10px; padding: 9px 12px;}
+.sideColumn {display: flex; flex-direction: column;}
+.securityCard {padding: 20px 22px 17px;}
+.sideHeading {align-items: center; display: flex; gap: 16px;}
+.securityHero {height: 60px; width: 60px;}
+.sideHeading h2 {color: #142758; font-size: 20px; line-height: 1.2;}
+.securityCard ul {display: grid; gap: 16px; list-style: none; margin: 20px 8px 22px; padding: 0;}
+.securityCard li {align-items: center; color: #4b638a; display: flex; font-size: 16px; gap: 23px; line-height: 1.35;}
+.securityCard li span {align-items: center; background: #e8f2ff; border-radius: 12px; color: #0c60df; display: inline-flex; flex: 0 0 40px; height: 40px; justify-content: center;}
+.securityWhy {border-top: 1px solid #d9e6f8; padding: 22px 9px 0;}
+.securityWhy h3 {color: #142758; font-size: 17px; line-height: 1.3;}
+.securityWhy p {color: #536d96; font-size: 16px; line-height: 1.48; margin-top: 8px;}
+.helpCard {background: #fafdff; margin-top: 12px; padding: 15px 23px 11px; scroll-margin-top: 20px;}
+.helpHeading {align-items: flex-start; display: flex; gap: 15px;}
+.helpHeading > span {align-items: center; background: #e7f1ff; border-radius: 50%; color: #0e61d9; display: inline-flex; flex: 0 0 39px; height: 39px; justify-content: center;}
+.helpHeading h2 {color: #122752; font-size: 17px; line-height: 1.3; margin-top: 5px;}
+.helpHeading p {color: #506a94; font-size: 14px; line-height: 1.4; margin-top: 5px;}
+.helpCard > a {align-items: center; color: #075bc6; display: flex; font-size: 15px; gap: 20px; margin: 8px 8px 0; overflow-wrap: anywhere; text-decoration: none;}
+.helpCard > a svg {flex: 0 0 auto;}
+.hours {border-top: 1px solid #d6e4f7; color: #536e98; font-size: 13px; margin: 11px 0 0 54px; padding-top: 9px;}
+.mountainArt {background: url('/assets/dashboard-mountains.png') bottom right / 110% auto no-repeat; flex: 1; min-height: 158px; position: relative;}
+.mountainArt span {color: #0750b9; font-size: 18px; font-style: italic; line-height: 1.25; position: absolute; right: 47px; top: 20px; transform: rotate(-9deg); width: 200px;}
+.footer {align-items: center; background: #fff; border-top: 1px solid #d5e4f7; display: flex; gap: 20px; justify-content: space-between; min-height: 57px; padding: 12px 40px;}
+.footerBrand {gap: 16px;}
+.footerBrand :first-child {font-size: 18px;}
+.footerBrand > span:last-child {font-size: 12px;}
+.footerLinks {align-items: center; color: #587097; display: flex; font-size: 12px; gap: 22px;}
+.footerLinks button {background: transparent; border: 0; color: inherit; font-size: inherit; padding: 0;}
+@media (max-width: 1199px) {
+  .main {gap: 24px; grid-template-columns: minmax(0, 1fr) 330px; padding-inline: 24px;}
+  .documentRow {gap: 12px; grid-template-columns: 46px minmax(0, 1fr) auto;}
+  .documentIcon {height: 45px; width: 45px;}
+  .documentRow > :last-child {grid-column: 2 / -1; justify-self: stretch;}
+  .uploadArea {justify-items: start;}
+  .afterUpload {grid-template-columns: 35px minmax(0, 1fr);}
+  .afterUpload > div {border-left: 0; grid-column: 2; padding-left: 0;}
+  .progressTrack {width: 90px;}
+}
+@media (max-width: 900px) {
+  .main {grid-template-columns: minmax(0, 1fr);}
+  .sideColumn {display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr));}
+  .helpCard {margin-top: 0;}
+  .mountainArt {grid-column: 1 / -1; min-height: 120px;}
+  .securityCard ul {gap: 12px;}
+  .securityCard li {font-size: 14px; gap: 12px;}
+  .securityWhy p {font-size: 14px;}
+}
+@media (max-width: 767px) {
+  .header {min-height: 66px; padding-inline: 16px;}
+  .headerBrand {gap: 10px;}
+  .headerBrand > span:last-child {font-size: 11px; white-space: normal;}
+  .brand {font-size: 22px;}
+  .localeSwitch a {height: 32px; width: 40px;}
+  .main {padding: 20px 16px 24px;}
+  .intro {margin: 0 0 20px;}
+  .intro h1 {font-size: clamp(30px, 7.5vw, 42px);}
+  .intro > p:last-child {font-size: 16px;}
+  .identityCard {gap: 17px; grid-template-columns: minmax(0, 1fr); padding: 18px;}
+  .identityItem {gap: 15px; padding-right: 0;}
+  .identityItem + .identityItem {border-left: 0; border-top: 1px solid #dbe7f7; padding: 17px 0 0;}
+  .identityIcon {height: 48px; width: 48px;}
+  .identityIcon svg {height: 25px; width: 25px;}
+  .documentsHeader {align-items: flex-start; flex-direction: column; gap: 9px;}
+  .progressText {justify-content: space-between; width: 100%;}
+  .progressTrack {flex: 1; min-width: 30px;}
+  .documentRow {grid-template-columns: 42px minmax(0, 1fr); padding: 13px;}
+  .documentIcon {height: 42px; width: 42px;}
+  .status {grid-column: 2;}
+  .documentRow > :last-child {grid-column: 1 / -1;}
+  .fileDetails {max-width: 100%;}
+  .uploadButton {width: 100%;}
+  .uploadArea {justify-items: stretch; width: 100%;}
+  .sideColumn {grid-template-columns: minmax(0, 1fr);}
+  .mountainArt {grid-column: auto;}
+  .footer {align-items: flex-start; flex-direction: column; padding: 16px;}
+  .footerLinks {flex-wrap: wrap; gap: 9px 18px;}
+}
+@media (max-width: 420px) {
+  .headerBrand > span:last-child {display: none;}
+  .documentsCard {padding-inline: 9px;}
+  .documentsHeader {padding-inline: 4px;}
+  .documentsTitle {gap: 9px;}
+  .documentsTitle h2 {font-size: 20px;}
+  .progressText {font-size: 12px; gap: 7px;}
+  .documentRow {gap: 10px;}
+  .afterUpload {gap: 10px; padding-inline: 14px;}
+  .mountainArt span {right: 20px;}
+}

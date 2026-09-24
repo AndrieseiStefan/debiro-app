@@ -44,7 +44,7 @@
 .linkRow {display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr) auto; min-width: 0;}
 .linkRow input {background: #fff; border: 1px solid #cbdcf3; border-radius: 8px; color: #233b62; min-width: 0; overflow: hidden; padding: 0 13px; text-overflow: ellipsis; width: 100%;}
 .linkRow :global(button) {color: #065acc; font-size: 13px; min-height: 42px; padding-inline: 12px;}
-.preview {align-items: center; background: #edf5ff; border: 0; border-radius: 99px; color: #0856bc; display: inline-flex; font-size: 13px; gap: 7px; justify-self: start; line-height: 1.25; padding: 5px 8px;}
+.preview {align-items: center; background: #edf5ff; border: 0; border-radius: 99px; color: #0856bc; display: inline-flex; font-size: 13px; gap: 7px; justify-self: start; line-height: 1.25; padding: 5px 8px; text-decoration: none;}
 .preview svg {height: 16px; width: 16px;}
 .actions {display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); margin-top: 3px;}
 .actions :global(button) {min-height: 48px; min-width: 0;}
