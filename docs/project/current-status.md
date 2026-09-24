@@ -10,7 +10,7 @@
 
 **Domain strategy:** Single domain
 
-**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation, landing page, onboarding first step, fixture-backed dashboard overview, Vendors List, and Vendor Details are implemented; backend/auth integrations are not.
+**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation, landing page, onboarding first step, fixture-backed dashboard overview, Vendors List, Vendor Details, and Document Requirements are implemented; backend/auth integrations are not.
 
 ## Design state
 
@@ -37,6 +37,7 @@ The final logo is not yet designed and must not be invented.
 - E1-003 canonical dashboard overview at `/dashboard` (Romanian) and `/en/dashboard` (English), using an independent authenticated app shell and deterministic view fixture; see [dashboard](../features/dashboard.md)
 - E1-004 canonical Vendors List at `/vendors` (Romanian) and `/en/vendors` (English), reusing the authenticated shell with typed presentation fixtures and local list controls; see [vendors](../features/vendors.md)
 - E1-005 canonical Vendor Details at `/vendors/construct-pro` and `/en/vendors/construct-pro`, with a dynamic fixture-backed route, document search, and list-to-details navigation; see [vendor details](../features/vendor-details.md)
+- E1-006 canonical Document Requirements at `/requirements` and `/en/requirements`, with typed template/rule fixtures and browser-local search, selection, and rule controls; see [requirements](../features/requirements.md)
 - Landing-page CTA alignment and visible brand casing standardized to `DEBIRO`; the three-mode responsive contract, shared centered 1350px page shell, shared 66px public header, stacked hero reflow, and boundary/safety viewport regression matrix are implemented in [UI foundation](../design/ui-foundation.md#page-shell-contract)
 
 ## Architecture decision
@@ -45,7 +46,7 @@ TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to
 
 ## Not implemented
 
-- The five remaining canonical screens (06–10), later onboarding steps, and functional backend workflows
+- The four remaining canonical screens (07–10), later onboarding steps, and functional backend workflows
 - Product-owner visual approval and approved regression baselines
 - Backend or API
 - Database, schemas, or migrations
@@ -57,4 +58,4 @@ TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to
 
 ## Next
 
-E1-006 — Implement Canonical Document Requirements. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).
+The next approved mockup is 07; its implementation task has not yet been defined. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).
