@@ -41,8 +41,11 @@ describe('dashboard overview', () => {
     expect(within(table).getAllByRole('row')).toHaveLength(6);
     expect(within(table).getByText('Construct Pro SRL')).toBeVisible();
     expect(within(table).getByText('Asigurare Răspundere Civilă')).toBeVisible();
+    expect(within(table).getAllByText('Expiră curând')).toHaveLength(2);
     expect(screen.getByRole('heading', {name: 'Status furnizori'})).toBeVisible();
     expect(screen.getByRole('img', {name: 'Status furnizori: 24 furnizori'})).toBeVisible();
+    expect(screen.getByText('Lipsesc documente')).toBeVisible();
+    expect(screen.queryByText('Lipsește documente')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', {name: 'Activitate recentă'})).toBeVisible();
     expect(screen.getByText('Furnizor nou adăugat')).toBeVisible();
   });

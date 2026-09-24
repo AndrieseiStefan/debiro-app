@@ -76,3 +76,144 @@ test('keeps dashboard regions separated and document overflow contained', async 
     });
   }
 });
+
+test('keeps the desktop sidebar and profile in the viewport while the document scrolls', async ({page}) => {
+  await page.goto('/dashboard');
+
+  for (const height of [900, 768, 600]) {
+    await test.step(`1448 × ${height}`, async () => {
+      await page.setViewportSize({width: 1448, height});
+      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+      const geometry = await page.evaluate(() => {
+        const sidebar = document.querySelector('aside[aria-label="Bară laterală aplicație"]')!.getBoundingClientRect();
+        const navigation = document.querySelector('nav[aria-label="Navigare în aplicație"]')!;
+        const navRect = navigation.getBoundingClientRect();
+        const profile = document.querySelector('button[aria-label="Demo Company SRL, Andrei Popescu"]')!.getBoundingClientRect();
+        const main = document.querySelector('main')!.getBoundingClientRect();
+        return {
+          scrollY,
+          sidebarTop: sidebar.top,
+          sidebarHeight: sidebar.height,
+          navigationBottom: navRect.bottom,
+          navigationScrollable: navigation.scrollHeight > navigation.clientHeight,
+          profileTop: profile.top,
+          profileBottom: profile.bottom,
+          mainRight: main.right
+        };
+      });
+
+      expect(geometry.scrollY).toBeGreaterThan(0);
+      expect(Math.abs(geometry.sidebarTop)).toBeLessThanOrEqual(1);
+      expect(Math.abs(geometry.sidebarHeight - height)).toBeLessThanOrEqual(1);
+      expect(geometry.navigationBottom).toBeLessThanOrEqual(geometry.profileTop + 1);
+      expect(geometry.profileBottom).toBeLessThanOrEqual(height);
+      expect(geometry.mainRight).toBe(1448);
+      if (height === 600) {
+        expect(geometry.navigationScrollable).toBe(true);
+        const lastItem = page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('button', {name: 'Setări'});
+        await lastItem.scrollIntoViewIfNeeded();
+        await expect(lastItem).toBeInViewport();
+        await expect(page.getByRole('button', {name: 'Demo Company SRL, Andrei Popescu'})).toBeInViewport();
+      }
+    });
+  }
+});
+
+test('lets longer KPI copy wrap without colliding with its chevron', async ({page}) => {
+  await page.goto('/dashboard');
+  await page.setViewportSize({width: 1200, height: 800});
+  const geometry = await page.evaluate(() => {
+    const card = document.querySelector('section[aria-label="Status furnizori"]')!.firstElementChild!;
+    const copy = card.children[1];
+    copy.querySelector('h2')!.textContent = 'Total furnizori și subcontractori cu documente';
+    copy.querySelector('p')!.textContent = '+12345 față de luna trecută, cu activitate suplimentară';
+    const cardRect = card.getBoundingClientRect();
+    const copyRect = copy.getBoundingClientRect();
+    const arrowRect = card.children[2].getBoundingClientRect();
+    const noteRect = copy.querySelector('p')!.getBoundingClientRect();
+    return {
+      copyRight: copyRect.right,
+      arrowLeft: arrowRect.left,
+      noteBottom: noteRect.bottom,
+      cardBottom: cardRect.bottom,
+      cardScrollWidth: card.scrollWidth,
+      cardClientWidth: card.clientWidth
+    };
+  });
+
+  expect(geometry.copyRight).toBeLessThanOrEqual(geometry.arrowLeft + 1);
+  expect(geometry.noteBottom).toBeLessThanOrEqual(geometry.cardBottom + 1);
+  expect(geometry.cardScrollWidth).toBeLessThanOrEqual(geometry.cardClientWidth + 1);
+});
+
+test('uses fluid app width and keeps badges and KPI content uncut', async ({page}) => {
+  await page.goto('/dashboard');
+  const matrix = [
+    viewports.desktop,
+    {width: 1625, height: 900},
+    {width: 1920, height: 900},
+    viewports.tablet,
+    viewports.mobile,
+    {width: 320, height: 700},
+    ...boundaryViewports
+  ];
+
+  for (const {width, height} of matrix) {
+    await test.step(`${width} × ${height}`, async () => {
+      await page.setViewportSize({width, height});
+      const geometry = await page.evaluate(() => {
+        const rect = (element: Element) => element.getBoundingClientRect();
+        const main = rect(document.querySelector('main')!);
+        const content = rect(document.querySelector('main > div')!);
+        const cards = Array.from(document.querySelector('section[aria-label="Status furnizori"]')!.children).map((element) => {
+          const card = rect(element);
+          const [iconElement, copyElement, arrowElement] = Array.from(element.children);
+          const icon = rect(iconElement);
+          const copy = rect(copyElement);
+          const arrow = rect(arrowElement);
+          const note = rect(copyElement.querySelector('p')!);
+          return {
+            cardLeft: card.left,
+            cardRight: card.right,
+            cardBottom: card.bottom,
+            iconRight: icon.right,
+            copyLeft: copy.left,
+            copyRight: copy.right,
+            arrowLeft: arrow.left,
+            arrowRight: arrow.right,
+            noteBottom: note.bottom,
+            scrollWidth: element.scrollWidth,
+            clientWidth: element.clientWidth
+          };
+        });
+        const badges = Array.from(document.querySelectorAll('table tbody td:nth-child(3) > span')).map((element) => {
+          const badge = rect(element);
+          const cell = rect(element.parentElement!);
+          return {
+            text: element.textContent,
+            right: badge.right,
+            cellRight: cell.right,
+            scrollWidth: element.scrollWidth,
+            clientWidth: element.clientWidth
+          };
+        });
+        return {mainRight: main.right, contentWidth: content.width, cards, badges};
+      });
+
+      expect(Math.abs(geometry.mainRight - width)).toBeLessThanOrEqual(1);
+      if (width === 1920) expect(geometry.contentWidth).toBeGreaterThan(1350);
+      expect(geometry.badges.filter((badge) => badge.text?.includes('Expiră curând'))).toHaveLength(2);
+      for (const badge of geometry.badges) {
+        expect(badge.scrollWidth).toBeLessThanOrEqual(badge.clientWidth + 1);
+        expect(badge.right).toBeLessThanOrEqual(badge.cellRight + 1);
+      }
+      for (const card of geometry.cards) {
+        expect(card.iconRight).toBeLessThanOrEqual(card.copyLeft + 1);
+        expect(card.copyRight).toBeLessThanOrEqual(card.arrowLeft + 1);
+        expect(card.arrowRight).toBeLessThanOrEqual(card.cardRight + 1);
+        expect(card.noteBottom).toBeLessThanOrEqual(card.cardBottom + 1);
+        expect(card.scrollWidth).toBeLessThanOrEqual(card.clientWidth + 1);
+      }
+    });
+  }
+});

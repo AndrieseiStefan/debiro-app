@@ -5,13 +5,19 @@
   grid-template-rows: var(--header-height) minmax(0, 1fr);
   min-height: 100vh;
   min-width: 0;
+  width: 100%;
 }
 
 .sidebar {
+  align-self: start;
   background: var(--color-sidebar);
   color: #fff;
   grid-area: sidebar;
+  height: 100vh;
+  height: 100dvh;
   min-width: 0;
+  position: sticky;
+  top: 0;
 }
 
 .header {
@@ -24,8 +30,17 @@
 }
 
 .main {
+  background: linear-gradient(145deg, #fbfdff, #f7fbff 75%, #fff);
   grid-area: main;
+  min-height: calc(100vh - var(--header-height));
   min-width: 0;
+  padding: 28px 28px 24px 30px;
+}
+
+@media (max-width: 1199px) {
+  .main {
+    padding: 24px;
+  }
 }
 
 @media (max-width: 800px) {
@@ -37,5 +52,17 @@
 
   .header {
     min-height: var(--header-height);
+  }
+
+  .sidebar {
+    align-self: stretch;
+    height: auto;
+    position: static;
+  }
+}
+
+@media (max-width: 767px) {
+  .main {
+    padding: 24px 16px;
   }
 }
