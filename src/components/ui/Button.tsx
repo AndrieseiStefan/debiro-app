@@ -1,4 +1,4 @@
-import type {ButtonHTMLAttributes, ReactNode} from 'react';
+import {forwardRef, type ButtonHTMLAttributes, type ReactNode} from 'react';
 import styles from './Button.module.css';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
@@ -10,7 +10,7 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   loadingLabel?: string;
 };
 
-export function Button({
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button({
   children,
   variant = 'primary',
   loading = false,
@@ -19,10 +19,11 @@ export function Button({
   type = 'button',
   className,
   ...props
-}: ButtonProps) {
+}: ButtonProps, ref) {
   return (
     <button
       {...props}
+      ref={ref}
       type={type}
       className={[styles.button, styles[variant], className].filter(Boolean).join(' ')}
       disabled={disabled || loading}
@@ -33,4 +34,4 @@ export function Button({
       <span className={styles.content}>{children}</span>
     </button>
   );
-}
+});

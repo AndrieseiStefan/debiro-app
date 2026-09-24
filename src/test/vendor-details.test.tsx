@@ -1,4 +1,4 @@
-import {fireEvent, render, screen, within} from '@testing-library/react';
+import {fireEvent, render, screen, waitFor, within} from '@testing-library/react';
 import {NextIntlClientProvider} from 'next-intl';
 import {describe, expect, it, vi} from 'vitest';
 import en from '../../messages/en.json';
@@ -26,7 +26,7 @@ describe('vendor details', () => {
     expect(within(breadcrumb).getByText('Construct Pro SRL')).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('navigation', {name: 'Navigare în aplicație'}).querySelector('[aria-current="page"]')).toHaveTextContent('Furnizori');
     expect(screen.getByText('4 din 5 documente valide')).toBeVisible();
-    expect(screen.getByRole('button', {name: 'Invită furnizor'})).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', {name: 'Invită furnizor'})).toBeEnabled();
     expect(screen.getByRole('button', {name: 'Adaugă document'})).toHaveAttribute('data-page-primary-action');
     expect(screen.getByText('ion.popescu@scconstruct.ro')).toBeVisible();
     expect(screen.getByRole('tab', {name: 'Documente'})).toHaveAttribute('aria-selected', 'true');
@@ -48,5 +48,25 @@ describe('vendor details', () => {
   it('returns no fixture for unknown IDs', () => {
     expect(getVendorDetailsFixture('unknown')).toBeUndefined();
     expect(getVendorDetailsFixture('__proto__')).toBeUndefined();
+  });
+
+  it('opens the local invitation drawer from the current vendor and validates without sending', async () => {
+    renderDetails('ro');
+    fireEvent.click(screen.getByRole('button', {name: 'Invită furnizor'}));
+    const dialog = screen.getByRole('dialog', {name: 'Invită furnizorul să încarce documentele'});
+    expect(dialog).toBeVisible();
+    expect(within(dialog).getByRole('textbox', {name: /Numele furnizorului/})).toHaveValue('Construct Pro SRL');
+    expect(within(dialog).getByRole('textbox', {name: /Email de contact/})).toHaveValue('ion.popescu@scconstruct.ro');
+    expect(within(dialog).getByRole('textbox', {name: /Link de încărcare securizat/})).toHaveValue('https://debiro.ro/u/demo-construct-pro');
+    expect(within(dialog).getByText('140/500')).toBeVisible();
+    expect(within(dialog).getByText('Linkul va expira la 14 mar. 2025.')).toBeVisible();
+    fireEvent.change(within(dialog).getByRole('textbox', {name: /Numele furnizorului/}), {target: {value: ''}});
+    fireEvent.change(within(dialog).getByRole('textbox', {name: /Email de contact/}), {target: {value: 'invalid'}});
+    fireEvent.click(within(dialog).getByRole('button', {name: 'Trimite invitația'}));
+    expect(within(dialog).getByText('Introdu numele furnizorului.')).toBeVisible();
+    expect(within(dialog).getByText('Introdu o adresă de email validă.')).toBeVisible();
+    fireEvent.click(within(dialog).getByRole('button', {name: 'Anulează'}));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByRole('button', {name: 'Invită furnizor'})).toHaveFocus();
   });
 });

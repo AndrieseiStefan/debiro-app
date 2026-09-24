@@ -51,6 +51,12 @@ export type VendorDetailsViewModel = {
   registrationCode: string;
   categoryDetail: {ro: string; en: string};
   validDocumentCount: number;
+  invitationPreview: {
+    /** Deterministic display-only URL; not a generated access token. */
+    demoUploadUrl: string;
+    /** Fixed mockup reference date for calculating the local validity helper. */
+    referenceDate: string;
+  };
   contact: {
     name: string;
     role: {ro: string; en: string};

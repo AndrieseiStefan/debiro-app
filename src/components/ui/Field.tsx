@@ -1,4 +1,4 @@
-import type {InputHTMLAttributes} from 'react';
+import {forwardRef, type InputHTMLAttributes} from 'react';
 import styles from './Field.module.css';
 
 export type FieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'id'> & {
@@ -8,7 +8,7 @@ export type FieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'id'> & {
   error?: string;
 };
 
-export function Field({
+export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field({
   id,
   label,
   helperText,
@@ -17,7 +17,7 @@ export function Field({
   className,
   'aria-describedby': describedBy,
   ...inputProps
-}: FieldProps) {
+}: FieldProps, ref) {
   const helperId = helperText ? `${id}-help` : undefined;
   const errorId = error ? `${id}-error` : undefined;
   const descriptionIds = [describedBy, helperId, errorId].filter(Boolean).join(' ') || undefined;
@@ -30,6 +30,7 @@ export function Field({
       </label>
       <input
         {...inputProps}
+        ref={ref}
         id={id}
         className={styles.input}
         required={required}
@@ -41,4 +42,4 @@ export function Field({
       {error && <p className={styles.error} id={errorId} role="alert">{error}</p>}
     </div>
   );
-}
+});

@@ -1,6 +1,6 @@
 'use client';
 
-import {useState} from 'react';
+import {useCallback, useRef, useState} from 'react';
 import {useTranslations} from 'next-intl';
 import {AppIcon} from '@/components/layout/AppIcon';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
@@ -10,6 +10,7 @@ import {Button} from '@/components/ui/Button';
 import {StatusBadge, type StatusTone} from '@/components/ui/StatusBadge';
 import {Surface} from '@/components/ui/Surface';
 import type {VendorDetailsViewModel, VendorDocumentRow} from './types';
+import {InviteVendorDrawer} from './InviteVendorDrawer';
 import styles from './VendorDetailsPage.module.css';
 
 const statusTone: Record<VendorDocumentRow['status'], StatusTone> = {
@@ -33,6 +34,10 @@ export function VendorDetailsPage({locale, view}: {locale: string; view: VendorD
   const t = useTranslations('VendorDetails');
   const vendorsT = useTranslations('Vendors');
   const [query, setQuery] = useState('');
+  const [invitePhase, setInvitePhase] = useState<'closed' | 'open' | 'closing'>('closed');
+  const inviteTriggerRef = useRef<HTMLButtonElement>(null);
+  const closeInvite = useCallback(() => setInvitePhase('closing'), []);
+  const finishInvite = useCallback(() => setInvitePhase('closed'), []);
   const localized = locale === 'en' ? 'en' : 'ro';
   const visibleDocuments = view.documents.filter((document) => `${document.name} ${document.issuer}`.toLocaleLowerCase(locale).includes(query.trim().toLocaleLowerCase(locale)));
   const {vendor, contact} = view;
@@ -49,7 +54,7 @@ export function VendorDetailsPage({locale, view}: {locale: string; view: VendorD
           />
         </div>
         <div className={styles.complianceSummary} data-vendor-status><span className={styles.complianceIcon}><AppIcon name="check" size={34}/></span><span><strong>{vendorsT('status.compliant')}</strong><small>{t('complianceDescription')}<br/><span>{t('validCount', {count: view.validDocumentCount, total: vendor.documentTarget})}</span></small></span></div>
-        <div className={styles.pageActions} data-vendor-actions><Button variant="secondary" aria-disabled="true" className={styles.inviteAction}><svg aria-hidden="true" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21 3-7.5 18-3.2-7.3L3 10.5 21 3ZM10.3 13.7 21 3"/></svg>{t('invite')}</Button><AuthenticatedPagePrimaryAction icon="plus" aria-disabled="true">{t('addDocument')}</AuthenticatedPagePrimaryAction></div>
+        <div className={styles.pageActions} data-vendor-actions><Button variant="secondary" ref={inviteTriggerRef} onClick={() => setInvitePhase('open')} className={styles.inviteAction}><svg aria-hidden="true" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21 3-7.5 18-3.2-7.3L3 10.5 21 3ZM10.3 13.7 21 3"/></svg>{t('invite')}</Button><AuthenticatedPagePrimaryAction icon="plus" aria-disabled="true">{t('addDocument')}</AuthenticatedPagePrimaryAction></div>
       </div>
 
       <Surface className={styles.contacts} role="region" aria-label={t('contactDetails')}>
@@ -71,5 +76,6 @@ export function VendorDetailsPage({locale, view}: {locale: string; view: VendorD
       </Surface>
       <aside className={styles.banner}><div><h2>{t('bannerTitle')}</h2><p>{t('bannerDescription')}</p></div><p className={styles.bannerHandwriting}>{t('bannerHandwriting')}</p></aside>
     </div>
+    {invitePhase !== 'closed' && <InviteVendorDrawer phase={invitePhase} onClose={closeInvite} onExited={finishInvite} triggerRef={inviteTriggerRef} vendorName={vendor.name} contactEmail={contact.email} preview={view.invitationPreview} locale={locale}/>}
   </AuthenticatedAppShell>;
 }

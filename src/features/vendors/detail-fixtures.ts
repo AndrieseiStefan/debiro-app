@@ -13,6 +13,7 @@ const detailsById: Record<string, VendorDetailsViewModel> = {
     registrationCode: 'J40/1234/2018',
     categoryDetail: {ro: 'Construcții și infrastructură', en: 'Construction and infrastructure'},
     validDocumentCount: 4,
+    invitationPreview: {demoUploadUrl: 'https://debiro.ro/u/demo-construct-pro', referenceDate: '2025-02-12'},
     contact: {
       name: 'Ion Popescu', role: {ro: 'Director General', en: 'General Manager'},
       email: 'ion.popescu@scconstruct.ro', phone: '+40 722 345 678',
