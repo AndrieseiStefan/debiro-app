@@ -18,6 +18,8 @@ Inter Variable is self-hosted from `@fontsource-variable/inter`; the exact mocku
 
 `src/components/ui/` provides Button (primary, secondary, ghost, destructive, disabled, loading), Field (label/helper/error/required/readonly/disabled), Surface, StatusBadge (visual tones only), Divider, LoadingBlock, EmptyState, and ErrorState. StatusBadge deliberately does not encode document/business statuses. Button loading disables repeat activation. Field errors have text and associated semantics. The loading block reserves space and has a screen-reader label; no perpetual decorative animation is required.
 
+Surface and StatusBadge base treatments have intentionally low CSS specificity. Their feature-level modifiers must win regardless of the order in which client-side navigation loads page stylesheets; do not rely on stylesheet injection order for component overrides.
+
 `src/components/layout/` provides PublicContainer, PortalContainer, and PageContainer with one shared page-shell geometry, plus a compositional AppShell. Shell slots are passed in; no navigation, tenancy, or authentication is embedded. `src/components/brand/BrandWordmark.tsx` renders only `DEBIRO` as text in the application font. No logo or icon package is present.
 
 E1-003 composes AppShell into a separate `AuthenticatedAppShell` with `AppSidebar` and `AppTopBar` for product screens. The authenticated shell currently has no session or route guard. Its layout contract is defined below.

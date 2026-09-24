@@ -1,4 +1,4 @@
-.badge {
+:where(.badge) {
   align-items: center;
   border-radius: var(--radius-pill);
   display: inline-flex;
