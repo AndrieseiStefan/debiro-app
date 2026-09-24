@@ -17,7 +17,7 @@ const statusTone: Record<VendorDocumentRow['status'], StatusTone> = {
 };
 
 function ContactItem({icon, label, children}: {icon: 'users' | 'mail' | 'phone' | 'pin' | 'globe'; label: string; children: React.ReactNode}) {
-  return <div className={styles.contactItem}>
+  return <div className={styles.contactItem} data-vendor-contact>
     <span className={styles.contactIcon} aria-hidden="true">{icon === 'users' ? <AppIcon name="users" size={21} /> :
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         {icon === 'mail' ? <><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 7 9-7"/></> :
@@ -39,14 +39,18 @@ export function VendorDetailsPage({locale, view}: {locale: string; view: VendorD
 
   return <AuthenticatedAppShell locale={locale} currentPath={`/vendors/${vendor.id}`} organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={view.notificationCount}>
     <div className={styles.pageContent}>
-      <AuthenticatedPageHeader
-        context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: vendorsT('title'), href: '/vendors'}, {label: vendor.name}]} />}
-        title={<span className={styles.titleLine}><span className={styles.vendorIcon}><AppIcon name="building" size={38} /></span><span>{vendor.name}</span></span>}
-        titleId="vendor-details-title"
-        description={<span className={styles.identityMeta}><span>{vendorsT('registrationPrefix')} {vendor.registrationNumber}</span><span className={styles.metaDivider} aria-hidden="true"/><span>{view.registrationCode}</span><span className={styles.categoryChip}><AppIcon name="file" size={14}/>{view.categoryDetail[localized]}</span></span>}
-        supportingContent={<div className={styles.complianceSummary}><span className={styles.complianceIcon}><AppIcon name="check" size={34}/></span><span><strong>{vendorsT('status.compliant')}</strong><small>{t('complianceDescription')}<br/><span>{t('validCount', {count: view.validDocumentCount, total: vendor.documentTarget})}</span></small></span></div>}
-        actions={<div className={styles.pageActions}><Button variant="secondary" aria-disabled="true" className={styles.inviteAction}><svg aria-hidden="true" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21 3-7.5 18-3.2-7.3L3 10.5 21 3ZM10.3 13.7 21 3"/></svg>{t('invite')}</Button><AuthenticatedPagePrimaryAction icon="plus" aria-disabled="true">{t('addDocument')}</AuthenticatedPagePrimaryAction></div>}
-      />
+      <div className={styles.vendorHeader}>
+        <div className={styles.identityBlock} data-vendor-identity>
+          <AuthenticatedPageHeader
+            context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: vendorsT('title'), href: '/vendors'}, {label: vendor.name}]} />}
+            title={<span className={styles.titleLine}><span className={styles.vendorIcon} data-vendor-icon><AppIcon name="building" size={38} /></span><span data-vendor-name>{vendor.name}</span></span>}
+            titleId="vendor-details-title"
+            description={<span className={styles.identityMeta}><span>{vendorsT('registrationPrefix')} {vendor.registrationNumber}</span><span className={styles.metaDivider} aria-hidden="true"/><span>{view.registrationCode}</span><span className={styles.categoryChip} data-vendor-category><AppIcon name="file" size={14}/>{view.categoryDetail[localized]}</span></span>}
+          />
+        </div>
+        <div className={styles.complianceSummary} data-vendor-status><span className={styles.complianceIcon}><AppIcon name="check" size={34}/></span><span><strong>{vendorsT('status.compliant')}</strong><small>{t('complianceDescription')}<br/><span>{t('validCount', {count: view.validDocumentCount, total: vendor.documentTarget})}</span></small></span></div>
+        <div className={styles.pageActions} data-vendor-actions><Button variant="secondary" aria-disabled="true" className={styles.inviteAction}><svg aria-hidden="true" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21 3-7.5 18-3.2-7.3L3 10.5 21 3ZM10.3 13.7 21 3"/></svg>{t('invite')}</Button><AuthenticatedPagePrimaryAction icon="plus" aria-disabled="true">{t('addDocument')}</AuthenticatedPagePrimaryAction></div>
+      </div>
 
       <Surface className={styles.contacts} role="region" aria-label={t('contactDetails')}>
         <ContactItem icon="users" label={t('contactPerson')}><strong>{contact.name}</strong><span>{contact.role[localized]}</span></ContactItem>
