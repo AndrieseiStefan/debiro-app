@@ -1,0 +1,141 @@
+.pageContent {min-width: 0;}
+
+.breadcrumb {align-items: center; color: #47628a; display: flex; font-size: 14px; gap: 8px; min-height: 19px;}
+.breadcrumb a {color: inherit; text-decoration: none;}
+.breadcrumb a:hover {color: var(--color-action-primary); text-decoration: underline;}
+.breadcrumb svg {color: #7191c1;}
+.breadcrumb span {color: #172b4e; font-weight: 650;}
+
+.pageHeading {align-items: center; display: flex; gap: 24px; justify-content: space-between; margin-top: 4px; min-height: 80px;}
+.pageHeading > div {min-width: 0;}
+.pageHeading h1 {color: #111b35; font-size: 42px; font-weight: 750; letter-spacing: -0.045em; line-height: 1.1;}
+.pageHeading p {color: #3a5277; font-size: 15px; line-height: 1.45; margin-top: 3px;}
+.addVendor {flex: 0 0 auto; font-size: 15px; gap: 13px; height: 52px; min-height: 52px; padding-inline: 20px;}
+
+.summaryGrid {display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 8px;}
+.summaryCard {align-items: center; display: flex; gap: 20px; height: 78px; padding: 12px 20px;}
+.summaryCard[data-status='all'] {background: #f5faff; border-color: #a9cdff;}
+.summaryIcon {align-items: center; background: #e3efff; border-radius: 50%; color: #0b63d8; display: inline-flex; flex: 0 0 49px; height: 49px; justify-content: center;}
+.summaryCard[data-status='compliant'] .summaryIcon {background: #def7eb; color: #07996b;}
+.summaryCard[data-status='attention'] .summaryIcon {background: #fff0d1; color: #e18d08;}
+.summaryCard[data-status='noncompliant'] .summaryIcon {background: #ffe2e9; color: #e82b49;}
+.summaryCopy {display: grid; min-width: 0;}
+.summaryCopy > span {color: #192b4e; font-size: 14px; font-weight: 650; line-height: 1.25;}
+.summaryCopy strong {color: #122347; font-size: 27px; font-weight: 700; line-height: 1.1; margin-top: 2px;}
+
+.filterGrid {display: grid; gap: 14px; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, .9fr); margin-top: 21px;}
+.vendorSearch, .selectField, .moreFilters {background: #fff; border: 1px solid var(--color-border); border-radius: 11px; box-shadow: var(--shadow-card); height: 66px; min-width: 0;}
+.vendorSearch {align-items: center; color: #6780ab; display: flex; gap: 12px; padding: 10px 12px;}
+.vendorSearch > svg {flex: 0 0 auto; margin-left: 12px;}
+.vendorSearch input {background: #f0f5fc; border: 0; border-radius: 8px; color: #12264b; flex: 1 1 auto; font-size: 14px; height: 42px; min-width: 0; outline: 0; padding: 0 12px;}
+.vendorSearch input::placeholder {color: #60789e; opacity: 1;}
+.vendorSearch:focus-within, .selectField:focus-within {outline: 3px solid var(--color-focus); outline-offset: 2px;}
+.selectField {color: #294365; display: flex; flex-direction: column; font-size: 12px; font-weight: 550; justify-content: center; padding: 7px 8px 7px 16px; position: relative;}
+.selectField select {appearance: none; background: #fff; border: 1px solid #cbdcf3; border-radius: 7px; color: #18315a; font-size: 14px; height: 30px; margin-top: 3px; outline: 0; padding: 0 27px 0 9px; width: 100%;}
+.selectField > svg {bottom: 14px; color: #2858a5; pointer-events: none; position: absolute; right: 15px;}
+.moreFilters {align-items: center; color: #0756cb; display: flex; font-size: 14px; font-weight: 650; gap: 12px; justify-content: center; padding: 0 12px; white-space: nowrap;}
+.moreFilters[aria-disabled='true'], .rowAction[aria-disabled='true'] {cursor: default;}
+.moreFilters svg {flex: 0 0 auto;}
+
+.listSurface {margin-top: 18px; overflow: hidden; padding: 0;}
+.tableScroll {max-width: 100%; min-width: 0; overflow-x: auto; scrollbar-width: thin;}
+.vendorTable {border-collapse: collapse; color: #203658; font-size: 13px; min-width: 1100px; table-layout: fixed; text-align: left; width: 100%;}
+.vendorTable th:nth-child(1) {width: 54px;}
+.vendorTable th:nth-child(2) {width: 220px;}
+.vendorTable th:nth-child(3) {width: 199px;}
+.vendorTable th:nth-child(4) {width: 176px;}
+.vendorTable th:nth-child(5) {width: 194px;}
+.vendorTable th:nth-child(6) {width: 207px;}
+.vendorTable th:nth-child(7) {width: 78px;}
+.vendorTable th {color: #557099; font-size: 11px; font-weight: 600; height: 41px; letter-spacing: .025em; white-space: nowrap;}
+.vendorTable th > span {color: #2e64b2; font-size: 16px; margin-left: 4px;}
+.vendorTable th, .vendorTable td {border-bottom: 1px solid #dfeafa; padding-inline: 8px;}
+.vendorTable td {height: 57px; white-space: nowrap;}
+.checkboxCell {text-align: center;}
+.checkboxCell input {accent-color: var(--color-action-primary); height: 18px; vertical-align: middle; width: 18px;}
+.vendorIdentity {align-items: center; display: flex; gap: 12px; min-width: 0;}
+.avatar {align-items: center; background: #e1edff; border-radius: 50%; color: #0a5ed3; display: inline-flex; flex: 0 0 42px; font-size: 14px; font-weight: 750; height: 42px; justify-content: center;}
+.avatar[data-avatar='cleaning'], .avatar[data-avatar='logistics'] {background: #ddf8f1; color: #22536c;}
+.avatar[data-avatar='software'], .avatar[data-avatar='medical'] {background: #ebebff; color: #3347ad;}
+.avatar[data-avatar='materials'], .avatar[data-avatar='food'] {background: #ffe7ef; color: #bc274c;}
+.avatar[data-avatar='energy'] {background: #e2efff; color: #1755bf;}
+.vendorName {display: grid; line-height: 1.25; min-width: 0;}
+.vendorName strong {color: #192b4d; font-size: 13px; font-weight: 650; overflow: hidden; text-overflow: ellipsis;}
+.vendorName small {color: #5a7194; font-size: 12px;}
+.category {align-items: center; display: inline-flex; gap: 16px;}
+.category svg {color: #4c689b; flex: 0 0 auto;}
+.statusBadge {font-size: 13px; gap: 8px; min-height: 33px; padding: 5px 10px;}
+.statusBadge > span:first-child {display: none;}
+.statusIcon {align-items: center; background: currentColor; border-radius: 50%; display: inline-flex; flex: 0 0 21px; height: 21px; justify-content: center;}
+.statusIcon svg {color: #fff; height: 13px; width: 13px;}
+.documents {align-items: center; color: #536b90; display: inline-flex; gap: 13px;}
+.progressTrack {background: #e2eaf6; border-radius: 999px; display: inline-block; height: 9px; overflow: hidden; width: 100px;}
+.progressFill {background: #347ef1; border-radius: inherit; display: block; height: 100%;}
+.progressFill[data-status='compliant'] {background: #0ca66c;}
+.progressFill[data-status='noncompliant'] {background: #e52d4d;}
+.expiry[data-tone='danger'] {color: #e11e39;}
+.expiry[data-tone='warning'] {color: #ca7100;}
+.expiry[data-tone='neutral'] {color: #4b6690;}
+.actionsCell {text-align: center;}
+.rowAction {background: transparent; border: 0; color: #4d6897; padding: 8px;}
+.noResults {color: #5d7090; font-size: 14px; text-align: center;}
+.tableFooter {align-items: center; color: #58709a; display: grid; font-size: 13px; gap: 16px; grid-template-columns: minmax(0, 1fr) auto 145px; min-height: 59px; padding: 10px 16px;}
+.pagination {display: flex; gap: 7px;}
+.pagination button {align-items: center; background: #fff; border: 1px solid #d4e3f8; border-radius: 8px; color: #31599a; display: inline-flex; height: 34px; justify-content: center; min-width: 34px;}
+.pagination button[aria-current='page'] {background: var(--color-action-primary); border-color: var(--color-action-primary); color: #fff;}
+.pagination button:disabled {color: #a5b5cc; cursor: default;}
+.chevronLeft {transform: rotate(180deg);}
+.pageSize {position: relative;}
+.pageSize select {appearance: none; background: #fff; border: 1px solid #d4e3f8; border-radius: 8px; color: #223e6d; font-size: 13px; height: 34px; padding: 0 30px 0 12px; width: 100%;}
+.pageSize > svg {color: #3d67aa; pointer-events: none; position: absolute; right: 10px; top: 9px;}
+
+.banner {align-items: center; background: linear-gradient(110deg, #f1f8ff, #eaf4ff 57%, #f4faff); border: 1px solid #d8e7fb; border-radius: 12px; box-shadow: var(--shadow-card); display: flex; height: 98px; justify-content: space-between; margin-top: 18px; overflow: hidden; padding: 12px 38px; position: relative;}
+.banner::before {background: url('/assets/dashboard-mountains.png') center / contain no-repeat; bottom: -113px; content: ''; height: 322px; pointer-events: none; position: absolute; right: -10px; width: 950px;}
+.banner > div, .bannerHandwriting {position: relative; z-index: 1;}
+.banner h2 {color: #103267; font-size: 19px; font-weight: 700; line-height: 1.2; max-width: 310px;}
+.banner > div > p {color: #52688a; font-size: 14px; margin-top: 4px;}
+.bannerHandwriting {color: #0b4ca8; font-family: 'Comic Sans MS', 'Bradley Hand', cursive; font-size: 18px; font-style: italic; line-height: 1.15; max-width: 170px; text-align: center; transform: rotate(-9deg);}
+.visuallyHidden {clip: rect(0 0 0 0); clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px;}
+
+@media (min-width: 1200px) {
+  .pageContent {margin-top: -8px;}
+  .summaryGrid {margin-top: 12px;}
+  .addVendor {align-self: flex-start; margin-top: -8px;}
+}
+
+@media (max-width: 1199px) {
+  .pageHeading {align-items: flex-start;}
+  .summaryGrid {grid-template-columns: repeat(2, minmax(0, 1fr));}
+  .filterGrid {grid-template-columns: repeat(2, minmax(0, 1fr));}
+  .vendorSearch {grid-column: 1 / -1;}
+}
+
+@media (max-width: 767px) {
+  .pageHeading {align-items: stretch; flex-direction: column; gap: 16px; margin-top: 10px;}
+  .pageHeading h1 {font-size: 34px;}
+  .addVendor {align-self: flex-start;}
+  .summaryGrid {gap: 10px; margin-top: 22px;}
+  .summaryCard {gap: 12px; padding-inline: 12px;}
+  .summaryIcon {flex-basis: 42px; height: 42px;}
+  .filterGrid {gap: 10px; margin-top: 18px;}
+  .moreFilters {min-width: 0;}
+  .tableFooter {grid-template-columns: minmax(0, 1fr) auto;}
+  .tableFooter p {grid-column: 1 / -1;}
+  .banner {height: 140px; padding: 18px;}
+  .banner::before {bottom: -121px; opacity: .55; right: -135px; width: 560px;}
+  .banner h2 {font-size: 17px;}
+  .banner > div > p {font-size: 12px;}
+  .bannerHandwriting {display: none;}
+}
+
+@media (max-width: 480px) {
+  .summaryCopy > span {font-size: 12px;}
+  .summaryCopy strong {font-size: 24px;}
+  .summaryIcon {flex-basis: 36px; height: 36px;}
+  .summaryIcon svg {height: 20px; width: 20px;}
+  .filterGrid {grid-template-columns: minmax(0, 1fr);}
+  .vendorSearch {grid-column: auto;}
+  .moreFilters {height: 52px;}
+  .tableFooter {grid-template-columns: minmax(0, 1fr); justify-items: start;}
+  .pageSize {width: 145px;}
+}

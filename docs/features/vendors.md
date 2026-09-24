@@ -1,0 +1,9 @@
+# Vendors list (E1-004)
+
+The directly accessible `/vendors` and `/en/vendors` routes implement the authenticated Vendors List from [mockup 04](../design/mockups/04-vendors-list.png). Romanian mockup copy is preserved with temporary branding handled by the shared text-only `DEBIRO` shell; English copy remains subject to product-owner review. The canonical image is unchanged.
+
+`VendorsListPage` receives a typed `VendorsListViewModel` from `src/features/vendors/fixtures.ts`. Its 24 deterministic sample suppliers reproduce the first eight visible mockup rows and status totals. These are presentation fixtures, not persistence entities or compliance calculations. The page reuses `AuthenticatedAppShell`, the shared Furnizori navigation, global search, utilities, organization context, `Button`, `Surface`, and `StatusBadge`; it does not create another authenticated header or sidebar.
+
+The Vendors-specific search, category and status selectors, row selection, page-size control, and pagination operate locally on fixture rows. Additional filters, adding a supplier, row-action menus, and column sorting remain visibly present but intentionally inactive until their workflows are defined. The shell's global search still accepts typing only. No Vendor Details route, authentication, API, database, or provider integration exists.
+
+The table keeps its mockup-like columns and scrolls inside its own focusable region when they cannot fit; the document does not scroll horizontally at the validated desktop, tablet, reduced-shell, mobile, or 320px widths. The closing mountain banner reuses the existing generated artwork, so its painting is an approximation of the mockup. Generated captures in `artifacts/visual/` are ignored, unapproved comparison artifacts. A later application/data adapter can replace the fixture while preserving the view-data contract.

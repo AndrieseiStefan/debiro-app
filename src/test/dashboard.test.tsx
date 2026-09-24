@@ -27,7 +27,7 @@ describe('dashboard overview', () => {
     expect(screen.getByRole('heading', {level: 1})).toHaveTextContent('Bun venit, Andrei!');
     const navigation = screen.getByRole('navigation', {name: 'Navigare în aplicație'});
     expect(within(navigation).getByRole('link', {name: 'Dashboard'})).toHaveAttribute('aria-current', 'page');
-    expect(within(navigation).getByRole('button', {name: 'Furnizori'})).toHaveAttribute('aria-disabled', 'true');
+    expect(within(navigation).getByRole('link', {name: 'Furnizori'})).toHaveAttribute('href', '/vendors');
     expect(screen.getByRole('searchbox', {name: 'Caută furnizori, documente sau cerințe'})).toBeVisible();
     expect(screen.getByRole('button', {name: 'Adaugă furnizor'})).toHaveAttribute('aria-disabled', 'true');
 

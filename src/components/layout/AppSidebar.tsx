@@ -39,9 +39,11 @@ export function AppSidebar({locale, currentPath, organizationName, userName, use
       <nav className={styles.navigation} aria-label={t('navigationLabel')}>
         {items.map((item) => {
           const content = <><AppIcon name={item.icon} size={22} /><span>{t(`navigation.${item.id}`)}</span>{item.id === 'notifications' && <span className={styles.notificationCount}>{notificationCount}</span>}</>;
-          return item.id === 'dashboard'
-            ? <Link key={item.id} href="/dashboard" aria-current={currentPath === '/dashboard' ? 'page' : undefined} className={`${styles.navItem} ${currentPath === '/dashboard' ? styles.active : ''}`}>{content}</Link>
-            : <button key={item.id} type="button" aria-disabled="true" className={styles.navItem}>{content}</button>;
+          if (item.id === 'dashboard' || item.id === 'suppliers') {
+            const path = item.id === 'dashboard' ? '/dashboard' : '/vendors';
+            return <Link key={item.id} href={path} aria-current={currentPath === path ? 'page' : undefined} className={`${styles.navItem} ${currentPath === path ? styles.active : ''}`}>{content}</Link>;
+          }
+          return <button key={item.id} type="button" aria-disabled="true" className={styles.navItem}>{content}</button>;
         })}
       </nav>
 
