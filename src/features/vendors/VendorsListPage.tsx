@@ -4,10 +4,10 @@ import {useState, type ReactNode} from 'react';
 import {useTranslations} from 'next-intl';
 import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
-import {Button} from '@/components/ui/Button';
+import {AuthenticatedBreadcrumbs} from '@/components/layout/AuthenticatedBreadcrumbs';
+import {AuthenticatedPageHeader, AuthenticatedPagePrimaryAction} from '@/components/layout/AuthenticatedPageHeader';
 import {StatusBadge, type StatusTone} from '@/components/ui/StatusBadge';
 import {Surface} from '@/components/ui/Surface';
-import {Link} from '@/i18n/navigation';
 import type {VendorCategory, VendorListItem, VendorStatus, VendorsListViewModel} from './types';
 import styles from './VendorsListPage.module.css';
 
@@ -88,12 +88,13 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
 
   return <AuthenticatedAppShell locale={locale} currentPath="/vendors" organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={view.notificationCount}>
     <div className={styles.pageContent}>
-      <nav className={styles.breadcrumb} aria-label={t('breadcrumbLabel')}><Link href="/dashboard">Dashboard</Link><AppIcon name="chevronRight" size={15} /><span aria-current="page">{t('title')}</span></nav>
-
-      <section className={styles.pageHeading} aria-labelledby="vendors-title">
-        <div><h1 id="vendors-title">{t('title')}</h1><p>{t('description')}</p></div>
-        <Button className={styles.addVendor} aria-disabled="true"><AppIcon name="plus" size={26} />{t('addVendor')}</Button>
-      </section>
+      <AuthenticatedPageHeader
+        context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: 'Dashboard', href: '/dashboard'}, {label: t('title')}]} />}
+        title={t('title')}
+        titleId="vendors-title"
+        description={t('description')}
+        actions={<AuthenticatedPagePrimaryAction icon="plus" aria-disabled="true">{t('addVendor')}</AuthenticatedPagePrimaryAction>}
+      />
 
       <section className={styles.summaryGrid} aria-label={t('summaryLabel')}>
         {(['all', ...statuses] as const).map((item) => {

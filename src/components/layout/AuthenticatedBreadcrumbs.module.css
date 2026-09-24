@@ -1,0 +1,6 @@
+.breadcrumbs {align-items: center; color: #47628a; display: flex; font-size: 14px; gap: 8px; line-height: 1.4; min-width: 0;}
+.item {align-items: center; display: inline-flex; gap: 8px; min-width: 0;}
+.item svg {color: #7191c1; flex: 0 0 auto;}
+.item a {color: inherit; text-decoration: none;}
+.item a:hover {color: var(--color-action-primary); text-decoration: underline;}
+.item [aria-current='page'] {color: #172b4e; font-weight: 650;}

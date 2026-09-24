@@ -1,0 +1,23 @@
+.header {margin-bottom: 16px; min-width: 0;}
+.header[data-supporting='true'] {margin-bottom: 20px;}
+.context {align-items: center; display: flex; min-height: 20px; min-width: 0;}
+.body {align-items: flex-start; display: flex; gap: 24px; justify-content: space-between; margin-top: 4px; min-width: 0;}
+.copy {flex: 1 1 auto; min-width: 0;}
+.copy h1 {color: #111b35; font-size: 42px; font-weight: 750; letter-spacing: -0.045em; line-height: 1.08;}
+.copy p {color: #3a5277; font-size: 14px; letter-spacing: -.015em; line-height: 1.5; margin-top: 4px;}
+.side {align-items: center; display: flex; flex: 0 0 auto; gap: 22px; margin-top: -10px;}
+.header[data-supporting='true'] .side {margin-top: 0; transform: translateY(-18px);}
+.supporting, .actions {flex: 0 0 auto;}
+.primaryAction {font-size: 15px; gap: 12px; min-height: 52px; padding-inline: 20px;}
+
+@media (max-width: 1199px) {
+  .header[data-supporting='true'] .body {flex-direction: column;}
+  .header[data-supporting='true'] .side {transform: none;}
+}
+
+@media (max-width: 767px) {
+  .body, .side {align-items: stretch; flex-direction: column;}
+  .side, .header[data-supporting='true'] .side {gap: 12px; margin-top: 0; width: 100%;}
+  .copy h1 {font-size: 34px;}
+  .actions, .actions > * {width: 100%;}
+}

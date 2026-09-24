@@ -2,7 +2,7 @@ import type {CSSProperties} from 'react';
 import {useTranslations} from 'next-intl';
 import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
-import {Button} from '@/components/ui/Button';
+import {AuthenticatedPageHeader, AuthenticatedPagePrimaryAction} from '@/components/layout/AuthenticatedPageHeader';
 import {StatusBadge, type StatusTone} from '@/components/ui/StatusBadge';
 import {Surface} from '@/components/ui/Surface';
 import type {DashboardActivityKind, DashboardDocumentStatus, DashboardViewModel, LocalizedSample} from './types';
@@ -157,17 +157,14 @@ export function DashboardPage({locale, view}: {locale: string; view: DashboardVi
   return (
     <AuthenticatedAppShell locale={locale} currentPath="/dashboard" organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={view.notificationCount}>
       <div className={styles.pageContent}>
-        <section className={styles.welcomeRow} aria-labelledby="dashboard-title">
-          <div className={styles.welcomeCopy}>
-            <p className={styles.welcomeEyebrow}>{t('welcomeEyebrow')}</p>
-            <h1 id="dashboard-title">{t('welcomeTitle', {name: view.user.firstName})}</h1>
-            <p>{t('welcomeDescription', {count: suppliers.total})}</p>
-          </div>
-          <div className={styles.welcomeActions}>
-            <div className={styles.complianceCallout}><span><AppIcon name="target" size={27} /></span><p>{t('calloutOne')}<br />{t('calloutTwo')}</p></div>
-            <Button className={styles.addSupplier} aria-disabled="true"><AppIcon name="plus" size={22} />{t('addSupplier')}</Button>
-          </div>
-        </section>
+        <AuthenticatedPageHeader
+          context={<p className={styles.welcomeEyebrow}>{t('welcomeEyebrow')}</p>}
+          title={t('welcomeTitle', {name: view.user.firstName})}
+          titleId="dashboard-title"
+          description={t('welcomeDescription', {count: suppliers.total})}
+          supportingContent={<div className={styles.complianceCallout}><span><AppIcon name="target" size={27} /></span><p>{t('calloutOne')}<br />{t('calloutTwo')}</p></div>}
+          actions={<AuthenticatedPagePrimaryAction icon="plus" aria-disabled="true">{t('addSupplier')}</AuthenticatedPagePrimaryAction>}
+        />
 
         <section className={styles.metricGrid} aria-label={t('supplierStatusTitle')}>
           <SummaryMetricCard id="total" value={suppliers.total} note={t('summary.monthlyIncrease', {count: suppliers.monthlyIncrease})} />

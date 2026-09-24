@@ -2,50 +2,12 @@
   min-width: 0;
 }
 
-.welcomeRow {
-  align-items: center;
-  display: flex;
-  gap: 24px;
-  justify-content: space-between;
-  margin-bottom: 24px;
-  min-height: 102px;
-}
-
-.welcomeCopy {
-  min-width: 0;
-}
-
 .welcomeEyebrow {
   color: #45648d;
   font-size: 12px;
   font-weight: 650;
   letter-spacing: 0.095em;
   line-height: 1.25;
-}
-
-.welcomeCopy h1 {
-  color: #111b35;
-  font-size: 42px;
-  font-weight: 750;
-  letter-spacing: -0.045em;
-  line-height: 1.05;
-  margin-top: 7px;
-  white-space: nowrap;
-}
-
-.welcomeCopy > p:last-child {
-  color: #3a5277;
-  font-size: 14px;
-  letter-spacing: -0.015em;
-  line-height: 1.5;
-  margin-top: 10px;
-}
-
-.welcomeActions {
-  align-items: center;
-  display: flex;
-  flex: 0 0 auto;
-  gap: 22px;
 }
 
 .complianceCallout {
@@ -74,16 +36,6 @@
   font-size: 13px;
   font-weight: 550;
   line-height: 1.4;
-}
-
-.addSupplier {
-  border-radius: 9px;
-  font-size: 15px;
-  gap: 12px;
-  height: 52px;
-  min-height: 52px;
-  padding-inline: 19px;
-  width: 195px;
 }
 
 .metricGrid {
@@ -589,19 +541,6 @@
 }
 
 @media (max-width: 1199px) {
-  .welcomeRow {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .welcomeCopy h1 {
-    white-space: normal;
-  }
-
-  .welcomeActions {
-    justify-content: flex-start;
-  }
-
   .dashboardPanels {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -621,22 +560,7 @@
 }
 
 @media (max-width: 767px) {
-  .welcomeCopy h1 {
-    font-size: 34px;
-  }
-
-  .welcomeCopy > p:last-child {
-    font-size: 14px;
-  }
-
-  .welcomeActions {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .complianceCallout,
-  .addSupplier {
+  .complianceCallout {
     width: 100%;
   }
 

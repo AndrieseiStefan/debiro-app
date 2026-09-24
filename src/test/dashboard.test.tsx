@@ -25,6 +25,11 @@ describe('dashboard overview', () => {
 
     expect(screen.getByText('DEBIRO')).toBeVisible();
     expect(screen.getByRole('heading', {level: 1})).toHaveTextContent('Bun venit, Andrei!');
+    const pageHeader = screen.getByRole('region', {name: 'Bun venit, Andrei!'});
+    expect(within(pageHeader).getByText('BINE AI REVENIT ÎN DEBIRO')).toBeVisible();
+    expect(within(pageHeader).getByText('Ai 24 de furnizori înregistrați. Iată o privire de ansamblu asupra stării lor de conformitate.')).toBeVisible();
+    expect(within(pageHeader).getByText(/Parteneri conformi\./)).toBeVisible();
+    expect(within(pageHeader).getByRole('button', {name: 'Adaugă furnizor'})).toHaveAttribute('data-page-primary-action');
     const navigation = screen.getByRole('navigation', {name: 'Navigare în aplicație'});
     expect(within(navigation).getByRole('link', {name: 'Dashboard'})).toHaveAttribute('aria-current', 'page');
     expect(within(navigation).getByRole('link', {name: 'Furnizori'})).toHaveAttribute('href', '/vendors');

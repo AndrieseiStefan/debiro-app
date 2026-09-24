@@ -23,6 +23,12 @@ describe('vendors list', () => {
   it('renders the canonical Romanian list with typed fixture values and active navigation', () => {
     renderVendors('ro');
     expect(screen.getByRole('heading', {level: 1, name: 'Furnizori'})).toBeVisible();
+    const pageHeader = screen.getByRole('region', {name: 'Furnizori'});
+    const breadcrumbs = within(pageHeader).getByRole('navigation', {name: 'Navigare pe pagină'});
+    expect(within(breadcrumbs).getByRole('link', {name: 'Dashboard'})).toHaveAttribute('href', '/dashboard');
+    expect(within(breadcrumbs).getByText('Furnizori')).toHaveAttribute('aria-current', 'page');
+    expect(within(pageHeader).getByText('Gestionează toți furnizorii, monitorizează conformitatea și menține parteneriate sigure.')).toBeVisible();
+    expect(within(pageHeader).getByRole('button', {name: 'Adaugă furnizor'})).toHaveAttribute('data-page-primary-action');
     const navigation = screen.getByRole('navigation', {name: 'Navigare în aplicație'});
     expect(within(navigation).getByRole('link', {name: 'Furnizori'})).toHaveAttribute('aria-current', 'page');
     expect(within(navigation).getByRole('link', {name: 'Dashboard'})).not.toHaveAttribute('aria-current');
