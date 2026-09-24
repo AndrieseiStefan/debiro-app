@@ -77,7 +77,7 @@ test('keeps dashboard regions separated and document overflow contained', async 
   }
 });
 
-test('keeps the desktop sidebar and profile in the viewport while the document scrolls', async ({page}) => {
+test('keeps the desktop sidebar and organization in the viewport while the document scrolls', async ({page}) => {
   await page.goto('/dashboard');
 
   for (const height of [900, 768, 600]) {
@@ -88,7 +88,7 @@ test('keeps the desktop sidebar and profile in the viewport while the document s
         const sidebar = document.querySelector('aside[aria-label="Bară laterală aplicație"]')!.getBoundingClientRect();
         const navigation = document.querySelector('nav[aria-label="Navigare în aplicație"]')!;
         const navRect = navigation.getBoundingClientRect();
-        const profile = document.querySelector('button[aria-label="Demo Company SRL, Andrei Popescu"]')!.getBoundingClientRect();
+        const organization = document.querySelector('button[aria-label="Demo Company SRL"]')!.getBoundingClientRect();
         const main = document.querySelector('main')!.getBoundingClientRect();
         return {
           scrollY,
@@ -96,8 +96,8 @@ test('keeps the desktop sidebar and profile in the viewport while the document s
           sidebarHeight: sidebar.height,
           navigationBottom: navRect.bottom,
           navigationScrollable: navigation.scrollHeight > navigation.clientHeight,
-          profileTop: profile.top,
-          profileBottom: profile.bottom,
+          organizationTop: organization.top,
+          organizationBottom: organization.bottom,
           mainRight: main.right
         };
       });
@@ -105,18 +105,91 @@ test('keeps the desktop sidebar and profile in the viewport while the document s
       expect(geometry.scrollY).toBeGreaterThan(0);
       expect(Math.abs(geometry.sidebarTop)).toBeLessThanOrEqual(1);
       expect(Math.abs(geometry.sidebarHeight - height)).toBeLessThanOrEqual(1);
-      expect(geometry.navigationBottom).toBeLessThanOrEqual(geometry.profileTop + 1);
-      expect(geometry.profileBottom).toBeLessThanOrEqual(height);
+      expect(geometry.navigationBottom).toBeLessThanOrEqual(geometry.organizationTop + 1);
+      expect(geometry.organizationBottom).toBeLessThanOrEqual(height);
       expect(geometry.mainRight).toBe(1448);
       if (height === 600) {
         expect(geometry.navigationScrollable).toBe(true);
         const lastItem = page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('button', {name: 'Setări'});
         await lastItem.scrollIntoViewIfNeeded();
         await expect(lastItem).toBeInViewport();
-        await expect(page.getByRole('button', {name: 'Demo Company SRL, Andrei Popescu'})).toBeInViewport();
+        await expect(page.getByRole('button', {name: 'Demo Company SRL'})).toBeInViewport();
       }
     });
   }
+});
+
+test('keeps authenticated utilities and organization in the correct responsive shell', async ({page}) => {
+  await page.goto('/dashboard');
+  const sidebar = page.locator('aside[aria-label="Bară laterală aplicație"]');
+  const header = page.locator('header');
+  const navigation = sidebar.getByRole('navigation', {name: 'Navigare în aplicație'});
+
+  for (const {width, height} of [
+    viewports.desktop,
+    viewports.tablet,
+    {width: 801, height: 900},
+    {width: 800, height: 900},
+    {width: 600, height: 800},
+    viewports.mobile,
+    {width: 351, height: 700},
+    {width: 320, height: 700}
+  ]) {
+    await test.step(`${width} × ${height}`, async () => {
+      await page.setViewportSize({width, height});
+      await expect(sidebar.getByText('DEBIRO')).toBeVisible();
+      await expect(navigation.getByRole('link', {name: 'Dashboard'})).toBeVisible();
+      await expect(header.getByRole('searchbox', {name: 'Caută furnizori, documente sau cerințe'})).toBeVisible();
+      await expect(sidebar.getByRole('button', {name: 'Demo Company SRL'})).toBeVisible();
+
+      const utilityRegion = width <= 800 ? sidebar : header;
+      const otherRegion = width <= 800 ? header : sidebar;
+      await expect(utilityRegion.getByRole('button', {name: 'Notificări', exact: true})).toBeVisible();
+      await expect(utilityRegion.getByRole('navigation', {name: 'Limbă'}).getByRole('link', {name: 'RO'})).toHaveAttribute('aria-current', 'page');
+      await expect(utilityRegion.getByRole('button', {name: 'Profil utilizator: Andrei Popescu'})).toBeVisible();
+      await expect(otherRegion.getByRole('button', {name: 'Profil utilizator: Andrei Popescu'})).toHaveCount(0);
+
+      const geometry = await page.evaluate(() => {
+        const rect = (selector: string) => document.querySelector(selector)!.getBoundingClientRect();
+        const sidebar = rect('aside[aria-label="Bară laterală aplicație"]');
+        const header = rect('header');
+        const main = rect('main');
+        const nav = document.querySelector('nav[aria-label="Navigare în aplicație"]')!;
+        const navRect = nav.getBoundingClientRect();
+        const itemRects = Array.from(nav.children, (item) => item.getBoundingClientRect());
+        return {
+          documentWidth: document.documentElement.scrollWidth,
+          sidebarRight: sidebar.right,
+          sidebarBottom: sidebar.bottom,
+          headerTop: header.top,
+          headerBottom: header.bottom,
+          mainLeft: main.left,
+          mainTop: main.top,
+          navScrollWidth: nav.scrollWidth,
+          navClientWidth: nav.clientWidth,
+          navHeight: navRect.height,
+          itemTopSpread: Math.max(...itemRects.map((item) => item.top)) - Math.min(...itemRects.map((item) => item.top))
+        };
+      });
+
+      expect(geometry.documentWidth).toBeLessThanOrEqual(width);
+      if (width > 800) {
+        expect(geometry.sidebarRight).toBeLessThanOrEqual(geometry.mainLeft + 1);
+      } else {
+        expect(geometry.sidebarBottom).toBeLessThanOrEqual(geometry.headerTop + 1);
+        expect(geometry.headerBottom).toBeLessThanOrEqual(geometry.mainTop + 1);
+        expect(geometry.navScrollWidth).toBeGreaterThan(geometry.navClientWidth);
+        expect(geometry.itemTopSpread).toBeLessThanOrEqual(1);
+        expect(geometry.navHeight).toBeLessThan(50);
+      }
+    });
+  }
+
+  await page.setViewportSize({width: 375, height: 812});
+  const lastItem = navigation.getByRole('button', {name: 'Setări'});
+  await lastItem.focus();
+  await expect(lastItem).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 });
 
 test('lets longer KPI copy wrap without colliding with its chevron', async ({page}) => {

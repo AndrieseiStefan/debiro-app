@@ -58,7 +58,11 @@ describe('dashboard overview', () => {
     expect(screen.getByRole('heading', {name: 'Supplier status'})).toBeVisible();
     expect(screen.getByRole('heading', {name: 'Recent activity'})).toBeVisible();
     expect(screen.getByRole('button', {name: 'Add supplier'})).toBeVisible();
-    expect(screen.getByRole('link', {name: 'RO'})).toHaveAttribute('href', '/dashboard');
+    for (const localeLink of screen.getAllByRole('link', {name: 'RO'})) {
+      expect(localeLink).toHaveAttribute('href', '/dashboard');
+    }
+    expect(screen.getAllByRole('button', {name: 'User profile: Andrei Popescu'})).toHaveLength(2);
+    expect(screen.getByRole('button', {name: 'Demo Company SRL'})).toBeVisible();
     expect(screen.getByText('Tax certificate', {selector: 'td'})).toBeVisible();
   });
 });

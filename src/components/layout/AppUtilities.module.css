@@ -1,0 +1,126 @@
+.utilities {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.notificationButton,
+.profileButton {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: #29466d;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.notificationButton {
+  height: 42px;
+  position: relative;
+  width: 42px;
+}
+
+.notificationDot {
+  background: #e5344e;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  height: 11px;
+  position: absolute;
+  right: 4px;
+  top: 5px;
+  width: 11px;
+}
+
+.localeSwitch {
+  align-items: center;
+  background: #f0f5ff;
+  border-radius: 12px;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 2px;
+  padding: 4px;
+}
+
+.localeSwitch a {
+  border-radius: 8px;
+  color: #466384;
+  font-size: 13px;
+  line-height: 1;
+  min-width: 47px;
+  padding: 9px 10px;
+  text-align: center;
+  text-decoration: none;
+}
+
+.localeSwitch .activeLocale {
+  background: #075fe9;
+  box-shadow: 0 2px 7px rgb(15 84 189 / 18%);
+  color: #fff;
+}
+
+.profileButton {
+  border-left: 1px solid #e2eaf5;
+  gap: 10px;
+  padding: 0 0 0 15px;
+}
+
+.profileButton span {
+  align-items: center;
+  background: #f0f4fa;
+  border: 1px solid #e7edf6;
+  border-radius: 50%;
+  color: #314a6c;
+  display: inline-flex;
+  font-size: 13px;
+  height: 38px;
+  justify-content: center;
+  width: 38px;
+}
+
+.notificationButton[aria-disabled='true'],
+.profileButton[aria-disabled='true'] {
+  cursor: default;
+}
+
+.compact {
+  gap: 8px;
+  margin-left: 0;
+}
+
+.compact .notificationButton {
+  color: #eaf3ff;
+  height: 36px;
+  width: 36px;
+}
+
+.compact .notificationDot {
+  border-color: #1c3c61;
+  right: 1px;
+  top: 1px;
+}
+
+.compact .localeSwitch {
+  padding: 3px;
+}
+
+.compact .localeSwitch a {
+  min-width: 38px;
+  padding: 8px 6px;
+}
+
+.compact .profileButton {
+  border-left-color: rgb(255 255 255 / 20%);
+  gap: 0;
+  padding-left: 8px;
+}
+
+.compact .profileButton span {
+  height: 34px;
+  width: 34px;
+}
+
+.compact .profileButton svg {
+  display: none;
+}

@@ -155,7 +155,7 @@ export function DashboardPage({locale, view}: {locale: string; view: DashboardVi
   const {suppliers} = view;
 
   return (
-    <AuthenticatedAppShell locale={locale} organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={view.notificationCount}>
+    <AuthenticatedAppShell locale={locale} currentPath="/dashboard" organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={view.notificationCount}>
       <div className={styles.pageContent}>
         <section className={styles.welcomeRow} aria-labelledby="dashboard-title">
           <div className={styles.welcomeCopy}>

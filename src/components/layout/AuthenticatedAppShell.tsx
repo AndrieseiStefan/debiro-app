@@ -4,8 +4,9 @@ import {AppShell} from './AppShell';
 import {AppSidebar} from './AppSidebar';
 import {AppTopBar} from './AppTopBar';
 
-export function AuthenticatedAppShell({locale, organizationName, userName, userInitials, notificationCount, children}: {
+export function AuthenticatedAppShell({locale, currentPath, organizationName, userName, userInitials, notificationCount, children}: {
   locale: string;
+  currentPath: string;
   organizationName: string;
   userName: string;
   userInitials: string;
@@ -17,8 +18,8 @@ export function AuthenticatedAppShell({locale, organizationName, userName, userI
   return (
     <AppShell
       sidebarLabel={t('sidebarLabel')}
-      sidebar={<AppSidebar organizationName={organizationName} userName={userName} notificationCount={notificationCount} />}
-      header={<AppTopBar locale={locale} currentPath="/dashboard" userInitials={userInitials} />}
+      sidebar={<AppSidebar locale={locale} currentPath={currentPath} organizationName={organizationName} userName={userName} userInitials={userInitials} notificationCount={notificationCount} />}
+      header={<AppTopBar locale={locale} currentPath={currentPath} userInitials={userInitials} userName={userName} />}
     >
       {children}
     </AppShell>

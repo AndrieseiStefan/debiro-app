@@ -24,9 +24,14 @@
 
 .brandArea,
 .navigation,
-.sidebarFooter {
+.sidebarFooter,
+.reducedUtilities {
   position: relative;
   z-index: 1;
+}
+
+.reducedUtilities {
+  display: none;
 }
 
 .brandArea {
@@ -172,9 +177,16 @@
 
 @media (max-width: 800px) {
   .sidebarContents {
+    align-items: center;
+    column-gap: 8px;
+    display: grid;
+    grid-template-areas: 'brand utilities organization' 'navigation navigation navigation';
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-rows: auto auto;
     height: auto;
     min-height: 0;
     padding: 14px 24px 8px;
+    row-gap: 12px;
   }
 
   .sidebarContents::after,
@@ -186,6 +198,8 @@
   }
 
   .brandArea {
+    grid-area: brand;
+    min-width: 0;
     padding: 0;
   }
 
@@ -193,15 +207,23 @@
     font-size: 23px;
   }
 
+  .reducedUtilities {
+    display: flex;
+    grid-area: utilities;
+    justify-self: end;
+  }
+
   .navigation {
     display: flex;
     flex: 0 0 auto;
     gap: 8px;
-    margin-top: 12px;
+    grid-area: navigation;
+    margin-top: 0;
     overflow-x: auto;
     overflow-y: hidden;
     padding-bottom: 4px;
     scrollbar-width: thin;
+    width: 100%;
   }
 
   .navItem {
@@ -218,10 +240,8 @@
   }
 
   .sidebarFooter {
+    grid-area: organization;
     margin: 0;
-    position: absolute;
-    right: 24px;
-    top: 12px;
   }
 
   .accountCard {
@@ -241,8 +261,13 @@
   .sidebarContents {
     padding-inline: 16px;
   }
+}
 
-  .sidebarFooter {
-    right: 16px;
+@media (max-width: 350px) {
+  .sidebarContents {
+    grid-template-areas: 'brand organization' 'utilities utilities' 'navigation navigation';
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto auto;
+    row-gap: 8px;
   }
 }

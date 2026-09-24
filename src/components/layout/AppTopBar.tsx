@@ -1,12 +1,13 @@
 import {useTranslations} from 'next-intl';
-import {Link} from '@/i18n/navigation';
 import {AppIcon} from './AppIcon';
+import {AppUtilities} from './AppUtilities';
 import styles from './AppTopBar.module.css';
 
-export function AppTopBar({locale, currentPath, userInitials}: {
+export function AppTopBar({locale, currentPath, userInitials, userName}: {
   locale: string;
-  currentPath: '/dashboard';
+  currentPath: string;
   userInitials: string;
+  userName: string;
 }) {
   const t = useTranslations('AppShell');
 
@@ -18,18 +19,8 @@ export function AppTopBar({locale, currentPath, userInitials}: {
         <kbd aria-hidden="true">⌘ K</kbd>
       </div>
 
-      <div className={styles.utilities}>
-        <button type="button" aria-disabled="true" aria-label={t('notificationLabel')} className={styles.notificationButton}>
-          <AppIcon name="bell" size={23} />
-          <span className={styles.notificationDot} aria-hidden="true" />
-        </button>
-        <nav className={styles.localeSwitch} aria-label={t('languageLabel')}>
-          <Link href={currentPath} locale="ro" aria-current={locale === 'ro' ? 'page' : undefined} className={locale === 'ro' ? styles.activeLocale : undefined}>RO</Link>
-          <Link href={currentPath} locale="en" aria-current={locale === 'en' ? 'page' : undefined} className={locale === 'en' ? styles.activeLocale : undefined}>EN</Link>
-        </nav>
-        <button type="button" aria-disabled="true" aria-label={t('profileLabel')} className={styles.profileButton}>
-          <span>{userInitials}</span><AppIcon name="chevronDown" size={16} />
-        </button>
+      <div className={styles.desktopUtilities}>
+        <AppUtilities locale={locale} currentPath={currentPath} userInitials={userInitials} userName={userName} />
       </div>
     </div>
   );
