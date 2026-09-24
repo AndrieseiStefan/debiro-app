@@ -34,9 +34,13 @@ Each screen owns its view data beside the feature (for example `src/features/<fe
 
 ## Page Shell Contract
 
-Public/pre-auth top-level page content uses the shared container implementation in `src/components/layout/Containers.module.css`: `width: 100%`, `max-width: 1350px`, `margin-inline: auto`, and `box-sizing: border-box`. The 1350px cap is the complete outer box, including horizontal padding—not 1350px of content plus padding. Landing sections use PublicContainer; onboarding uses PageContainer. The existing PortalContainer has the same default geometry. Screen-specific inner widths belong inside this public shell.
+DEBIRO has three top-level layout families:
 
-The public shell's responsive horizontal padding is 32px on desktop (≥1200px), 24px on tablet (768–1199px), and 16px on mobile (<768px). Below 1350px, the shell fills the available width with those gutters. Above 1350px, its width stops growing and equal automatic outer margins grow with the viewport; do not hardcode large-screen margins or duplicate shell rules in feature CSS. Page backgrounds and decorative layers may remain full bleed outside the content shell. Authenticated pages use the separate contract below.
+- **Public/pre-auth:** `PublicHeader` with centered `PublicContainer`/`PageContainer` geometry for landing and onboarding.
+- **External supplier portal:** its own portal header and supplier-facing shell, with no authenticated navigation. It reuses only the low-level centered geometry through `PortalContainer`; it is not a `PublicHeader` or public-page shell.
+- **Authenticated app:** `AuthenticatedAppShell` with fluid viewport width, not the centered 1350px constraint; see the separate contract below.
+
+The public/pre-auth and external-portal containers share the layout-only implementation in `src/components/layout/Containers.module.css`: `width: 100%`, `max-width: 1350px`, `margin-inline: auto`, and `box-sizing: border-box`. The 1350px cap is the complete outer box, including horizontal padding—not 1350px of content plus padding. Their responsive horizontal padding is 32px on desktop (≥1200px), 24px on tablet (768–1199px), and 16px on mobile (<768px). Below 1350px, the box fills the available width with those gutters; above 1350px, it stops growing and gains equal automatic outer margins. Feature-specific inner widths belong inside the box. Backgrounds and decorative layers may remain full bleed; do not hardcode large-screen margins or duplicate these shell rules in feature CSS.
 
 ## Authenticated App Shell Contract
 

@@ -40,16 +40,32 @@ test('validates and selects files only in the browser', async ({page}) => {
   await expect(page.locator('[data-document-id="tax"]')).toContainText('În așteptare');
 });
 
-test('contains document rows, filenames, and controls at required widths', async ({page}) => {
+test('centers its own portal containers and contains document rows at required widths', async ({page}) => {
   await page.goto(fixturePath);
   await page.getByLabel('Încarcă document pentru Certificat fiscal').setInputFiles({name: `${'very-long-document-name-'.repeat(12)}.pdf`, mimeType: 'application/pdf', buffer: Buffer.from('fixture')});
-  const widths = [1448, 1024, 600, 375, 320];
+  const widths = [1920, 1448, 1024, 600, 375, 320];
   for (const width of widths) {
     await page.setViewportSize({width, height: width === 1448 ? 1086 : width === 375 ? 812 : 768});
     await expect(page.getByRole('heading', {level: 1, name: 'Încarcă documentele companiei tale'})).toBeVisible();
-    const bounds = await page.evaluate(() => ({document: document.documentElement.scrollWidth, row: document.querySelector('[data-document-id="tax"]')!.getBoundingClientRect().right}));
+    const bounds = await page.evaluate(() => {
+      const shell = (part: string) => {
+        const element = document.querySelector<HTMLElement>(`[data-portal-container="${part}"]`)!;
+        const rect = element.getBoundingClientRect();
+        return {left: rect.left, right: rect.right, width: rect.width, gutter: parseFloat(getComputedStyle(element).paddingLeft)};
+      };
+      return {document: document.documentElement.scrollWidth, row: document.querySelector('[data-document-id="tax"]')!.getBoundingClientRect().right, header: shell('header'), main: shell('main'), footer: shell('footer')};
+    });
     expect(bounds.document, `document overflow at ${width}px`).toBeLessThanOrEqual(width);
     expect(bounds.row, `document row escaped at ${width}px`).toBeLessThanOrEqual(width + 1);
+    const expectedWidth = Math.min(width, 1350);
+    const expectedLeft = (width - expectedWidth) / 2;
+    const expectedGutter = width >= 1200 ? 32 : width >= 768 ? 24 : 16;
+    for (const part of [bounds.header, bounds.main, bounds.footer]) {
+      expect(part.width, `shell width at ${width}px`).toBeCloseTo(expectedWidth, 0);
+      expect(part.left, `centered shell at ${width}px`).toBeCloseTo(expectedLeft, 0);
+      expect(part.right, `shell right edge at ${width}px`).toBeCloseTo(expectedLeft + expectedWidth, 0);
+      expect(part.gutter, `shell gutter at ${width}px`).toBe(expectedGutter);
+    }
     await expect(page.getByLabel('Încarcă document pentru Certificat fiscal')).toBeVisible();
   }
 });

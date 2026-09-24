@@ -4,6 +4,7 @@ import {useState, type ChangeEvent, type ReactNode} from 'react';
 import {useTranslations} from 'next-intl';
 import {BrandWordmark} from '@/components/brand/BrandWordmark';
 import {AppIcon} from '@/components/layout/AppIcon';
+import {PortalContainer} from '@/components/layout/PortalContainer';
 import {Link} from '@/i18n/navigation';
 import type {SupplierDocument, SupplierPortalViewModel} from './types';
 import styles from './SupplierUploadPortalPage.module.css';
@@ -42,14 +43,17 @@ export function SupplierUploadPortalPage({locale, view}: {locale: string; view: 
 
   return <div className={styles.portal}>
     <header className={styles.header}>
+      <PortalContainer className={styles.headerInner} data-portal-container="header">
       <div className={styles.headerBrand}><BrandWordmark className={styles.brand}/><span>{t('brandTagline')}</span></div>
       <nav className={styles.localeSwitch} aria-label={t('languageLabel')}>
         <Link href={`/upload/${view.token}`} locale="ro" aria-current={lang === 'ro' ? 'page' : undefined} className={lang === 'ro' ? styles.activeLocale : undefined}>RO</Link>
         <Link href={`/upload/${view.token}`} locale="en" aria-current={lang === 'en' ? 'page' : undefined} className={lang === 'en' ? styles.activeLocale : undefined}>EN</Link>
       </nav>
+      </PortalContainer>
     </header>
 
     <main className={styles.main}>
+      <PortalContainer className={styles.mainInner} data-portal-container="main">
       <div className={styles.contentColumn}>
         <div className={styles.intro}><p className={styles.eyebrow}>{t('eyebrow')}</p><h1>{t('title')}</h1><p>{t('description')}</p></div>
 
@@ -84,8 +88,9 @@ export function SupplierUploadPortalPage({locale, view}: {locale: string; view: 
         <aside className={styles.helpCard} id="portal-help" aria-labelledby="help-title"><div className={styles.helpHeading}><span><PortalIcon name="help" size={27}/></span><div><h2 id="help-title">{t('needHelp')}</h2><p>{t('helpDescription')}</p></div></div><a href={`mailto:${view.help.email}`}><PortalIcon name="mail" size={22}/>{view.help.email}</a><a href={`tel:${view.help.phone.replace(/\s/g, '')}`}><PortalIcon name="phone" size={22}/>{view.help.phone}</a><p className={styles.hours}>{t('hours')}</p></aside>
         <div className={styles.mountainArt} aria-hidden="true"><span>{t('mountainLine')}</span></div>
       </div>
+      </PortalContainer>
     </main>
 
-    <footer className={styles.footer}><div className={styles.footerBrand}><BrandWordmark /><span>{t('brandTagline')}</span></div><div className={styles.footerLinks}><button type="button" aria-disabled="true">{t('privacy')}</button><button type="button" aria-disabled="true">{t('terms')}</button><span>{t('copyright', {year: view.footerYear})}</span></div></footer>
+    <footer className={styles.footer}><PortalContainer className={styles.footerInner} data-portal-container="footer"><div className={styles.footerBrand}><BrandWordmark /><span>{t('brandTagline')}</span></div><div className={styles.footerLinks}><button type="button" aria-disabled="true">{t('privacy')}</button><button type="button" aria-disabled="true">{t('terms')}</button><span>{t('copyright', {year: view.footerYear})}</span></div></PortalContainer></footer>
   </div>;
 }

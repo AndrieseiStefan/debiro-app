@@ -1,12 +1,14 @@
 .portal {background: #f7fbff; color: #132342; display: flex; flex-direction: column; min-height: 100dvh; min-width: 0;}
-.header {align-items: center; background: #fff; border-bottom: 1px solid #d4e2f5; display: flex; justify-content: space-between; min-height: 76px; padding: 12px 40px;}
+.header {background: #fff; border-bottom: 1px solid #d4e2f5;}
+.headerInner {align-items: center; display: flex; justify-content: space-between; min-height: 76px; padding-block: 12px;}
 .headerBrand, .footerBrand {align-items: center; display: flex; gap: 29px; min-width: 0;}
 .headerBrand > span:last-child, .footerBrand > span:last-child {color: #4e6589; font-size: 14px; white-space: nowrap;}
 .brand {font-size: 28px; letter-spacing: -.04em;}
 .localeSwitch {background: #eff4ff; border-radius: 15px; display: flex; gap: 4px; padding: 4px;}
 .localeSwitch a {align-items: center; border-radius: 10px; color: #315584; display: inline-flex; font-size: 13px; height: 34px; justify-content: center; text-decoration: none; width: 64px;}
 .localeSwitch .activeLocale {background: #0b60e5; box-shadow: 0 2px 5px rgb(7 64 160 / 18%); color: #fff;}
-.main {display: grid; flex: 1; gap: 40px; grid-template-columns: minmax(0, 1fr) minmax(0, 418px); margin-inline: auto; max-width: 1600px; padding: 22px 24px 0 32px; width: 100%;}
+.main {display: flex; flex: 1; min-width: 0;}
+.mainInner {display: grid; flex: 1; gap: 40px; grid-template-columns: minmax(0, 1fr) minmax(0, 418px); padding-block: 22px 0;}
 .contentColumn, .sideColumn {min-width: 0;}
 .intro {margin: 20px 8px 20px;}
 .eyebrow {color: #4a6590; font-size: 14px; font-weight: 700; letter-spacing: .015em;}
@@ -82,14 +84,15 @@
 .hours {border-top: 1px solid #d6e4f7; color: #536e98; font-size: 13px; margin: 11px 0 0 54px; padding-top: 9px;}
 .mountainArt {background: url('/assets/dashboard-mountains.png') bottom right / 110% auto no-repeat; flex: 1; min-height: 158px; position: relative;}
 .mountainArt span {color: #0750b9; font-size: 18px; font-style: italic; line-height: 1.25; position: absolute; right: 47px; top: 20px; transform: rotate(-9deg); width: 200px;}
-.footer {align-items: center; background: #fff; border-top: 1px solid #d5e4f7; display: flex; gap: 20px; justify-content: space-between; min-height: 57px; padding: 12px 40px;}
+.footer {background: #fff; border-top: 1px solid #d5e4f7;}
+.footerInner {align-items: center; display: flex; gap: 20px; justify-content: space-between; min-height: 57px; padding-block: 12px;}
 .footerBrand {gap: 16px;}
 .footerBrand :first-child {font-size: 18px;}
 .footerBrand > span:last-child {font-size: 12px;}
 .footerLinks {align-items: center; color: #587097; display: flex; font-size: 12px; gap: 22px;}
 .footerLinks button {background: transparent; border: 0; color: inherit; font-size: inherit; padding: 0;}
 @media (max-width: 1199px) {
-  .main {gap: 24px; grid-template-columns: minmax(0, 1fr) 330px; padding-inline: 24px;}
+  .mainInner {gap: 24px; grid-template-columns: minmax(0, 1fr) 330px;}
   .documentRow {gap: 12px; grid-template-columns: 46px minmax(0, 1fr) auto;}
   .documentIcon {height: 45px; width: 45px;}
   .documentRow > :last-child {grid-column: 2 / -1; justify-self: stretch;}
@@ -99,7 +102,7 @@
   .progressTrack {width: 90px;}
 }
 @media (max-width: 900px) {
-  .main {grid-template-columns: minmax(0, 1fr);}
+  .mainInner {grid-template-columns: minmax(0, 1fr);}
   .sideColumn {display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr));}
   .helpCard {margin-top: 0;}
   .mountainArt {grid-column: 1 / -1; min-height: 120px;}
@@ -108,12 +111,12 @@
   .securityWhy p {font-size: 14px;}
 }
 @media (max-width: 767px) {
-  .header {min-height: 66px; padding-inline: 16px;}
+  .headerInner {min-height: 66px;}
   .headerBrand {gap: 10px;}
   .headerBrand > span:last-child {font-size: 11px; white-space: normal;}
   .brand {font-size: 22px;}
   .localeSwitch a {height: 32px; width: 40px;}
-  .main {padding: 20px 16px 24px;}
+  .mainInner {padding-block: 20px 24px;}
   .intro {margin: 0 0 20px;}
   .intro h1 {font-size: clamp(30px, 7.5vw, 42px);}
   .intro > p:last-child {font-size: 16px;}
@@ -134,7 +137,7 @@
   .uploadArea {justify-items: stretch; width: 100%;}
   .sideColumn {grid-template-columns: minmax(0, 1fr);}
   .mountainArt {grid-column: auto;}
-  .footer {align-items: flex-start; flex-direction: column; padding: 16px;}
+  .footerInner {align-items: flex-start; flex-direction: column; padding-block: 16px;}
   .footerLinks {flex-wrap: wrap; gap: 9px 18px;}
 }
 @media (max-width: 420px) {
