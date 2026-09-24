@@ -10,7 +10,7 @@
 
 **Domain strategy:** Single domain
 
-**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation, landing page, and onboarding first step are implemented; backend/auth integrations are not.
+**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation, landing page, onboarding first step, and fixture-backed dashboard overview are implemented; backend/auth integrations are not.
 
 ## Design state
 
@@ -34,6 +34,7 @@ The final logo is not yet designed and must not be invented.
 - Reusable low-level UI/layout primitives, accessibility baseline, Vitest/RTL and Playwright test tooling, deterministic visual capture, development-only design-system preview
 - E1-001 canonical landing page at `/` (Romanian) and `/en` (English), using a typed static dashboard preview and no provider data; see [landing page](../features/landing-page.md)
 - E1-002 canonical onboarding first step at `/onboarding` (Romanian) and `/en/onboarding` (English), using a typed form fixture and browser-local interactions only; see [onboarding](../features/onboarding.md)
+- E1-003 canonical dashboard overview at `/dashboard` (Romanian) and `/en/dashboard` (English), using an independent authenticated app shell and deterministic view fixture; see [dashboard](../features/dashboard.md)
 - Landing-page CTA alignment and visible brand casing standardized to `DEBIRO`; the three-mode responsive contract, shared centered 1350px page shell, shared 66px public header, stacked hero reflow, and boundary/safety viewport regression matrix are implemented in [UI foundation](../design/ui-foundation.md#page-shell-contract)
 
 ## Architecture decision
@@ -42,7 +43,7 @@ TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to
 
 ## Not implemented
 
-- The eight remaining canonical screens (03–10), later onboarding steps, and functional backend workflows
+- The seven remaining canonical screens (04–10), later onboarding steps, and functional backend workflows
 - Product-owner visual approval and approved regression baselines
 - Backend or API
 - Database, schemas, or migrations
@@ -54,4 +55,4 @@ TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to
 
 ## Next
 
-E1-003 — Implement Canonical Dashboard Overview. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).
+E1-004 — Implement Canonical Vendors List. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).

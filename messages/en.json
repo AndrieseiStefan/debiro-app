@@ -140,6 +140,81 @@
     "securityTitle": "Your data is safe",
     "securityDescription": "We use advanced encryption and follow the highest security standards."
   },
+  "AppShell": {
+    "sidebarLabel": "Application sidebar",
+    "navigationLabel": "Application navigation",
+    "taglineOne": "Trusted partners.",
+    "taglineTwo": "Stronger business.",
+    "mottoOne": "Compliance today.",
+    "mottoTwo": "Better collaboration",
+    "mottoThree": "tomorrow.",
+    "navigation": {
+      "dashboard": "Dashboard",
+      "suppliers": "Suppliers",
+      "documents": "Documents",
+      "requirements": "Requirements",
+      "notifications": "Notifications",
+      "reports": "Reports",
+      "settings": "Settings"
+    },
+    "searchLabel": "Search suppliers, documents or requirements",
+    "searchPlaceholder": "Search suppliers, documents or requirements...",
+    "notificationLabel": "Notifications",
+    "languageLabel": "Language",
+    "profileLabel": "User profile"
+  },
+  "Dashboard": {
+    "welcomeEyebrow": "WELCOME BACK TO DEBIRO",
+    "welcomeTitle": "Welcome, {name}!",
+    "welcomeDescription": "You have {count} registered suppliers. Here's an overview of their compliance status.",
+    "calloutOne": "Compliant partners.",
+    "calloutTwo": "Growth without risk.",
+    "addSupplier": "Add supplier",
+    "summary": {
+      "total": "Total suppliers",
+      "compliant": "In order",
+      "attention": "Needs attention",
+      "noncompliant": "Noncompliant",
+      "monthlyIncrease": "+{count} since last month",
+      "percentOfTotal": "{percent}% of total"
+    },
+    "documentsTitle": "Documents needing attention",
+    "viewAll": "View all",
+    "viewDetails": "View details",
+    "table": {
+      "supplier": "SUPPLIER",
+      "document": "DOCUMENT",
+      "status": "STATUS",
+      "expiry": "EXPIRY DATE",
+      "actions": "ACTIONS",
+      "rowAction": "Actions for {supplier}"
+    },
+    "documentStatus": {
+      "expired": "Expired",
+      "expiring": "Expiring soon",
+      "missing": "Missing"
+    },
+    "urgentDocuments": "{count} documents need immediate attention.",
+    "checkAndUpdate": "Check and update",
+    "supplierStatusTitle": "Supplier status",
+    "suppliersLower": "suppliers",
+    "supplierStatus": {
+      "compliant": "In order",
+      "attention": "Needs attention",
+      "noncompliant": "Noncompliant",
+      "missingDocuments": "Missing documents"
+    },
+    "recentActivityTitle": "Recent activity",
+    "activity": {
+      "uploaded": "Document uploaded",
+      "expiring": "Approaching expiry",
+      "expired": "Document expired",
+      "added": "New supplier added"
+    },
+    "bannerTitle": "Continuous compliance for lasting partnerships.",
+    "bannerDescription": "Documents in order. Business without interruptions.",
+    "bannerHandwriting": "More than compliance"
+  },
   "Foundation": {
     "previewTitle": "Design system preview",
     "previewDescription": "Foundation components only. This is not a product screen.",

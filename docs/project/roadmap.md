@@ -10,11 +10,12 @@ This roadmap records direction only. Detailed requirements are created by the ta
 - UI foundation and canonical design system tooling — complete (TASK-003); no product screens approved
 - E1-001 canonical landing page — implemented; product-owner visual approval remains pending
 - E1-002 canonical onboarding first step — implemented; product-owner visual approval remains pending
+- E1-003 canonical dashboard overview — implemented with a fixture-backed authenticated shell; product-owner visual approval remains pending
 
 ## Agreed delivery sequence
 
 1. E1-001 landing page — implemented under an explicit task brief. The earlier complete-MVP epic planning checkpoint remains open.
-2. Implement remaining approved mockup screens using typed fixture data; E1-003 dashboard overview is next.
+2. Implement remaining approved mockup screens using typed fixture data; E1-004 vendors list is next.
 3. Visually and interactively compare them with the canonical mockups; obtain product-owner visual approval.
 4. Before expanding beyond the supplied E1 tasks, finalize the complete Epic sequence through MVP.
 5. Define data model and API contracts, then build backend/persistence and replace fixtures with real data.
@@ -36,4 +37,4 @@ These are roadmap directions, not detailed feature specifications or a finalized
 
 ## Next task
 
-E1-003 — Implement Canonical Dashboard Overview. The broader MVP epic sequence still requires a planning checkpoint; backend and auth are not implemented.
+E1-004 — Implement Canonical Vendors List. The broader MVP epic sequence still requires a planning checkpoint; backend and auth are not implemented.

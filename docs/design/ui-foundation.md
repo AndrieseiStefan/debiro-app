@@ -20,6 +20,8 @@ Inter Variable is self-hosted from `@fontsource-variable/inter`; the exact mocku
 
 `src/components/layout/` provides PublicContainer, PortalContainer, and PageContainer with one shared page-shell geometry, plus a compositional AppShell. Shell slots are passed in; no navigation, tenancy, or authentication is embedded. `src/components/brand/BrandWordmark.tsx` renders only `DEBIRO` as text in the application font. No logo or icon package is present.
 
+E1-003 composes AppShell into a separate `AuthenticatedAppShell` with `AppSidebar` and `AppTopBar` for product screens. Its 260px sidebar, 72px top bar, active navigation semantics, search, locale switch, and profile/notification affordances are independent of `PublicHeader` and the public page shell. The authenticated shell currently has no session or route guard. At its local 800px collision point, the sidebar reflows to a compact navigation strip above the top bar; this is a safe E1 fallback, not an approved mobile navigation design.
+
 For each new canonical screen, inspect and reuse existing components and page containers before adding a primitive; compose existing pieces or keep screen-specific UI inside its feature. Implemented screens are regression-protected. Change shared components used by them only for a necessary reusable requirement, keep the change backward-compatible unless an explicit migration task says otherwise, and revalidate every affected existing screen. Do not refactor unrelated working UI as part of a new screen task.
 
 ## View data and localization

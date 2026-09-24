@@ -140,6 +140,81 @@
     "securityTitle": "Datele tale sunt în siguranță",
     "securityDescription": "Folosim criptare avansată și respectăm cele mai înalte standarde de securitate."
   },
+  "AppShell": {
+    "sidebarLabel": "Bară laterală aplicație",
+    "navigationLabel": "Navigare în aplicație",
+    "taglineOne": "Parteneri siguri.",
+    "taglineTwo": "Afaceri mai puternice.",
+    "mottoOne": "Conformitate astăzi.",
+    "mottoTwo": "O colaborare mai bună",
+    "mottoThree": "mâine.",
+    "navigation": {
+      "dashboard": "Dashboard",
+      "suppliers": "Furnizori",
+      "documents": "Documente",
+      "requirements": "Cerințe",
+      "notifications": "Notificări",
+      "reports": "Rapoarte",
+      "settings": "Setări"
+    },
+    "searchLabel": "Caută furnizori, documente sau cerințe",
+    "searchPlaceholder": "Caută furnizori, documente sau cerințe...",
+    "notificationLabel": "Notificări",
+    "languageLabel": "Limbă",
+    "profileLabel": "Profil utilizator"
+  },
+  "Dashboard": {
+    "welcomeEyebrow": "BINE AI REVENIT ÎN DEBIRO",
+    "welcomeTitle": "Bun venit, {name}!",
+    "welcomeDescription": "Ai {count} de furnizori înregistrați. Iată o privire de ansamblu asupra stării lor de conformitate.",
+    "calloutOne": "Parteneri conformi.",
+    "calloutTwo": "Dezvoltare fără riscuri.",
+    "addSupplier": "Adaugă furnizor",
+    "summary": {
+      "total": "Total furnizori",
+      "compliant": "În regulă",
+      "attention": "Necesită atenție",
+      "noncompliant": "Neconformi",
+      "monthlyIncrease": "+{count} față de luna trecută",
+      "percentOfTotal": "{percent}% din total"
+    },
+    "documentsTitle": "Documente care necesită atenție",
+    "viewAll": "Vezi toate",
+    "viewDetails": "Vezi detalii",
+    "table": {
+      "supplier": "FURNIZOR",
+      "document": "DOCUMENT",
+      "status": "STATUS",
+      "expiry": "DATA EXPIRĂRII",
+      "actions": "ACȚIUNI",
+      "rowAction": "Acțiuni pentru {supplier}"
+    },
+    "documentStatus": {
+      "expired": "Expirat",
+      "expiring": "Expiră curând",
+      "missing": "Lipsește"
+    },
+    "urgentDocuments": "{count} documente necesită atenție imediată.",
+    "checkAndUpdate": "Verifică și actualizează",
+    "supplierStatusTitle": "Status furnizori",
+    "suppliersLower": "furnizori",
+    "supplierStatus": {
+      "compliant": "În regulă",
+      "attention": "Necesită atenție",
+      "noncompliant": "Neconformi",
+      "missingDocuments": "Lipsește documente"
+    },
+    "recentActivityTitle": "Activitate recentă",
+    "activity": {
+      "uploaded": "Document încărcat",
+      "expiring": "Se apropie termenul de expirare",
+      "expired": "Document expirat",
+      "added": "Furnizor nou adăugat"
+    },
+    "bannerTitle": "Conformitate continuă pentru parteneriate de lungă durată.",
+    "bannerDescription": "Documente în ordine. Afaceri fără întreruperi.",
+    "bannerHandwriting": "Mai mult decât conformitate"
+  },
   "Foundation": {
     "previewTitle": "Previzualizare sistem de design",
     "previewDescription": "Doar componentele de bază. Nu reprezintă un ecran al produsului.",

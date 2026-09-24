@@ -32,6 +32,10 @@
   .shell {
     grid-template-areas: 'sidebar' 'header' 'main';
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto var(--header-height) minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+
+  .header {
+    min-height: var(--header-height);
   }
 }

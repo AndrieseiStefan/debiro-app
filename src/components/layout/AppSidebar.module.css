@@ -1,0 +1,238 @@
+.sidebarContents {
+  background: linear-gradient(145deg, #1c3c61 0%, #172f4d 54%, #142e4e 100%);
+  color: #f7fbff;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  padding: 30px 14px 28px;
+  position: relative;
+}
+
+.sidebarContents::after {
+  background: linear-gradient(150deg, transparent 48%, rgb(23 77 132 / 34%) 49%, rgb(18 76 144 / 15%) 100%);
+  bottom: 0;
+  clip-path: polygon(0 49%, 23% 35%, 63% 50%, 100% 12%, 100% 100%, 0 100%);
+  content: '';
+  height: 390px;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}
+
+.brandArea,
+.navigation,
+.sidebarFooter {
+  position: relative;
+  z-index: 1;
+}
+
+.brandArea {
+  padding-inline: 14px;
+}
+
+.brand {
+  color: #fff;
+  font-size: 28px;
+}
+
+.brandArea p {
+  color: #b7c9df;
+  font-size: 12px;
+  line-height: 1.35;
+  margin-top: 12px;
+}
+
+.navigation {
+  display: grid;
+  gap: 8px;
+  margin-top: 36px;
+}
+
+.navItem {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: #d4e1f2;
+  display: flex;
+  font-size: 15px;
+  gap: 24px;
+  height: 48px;
+  padding: 0 14px;
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.navItem svg {
+  flex: 0 0 auto;
+}
+
+.navItem[aria-disabled='true'],
+.accountCard[aria-disabled='true'] {
+  cursor: default;
+}
+
+.active {
+  background: linear-gradient(110deg, #1c5bb2, #225a9e);
+  border-color: #2e74d4;
+  box-shadow: 0 4px 12px rgb(5 22 50 / 16%);
+  color: #fff;
+  font-weight: 650;
+}
+
+.notificationCount {
+  align-items: center;
+  background: #f44e69;
+  border-radius: 50%;
+  color: #fff;
+  display: inline-flex;
+  font-size: 12px;
+  height: 25px;
+  justify-content: center;
+  margin-left: auto;
+  width: 25px;
+}
+
+.sidebarFooter {
+  margin-top: auto;
+}
+
+.motto {
+  color: #b9cbe1;
+  font-size: 14px;
+  line-height: 1.5;
+  padding-inline: 14px;
+}
+
+.accountCard {
+  align-items: center;
+  background: rgb(20 45 76 / 48%);
+  border: 1px solid #365273;
+  border-radius: 11px;
+  color: #eef5ff;
+  display: flex;
+  gap: 9px;
+  height: 84px;
+  margin-top: 44px;
+  padding: 12px 11px;
+  text-align: left;
+  width: 100%;
+}
+
+.companyIcon {
+  align-items: center;
+  background: #125ec7;
+  border-radius: 50%;
+  display: inline-flex;
+  flex: 0 0 40px;
+  height: 40px;
+  justify-content: center;
+}
+
+.accountText {
+  display: grid;
+  font-size: 12px;
+  gap: 4px;
+  min-width: 0;
+}
+
+.accountText strong,
+.accountText small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountText strong {
+  font-weight: 650;
+}
+
+.accountText small {
+  color: #b9cbe1;
+  font-size: 12px;
+}
+
+.accountCard > svg {
+  color: #b9cbe1;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+@media (max-width: 800px) {
+  .sidebarContents {
+    min-height: 0;
+    padding: 14px 24px 8px;
+  }
+
+  .sidebarContents::after,
+  .brandArea p,
+  .motto,
+  .accountText,
+  .accountCard > svg {
+    display: none;
+  }
+
+  .brandArea {
+    padding: 0;
+  }
+
+  .brand {
+    font-size: 23px;
+  }
+
+  .navigation {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+
+  .navItem {
+    flex: 0 0 auto;
+    gap: 7px;
+    height: 36px;
+    padding-inline: 10px;
+    width: auto;
+  }
+
+  .notificationCount {
+    height: 20px;
+    width: 20px;
+  }
+
+  .sidebarFooter {
+    margin: 0;
+    position: absolute;
+    right: 24px;
+    top: 12px;
+  }
+
+  .accountCard {
+    height: 36px;
+    margin: 0;
+    padding: 0;
+    width: 36px;
+  }
+
+  .companyIcon {
+    flex-basis: 34px;
+    height: 34px;
+  }
+}
+
+@media (max-width: 767px) {
+  .sidebarContents {
+    padding-inline: 16px;
+  }
+
+  .sidebarFooter {
+    right: 16px;
+  }
+}
