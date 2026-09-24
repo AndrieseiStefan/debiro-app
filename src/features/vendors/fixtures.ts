@@ -1,7 +1,7 @@
 import type {VendorsListViewModel, VendorListItem} from './types';
 
 const vendors: VendorListItem[] = [
-  {id: 'construct-pro', name: 'Construct Pro SRL', registrationNumber: 'RO12345678', contactName: 'Mihai Ionescu', category: 'construction', status: 'compliant', documentCount: 5, documentTarget: 5, nextExpiry: {ro: '12 mar. 2024', en: 'Mar 12, 2024', tone: 'danger'}},
+  {id: 'construct-pro', name: 'Construct Pro SRL', registrationNumber: 'RO12345678', contactName: 'Ion Popescu', category: 'construction', status: 'compliant', documentCount: 4, documentTarget: 5, nextExpiry: {ro: '12 ian. 2025', en: 'Jan 12, 2025', tone: 'danger'}},
   {id: 'global-clean', name: 'Global Clean Services', registrationNumber: 'RO87654321', contactName: 'Elena Marin', category: 'cleaning', status: 'attention', documentCount: 3, documentTarget: 5, nextExpiry: {ro: '28 apr. 2025', en: 'Apr 28, 2025', tone: 'warning'}},
   {id: 'tech-solutions', name: 'Tech Solutions SRL', registrationNumber: 'RO11223344', contactName: 'Radu Popa', category: 'software', status: 'compliant', documentCount: 4, documentTarget: 5, nextExpiry: {ro: '03 mai 2025', en: 'May 3, 2025', tone: 'warning'}},
   {id: 'build-more', name: 'Build & More SRL', registrationNumber: 'RO99887766', contactName: 'Ioana Dobre', category: 'materials', status: 'noncompliant', documentCount: 2, documentTarget: 5, nextExpiry: {ro: '10 feb. 2024', en: 'Feb 10, 2024', tone: 'danger'}},

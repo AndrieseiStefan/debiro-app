@@ -56,6 +56,8 @@ The shared authenticated shell owns sidebar geometry, viewport behavior, brand, 
 
 Dashboard supplies its compliance callout through the optional supporting-content slot; Vendors leaves that slot absent without reserving blank space. Page actions use the shared action area. Identical authenticated primary actions use the existing `Button` primitive's primary variant and the shared page-action size/icon treatment, with content-driven width on wider screens and full-width reflow on mobile. Header content reflows within the existing shell and its 800px transition; this contract does not alter the public header or page shell.
 
+Vendor Details also uses the supporting-content slot and two page actions. Below 1200px, the shared supporting/action area may wrap when its contents cannot fit side by side; this prevents feature-specific header controls from expanding the document beyond the authenticated viewport.
+
 ## Shared Header Contract
 
 Landing and onboarding use one public/pre-auth `PublicHeader`, and future applicable pages must reuse it. Its inner content uses the same centered 1350px page shell and responsive gutters (32px desktop, 24px tablet, 16px mobile). The top brand area contains only the text wordmark `DEBIRO`; screen-specific taglines do not appear beneath it. The header shares geometry, shell, brand placement, locale behavior, and responsive layout infrastructure, but each page configures its own optional navigation, help, authentication, and primary CTA regions. This must not create separate header implementations. Landing shows navigation, locale, authentication, and trial CTA; onboarding shows only brand, help, and locale.

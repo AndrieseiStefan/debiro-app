@@ -2,6 +2,7 @@
 
 import {useState, type ReactNode} from 'react';
 import {useTranslations} from 'next-intl';
+import {Link} from '@/i18n/navigation';
 import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
 import {AuthenticatedBreadcrumbs} from '@/components/layout/AuthenticatedBreadcrumbs';
@@ -54,7 +55,7 @@ function VendorRow({vendor, locale, selected, onSelect}: {vendor: VendorListItem
     <td><VendorStatusBadge status={vendor.status} /></td>
     <td><span className={styles.documents}><span className={styles.progressTrack}><span className={styles.progressFill} data-status={vendor.status} style={{width: `${documentPercent}%`}} /></span><span>{vendor.documentCount}/{vendor.documentTarget}</span></span></td>
     <td><time className={styles.expiry} data-tone={vendor.nextExpiry.tone}>{locale === 'en' ? vendor.nextExpiry.en : vendor.nextExpiry.ro}</time></td>
-    <td className={styles.actionsCell}><button type="button" aria-disabled="true" aria-label={t('rowAction', {name: vendor.name})} className={styles.rowAction}><AppIcon name="more" size={21} /></button></td>
+    <td className={styles.actionsCell}>{vendor.id === 'construct-pro' ? <Link href={`/vendors/${vendor.id}`} aria-label={t('detailsAction', {name: vendor.name})} className={styles.rowAction}><AppIcon name="more" size={21} /></Link> : <button type="button" aria-disabled="true" aria-label={t('rowAction', {name: vendor.name})} className={styles.rowAction}><AppIcon name="more" size={21} /></button>}</td>
   </tr>;
 }
 

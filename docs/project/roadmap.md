@@ -12,11 +12,12 @@ This roadmap records direction only. Detailed requirements are created by the ta
 - E1-002 canonical onboarding first step — implemented; product-owner visual approval remains pending
 - E1-003 canonical dashboard overview — implemented with a fixture-backed authenticated shell; product-owner visual approval remains pending
 - E1-004 canonical Vendors List — implemented with fixture-backed local list controls; product-owner visual approval remains pending
+- E1-005 canonical Vendor Details — implemented with a typed dynamic fixture route and local document search; product-owner visual approval remains pending
 
 ## Agreed delivery sequence
 
 1. E1-001 landing page — implemented under an explicit task brief. The earlier complete-MVP epic planning checkpoint remains open.
-2. Implement remaining approved mockup screens using typed fixture data; E1-005 vendor details is next.
+2. Implement remaining approved mockup screens using typed fixture data; E1-006 document requirements is next.
 3. Visually and interactively compare them with the canonical mockups; obtain product-owner visual approval.
 4. Before expanding beyond the supplied E1 tasks, finalize the complete Epic sequence through MVP.
 5. Define data model and API contracts, then build backend/persistence and replace fixtures with real data.
@@ -38,4 +39,4 @@ These are roadmap directions, not detailed feature specifications or a finalized
 
 ## Next task
 
-E1-005 — Implement Canonical Vendor Details. The broader MVP epic sequence still requires a planning checkpoint; backend and auth are not implemented.
+E1-006 — Implement Canonical Document Requirements. The broader MVP epic sequence still requires a planning checkpoint; backend and auth are not implemented.

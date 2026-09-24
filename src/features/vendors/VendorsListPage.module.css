@@ -65,7 +65,7 @@
 .expiry[data-tone='warning'] {color: #ca7100;}
 .expiry[data-tone='neutral'] {color: #4b6690;}
 .actionsCell {text-align: center;}
-.rowAction {background: transparent; border: 0; color: #4d6897; padding: 8px;}
+.rowAction {background: transparent; border: 0; color: #4d6897; display: inline-flex; padding: 8px;}
 .noResults {color: #5d7090; font-size: 14px; text-align: center;}
 .tableFooter {align-items: center; color: #58709a; display: grid; font-size: 13px; gap: 16px; grid-template-columns: minmax(0, 1fr) auto 145px; min-height: 59px; padding: 10px 16px;}
 .pagination {display: flex; gap: 7px;}

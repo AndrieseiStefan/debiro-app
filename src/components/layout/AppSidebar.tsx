@@ -41,7 +41,8 @@ export function AppSidebar({locale, currentPath, organizationName, userName, use
           const content = <><AppIcon name={item.icon} size={22} /><span>{t(`navigation.${item.id}`)}</span>{item.id === 'notifications' && <span className={styles.notificationCount}>{notificationCount}</span>}</>;
           if (item.id === 'dashboard' || item.id === 'suppliers') {
             const path = item.id === 'dashboard' ? '/dashboard' : '/vendors';
-            return <Link key={item.id} href={path} aria-current={currentPath === path ? 'page' : undefined} className={`${styles.navItem} ${currentPath === path ? styles.active : ''}`}>{content}</Link>;
+            const active = currentPath === path || (item.id === 'suppliers' && currentPath.startsWith(`${path}/`));
+            return <Link key={item.id} href={path} aria-current={active ? 'page' : undefined} className={`${styles.navItem} ${active ? styles.active : ''}`}>{content}</Link>;
           }
           return <button key={item.id} type="button" aria-disabled="true" className={styles.navItem}>{content}</button>;
         })}

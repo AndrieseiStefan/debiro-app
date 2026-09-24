@@ -12,7 +12,7 @@
 
 @media (max-width: 1199px) {
   .header[data-supporting='true'] .body {flex-direction: column;}
-  .header[data-supporting='true'] .side {transform: none;}
+  .header[data-supporting='true'] .side {flex-wrap: wrap; transform: none; width: 100%;}
 }
 
 @media (max-width: 767px) {
