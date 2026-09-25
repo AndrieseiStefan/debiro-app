@@ -39,9 +39,10 @@ export function AppSidebar({locale, currentPath, organizationName, userName, use
       <nav className={styles.navigation} aria-label={t('navigationLabel')}>
         {items.map((item) => {
           const content = <><AppIcon name={item.icon} size={22} /><span>{t(`navigation.${item.id}`)}</span>{item.id === 'notifications' && <span className={styles.notificationCount}>{notificationCount}</span>}</>;
-          if (item.id === 'dashboard' || item.id === 'suppliers' || item.id === 'requirements') {
-            const path = item.id === 'dashboard' ? '/dashboard' : item.id === 'suppliers' ? '/vendors' : '/requirements';
-            const active = currentPath === path || (item.id === 'suppliers' && currentPath.startsWith(`${path}/`));
+          if (item.id === 'dashboard' || item.id === 'suppliers' || item.id === 'requirements' || item.id === 'documents') {
+            const path = item.id === 'dashboard' ? '/dashboard' : item.id === 'suppliers' ? '/vendors' : item.id === 'requirements' ? '/requirements' : '/documents';
+            const active = currentPath === path || ((item.id === 'suppliers' || item.id === 'documents') && currentPath.startsWith(`${path}/`));
+            if (item.id === 'documents') return <span key={item.id} aria-current={active ? 'page' : undefined} className={`${styles.navItem} ${active ? styles.active : ''}`}>{content}</span>;
             return <Link key={item.id} href={path} aria-current={active ? 'page' : undefined} className={`${styles.navItem} ${active ? styles.active : ''}`}>{content}</Link>;
           }
           return <button key={item.id} type="button" aria-disabled="true" className={styles.navItem}>{content}</button>;

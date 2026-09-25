@@ -14,7 +14,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "e2e": "playwright test e2e/foundation.spec.ts e2e/landing.spec.ts e2e/onboarding.spec.ts e2e/dashboard.spec.ts e2e/dashboard-route-navigation.spec.ts e2e/vendors.spec.ts e2e/vendor-details.spec.ts e2e/authenticated-page-header.spec.ts e2e/requirements.spec.ts e2e/invite-vendor.spec.ts e2e/supplier-portal.spec.ts",
+    "e2e": "playwright test e2e/foundation.spec.ts e2e/landing.spec.ts e2e/onboarding.spec.ts e2e/dashboard.spec.ts e2e/dashboard-route-navigation.spec.ts e2e/vendors.spec.ts e2e/vendor-details.spec.ts e2e/authenticated-page-header.spec.ts e2e/requirements.spec.ts e2e/invite-vendor.spec.ts e2e/supplier-portal.spec.ts e2e/document-review.spec.ts",
     "visual:capture": "playwright test e2e/visual-capture.spec.ts"
   },
   "dependencies": {
