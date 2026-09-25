@@ -19,6 +19,48 @@ test('renders Romanian document review and local human confirmation', async ({pa
   await expect(page.getByRole('status')).toContainText('Nu au fost verificate din surse oficiale');
 });
 
+test('breadcrumb and back link share available space without hover or focus regressions', async ({page}) => {
+  await page.goto(route);
+  const breadcrumb = page.getByRole('navigation', {name: 'Navigare pe pagină'});
+  const backLink = page.getByRole('link', {name: 'Înapoi la documente'});
+
+  for (const width of [853, 796, 767, 600, 375, 320]) {
+    await page.setViewportSize({width, height: 833});
+    await page.evaluate(async () => { await document.fonts.ready; });
+    const layout = await page.evaluate(() => {
+      const nav = document.querySelector('nav[aria-label="Navigare pe pagină"]')!;
+      const back = [...document.querySelectorAll('a')].find((link) => link.textContent?.includes('Înapoi la documente'))!;
+      const navRect = nav.getBoundingClientRect();
+      const backRect = back.getBoundingClientRect();
+      const rowRect = nav.parentElement!.getBoundingClientRect();
+      const sameRow = Math.abs((navRect.top + navRect.bottom) / 2 - (backRect.top + backRect.bottom) / 2) < 2;
+      return {
+        sameRow,
+        separated: sameRow ? navRect.right + 15 <= backRect.left : navRect.bottom + 9 <= backRect.top,
+        contained: navRect.left >= rowRect.left - 1 && navRect.right <= rowRect.right + 1 && backRect.left >= rowRect.left - 1 && backRect.right <= rowRect.right + 1,
+        noInternalWrap: getComputedStyle(back).whiteSpace === 'nowrap' && back.scrollWidth <= back.clientWidth + 1,
+        documentWidth: document.documentElement.scrollWidth
+      };
+    });
+    expect(layout.sameRow, `${width}px breadcrumb/back row`).toBe(width >= 600);
+    expect(layout.separated, `${width}px breadcrumb/back separation`).toBe(true);
+    expect(layout.contained, `${width}px breadcrumb/back containment`).toBe(true);
+    expect(layout.noInternalWrap, `${width}px back link wrapping`).toBe(true);
+    expect(layout.documentWidth, `${width}px document overflow`).toBeLessThanOrEqual(width);
+  }
+
+  await page.setViewportSize({width: 767, height: 833});
+  const beforeHover = await backLink.boundingBox();
+  await backLink.hover();
+  await expect(backLink).toHaveCSS('text-decoration-line', 'none');
+  expect(await backLink.boundingBox()).toEqual(beforeHover);
+  await page.keyboard.press('Tab');
+  await backLink.focus();
+  await expect(backLink).toBeFocused();
+  await expect(backLink).toHaveCSS('outline-style', 'solid');
+  await expect(breadcrumb).toBeVisible();
+});
+
 test('validates required values and invalid dates before confirmation', async ({page}) => {
   await page.goto(route);
   await page.getByLabel(/Numele companiei/).fill('');

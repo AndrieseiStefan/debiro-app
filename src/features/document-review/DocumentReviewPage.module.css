@@ -1,8 +1,8 @@
 .page {min-width: 0;}
-.contextRow {align-items: center; display: flex; gap: 16px; justify-content: space-between; min-width: 0;}
-.contextRow nav {flex-wrap: wrap;}
+.contextRow {align-items: center; column-gap: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; min-width: 0; row-gap: 10px;}
+.contextRow nav {flex: 1 1 auto; flex-wrap: nowrap; min-width: max-content;}
 .backLink {align-items: center; color: #0954bd; display: inline-flex; flex: 0 0 auto; font-size: 14px; font-weight: 650; gap: 9px; text-decoration: none; white-space: nowrap;}
-.backLink:hover {text-decoration: underline;}
+.backLink:hover {color: var(--color-action-hover); text-decoration: none;}
 .backLink span {font-size: 23px; font-weight: 400; line-height: 0.7;}
 .pageHeader {align-items: center; display: flex; gap: 24px; justify-content: space-between; margin: 13px 0 26px; min-width: 0;}
 .pageHeading {min-width: 0;}
@@ -102,7 +102,6 @@
   .extractionCard {padding: 20px;}
 }
 @media (max-width: 767px) {
-  .contextRow {align-items: flex-start; flex-direction: column; gap: 10px;}
   .pageHeader {align-items: stretch; margin: 17px 0 20px;}
   .pageHeader h1 {font-size: 34px;}
   .aiCallout {width: 100%;}
