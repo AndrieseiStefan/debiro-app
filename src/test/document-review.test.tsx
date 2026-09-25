@@ -29,11 +29,17 @@ describe('document review', () => {
     expect(screen.getByRole('heading', {level: 1, name: 'Revizuiește documentul'})).toBeInTheDocument();
     expect(screen.getByRole('navigation', {name: 'Navigare în aplicație'}).getAttribute('aria-label')).toBe('Navigare în aplicație');
     expect(within(screen.getByRole('navigation', {name: 'Navigare în aplicație'})).getByText('Documente').closest('[aria-current]')).toHaveAttribute('aria-current', 'page');
+    const breadcrumb = screen.getByRole('navigation', {name: 'Navigare pe pagină'});
+    expect(breadcrumb).toHaveTextContent('DocumenteRevizuiește documentul');
+    expect(within(breadcrumb).queryByText('Furnizori')).not.toBeInTheDocument();
+    expect(within(breadcrumb).queryByText('Construct Pro SRL')).not.toBeInTheDocument();
+    expect(within(breadcrumb).getByText('Revizuiește documentul')).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('region', {name: 'Previzualizare document'})).toBeInTheDocument();
     expect(screen.getByRole('heading', {level: 2, name: 'Date extrase de AI'})).toBeInTheDocument();
     expect(screen.getByLabelText(/Numele companiei/)).toHaveValue('Construct Pro SRL');
     expect(screen.getByText('Încredere 94%')).toBeInTheDocument();
     expect(screen.queryByText(/verificat din surse oficiale/i)).not.toBeInTheDocument();
+    expect(fixture.file.sourcePage.width / fixture.file.sourcePage.height).toBeCloseTo(210 / 297, 8);
   });
 
   it('allows local editing, draft, rejection and human confirmation without verification', () => {

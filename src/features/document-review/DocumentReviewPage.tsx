@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, type FormEvent, type ReactNode} from 'react';
+import {useEffect, useRef, useState, type FormEvent, type ReactNode} from 'react';
 import {useTranslations} from 'next-intl';
 import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
@@ -38,7 +38,28 @@ function DocumentPreview({view, locale}: {view: DocumentReviewViewModel; locale:
   const t = useTranslations('DocumentReview');
   const [zoom, setZoom] = useState(100);
   const [expanded, setExpanded] = useState(false);
+  const viewerRef = useRef<HTMLDivElement>(null);
+  const [available, setAvailable] = useState({width: view.file.sourcePage.width, height: view.file.sourcePage.height});
   const values = view.extraction.values;
+  const {width: sourceWidth, height: sourceHeight} = view.file.sourcePage;
+  const fitScale = Math.min(1, available.width / sourceWidth, available.height / sourceHeight);
+  const scale = fitScale * zoom / 100;
+  const renderedWidth = sourceWidth * scale;
+  const renderedHeight = sourceHeight * scale;
+
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!viewer || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => {
+      const style = getComputedStyle(viewer);
+      const width = Math.max(1, viewer.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight));
+      const height = Math.max(1, viewer.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom));
+      setAvailable((current) => current.width === width && current.height === height ? current : {width, height});
+    });
+    observer.observe(viewer);
+    return () => observer.disconnect();
+  }, []);
+
   return <section className={`${styles.previewCard} ${expanded ? styles.expandedPreview : ''}`} aria-label={t('previewRegion')} data-review-preview>
     <div className={styles.previewToolbar}>
       <span className={styles.pdfIcon}><AppIcon name="file" size={25}/></span>
@@ -51,8 +72,10 @@ function DocumentPreview({view, locale}: {view: DocumentReviewViewModel; locale:
       </div>
       <button className={styles.expandButton} type="button" aria-label={expanded ? t('collapsePreview') : t('expandPreview')} aria-pressed={expanded} onClick={() => setExpanded((current) => !current)}><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5M3 3l6 6m12-6-6 6M3 21l6-6m12 6-6-6"/></svg></button>
     </div>
-    <div className={styles.viewer} role="region" aria-label={t('sampleDocument')} tabIndex={0}>
-      <article className={styles.paper} style={{transform: `scale(${zoom / 100})`, marginBottom: `${Math.max(0, (zoom - 100) * 6)}px`}} aria-label={t('sampleDocument')}>
+    <div ref={viewerRef} className={styles.viewer} role="region" aria-label={t('sampleDocument')} tabIndex={0} data-document-viewer>
+      <div className={styles.viewerStage} style={{width: Math.max(available.width, renderedWidth), height: Math.max(available.height, renderedHeight)}}>
+      <div className={styles.paperFrame} style={{width: renderedWidth, height: renderedHeight}} data-source-width={sourceWidth} data-source-height={sourceHeight} data-rendered-width={renderedWidth} data-rendered-height={renderedHeight} data-zoom={zoom}>
+      <article className={styles.paper} style={{width: sourceWidth, height: sourceHeight, transform: `scale(${scale})`}} aria-label={t('sampleDocument')}>
         <div className={styles.paperAgency}><strong className={styles.anaf}>ANAF</strong><span>MINISTERUL FINANȚELOR<br/>Agenția Națională de Administrare Fiscală</span></div>
         <h2>CERTIFICAT DE ATESTARE FISCALĂ</h2>
         <p className={styles.paperNumber}>Nr. {values.documentNumber} / {values.issuedAt}</p>
@@ -61,6 +84,8 @@ function DocumentPreview({view, locale}: {view: DocumentReviewViewModel; locale:
         <div className={styles.paperSignature}><span>Data emiterii:<br/>{values.issuedAt}</span><span>Agenția Națională de Administrare Fiscală<br/>Direcția Generală de Administrare a Marilor Contribuabili</span></div>
         <div className={styles.paperStamp} aria-hidden="true">ANAF</div>
       </article>
+      </div>
+      </div>
     </div>
   </section>;
 }
@@ -107,7 +132,7 @@ export function DocumentReviewPage({locale, view}: {locale: string; view: Docume
   return <AuthenticatedAppShell locale={locale} currentPath={documentPath} organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={view.notificationCount}>
     <div className={styles.page}>
       <div className={styles.contextRow}>
-        <AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: app('navigation.suppliers'), href: '/vendors'}, {label: view.vendor.name, href: vendorPath}, {label: app('navigation.documents')}, {label: t('breadcrumbCurrent')}]} />
+        <AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: app('navigation.documents')}, {label: t('breadcrumbCurrent')}]} />
         <Link href={vendorPath} className={styles.backLink}><span aria-hidden="true">←</span>{t('backToDocuments')}</Link>
       </div>
       <header className={styles.pageHeader}>

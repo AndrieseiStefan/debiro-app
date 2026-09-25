@@ -92,6 +92,10 @@ Containers and shell columns use bounded widths and `minmax(0, 1fr)` to avoid do
 
 Responsive tests cover document overflow, page gutters, content order, control visibility, and geometric collisions; they do not establish pixel-perfect mobile baselines.
 
+## Document Viewer Contract
+
+Document viewers have an intrinsic page width and height supplied by their source/fixture. Fit and zoom apply one uniform scale to both dimensions: rendered width and height equal their source dimensions multiplied by the same scale. An unzoomed page fits within its viewport and is centered when space permits; zoom beyond the available space scrolls inside the viewer, never by stretching, shrinking one axis independently, or introducing page-level horizontal overflow. E1-009A establishes this contract for the code-native sample review page; later PDF/image viewers must preserve the same invariant.
+
 ## Visual validation workflow
 
 Run `npm run dev`, inspect `/__dev/design-system` (or `/en/__dev/design-system`), and use `npm run visual:capture` to write an ignored screenshot to `artifacts/visual/`. Set `VISUAL_ROUTE=/path` for a later screen. The Playwright capture uses Chromium, 1448 × 1086, Romanian locale, Bucharest timezone, reduced motion, fixed time, and font readiness. Compare each implemented screen side by side with its original in `docs/design/mockups/`, adjust, and obtain product-owner approval before adding CI screenshot baselines. Generated captures never overwrite the canonical mockups. The preview is development-only and returns 404 in production.

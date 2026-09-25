@@ -7,7 +7,7 @@ const fixtures: Record<string, DocumentReviewViewModel> = {
     organization: {name: 'Demo Company SRL'},
     user: {fullName: 'Andrei Popescu', initials: 'AP'},
     notificationCount: 3,
-    file: {name: 'Certificat_fiscal_CP_2024.pdf', sizeLabel: '245 KB', pageCount: 1, uploadedAt: '12.03.2024'},
+    file: {name: 'Certificat_fiscal_CP_2024.pdf', sizeLabel: '245 KB', pageCount: 1, uploadedAt: '12.03.2024', sourcePage: {width: 480, height: 480 * 297 / 210}},
     extraction: {
       confidencePercent: 94,
       values: {
