@@ -5,7 +5,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 ## Phase 0 — Product & Repository Foundation
 
 - Repository memory — complete
-- Canonical mockup contract and ten approved images — complete
+- Canonical mockup contract and eleven approved images — complete
 - Architecture and stack decision — complete (TASK-002)
 - UI foundation and canonical design system tooling — complete (TASK-003); no product screens approved
 - E1-001 canonical landing page — implemented; product-owner visual approval remains pending
@@ -17,11 +17,12 @@ This roadmap records direction only. Detailed requirements are created by the ta
 - E1-007 canonical Invite Vendor drawer — implemented from Vendor Details with a local preview form; product-owner visual approval remains pending
 - E1-008 canonical Supplier Upload Portal — implemented as a separate external-supplier layout with a deterministic token fixture and browser-local file selection; product-owner visual approval remains pending
 - E1-009 canonical Document Review — implemented with a deterministic document fixture, local edits and human confirmation only; product-owner visual approval remains pending
+- E1-011 canonical Documents page — implemented with typed document-to-vendor fixtures and local tabs, filters, sort, and pagination; product-owner visual approval remains pending
 
 ## Agreed delivery sequence
 
 1. E1-001 landing page — implemented under an explicit task brief. The earlier complete-MVP epic planning checkpoint remains open.
-2. Implement remaining approved mockup experiences using typed fixture data; mockup 10 remains. The global `/documents` list is deferred to E1-011, sourced from `11-documents.png`.
+2. Implement remaining approved mockup experiences using typed fixture data; mockup 10 remains. The global `/documents` list from `11-documents.png` is implemented.
 3. Visually and interactively compare them with the canonical mockups; obtain product-owner visual approval.
 4. Before expanding beyond the supplied E1 tasks, finalize the complete Epic sequence through MVP.
 5. Define data model and API contracts, then build backend/persistence and replace fixtures with real data.
@@ -43,4 +44,4 @@ These are roadmap directions, not detailed feature specifications or a finalized
 
 ## Next task
 
-Document Review (09) is implemented. The next tracked approved mockup is 10; the global Documents list is separately deferred to E1-011. The broader MVP epic sequence still requires a planning checkpoint; backend and auth are not implemented.
+The next unimplemented approved mockup is 10 (activity/audit). The broader MVP epic sequence still requires a planning checkpoint; backend and auth are not implemented.

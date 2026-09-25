@@ -42,7 +42,6 @@ export function AppSidebar({locale, currentPath, organizationName, userName, use
           if (item.id === 'dashboard' || item.id === 'suppliers' || item.id === 'requirements' || item.id === 'documents') {
             const path = item.id === 'dashboard' ? '/dashboard' : item.id === 'suppliers' ? '/vendors' : item.id === 'requirements' ? '/requirements' : '/documents';
             const active = currentPath === path || ((item.id === 'suppliers' || item.id === 'documents') && currentPath.startsWith(`${path}/`));
-            if (item.id === 'documents') return <span key={item.id} aria-current={active ? 'page' : undefined} className={`${styles.navItem} ${active ? styles.active : ''}`}>{content}</span>;
             return <Link key={item.id} href={path} aria-current={active ? 'page' : undefined} className={`${styles.navItem} ${active ? styles.active : ''}`}>{content}</Link>;
           }
           return <button key={item.id} type="button" aria-disabled="true" className={styles.navItem}>{content}</button>;

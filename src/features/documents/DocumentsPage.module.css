@@ -1,0 +1,131 @@
+.page {min-width: 0;}
+.contextArrow {color: #5b80b8; font-size: 22px; line-height: 1; margin-right: 9px;}
+.summaryGrid {display: grid; gap: 10px; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 24px;}
+.summaryCard {height: 119px; min-width: 0; overflow: hidden; padding: 0;}
+.summaryBody, .summaryAction {align-items: flex-start; background: transparent; border: 0; color: inherit; display: flex; gap: 19px; height: 100%; padding: 16px 15px; text-align: left; width: 100%;}
+.summaryAction {cursor: pointer;}
+.summaryAction:hover {background: #f8fbff;}
+.summaryIcon {align-items: center; background: #e4efff; border-radius: 50%; color: #0764db; display: inline-flex; flex: 0 0 48px; height: 48px; justify-content: center;}
+.summaryCard[data-status='review'] .summaryIcon {background: #ffe4e9; color: #df304b;}
+.summaryCard[data-status='valid'] .summaryIcon {background: #e2f7ef; color: #079b6d;}
+.summaryCard[data-status='expiring'] .summaryIcon {background: #fff0d7; color: #dc8b00;}
+.summaryCopy {display: grid; min-width: 0; padding-top: 1px;}
+.summaryCopy strong {color: #1a2b4c; font-size: 13px; font-weight: 700; line-height: 1.25;}
+.summaryCopy b {color: #14223d; font-size: 29px; line-height: 1.15; margin-top: 7px;}
+.summaryCopy small {color: #069666; font-size: 12px; font-weight: 600; margin-top: 6px; white-space: nowrap;}
+.summaryCard[data-status='review'] .summaryCopy small {color: #d92543;}
+.summaryCard[data-status='expiring'] .summaryCopy small {color: #cb7600;}
+.summaryChevron {color: #5578af; flex: 0 0 auto; margin-left: auto; margin-top: 2px;}
+
+.tabs {border-top: 1px solid #e0eafa; display: flex; gap: 32px; margin-top: 17px; min-width: 0; overflow-x: auto; padding: 0 11px; scrollbar-width: thin;}
+.tabs button {align-items: center; background: transparent; border: 0; border-bottom: 3px solid transparent; color: #405574; display: inline-flex; flex: 0 0 auto; font-size: 14px; font-weight: 700; gap: 9px; min-height: 50px; padding: 0; white-space: nowrap;}
+.tabs button[aria-current='page'] {border-bottom-color: #075ee9; color: #0756c6;}
+.tabs button span {background: #e8f1ff; border-radius: 10px; color: #0756c6; font-size: 12px; min-width: 24px; padding: 2px 7px; text-align: center;}
+.tabs button:last-child span {background: #ffe8ec; color: #d52140;}
+
+.workspace {display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) 244px; min-width: 0;}
+.workspace[data-filters-open='false'] {grid-template-columns: minmax(0, 1fr);}
+.listSurface, .filterPanel {background: #fff; border: 1px solid #cbdcf8; border-radius: 11px; box-shadow: var(--shadow-card); min-width: 0; overflow: hidden;}
+.toolbar {align-items: center; display: flex; gap: 14px; justify-content: space-between; min-height: 67px; padding: 12px 14px;}
+.search {align-items: center; background: #eff5fd; border-radius: 8px; color: #5977a6; display: flex; flex: 1 1 auto; gap: 10px; height: 37px; min-width: 0; padding: 0 12px;}
+.search input {background: transparent; border: 0; color: #17315a; flex: 1 1 auto; font: inherit; font-size: 13px; min-width: 0; outline: 0;}
+.search input::placeholder {color: #667fa4; opacity: 1;}
+.search:focus-within {outline: 3px solid var(--color-focus); outline-offset: 2px;}
+.toolbarActions {display: flex; flex: 0 0 auto; gap: 10px;}
+.toolbarButton {align-items: center; background: #fff; border: 1px solid #cbdcf8; border-radius: 8px; color: #15325e; display: inline-flex; font-size: 13px; font-weight: 650; gap: 8px; height: 37px; justify-content: center; padding: 0 11px; white-space: nowrap;}
+.toolbarButton > svg {color: #3464a7;}
+.sortControl {padding-right: 8px;}
+.sortControl select {appearance: none; background: transparent; border: 0; color: inherit; cursor: pointer; font: inherit; max-width: 160px; outline: 0;}
+.sortControl:focus-within {outline: 3px solid var(--color-focus); outline-offset: 2px;}
+.tableScroll {min-width: 0; overflow-x: auto; scrollbar-width: thin;}
+.table {border-collapse: collapse; color: #2d4060; font-size: 12px; min-width: 870px; table-layout: fixed; text-align: left; width: 100%;}
+.table th:nth-child(1) {width: 23%;}
+.table th:nth-child(2) {width: 15%;}
+.table th:nth-child(3) {width: 14%;}
+.table th:nth-child(4) {width: 15%;}
+.table th:nth-child(5) {width: 14%;}
+.table th:nth-child(6) {width: 12%;}
+.table th:nth-child(7) {width: 7%;}
+.table th {background: #f3f8ff; color: #526a92; font-size: 10px; font-weight: 600; height: 34px; white-space: nowrap;}
+.table th, .table td {border-bottom: 1px solid #e0eaf9; padding: 6px 9px;}
+.table td {height: 55px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis;}
+.table td:nth-child(5), .table td:nth-child(6) {white-space: nowrap;}
+.table tbody tr:last-child td {border-bottom: 0;}
+.documentIdentity {align-items: center; display: flex; gap: 12px; min-width: 0;}
+.documentIcon {color: #0861df; flex: 0 0 auto;}
+.documentIcon[data-status='expiring'] {color: #e48a00;}
+.documentIcon[data-status='expired'] {color: #e12d46;}
+.documentText {display: grid; min-width: 0;}
+.documentText a, .documentText strong {color: #142a4d; font-size: 12px; font-weight: 700; overflow: hidden; text-decoration: none; text-overflow: ellipsis; white-space: nowrap;}
+.documentText a:hover {color: #075ee9;}
+.documentText small {color: #647b9e; font-size: 11px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.statusBadge {font-size: 11px; gap: 5px; min-height: 23px; padding: 3px 7px;}
+.statusBadge > span:first-child {display: none;}
+.statusBadge svg {flex: 0 0 auto;}
+.expiry[data-status='expiring'] {color: #c97700;}
+.expiry[data-status='expired'] {color: #d52140;}
+.actionsCell {text-align: center;}
+.rowAction {align-items: center; background: transparent; border: 0; color: #355a91; display: inline-flex; height: 32px; justify-content: center; width: 32px;}
+.rowAction[aria-disabled='true'] {color: #8093b1; cursor: default;}
+.tableFooter {align-items: center; border-top: 1px solid #e0eaf9; color: #50678b; display: flex; font-size: 12px; gap: 12px; justify-content: space-between; min-height: 58px; padding: 10px 15px;}
+.pagination {align-items: center; display: flex; gap: 5px;}
+.pagination button {align-items: center; background: #fff; border: 1px solid transparent; border-radius: 6px; color: #1d3a69; display: inline-flex; height: 30px; justify-content: center; min-width: 30px;}
+.pagination button[aria-current='page'] {border-color: #0864e8; box-shadow: 0 0 0 3px #e7efff; color: #075bd3;}
+.pagination button:disabled {background: #eff4fb; color: #9ab0d0; cursor: default;}
+.previousIcon {transform: rotate(180deg);}
+.emptyReset {background: #fff; border: 1px solid #bdd3f5; border-radius: 8px; color: #0754c6; font-weight: 700; min-height: 38px; padding: 7px 12px;}
+
+.filterPanel {align-self: stretch; display: flex; flex-direction: column;}
+.filterPanel[hidden] {display: none;}
+.filterHeading {align-items: center; display: flex; justify-content: space-between; padding: 19px 16px 13px;}
+.filterHeading h2 {color: #142544; font-size: 16px; font-weight: 750;}
+.filterHeading button {background: transparent; border: 0; color: #0759d1; font-size: 12px; font-weight: 650;}
+.filterFields {display: grid; gap: 17px; padding: 0 16px 14px;}
+.filterSelect {color: #243959; display: grid; font-size: 12px; font-weight: 700; gap: 7px; position: relative;}
+.filterSelect select {appearance: none; background: #fff; border: 1px solid #cbdcf8; border-radius: 7px; color: #30496e; font: inherit; font-size: 12px; font-weight: 400; height: 36px; min-width: 0; padding: 0 28px 0 11px; width: 100%;}
+.filterSelect svg {bottom: 10px; color: #295698; pointer-events: none; position: absolute; right: 10px;}
+.statusFilters {border: 0; display: grid; gap: 8px; margin: 0; min-width: 0; padding: 0;}
+.statusFilters legend {color: #243959; font-size: 12px; font-weight: 700; margin-bottom: 7px;}
+.statusFilters label {align-items: center; color: #334b6e; display: grid; font-size: 12px; gap: 6px; grid-template-columns: 16px 20px minmax(0, 1fr) auto; min-width: 0;}
+.statusFilters input {accent-color: #075ee9; height: 15px; margin: 0; width: 15px;}
+.filterStatusIcon {align-items: center; background: #ffe6eb; border-radius: 50%; color: #df304b; display: inline-flex; height: 19px; justify-content: center; width: 19px;}
+.filterStatusIcon[data-status='valid'] {background: #e0f6eb; color: #07986b;}
+.filterStatusIcon[data-status='expiring'] {background: #fff0d6; color: #d78800;}
+.statusFilters label small {background: #eaf2ff; border-radius: 6px; color: #3b598a; font-size: 11px; padding: 2px 6px;}
+.filterFooter {border-top: 1px solid #e0eafa; margin-top: auto; padding: 12px 16px;}
+.filterFooter button {background: #fff; border: 1px solid #cbdcf8; border-radius: 7px; color: #233f6c; font-size: 12px; font-weight: 700; min-height: 37px; width: 100%;}
+.srOnly {clip: rect(0 0 0 0); clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px;}
+
+@media (max-width: 1399px) {
+  .workspace {grid-template-columns: minmax(0, 1fr);}
+  .filterPanel {grid-row: 1;}
+  .filterFields {grid-template-columns: repeat(2, minmax(0, 1fr));}
+  .filterFooter {margin-top: 0;}
+}
+@media (max-width: 1199px) {
+  .summaryGrid {grid-template-columns: repeat(2, minmax(0, 1fr));}
+}
+@media (max-width: 767px) {
+  .summaryGrid {gap: 8px; margin-top: 16px;}
+  .summaryCard {height: 108px;}
+  .summaryBody, .summaryAction {gap: 9px; padding: 12px 10px;}
+  .summaryIcon {flex-basis: 36px; height: 36px;}
+  .summaryIcon svg {height: 19px; width: 19px;}
+  .summaryCopy strong {font-size: 11px;}
+  .summaryCopy b {font-size: 24px;}
+  .summaryCopy small {font-size: 10px; white-space: normal;}
+  .summaryChevron {display: none;}
+  .tabs {gap: 20px; padding: 0 4px;}
+  .toolbar {align-items: stretch; flex-direction: column;}
+  .search {flex-basis: 38px; flex-grow: 0;}
+  .toolbarActions {justify-content: flex-end;}
+  .filterFields {grid-template-columns: minmax(0, 1fr);}
+  .tableFooter {align-items: flex-start; flex-direction: column;}
+}
+@media (max-width: 380px) {
+  .summaryBody, .summaryAction {gap: 6px; padding-inline: 7px;}
+  .summaryIcon {flex-basis: 30px; height: 30px;}
+  .summaryIcon svg {height: 17px; width: 17px;}
+  .toolbarActions {justify-content: space-between;}
+  .toolbarButton {font-size: 12px; padding-inline: 8px;}
+}

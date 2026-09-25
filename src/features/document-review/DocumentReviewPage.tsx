@@ -97,7 +97,6 @@ export function DocumentReviewPage({locale, view}: {locale: string; view: Docume
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [reviewState, setReviewState] = useState<ReviewState>('extracted');
   const documentPath = `/documents/${view.id}/review`;
-  const vendorPath = `/vendors/${view.vendor.id}`;
 
   function update(field: FieldName, value: string) {
     setValues((current) => ({...current, [field]: value}));
@@ -132,8 +131,8 @@ export function DocumentReviewPage({locale, view}: {locale: string; view: Docume
   return <AuthenticatedAppShell locale={locale} currentPath={documentPath} organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={view.notificationCount}>
     <div className={styles.page}>
       <div className={styles.contextRow}>
-        <AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: app('navigation.documents')}, {label: t('breadcrumbCurrent')}]} />
-        <Link href={vendorPath} className={styles.backLink}><span aria-hidden="true">←</span>{t('backToDocuments')}</Link>
+        <AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: app('navigation.documents'), href: '/documents'}, {label: t('breadcrumbCurrent')}]} />
+        <Link href="/documents" className={styles.backLink}><span aria-hidden="true">←</span>{t('backToDocuments')}</Link>
       </div>
       <header className={styles.pageHeader}>
         <div className={styles.pageHeading}><div className={styles.eyebrow}><span className={styles.eyebrowIcon}><AppIcon name="file" size={22}/></span>{t('eyebrow')}</div><h1>{t('title')}</h1><p>{t('description')}</p></div>

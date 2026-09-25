@@ -90,11 +90,11 @@ test('English route and locale navigation preserve the fixture identity and layo
   }
 });
 
-test('unknown fixture ID is a 404 and no global Documents list is exposed', async ({page}) => {
+test('unknown fixture ID is a 404 while the Documents list remains available', async ({page}) => {
   const response = await page.goto('/documents/not-a-fixture/review');
   expect(response?.status()).toBe(404);
   const list = await page.goto('/documents');
-  expect(list?.status()).toBe(404);
+  expect(list?.status()).toBe(200);
 });
 
 test('header, panels, actions and proportional viewer reflow without collisions', async ({page}) => {
