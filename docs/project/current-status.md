@@ -10,7 +10,7 @@
 
 **Domain strategy:** Single domain
 
-**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and canonical experiences through the fixture-backed Documents page are implemented; backend/auth integrations are not.
+**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and all eleven approved fixture-backed canonical experiences are implemented; backend/auth integrations are not.
 
 ## Design state
 
@@ -41,6 +41,7 @@ The final logo is not yet designed and must not be invented.
 - E1-007 canonical Invite Vendor drawer from Vendor Details, with local form validation and a deterministic demo link but no email delivery; see [invite vendor](../features/invite-vendor.md)
 - E1-008 canonical Supplier Upload Portal at `/upload/demo-construct-pro` and `/en/upload/demo-construct-pro`, with an external-supplier layout, typed token fixture, and browser-local file selection only; see [supplier upload portal](../features/supplier-upload-portal.md)
 - E1-009 canonical Document Review at `/documents/construct-pro-tax-2024/review` and `/en/documents/construct-pro-tax-2024/review`, with typed document/extraction fixtures and browser-local human review only; see [document review](../features/document-review.md)
+- E1-010 canonical Notifications and Audit Activity at `/notifications` and `/en/notifications`, with separate typed operational/audit fixtures, local filters, timeline, and CSV export; see [notifications and audit](../features/notifications-audit.md)
 - E1-011 canonical Documents page at `/documents` and `/en/documents`, with typed document-to-vendor summary fixtures, local list controls, and a link to the existing review fixture; see [documents](../features/documents.md)
 - Landing-page CTA alignment and visible brand casing standardized to `DEBIRO`; the three-mode responsive contract, shared centered 1350px page shell, shared 66px public header, stacked hero reflow, and boundary/safety viewport regression matrix are implemented in [UI foundation](../design/ui-foundation.md#page-shell-contract)
 
@@ -50,16 +51,16 @@ TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to
 
 ## Not implemented
 
-- Canonical experience 10, later onboarding steps, and functional backend workflows
+- Later onboarding steps and functional backend workflows
 - Product-owner visual approval and approved regression baselines
 - Backend or API
 - Database, schemas, or migrations
 - Authentication or authorization
 - Document storage or upload system
 - Document processing, OCR, or AI extraction
-- Notifications, email, or reminders
+- Real notification delivery, email, or scheduled reminders; persistent audit history
 - Billing
 
 ## Next
 
-The remaining unimplemented approved mockup is 10 (activity/audit). The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).
+All eleven approved canonical screens have fixture-backed implementations; product-owner visual approval remains pending. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).
