@@ -20,14 +20,23 @@ test('renders the canonical Romanian first step and editable local form', async 
   await expect(password).toHaveAttribute('type', 'password');
   await password.fill('lowercase');
   expect(await page.locator('form').evaluate((form: HTMLFormElement) => form.checkValidity())).toBe(false);
+  await expect(page.getByRole('button', {name: 'Continuă'})).toBeDisabled();
   await password.fill('ValidPass1!');
   expect(await page.locator('form').evaluate((form: HTMLFormElement) => form.checkValidity())).toBe(true);
+  await expect(page.getByRole('button', {name: 'Continuă'})).toBeEnabled();
+
+  await company.fill('');
+  await expect(page.getByRole('button', {name: 'Continuă'})).toBeDisabled();
+  await company.fill('Firma Test SRL');
+  await expect(page.getByRole('button', {name: 'Continuă'})).toBeEnabled();
 
   const terms = page.locator('input[name="terms"]');
   await terms.uncheck();
   expect(await page.locator('form').evaluate((form: HTMLFormElement) => form.checkValidity())).toBe(false);
+  await expect(page.getByRole('button', {name: 'Continuă'})).toBeDisabled();
   await terms.check();
   expect(await page.locator('form').evaluate((form: HTMLFormElement) => form.checkValidity())).toBe(true);
+  await expect(page.getByRole('button', {name: 'Continuă'})).toBeEnabled();
   await page.getByRole('button', {name: 'Continuă'}).click();
   await expect(page).toHaveURL(/\/onboarding$/);
 });
@@ -43,10 +52,10 @@ test('renders English copy and switches locale without changing routing conventi
   await expect(page.locator('html')).toHaveAttribute('lang', 'ro');
 });
 
-test('optional requirements need explicit selection and supplier finish needs a valid row', async ({page}) => {
+test('optional requirements need explicit selection and Step 3 preserves state on Back', async ({page}) => {
   await page.goto('/onboarding');
   await page.getByRole('button', {name: 'Continuă'}).click();
-  await expect(page.getByRole('heading', {level: 1})).toHaveText('Configurează cerințele documentelor · Opțional');
+  await expect(page.getByRole('heading', {level: 1})).toHaveText('Configurează cerințele documentelor (Opțional)');
   await expect(page.getByRole('list', {name: 'Progres configurare'}).locator('[aria-current="step"]')).toContainText('Cerințe documente');
   await expect(page.getByText('Recomandat', {exact: true})).toBeVisible();
   await expect(page.getByRole('radio', {name: /Subcontractori construcții/})).not.toBeChecked();
@@ -60,12 +69,15 @@ test('optional requirements need explicit selection and supplier finish needs a 
   await tax.uncheck();
   await expect(page.getByRole('button', {name: 'Continuă'})).toBeEnabled();
   await page.getByRole('button', {name: 'Continuă'}).click();
-  await expect(page.getByRole('heading', {level: 1})).toHaveText('Invită primii furnizori · Opțional');
-  await expect(page.getByRole('list', {name: 'Progres configurare'}).locator('[aria-current="step"]')).toContainText('Invită primii furnizori');
+  await expect(page.getByRole('heading', {level: 1})).toHaveText('Adaugă furnizori (Opțional)');
+  await expect(page.getByRole('list', {name: 'Progres configurare'}).locator('[aria-current="step"]')).toContainText('Adaugă furnizori');
+  await expect(page.getByText('Furnizori inițiali')).toBeVisible();
+  await expect(page.getByText(/Furnizorii adăugați vor apărea în secțiunea/)).toBeVisible();
   await expect(page.getByText('Nu ai adăugat încă furnizori.')).toBeVisible();
   await expect(page.getByLabel(/^Numele furnizorului/)).toHaveCount(0);
-  await expect(page.getByRole('button', {name: 'Finalizează configurarea'})).toBeDisabled();
-  await page.getByRole('button', {name: 'Cerințe documente'}).click();
+  await expect(page.getByRole('button', {name: 'Intră în Dashboard'})).toBeEnabled();
+  await expect(page.getByRole('button', {name: 'Sari peste'})).toHaveCount(0);
+  await page.getByRole('button', {name: 'Înapoi'}).click();
   await expect(page.getByRole('radio', {name: /Șablon general/})).toBeChecked();
   await expect(tax).not.toBeChecked();
   await page.getByRole('button', {name: 'Continuă'}).click();
@@ -74,30 +86,43 @@ test('optional requirements need explicit selection and supplier finish needs a 
   const names = page.getByLabel(/^Numele furnizorului/);
   const emails = page.getByLabel(/^Email de contact/);
   await expect(names).toHaveCount(1);
-  await expect(page.getByRole('button', {name: 'Finalizează configurarea'})).toBeDisabled();
+  await expect(page.getByRole('button', {name: 'Intră în Dashboard'})).toBeEnabled();
+  await page.getByRole('button', {name: 'Intră în Dashboard'}).click();
+  await expect(page).toHaveURL(/\/onboarding$/);
+  await expect(page.getByText('Introdu numele furnizorului.')).toBeVisible();
+  await expect(page.getByText('Introdu o adresă de email validă.')).toBeVisible();
+  await expect(names.first()).toBeFocused();
   await names.first().fill('Furnizor Test');
   await emails.first().fill('invalid-email');
   await expect(page.getByText('Introdu o adresă de email validă.')).toBeVisible();
-  await expect(page.getByRole('button', {name: 'Finalizează configurarea'})).toBeDisabled();
+  await page.getByRole('button', {name: 'Înapoi'}).click();
+  await expect(page.getByRole('heading', {level: 1})).toHaveText('Adaugă furnizori (Opțional)');
+  await page.getByRole('button', {name: 'Intră în Dashboard'}).click();
+  await expect(page).toHaveURL(/\/onboarding$/);
+  await expect(emails.first()).toBeFocused();
   await emails.first().fill('test@example.ro');
   await names.first().fill('');
   await expect(page.getByText('Introdu numele furnizorului.')).toBeVisible();
   await names.first().fill('Furnizor Test');
-  await expect(page.getByText('Gata de invitat')).toBeVisible();
-  await expect(page.getByRole('button', {name: 'Finalizează configurarea'})).toBeEnabled();
+  await expect(page.getByText('Date valide')).toBeVisible();
+  await page.getByRole('button', {name: 'Înapoi'}).click();
+  await expect(page.getByRole('heading', {level: 1})).toHaveText('Configurează cerințele documentelor (Opțional)');
+  await page.getByRole('button', {name: 'Continuă'}).click();
+  await expect(names.first()).toHaveValue('Furnizor Test');
   await page.getByRole('button', {name: 'Elimină Furnizor Test'}).click();
   await expect(names).toHaveCount(0);
-  await expect(page.getByRole('button', {name: 'Finalizează configurarea'})).toBeDisabled();
   await page.getByRole('button', {name: 'Adaugă furnizor'}).click();
   await names.first().fill('Furnizor Test');
   await emails.first().fill('test@example.ro');
   await page.getByRole('button', {name: 'Adaugă alt furnizor'}).click();
-  await expect(page.getByRole('button', {name: 'Finalizează configurarea'})).toBeEnabled();
-  await page.getByRole('button', {name: 'Finalizează configurarea'}).click();
+  await page.getByRole('button', {name: 'Intră în Dashboard'}).click();
+  await expect(page).toHaveURL(/\/onboarding$/);
+  await page.getByRole('button', {name: 'Elimină furnizorul fără nume'}).click();
+  await page.getByRole('button', {name: 'Intră în Dashboard'}).click();
   await expect(page).toHaveURL(/\/dashboard$/);
 });
 
-test('skipping either optional step clears local drafts without creating setup data', async ({page}) => {
+test('configuring Step 2 later clears its draft and zero suppliers may enter Dashboard', async ({page}) => {
   await page.goto('/onboarding');
   await page.getByRole('button', {name: 'Continuă'}).click();
   await page.getByRole('checkbox', {name: /Certificat fiscal/}).check();
@@ -108,27 +133,50 @@ test('skipping either optional step clears local drafts without creating setup d
   await expect(page.getByRole('checkbox', {name: /Certificat fiscal/})).not.toBeChecked();
   await expect(page.getByRole('button', {name: 'Continuă'})).toBeDisabled();
   await page.getByRole('button', {name: 'Configurează mai târziu'}).click();
-  await page.getByRole('button', {name: 'Adaugă furnizor'}).click();
-  await page.getByLabel(/^Numele furnizorului/).fill('Neconfirmat SRL');
-  await expect(page.getByRole('button', {name: 'Finalizează configurarea'})).toBeDisabled();
-  await page.getByRole('button', {name: 'Sari peste'}).click();
+  await expect(page.getByLabel(/^Numele furnizorului/)).toHaveCount(0);
+  await page.getByRole('button', {name: 'Intră în Dashboard'}).click();
   await expect(page).toHaveURL(/\/dashboard$/);
 });
 
 test('English onboarding completes all three steps with locale-aware dashboard navigation', async ({page}) => {
   await page.goto('/en/onboarding');
   await page.getByRole('button', {name: 'Continue'}).click();
-  await expect(page.getByRole('heading', {level: 1})).toHaveText('Configure document requirements · Optional');
+  await expect(page.getByRole('heading', {level: 1})).toHaveText('Configure document requirements (Optional)');
   await expect(page.getByRole('button', {name: 'Continue'})).toBeDisabled();
   await page.getByRole('radio', {name: /General template/}).check();
   await page.getByRole('button', {name: 'Continue'}).click();
-  await expect(page.getByRole('heading', {level: 1})).toHaveText('Invite your first suppliers · Optional');
-  await expect(page.getByRole('button', {name: 'Finish setup'})).toBeDisabled();
+  await expect(page.getByRole('heading', {level: 1})).toHaveText('Add suppliers (Optional)');
+  await expect(page.getByRole('button', {name: 'Go to Dashboard'})).toBeEnabled();
   await page.getByRole('button', {name: 'Add supplier'}).click();
   await page.getByLabel(/^Supplier name/).fill('Example Supplier');
   await page.getByLabel(/^Contact email/).fill('supplier@example.com');
-  await page.getByRole('button', {name: 'Finish setup'}).click();
+  await page.getByRole('button', {name: 'Go to Dashboard'}).click();
   await expect(page).toHaveURL(/\/en\/dashboard$/);
+});
+
+test('optional step action rows align controls and step counts without early stacking', async ({page}) => {
+  await page.setViewportSize({width: 1448, height: 1086});
+  await page.goto('/onboarding');
+  await page.getByRole('button', {name: 'Continuă'}).click();
+
+  for (const [secondaryLabel, primaryLabel, stepCount] of [
+    ['Configurează mai târziu', 'Continuă', 'Pasul 2 din 3'],
+    ['Înapoi', 'Intră în Dashboard', 'Pasul 3 din 3']
+  ]) {
+    for (const width of [1448, 768, 600]) {
+      await page.setViewportSize({width, height: 1086});
+      const secondary = await page.getByRole('button', {name: secondaryLabel}).boundingBox();
+      const primary = await page.getByRole('button', {name: primaryLabel}).boundingBox();
+      const count = await page.getByText(stepCount).boundingBox();
+      expect(secondary).not.toBeNull();
+      expect(primary).not.toBeNull();
+      expect(count).not.toBeNull();
+      expect(Math.abs(secondary!.y + secondary!.height / 2 - primary!.y - primary!.height / 2)).toBeLessThan(2);
+      expect(secondary!.x + secondary!.width).toBeLessThan(primary!.x);
+      expect(Math.abs(count!.x + count!.width / 2 - primary!.x - primary!.width / 2)).toBeLessThan(2);
+    }
+    if (stepCount === 'Pasul 2 din 3') await page.getByRole('button', {name: 'Configurează mai târziu'}).click();
+  }
 });
 
 test('steps two and three stay contained at the required viewport widths', async ({page}) => {

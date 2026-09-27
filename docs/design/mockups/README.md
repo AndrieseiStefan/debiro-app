@@ -18,7 +18,7 @@ This directory contains thirteen approved product mockup images listed below. Th
 | `10-audit-activity.png` | Activity and audit experience |
 | `11-documents.png` | Global authenticated Documents page |
 | `12-onboarding-step2.png` | Optional document requirements onboarding step |
-| `13-onboarding-step3.png` | Optional first-supplier invitations onboarding step |
+| `13-onboarding-step3.png` | Optional add-suppliers onboarding step; E1-012B supersedes its invitation wording and actions |
 
 ## Contract
 
@@ -28,6 +28,8 @@ For every approved mockup, these are canonical:
 - Visual treatment and typography
 - Interaction model
 - Visible Romanian product copy
+
+Explicit later product tasks may supersede a specific mockup detail; the original image remains unchanged. E1-012A/B supersede the optional onboarding defaults, Step 2/3 labels, and Step 3 invitation copy/actions.
 
 These sample values are not canonical:
 

@@ -68,24 +68,23 @@ function RequirementsStep({template, onTemplateChange, selected, onToggle, onSki
         <p className={styles.stepInfo}><OnboardingIcon name="info" size={22} /><span>{t('requirements.noteBefore')} <span className={styles.infoEmphasis}>{t('requirements.noteSection')}</span>.</span></p>
       </Surface>
       <div className={styles.optionalActions}>
-        <button type="button" className={styles.skipAction} onClick={onSkip}>{t('requirements.skip')}</button>
+        <button type="button" className={styles.secondaryAction} onClick={onSkip}>{t('requirements.skip')}</button>
         <div className={styles.optionalSubmit}><Button type="button" className={styles.continueButton} disabled={selected.length === 0} onClick={onContinue}>{t('continue')}<OnboardingIcon name="arrow" size={20} /></Button><span>{t('requirements.stepCount')}</span></div>
       </div>
     </div>
   </>;
 }
 
-function SuppliersStep({rows, onAdd, onUpdate, onRemove, onSkip, onFinish}: {
+function SuppliersStep({rows, attemptedExit, onAdd, onUpdate, onRemove, onBack, onFinish}: {
   rows: SupplierRow[];
+  attemptedExit: boolean;
   onAdd: () => void;
   onUpdate: (id: number, field: 'name' | 'email', value: string) => void;
   onRemove: (id: number) => void;
-  onSkip: () => void;
+  onBack: () => void;
   onFinish: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   const t = useTranslations('Onboarding');
-  const populatedRows = rows.filter((row) => row.name.trim() || row.email.trim());
-  const canFinish = populatedRows.length > 0 && populatedRows.every((row) => row.name.trim() && validEmail(row.email));
   return <>
     <h1 id="onboarding-heading">{t('suppliers.heading')}</h1>
     <p className={styles.lead}>{t('suppliers.lead')}</p>
@@ -93,14 +92,14 @@ function SuppliersStep({rows, onAdd, onUpdate, onRemove, onSkip, onFinish}: {
       <Surface className={styles.formCard}>
         <div className={styles.cardHeading}>
           <span className={styles.cardIcon}><OnboardingIcon name="users" size={23} /></span>
-          <span><h2>{t('suppliers.invitesHeading')}</h2><p>{t('suppliers.invitesDescription')}</p></span>
+          <span><h2>{t('suppliers.vendorsHeading')}</h2><p>{t('suppliers.vendorsDescription')}</p></span>
         </div>
         <div className={styles.supplierRows}>
           {rows.length === 0 && <p className={styles.emptySuppliers}>{t('suppliers.empty')}</p>}
           {rows.map((row) => {
             const populated = Boolean(row.name.trim() || row.email.trim());
-            const nameError = populated && !row.name.trim();
-            const emailError = populated && !validEmail(row.email);
+            const nameError = (populated || attemptedExit) && !row.name.trim();
+            const emailError = (populated || attemptedExit) && !validEmail(row.email);
             const ready = Boolean(row.name.trim()) && validEmail(row.email);
             return <div className={styles.supplierRow} key={row.id}>
               <div className={styles.supplierField}>
@@ -113,17 +112,17 @@ function SuppliersStep({rows, onAdd, onUpdate, onRemove, onSkip, onFinish}: {
                 <div className={styles.supplierEmail}><OnboardingIcon name="mail" size={18} /><input id={`supplier-email-${row.id}`} type="email" value={row.email} onChange={(event) => onUpdate(row.id, 'email', event.target.value)} aria-invalid={emailError || undefined} aria-describedby={emailError ? `supplier-email-error-${row.id}` : undefined} /></div>
                 {emailError && <small id={`supplier-email-error-${row.id}`} role="alert">{t('suppliers.emailError')}</small>}
               </div>
-              <div className={styles.supplierStatus}><span>{t('suppliers.status')}</span><strong data-ready={ready}><OnboardingIcon name={ready ? 'send' : 'info'} size={16} />{t(ready ? 'suppliers.ready' : 'suppliers.incomplete')}</strong></div>
+              <div className={styles.supplierStatus}><span>{t('suppliers.status')}</span><strong data-ready={ready}><OnboardingIcon name={ready ? 'check' : 'info'} size={16} />{t(ready ? 'suppliers.valid' : 'suppliers.incomplete')}</strong></div>
               <button type="button" className={styles.removeSupplier} aria-label={t('suppliers.remove', {name: row.name || t('suppliers.unnamed')})} onClick={() => onRemove(row.id)}><OnboardingIcon name="trash" size={18} /></button>
             </div>;
           })}
         </div>
         <button type="button" className={styles.addSupplier} onClick={onAdd}><OnboardingIcon name="plus" size={22} />{t(rows.length === 0 ? 'suppliers.addFirst' : 'suppliers.add')}</button>
-        <p className={styles.stepInfo}><OnboardingIcon name="info" size={22} /><span>{t('suppliers.noteBefore')} <span className={styles.infoEmphasis}>{t('suppliers.noteSection')}</span>.</span></p>
+        <p className={styles.stepInfo}><OnboardingIcon name="info" size={22} /><span>{t('suppliers.noteBefore')} <span className={styles.infoEmphasis}>{t('suppliers.noteSection')}</span>. {t('suppliers.noteAfter')}</span></p>
       </Surface>
       <div className={styles.optionalActions}>
-        <button type="button" className={styles.skipAction} onClick={onSkip}>{t('suppliers.skip')}</button>
-        <div className={styles.optionalSubmit}><Button type="submit" className={styles.continueButton} disabled={!canFinish}>{t('suppliers.finish')}<OnboardingIcon name="arrow" size={20} /></Button><span>{t('suppliers.stepCount')}</span></div>
+        <button type="button" className={styles.secondaryAction} onClick={onBack}><span aria-hidden="true">←</span> {t('suppliers.back')}</button>
+        <div className={styles.optionalSubmit}><Button type="submit" className={styles.continueButton}>{t('suppliers.dashboard')}<OnboardingIcon name="arrow" size={20} /></Button><span>{t('suppliers.stepCount')}</span></div>
       </div>
     </form>
   </>;
@@ -151,9 +150,15 @@ export function OnboardingPage({locale, fixture}: {locale: string; fixture: Onbo
   const [template, setTemplate] = useState<RequirementTemplate | null>(null);
   const [selectedRequirements, setSelectedRequirements] = useState<RequirementId[]>([]);
   const [supplierRows, setSupplierRows] = useState<SupplierRow[]>([]);
+  const [supplierExitAttempted, setSupplierExitAttempted] = useState(false);
   const nextSupplierId = useRef(1);
   const [password, setPassword] = useState<string>(fixture.password);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [stepOneValid, setStepOneValid] = useState(() => Boolean(
+    fixture.companyName.trim() && fixture.taxId.trim() && fixture.administratorName.trim() &&
+    validEmail(fixture.email) && fixture.password.length >= 8 && /[A-Z]/.test(fixture.password) &&
+    /\d/.test(fixture.password) && /[^A-Za-z0-9]/.test(fixture.password) && fixture.acceptedTerms
+  ));
   const passwordChecks = [
     password.length >= 8,
     /[A-Z]/.test(password),
@@ -163,6 +168,7 @@ export function OnboardingPage({locale, fixture}: {locale: string; fixture: Onbo
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!event.currentTarget.checkValidity()) return;
     setStep(2);
   }
 
@@ -185,10 +191,17 @@ export function OnboardingPage({locale, fixture}: {locale: string; fixture: Onbo
     setSupplierRows((current) => current.map((row) => row.id === id ? {...row, [field]: value} : row));
   }
 
+  function suppliersAreValid() {
+    const incomplete = supplierRows.find((row) => !row.name.trim() || !validEmail(row.email));
+    if (!incomplete) return true;
+    setSupplierExitAttempted(true);
+    document.getElementById(`supplier-${!incomplete.name.trim() ? 'name' : 'email'}-${incomplete.id}`)?.focus();
+    return false;
+  }
+
   function finishOnboarding(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const populatedRows = supplierRows.filter((row) => row.name.trim() || row.email.trim());
-    if (populatedRows.length === 0 || populatedRows.some((row) => !row.name.trim() || !validEmail(row.email))) return;
+    if (!suppliersAreValid()) return;
     router.push('/dashboard');
   }
 
@@ -228,7 +241,7 @@ export function OnboardingPage({locale, fixture}: {locale: string; fixture: Onbo
                 <h1 id="onboarding-heading">{t('heading')}</h1>
                 <p className={styles.lead}>{t('lead')}</p>
 
-                <form onSubmit={handleSubmit} className={styles.form}>
+                <form onSubmit={handleSubmit} onChange={(event) => setStepOneValid(event.currentTarget.checkValidity())} className={styles.form}>
                   <Surface className={styles.formCard}>
                     <div className={styles.cardHeading}>
                       <span className={styles.cardIcon}><OnboardingIcon name="file" size={23} /></span>
@@ -275,11 +288,11 @@ export function OnboardingPage({locale, fixture}: {locale: string; fixture: Onbo
                     <span>{t('termsBefore')} <button type="button" aria-disabled="true" className={styles.legalLink}>{t('termsLink')}</button> {t('termsBetween')} <button type="button" aria-disabled="true" className={styles.legalLink}>{t('privacyLink')}</button> {t('termsAfter')}</span>
                   </label>
                   <div className={styles.submitArea}>
-                    <Button type="submit" className={styles.continueButton}>{t('continue')}<OnboardingIcon name="arrow" size={20} /></Button>
+                    <Button type="submit" className={styles.continueButton} disabled={!stepOneValid}>{t('continue')}<OnboardingIcon name="arrow" size={20} /></Button>
                     <span>{t('stepCount')}</span>
                   </div>
                 </form>
-                </> : step === 2 ? <RequirementsStep template={template} onTemplateChange={chooseTemplate} selected={selectedRequirements} onToggle={toggleRequirement} onSkip={skipRequirements} onContinue={() => {if (selectedRequirements.length > 0) setStep(3);}} /> : <SuppliersStep rows={supplierRows} onAdd={() => {setSupplierRows((current) => [...current, {id: nextSupplierId.current++, name: '', email: ''}]);}} onUpdate={updateSupplier} onRemove={(id) => setSupplierRows((current) => current.filter((row) => row.id !== id))} onSkip={() => {setSupplierRows([]); router.push('/dashboard');}} onFinish={finishOnboarding} />}
+                </> : step === 2 ? <RequirementsStep template={template} onTemplateChange={chooseTemplate} selected={selectedRequirements} onToggle={toggleRequirement} onSkip={skipRequirements} onContinue={() => {if (selectedRequirements.length > 0) setStep(3);}} /> : <SuppliersStep rows={supplierRows} attemptedExit={supplierExitAttempted} onAdd={() => {setSupplierExitAttempted(false); setSupplierRows((current) => [...current, {id: nextSupplierId.current++, name: '', email: ''}]);}} onUpdate={updateSupplier} onRemove={(id) => setSupplierRows((current) => current.filter((row) => row.id !== id))} onBack={() => {if (suppliersAreValid()) setStep(2);}} onFinish={finishOnboarding} />}
               </div>
 
               <aside className={styles.rightRail} aria-label={t('guidanceLabel')}>

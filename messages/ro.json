@@ -135,12 +135,12 @@
     "steps": {
       "company": {"title": "Date companie", "description": "Informații generale despre compania ta și primul utilizator administrator."},
       "requirements": {"title": "Cerințe documente", "description": "Stabilește ce documente sunt obligatorii pentru furnizorii tăi, în funcție de industria ta."},
-      "suppliers": {"title": "Invită primii furnizori", "description": "Adaugă furnizorii existenți și trimite-le invitații să se alăture DEBIRO."}
+      "suppliers": {"title": "Adaugă furnizori", "description": "Adaugă furnizorii cu care lucrezi și urmărește documentele lor. Îi vei putea invita ulterior să încarce documentele solicitate."}
     },
     "securityTitle": "Datele tale sunt în siguranță",
     "securityDescription": "Folosim criptare avansată și respectăm cele mai înalte standarde de securitate.",
     "requirements": {
-      "heading": "Configurează cerințele documentelor · Opțional",
+      "heading": "Configurează cerințele documentelor (Opțional)",
       "lead": "Alege un șablon sau personalizează cerințele documentelor pentru furnizorii tăi. Acest pas este opțional și poate fi configurat și ulterior.",
       "templateHeading": "Șablon recomandat",
       "templateDescription": "Pornim de la un set de cerințe potrivit companiei tale.",
@@ -162,14 +162,14 @@
       "quote": "Furnizori verificați. Proiecte mai sigure."
     },
     "suppliers": {
-      "heading": "Invită primii furnizori · Opțional",
-      "lead": "Adaugă furnizori existenți și trimite-le invitații pentru a începe colaborarea. Acest pas este opțional și poate fi completat și mai târziu.",
-      "invitesHeading": "Invitații inițiale",
-      "invitesDescription": "Poți adăuga câțiva furnizori acum sau poți continua și reveni ulterior.",
+      "heading": "Adaugă furnizori (Opțional)",
+      "lead": "Adaugă furnizorii cu care lucrezi pentru a putea configura și urmări documentele lor. Îi vei putea invita ulterior să încarce documentele solicitate.",
+      "vendorsHeading": "Furnizori inițiali",
+      "vendorsDescription": "Poți adăuga furnizori acum sau poți continua și reveni ulterior.",
       "name": "Numele furnizorului",
       "email": "Email de contact",
       "status": "Status",
-      "ready": "Gata de invitat",
+      "valid": "Date valide",
       "incomplete": "Incomplet",
       "nameError": "Introdu numele furnizorului.",
       "emailError": "Introdu o adresă de email validă.",
@@ -178,10 +178,11 @@
       "empty": "Nu ai adăugat încă furnizori.",
       "addFirst": "Adaugă furnizor",
       "add": "Adaugă alt furnizor",
-      "noteBefore": "Invitațiile pot fi retrimise sau completate mai târziu din secțiunea",
+      "noteBefore": "Furnizorii adăugați vor apărea în secțiunea",
       "noteSection": "Furnizori",
-      "skip": "Sari peste",
-      "finish": "Finalizează configurarea",
+      "noteAfter": "Îi vei putea invita ulterior să încarce documentele solicitate.",
+      "back": "Înapoi",
+      "dashboard": "Intră în Dashboard",
       "stepCount": "Pasul 3 din 3",
       "quote": "Primii pași spre colaborări mai simple.",
       "quoteHandwriting": "Furnizori verificați. Parteneriate de încredere."
