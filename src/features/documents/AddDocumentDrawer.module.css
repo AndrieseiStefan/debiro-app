@@ -1,0 +1,47 @@
+.panel {width: 580px;}
+.content {padding: 22px 24px 28px;}
+.header {align-items: center; display: flex; gap: 20px; padding-right: 35px;}
+.headerIcon {align-items: center; background: #e7f1ff; border-radius: 8px; color: #0862db; display: inline-flex; flex: 0 0 auto; height: 44px; justify-content: center; width: 44px;}
+.header h2 {color: #15213e; font-size: 27px; font-weight: 750; letter-spacing: -.04em; line-height: 1.2;}
+.intro {color: #6079a4; font-size: 14px; line-height: 1.45; margin-top: 12px;}
+.form {display: grid; gap: 17px; margin-top: 20px; min-width: 0;}
+.dropzone {align-items: center; background: #fbfdff; border: 1px dashed #8dbdff; border-radius: 9px; color: #123f88; display: flex; flex-direction: column; gap: 12px; justify-content: center; min-height: 204px; padding: 18px; position: relative; text-align: center;}
+.dropzone[data-dragging] {background: #e9f4ff; border-color: #0862db;}
+.fileInput {height: 1px; left: 0; opacity: 0; position: absolute; top: 0; width: 1px;}
+.fileInput:focus-visible + .uploadIcon {outline: 3px solid var(--color-focus); outline-offset: 3px;}
+.uploadIcon {align-items: center; background: #e3f0ff; border-radius: 50%; color: #0862db; display: inline-flex; height: 57px; justify-content: center; width: 57px;}
+.dropzone strong {font-size: 14px; font-weight: 600; line-height: 1.35;}
+.filename {max-width: 100%; overflow-wrap: anywhere;}
+.dropzone :global(button) {font-size: 14px; min-height: 42px;}
+.dropzone small {color: #6f87b2; font-size: 12px;}
+.extractionNotice {background: #e1efff; border-radius: 7px; color: #0b58c4; display: grid; gap: 11px; padding: 13px 15px;}
+.noticeCopy {align-items: flex-start; display: flex; gap: 12px;}
+.noticeCopy svg {flex: 0 0 auto;}
+.noticeCopy p {font-size: 12px; line-height: 1.45;}
+.toggleRow {align-items: center; cursor: pointer; display: flex; font-size: 12px; gap: 10px; min-height: 27px; position: relative; width: fit-content;}
+.toggleRow input {height: 22px; left: 0; opacity: 0; position: absolute; top: 2px; width: 38px; z-index: 1;}
+.switch {background: #a7bce2; border-radius: 999px; display: inline-block; flex: 0 0 auto; height: 22px; position: relative; width: 38px;}
+.switch::after {background: #fff; border-radius: 50%; content: ''; height: 17px; left: 3px; position: absolute; top: 2.5px; transition: transform 150ms; width: 17px;}
+.toggleRow input:checked + .switch {background: #0862db;}
+.toggleRow input:checked + .switch::after {transform: translateX(15px);}
+.toggleRow input:focus-visible + .switch {outline: 3px solid var(--color-focus); outline-offset: 3px;}
+.extractionStatus {font-size: 12px; line-height: 1.4; margin-left: 50px;}
+.form h3 {color: #172441; font-size: 17px; margin-top: 12px;}
+.field, .selectField {min-width: 0;}
+.field {gap: 7px;}
+.field label, .selectField label {color: #29477e; font-size: 13px; font-weight: 600;}
+.field input {border-color: #d2e1fa; border-radius: 6px; height: 40px; min-width: 0;}
+.field input[readonly] {background: #f1f6fc;}
+.field input::placeholder {color: #8299be;}
+.selectField {display: grid; gap: 7px;}
+.selectField label span, .error {color: #dc2440;}
+.selectWrap {align-items: center; border: 1px solid #d2e1fa; border-radius: 6px; color: #0a60d4; display: flex; gap: 10px; height: 40px; padding: 0 12px;}
+.selectWrap:focus-within {outline: 3px solid var(--color-focus); outline-offset: 2px;}
+.selectWrap select {appearance: none; background: transparent; border: 0; color: #496b9e; flex: 1; font: inherit; font-size: 13px; height: 100%; min-width: 0; outline: none;}
+.selectWrap select option {color: #172441;}
+.fieldRow {display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); min-width: 0;}
+.error {font-size: 12px; line-height: 1.35;}
+.actions {display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; padding-bottom: 2px;}
+.actions :global(button) {font-size: 14px; min-height: 45px;}
+@media (max-width: 600px) {.panel {width: 100vw;}.content {padding: 20px 20px 26px;}}
+@media (max-width: 375px) {.content {padding-inline: 16px;}.header h2 {font-size: 24px;}.fieldRow {grid-template-columns: minmax(0, 1fr);}.actions {display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);}.actions :global(button) {padding-inline: 7px;}}

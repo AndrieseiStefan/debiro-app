@@ -1,6 +1,6 @@
 # Approved Mockups
 
-This repository tracks fifteen approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
+This repository tracks sixteen approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
 
 ## Expected initial mapping
 
@@ -21,6 +21,7 @@ This repository tracks fifteen approved product mockup images listed below. They
 | `13-onboarding-step3.png` | Optional add-suppliers onboarding step; E1-012B supersedes its invitation wording and actions |
 | `14-login.png` | Existing-user login screen |
 | `15-add-vendor.png` | Add Vendor drawer; E1-015 adds required CUI and optional registration/website fields |
+| `16-add-document.png` | Add Document drawer; E1-016 uses inline actions instead of the pictured sticky footer |
 
 ## Contract
 
@@ -31,7 +32,7 @@ For every approved mockup, these are canonical:
 - Interaction model
 - Visible Romanian product copy
 
-Explicit later product tasks may supersede a specific mockup detail; the original image remains unchanged. E1-012A/B supersede the optional onboarding defaults, Step 2/3 labels, and Step 3 invitation copy/actions. E1-015 adds required CUI and optional registration/website fields to mockup 15 without changing the image.
+Explicit later product tasks may supersede a specific mockup detail; the original image remains unchanged. E1-012A/B supersede the optional onboarding defaults, Step 2/3 labels, and Step 3 invitation copy/actions. E1-015 adds required CUI and optional registration/website fields to mockup 15 without changing the image. E1-016 requires inline, scrollable actions rather than mockup 16's sticky footer.
 
 These sample values are not canonical:
 

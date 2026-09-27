@@ -27,6 +27,22 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
     if (action === 'invite-vendor') {
       await page.getByRole('button', {name: 'Invită furnizor'}).click();
       await expect(page.getByRole('dialog', {name: 'Invită furnizorul să încarce documentele'})).toBeVisible();
+    } else if (action === 'add-document' || action === 'add-document-end' || action === 'add-document-created' || action === 'add-document-review') {
+      if (route !== '/vendors/construct-pro' && route !== '/en/vendors/construct-pro') throw new Error('Add Document capture requires the canonical vendor route.');
+      const english = route.startsWith('/en');
+      await page.getByRole('button', {name: english ? 'Add document' : 'Adaugă document'}).click();
+      const dialog = page.getByRole('dialog', {name: english ? 'Add document' : 'Adaugă document'});
+      await expect(dialog).toBeVisible();
+      if (action === 'add-document-end') await dialog.evaluate((element) => {element.scrollTop = element.scrollHeight;});
+      if (action === 'add-document-created' || action === 'add-document-review') {
+        await dialog.locator('input[type=file]').setInputFiles({name: action === 'add-document-review' ? 'Certificat_fiscal_CP_2024.pdf' : 'Document_local.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\nlocal demo')});
+        await dialog.getByRole('combobox', {name: english ? /Document type/ : /Tip document/}).selectOption('tax');
+        if (action === 'add-document-review') await dialog.getByRole('checkbox', {name: english ? 'Try automatic data extraction' : 'Încearcă extragerea automată a datelor'}).check();
+        await dialog.getByRole('button', {name: english ? 'Upload and continue' : 'Încarcă și continuă'}).click();
+        await expect(dialog).not.toBeVisible();
+        if (action === 'add-document-review') await expect(page).toHaveURL(/\/documents\/local-document-[a-f0-9-]+\/review$/);
+        else await expect(page.getByRole('row', {name: /Certificat fiscal.*Încărcat|Tax certificate.*Uploaded/}).first()).toBeVisible();
+      }
     } else if (action === 'add-vendor' || action === 'add-vendor-end' || action === 'add-vendor-created') {
       if (route !== '/vendors' && route !== '/en/vendors') throw new Error('Add Vendor capture action requires a vendors route.');
       const english = route.startsWith('/en');

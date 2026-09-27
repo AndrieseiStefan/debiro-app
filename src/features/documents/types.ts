@@ -1,5 +1,5 @@
 /** Fixture-backed presentation data, not a persistence or authorization model. */
-export type DocumentStatus = 'review' | 'valid' | 'expiring' | 'expired';
+export type DocumentStatus = 'uploaded' | 'review' | 'valid' | 'expiring' | 'expired';
 export type DocumentType = 'tax' | 'registration' | 'fire' | 'insurance' | 'inspector' | 'financial' | 'environment' | 'safety';
 
 export type DocumentSummary = {
@@ -12,7 +12,7 @@ export type DocumentSummary = {
   status: DocumentStatus;
   uploadedAt: string;
   expiresAt: string | null;
-  /** Only a fixture with a real detail page may expose a review destination. */
+  /** Only a document with an implemented review view may expose a destination. */
   reviewRoute: string | null;
 };
 

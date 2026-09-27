@@ -9,7 +9,7 @@ export type DrawerPhase = 'open' | 'closing';
 
 const focusableSelector = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
 
-export function Drawer({phase, onClose, onExited, triggerRef, titleId, descriptionId, closeLabel, contentClassName, children}: {
+export function Drawer({phase, onClose, onExited, triggerRef, titleId, descriptionId, closeLabel, contentClassName, panelClassName, children}: {
   phase: DrawerPhase;
   onClose: () => void;
   onExited: () => void;
@@ -18,6 +18,7 @@ export function Drawer({phase, onClose, onExited, triggerRef, titleId, descripti
   descriptionId: string;
   closeLabel: string;
   contentClassName?: string;
+  panelClassName?: string;
   children: ReactNode;
 }) {
   const panelRef = useRef<HTMLElement>(null);
@@ -70,7 +71,7 @@ export function Drawer({phase, onClose, onExited, triggerRef, titleId, descripti
   }, [onClose, triggerRef]);
 
   return createPortal(<div className={styles.backdrop} data-phase={phase} onMouseDown={(event) => {if (event.target === event.currentTarget) onClose();}}>
-    <aside ref={panelRef} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} tabIndex={-1} className={styles.drawer} data-phase={phase}>
+    <aside ref={panelRef} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} tabIndex={-1} className={[styles.drawer, panelClassName].filter(Boolean).join(' ')} data-phase={phase}>
       <div className={[styles.content, contentClassName].filter(Boolean).join(' ')}>
         <button type="button" className={styles.close} aria-label={closeLabel} onClick={onClose}><AppIcon name="close" size={23}/></button>
         {children}

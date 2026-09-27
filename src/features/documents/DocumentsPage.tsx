@@ -11,13 +11,14 @@ import {EmptyState} from '@/components/ui/EmptyState';
 import {StatusBadge, type StatusTone} from '@/components/ui/StatusBadge';
 import {Surface} from '@/components/ui/Surface';
 import type {DocumentStatus, DocumentSummary, DocumentType, DocumentsViewModel} from './types';
+import {useCreatedDocuments} from './created-documents';
 import styles from './DocumentsPage.module.css';
 
 const pageSize = 8;
-const statuses: DocumentStatus[] = ['review', 'valid', 'expiring', 'expired'];
+const statuses: DocumentStatus[] = ['uploaded', 'review', 'valid', 'expiring', 'expired'];
 const types: DocumentType[] = ['tax', 'registration', 'fire', 'insurance', 'inspector', 'financial', 'environment', 'safety'];
-const tones: Record<DocumentStatus, StatusTone> = {review: 'danger', valid: 'success', expiring: 'warning', expired: 'danger'};
-const icons: Record<DocumentStatus, AppIconName> = {review: 'info', valid: 'check', expiring: 'clock', expired: 'info'};
+const tones: Record<DocumentStatus, StatusTone> = {uploaded: 'neutral', review: 'danger', valid: 'success', expiring: 'warning', expired: 'danger'};
+const icons: Record<DocumentStatus, AppIconName> = {uploaded: 'file', review: 'info', valid: 'check', expiring: 'clock', expired: 'info'};
 
 function displayDate(value: string, locale: string) {
   return new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'ro-RO', {day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC'}).format(new Date(`${value}T12:00:00Z`));
@@ -51,6 +52,7 @@ function DocumentRow({document, locale}: {document: DocumentSummary; locale: str
 
 export function DocumentsPage({locale, view}: {locale: string; view: DocumentsViewModel}) {
   const t = useTranslations('Documents');
+  const documents = [...useCreatedDocuments(), ...view.documents];
   const [tab, setTab] = useState<'all' | 'review'>('all');
   const [query, setQuery] = useState('');
   const [vendor, setVendor] = useState('all');
@@ -61,11 +63,11 @@ export function DocumentsPage({locale, view}: {locale: string; view: DocumentsVi
   const [page, setPage] = useState(1);
   const [filtersOpen, setFiltersOpen] = useState(true);
 
-  const counts = Object.fromEntries(statuses.map((status) => [status, view.documents.filter((document) => document.status === status).length])) as Record<DocumentStatus, number>;
-  const vendorOptions = [...new Map(view.documents.map((document) => [document.vendorId, document.vendorName])).entries()].sort((a, b) => a[1].localeCompare(b[1]));
-  const uploadYears = [...new Set(view.documents.map((document) => document.uploadedAt.slice(0, 4)))].sort().reverse();
+  const counts = Object.fromEntries(statuses.map((status) => [status, documents.filter((document) => document.status === status).length])) as Record<DocumentStatus, number>;
+  const vendorOptions = [...new Map(documents.map((document) => [document.vendorId, document.vendorName])).entries()].sort((a, b) => a[1].localeCompare(b[1]));
+  const uploadYears = [...new Set(documents.map((document) => document.uploadedAt.slice(0, 4)))].sort().reverse();
   const needle = query.trim().toLocaleLowerCase(locale);
-  const filtered = view.documents.filter((document) => {
+  const filtered = documents.filter((document) => {
     const searchable = `${document.documentName.ro} ${document.documentName.en} ${document.filename} ${document.vendorName} ${t(`documentType.${document.documentType}`)}`.toLocaleLowerCase(locale);
     return (tab === 'all' || document.status === 'review')
       && (!needle || searchable.includes(needle))
@@ -110,15 +112,15 @@ export function DocumentsPage({locale, view}: {locale: string; view: DocumentsVi
 
       <section className={styles.summaryGrid} aria-label={t('summaryLabel')}>
         {(['total', 'review', 'valid', 'expiring'] as const).map((item) => {
-          const count = item === 'total' ? view.documents.length : counts[item];
-          const helper = item === 'total' ? t('summary.increase', {count: Math.max(0, view.documents.length - view.previousMonthCount)}) : t('summary.percent', {percent: view.documents.length ? Math.round(count / view.documents.length * 100) : 0});
+          const count = item === 'total' ? documents.length : counts[item];
+          const helper = item === 'total' ? t('summary.increase', {count: Math.max(0, documents.length - view.previousMonthCount)}) : t('summary.percent', {percent: documents.length ? Math.round(count / documents.length * 100) : 0});
           const card = <><span className={styles.summaryIcon}><AppIcon name={item === 'total' ? 'file' : icons[item]} size={25} /></span><span className={styles.summaryCopy}><strong>{t(`summary.${item}`)}</strong><b>{count}</b><small>{helper}</small></span>{item === 'review' && <AppIcon name="chevronRight" size={19} className={styles.summaryChevron} />}</>;
           return <Surface key={item} className={styles.summaryCard} data-status={item}>{item === 'review' ? <button type="button" onClick={() => {setTab('review'); setPage(1);}} aria-label={`${t('summary.review')}: ${count}`} className={styles.summaryAction}>{card}</button> : <div className={styles.summaryBody}>{card}</div>}</Surface>;
         })}
       </section>
 
       <nav className={styles.tabs} aria-label={t('tabsLabel')}>
-        <button type="button" aria-current={tab === 'all' ? 'page' : undefined} onClick={() => {setTab('all'); setPage(1);}}>{t('tabs.all')} <span>{view.documents.length}</span></button>
+        <button type="button" aria-current={tab === 'all' ? 'page' : undefined} onClick={() => {setTab('all'); setPage(1);}}>{t('tabs.all')} <span>{documents.length}</span></button>
         <button type="button" aria-current={tab === 'review' ? 'page' : undefined} onClick={() => {setTab('review'); setPage(1);}}>{t('tabs.review')} <span>{counts.review}</span></button>
       </nav>
 
@@ -131,7 +133,7 @@ export function DocumentsPage({locale, view}: {locale: string; view: DocumentsVi
               <label className={`${styles.toolbarButton} ${styles.sortControl}`}><span className={styles.srOnly}>{t('sortLabel')}</span><span aria-hidden="true">↕</span><select value={sort} onChange={(event) => {setSort(event.target.value as 'newest' | 'oldest'); setPage(1);}} aria-label={t('sortLabel')}><option value="newest">{t('sortVisible')} ↓</option><option value="oldest">{t('sortVisible')} ↑</option></select><AppIcon name="chevronDown" size={16} /></label>
             </div>
           </div>
-          {view.documents.length === 0 ? <EmptyState title={t('noDocuments')} description={t('noDocumentsDescription')} /> : filtered.length === 0 ? <EmptyState title={t('noMatches')} description={t('noMatchesDescription')} action={<button type="button" className={styles.emptyReset} onClick={resetSearchAndFilters}>{t('resetSearchAndFilters')}</button>} /> : <>
+          {documents.length === 0 ? <EmptyState title={t('noDocuments')} description={t('noDocumentsDescription')} /> : filtered.length === 0 ? <EmptyState title={t('noMatches')} description={t('noMatchesDescription')} action={<button type="button" className={styles.emptyReset} onClick={resetSearchAndFilters}>{t('resetSearchAndFilters')}</button>} /> : <>
             <div className={styles.tableScroll} role="region" aria-label={t('tableRegion')} tabIndex={0}><table className={styles.table}>
               <thead><tr><th scope="col">{t('table.document')}</th><th scope="col">{t('table.vendor')}</th><th scope="col">{t('table.type')}</th><th scope="col">{t('table.status')}</th><th scope="col">{t('table.uploaded')}</th><th scope="col">{t('table.expires')}</th><th scope="col">{t('table.actions')}</th></tr></thead>
               <tbody>{visible.map((document) => <DocumentRow key={document.id} document={document} locale={locale} />)}</tbody>
@@ -148,7 +150,7 @@ export function DocumentsPage({locale, view}: {locale: string; view: DocumentsVi
           <div className={styles.filterFields}>
             <label className={styles.filterSelect}>{t('vendor')}<select value={vendor} onChange={(event) => {setVendor(event.target.value); setPage(1);}}><option value="all">{t('allVendors')}</option>{vendorOptions.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select><AppIcon name="chevronDown" size={16} /></label>
             <label className={styles.filterSelect}>{t('type')}<select value={type} onChange={(event) => {setType(event.target.value as DocumentType | 'all'); setPage(1);}}><option value="all">{t('allTypes')}</option>{types.map((item) => <option key={item} value={item}>{t(`documentType.${item}`)}</option>)}</select><AppIcon name="chevronDown" size={16} /></label>
-            <fieldset className={styles.statusFilters}><legend>{t('statusLabel')}</legend>{statuses.map((status) => <label key={status}><input type="checkbox" checked={selectedStatuses.includes(status)} onChange={() => toggleStatus(status)} /><span className={styles.filterStatusIcon} data-status={status}><AppIcon name={icons[status]} size={14} /></span><span>{t(`status.${status}`)}</span><small>{counts[status]}</small></label>)}</fieldset>
+            <fieldset className={styles.statusFilters}><legend>{t('statusLabel')}</legend>{statuses.filter((status) => status !== 'uploaded' || counts.uploaded > 0).map((status) => <label key={status}><input type="checkbox" checked={selectedStatuses.includes(status)} onChange={() => toggleStatus(status)} /><span className={styles.filterStatusIcon} data-status={status}><AppIcon name={icons[status]} size={14} /></span><span>{t(`status.${status}`)}</span><small>{counts[status]}</small></label>)}</fieldset>
             <label className={styles.filterSelect}>{t('uploadPeriod')}<select value={uploadYear} onChange={(event) => {setUploadYear(event.target.value); setPage(1);}}><option value="any">{t('anytime')}</option>{uploadYears.map((year) => <option key={year} value={year}>{t('year', {year})}</option>)}</select><AppIcon name="chevronDown" size={16} /></label>
           </div><div className={styles.filterFooter}><button type="button" onClick={resetFilters}>{t('clearFilters')}</button></div>
         </aside>

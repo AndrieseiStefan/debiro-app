@@ -8,6 +8,7 @@ import {getVendorDetailsFixture} from '@/features/vendors/detail-fixtures';
 
 vi.mock('@/i18n/navigation', () => ({
   usePathname: () => '/vendors/construct-pro',
+  useRouter: () => ({push: vi.fn()}),
   Link: ({locale, href, ...props}: {locale?: string; href: string; children: React.ReactNode}) =>
     <a href={locale === 'en' ? `/en${href}` : href} {...props} />
 }));

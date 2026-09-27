@@ -4,7 +4,7 @@ export type AppIconName =
   | 'home' | 'users' | 'file' | 'shield' | 'bell' | 'bars' | 'settings'
   | 'search' | 'chevronRight' | 'chevronDown' | 'plus' | 'target'
   | 'check' | 'clock' | 'close' | 'more' | 'calendar' | 'info'
-  | 'building' | 'arrowRight' | 'userPlus' | 'fileX' | 'filter';
+  | 'building' | 'arrowRight' | 'userPlus' | 'fileX' | 'filter' | 'upload';
 
 const paths: Record<AppIconName, ReactNode> = {
   home: <><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10Z" /><path d="M9 21v-7h6v7" /></>,
@@ -29,7 +29,8 @@ const paths: Record<AppIconName, ReactNode> = {
   arrowRight: <><path d="M4 12h16" /><path d="m14 6 6 6-6 6" /></>,
   userPlus: <><circle cx="9" cy="8" r="4" /><path d="M2 21v-2a6 6 0 0 1 12 0v2M19 8v8M15 12h8" /></>,
   fileX: <><path d="M6 2h8l5 5v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Z" /><path d="M14 2v6h5M9 13l6 6m0-6-6 6" /></>,
-  filter: <path d="M3 5h18l-7 8v5l-4 2v-7L3 5Z" />
+  filter: <path d="M3 5h18l-7 8v5l-4 2v-7L3 5Z" />,
+  upload: <><path d="M12 16V3m-5 5 5-5 5 5"/><path d="M4 16v4h16v-4"/></>
 };
 
 export function AppIcon({name, size = 20, className}: {name: AppIconName; size?: number; className?: string}) {

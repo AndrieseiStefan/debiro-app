@@ -46,6 +46,7 @@ function DocumentPreview({view, locale}: {view: DocumentReviewViewModel; locale:
   const scale = fitScale * zoom / 100;
   const renderedWidth = sourceWidth * scale;
   const renderedHeight = sourceHeight * scale;
+  const localSimulation = view.source === 'demo-simulation';
 
   useEffect(() => {
     const viewer = viewerRef.current;
@@ -64,15 +65,16 @@ function DocumentPreview({view, locale}: {view: DocumentReviewViewModel; locale:
     <div className={styles.previewToolbar}>
       <span className={styles.pdfIcon}><AppIcon name="file" size={25}/></span>
       <span className={styles.fileIdentity}><strong title={view.file.name}>{view.file.name}</strong><small>{view.file.sizeLabel}</small></span>
-      <span className={styles.pageCount}>1 / {view.file.pageCount}</span>
-      <div className={styles.zoomControls} aria-label={t('zoomControls')}>
+      {view.file.pageCount !== null && <span className={styles.pageCount}>1 / {view.file.pageCount}</span>}
+      {!localSimulation && <div className={styles.zoomControls} aria-label={t('zoomControls')}>
         <button type="button" aria-label={t('zoomOut')} onClick={() => setZoom((current) => Math.max(75, current - 25))} disabled={zoom === 75}>−</button>
         <span>{zoom}%</span>
         <button type="button" aria-label={t('zoomIn')} onClick={() => setZoom((current) => Math.min(150, current + 25))} disabled={zoom === 150}>+</button>
-      </div>
-      <button className={styles.expandButton} type="button" aria-label={expanded ? t('collapsePreview') : t('expandPreview')} aria-pressed={expanded} onClick={() => setExpanded((current) => !current)}><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5M3 3l6 6m12-6-6 6M3 21l6-6m12 6-6-6"/></svg></button>
+      </div>}
+      {!localSimulation && <button className={styles.expandButton} type="button" aria-label={expanded ? t('collapsePreview') : t('expandPreview')} aria-pressed={expanded} onClick={() => setExpanded((current) => !current)}><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5M3 3l6 6m12-6-6 6M3 21l6-6m12 6-6-6"/></svg></button>}
     </div>
     <div ref={viewerRef} className={styles.viewer} role="region" aria-label={t('sampleDocument')} tabIndex={0} data-document-viewer>
+      {localSimulation ? <div className={styles.localPreview}><AppIcon name="file" size={46}/><strong>{view.file.name}</strong><p>{t('localPreviewUnavailable')}</p></div> : <>
       <div className={styles.viewerStage} style={{width: Math.max(available.width, renderedWidth), height: Math.max(available.height, renderedHeight)}}>
       <div className={styles.paperFrame} style={{width: renderedWidth, height: renderedHeight}} data-source-width={sourceWidth} data-source-height={sourceHeight} data-rendered-width={renderedWidth} data-rendered-height={renderedHeight} data-zoom={zoom}>
       <article className={styles.paper} style={{width: sourceWidth, height: sourceHeight, transform: `scale(${scale})`}} aria-label={t('sampleDocument')}>
@@ -86,6 +88,7 @@ function DocumentPreview({view, locale}: {view: DocumentReviewViewModel; locale:
       </article>
       </div>
       </div>
+      </>}
     </div>
   </section>;
 }
@@ -135,15 +138,15 @@ export function DocumentReviewPage({locale, view}: {locale: string; view: Docume
         <Link href="/documents" className={styles.backLink}><span aria-hidden="true">←</span>{t('backToDocuments')}</Link>
       </div>
       <header className={styles.pageHeader}>
-        <div className={styles.pageHeading}><div className={styles.eyebrow}><span className={styles.eyebrowIcon}><AppIcon name="file" size={22}/></span>{t('eyebrow')}</div><h1>{t('title')}</h1><p>{t('description')}</p></div>
-        <div className={styles.aiCallout}><span className={styles.aiCalloutIcon} aria-hidden="true">✧</span><span><strong>{t('aiCalloutTitle')}</strong><small><AppIcon name="info" size={15}/>{t('aiCalloutDescription')}</small></span></div>
+        <div className={styles.pageHeading}><div className={styles.eyebrow}><span className={styles.eyebrowIcon}><AppIcon name="file" size={22}/></span>{t('eyebrow')}</div><h1>{t('title')}</h1><p>{t(view.source === 'demo-simulation' ? 'localDescription' : 'description')}</p></div>
+        <div className={styles.aiCallout}><span className={styles.aiCalloutIcon} aria-hidden="true">✧</span><span><strong>{t(view.source === 'demo-simulation' ? 'localCalloutTitle' : 'aiCalloutTitle')}</strong><small><AppIcon name="info" size={15}/>{t(view.source === 'demo-simulation' ? 'localCalloutDescription' : 'aiCalloutDescription')}</small></span></div>
       </header>
       {reviewState !== 'extracted' && <p className={styles.reviewStatus} role="status" data-review-state={reviewState}><AppIcon name={reviewState === 'rejected' ? 'close' : reviewState === 'confirmed' ? 'check' : 'info'} size={18}/>{t(`state.${reviewState}`)}</p>}
       <div className={styles.reviewGrid}>
         <DocumentPreview view={view} locale={locale}/>
         <section className={styles.extractionCard} aria-labelledby="extraction-heading">
-          <div className={styles.extractionHeading}><h2 id="extraction-heading"><AppIcon name="file" size={25}/>{t('extractionTitle')}</h2><span className={styles.confidenceBadge}><AppIcon name="check" size={17}/>{t('confidenceBadge', {confidence: view.extraction.confidencePercent})}<AppIcon name="info" size={16}/></span></div>
-          <p className={styles.extractionDescription}>{t('extractionDescription')}</p>
+          <div className={styles.extractionHeading}><h2 id="extraction-heading"><AppIcon name="file" size={25}/>{t(view.source === 'demo-simulation' ? 'localExtractionTitle' : 'extractionTitle')}</h2>{view.source !== 'demo-simulation' && <span className={styles.confidenceBadge}><AppIcon name="check" size={17}/>{t('confidenceBadge', {confidence: view.extraction.confidencePercent})}<AppIcon name="info" size={16}/></span>}</div>
+          <p className={styles.extractionDescription}>{t(view.source === 'demo-simulation' ? 'localExtractionDescription' : 'extractionDescription')}</p>
           <form noValidate onSubmit={confirm}>
             <div className={styles.fields}>
               {control('documentType', 'file', t('documentType'), true)}
@@ -151,12 +154,12 @@ export function DocumentReviewPage({locale, view}: {locale: string; view: Docume
               <div className={styles.fieldRow}>{control('documentNumber', 'number', t('documentNumber'))}{control('issuedAt', 'calendar', t('issuedAt'))}</div>
               <div className={styles.fieldRow}>{control('expiresAt', 'calendar', t('expiresAt'))}{control('issuer', 'building', t('issuer'))}</div>
             </div>
-            <div className={styles.confidenceSection}><div className={styles.confidenceTitle}>{t('confidenceLabel')}</div><div className={styles.confidenceTrackRow}><div className={styles.confidenceTrack}><span style={{width: `${view.extraction.confidencePercent}%`}} /></div><strong>{view.extraction.confidencePercent}%</strong></div><p><AppIcon name="info" size={17}/>{t('confidenceExplanation')}</p></div>
-            <div className={styles.editCallout}><span aria-hidden="true"><AppIcon name="file" size={22}/></span><span><strong>{t('editCalloutTitle')}</strong><small>{t('editCalloutDescription')}</small></span></div>
+            {view.source !== 'demo-simulation' && <div className={styles.confidenceSection}><div className={styles.confidenceTitle}>{t('confidenceLabel')}</div><div className={styles.confidenceTrackRow}><div className={styles.confidenceTrack}><span style={{width: `${view.extraction.confidencePercent}%`}} /></div><strong>{view.extraction.confidencePercent}%</strong></div><p><AppIcon name="info" size={17}/>{t('confidenceExplanation')}</p></div>}
+            <div className={styles.editCallout}><span aria-hidden="true"><AppIcon name="file" size={22}/></span><span><strong>{t('editCalloutTitle')}</strong><small>{t(view.source === 'demo-simulation' ? 'localEditDescription' : 'editCalloutDescription')}</small></span></div>
             <div className={styles.actions}>
               <div><Button variant="destructive" className={styles.rejectButton} onClick={() => {setErrors({}); setReviewState('rejected');}}><AppIcon name="close" size={20}/>{t('reject')}</Button><small>{t('rejectHelper')}</small></div>
               <div><Button variant="secondary" onClick={() => {setErrors({}); setReviewState('draft');}}><AppIcon name="file" size={19}/>{t('saveDraft')}</Button><small>{t('draftHelper')}</small></div>
-              <div><Button type="submit" className={styles.confirmButton}><AppIcon name="check" size={20}/>{t('confirmAndSave')}</Button><small>{t('confirmHelper')}</small></div>
+              <div><Button type="submit" className={styles.confirmButton}><AppIcon name="check" size={20}/>{t('confirmAndSave')}</Button><small>{t(view.source === 'demo-simulation' ? 'localConfirmHelper' : 'confirmHelper')}</small></div>
             </div>
           </form>
         </section>

@@ -121,3 +121,6 @@
 @media (max-width: 380px) {
   .pageHeader h1 {font-size: 30px;}
 }
+.localPreview {align-items: center; color: #46658e; display: flex; flex-direction: column; gap: 16px; justify-content: center; min-height: 500px; padding: 40px; text-align: center;}
+.localPreview strong {color: #172441; overflow-wrap: anywhere;}
+.localPreview p {font-size: 14px; line-height: 1.5; max-width: 310px;}

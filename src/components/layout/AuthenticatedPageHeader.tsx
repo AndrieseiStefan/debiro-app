@@ -1,4 +1,4 @@
-import type {ReactNode} from 'react';
+import {forwardRef, type ReactNode} from 'react';
 import {AppIcon, type AppIconName} from './AppIcon';
 import {Button, type ButtonProps} from '@/components/ui/Button';
 import styles from './AuthenticatedPageHeader.module.css';
@@ -26,6 +26,6 @@ export function AuthenticatedPageHeader({context, title, titleId, description, s
   </section>;
 }
 
-export function AuthenticatedPagePrimaryAction({icon, children, ...props}: Omit<ButtonProps, 'variant' | 'className'> & {icon: AppIconName}) {
-  return <Button {...props} variant="primary" className={styles.primaryAction} data-page-primary-action><AppIcon name={icon} size={24} />{children}</Button>;
-}
+export const AuthenticatedPagePrimaryAction = forwardRef<HTMLButtonElement, Omit<ButtonProps, 'variant' | 'className'> & {icon: AppIconName}>(function AuthenticatedPagePrimaryAction({icon, children, ...props}, ref) {
+  return <Button {...props} ref={ref} variant="primary" className={styles.primaryAction} data-page-primary-action><AppIcon name={icon} size={24} />{children}</Button>;
+});
