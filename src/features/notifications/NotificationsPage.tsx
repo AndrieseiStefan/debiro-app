@@ -83,7 +83,7 @@ export function NotificationsPage({locale, view}: {locale: string; view: Notific
 
   return <AuthenticatedAppShell locale={locale} currentPath="/notifications" organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={unreadCount}>
     <div className={styles.page}>
-      <AuthenticatedPageHeader context={<div className={styles.contextLine}><AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: app('navigation.notifications')}]} /><span className={styles.eyebrow}>{t('eyebrow')}</span></div>} title={t('title')} titleId="notifications-title" description={t('description')}
+      <AuthenticatedPageHeader context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: app('navigation.notifications')}]} />} title={t('title')} titleId="notifications-title" description={t('description')}
         supportingContent={<div className={styles.headerCallout}><span><AppIcon name="file" size={26} /></span><p>{t('traceabilityTitle')}<br />{t('traceabilityDescription')}</p></div>} />
 
       <div className={styles.toolbar}>

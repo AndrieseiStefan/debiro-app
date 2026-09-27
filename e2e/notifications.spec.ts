@@ -1,10 +1,18 @@
 import {expect, test} from '@playwright/test';
 
-test('Romanian and English notifications routes render with active navigation', async ({page}) => {
-  for (const [route, title, nav] of [['/notifications', 'Notificări și Activitate de Audit', 'Navigare în aplicație'], ['/en/notifications', 'Notifications and Audit Activity', 'Application navigation']]) {
+test('Romanian and English notifications routes render without a redundant eyebrow', async ({page}) => {
+  for (const [route, title, description, nav, breadcrumbLabel, section, eyebrow] of [
+    ['/notifications', 'Notificări și Activitate de Audit', 'Vezi ce necesită atenția ta, urmărește notificările și verifică istoricul activităților.', 'Navigare în aplicație', 'Navigare pe pagină', 'Notificări', 'NOTIFICĂRI ȘI ACTIVITATE'],
+    ['/en/notifications', 'Notifications and Audit Activity', 'See what needs your attention, follow notifications, and review the activity history.', 'Application navigation', 'Page navigation', 'Notifications', 'NOTIFICATIONS AND ACTIVITY']
+  ]) {
     const response = await page.goto(route);
     expect(response?.status()).toBe(200);
     await expect(page.getByRole('heading', {level: 1, name: title})).toBeVisible();
+    await expect(page.getByText(description, {exact: true})).toBeVisible();
+    const breadcrumbs = page.getByRole('navigation', {name: breadcrumbLabel});
+    await expect(breadcrumbs.getByRole('link', {name: 'Dashboard'})).toBeVisible();
+    await expect(breadcrumbs.getByText(section, {exact: true})).toHaveAttribute('aria-current', 'page');
+    await expect(page.getByText(eyebrow, {exact: true})).toHaveCount(0);
     await expect(page.getByRole('navigation', {name: nav}).getByRole('link', {name: /Notificări|Notifications/})).toHaveAttribute('aria-current', 'page');
     await expect(page.getByRole('region', {name: route.startsWith('/en') ? 'Audit journal' : 'Jurnal de audit'})).toBeVisible();
   }

@@ -252,7 +252,6 @@
   },
   "Notifications": {
     "breadcrumbLabel": "Page navigation",
-    "eyebrow": "NOTIFICATIONS AND ACTIVITY",
     "title": "Notifications and Audit Activity",
     "description": "See what needs your attention, follow notifications, and review the activity history.",
     "traceabilityTitle": "Complete traceability.",
