@@ -27,6 +27,20 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
     if (action === 'invite-vendor') {
       await page.getByRole('button', {name: 'Invită furnizor'}).click();
       await expect(page.getByRole('dialog', {name: 'Invită furnizorul să încarce documentele'})).toBeVisible();
+    } else if (action === 'add-vendor' || action === 'add-vendor-created') {
+      if (route !== '/vendors' && route !== '/en/vendors') throw new Error('Add Vendor capture action requires a vendors route.');
+      const english = route.startsWith('/en');
+      await page.getByRole('button', {name: english ? 'Add supplier' : 'Adaugă furnizor', exact: true}).click();
+      const dialog = page.getByRole('dialog', {name: english ? 'Add supplier' : 'Adaugă furnizor'});
+      await expect(dialog).toBeVisible();
+      if (action === 'add-vendor-created') {
+        await dialog.getByRole('textbox', {name: english ? /Supplier name/ : /Numele furnizorului/}).fill('Atelier Verde SRL');
+        await dialog.getByRole('textbox', {name: english ? /CUI \/ Tax ID/ : /CUI \/ Cod fiscal/}).fill('RO24681357');
+        await dialog.getByRole('textbox', {name: english ? /Contact email/ : /Email de contact/}).fill('contact@atelierverde.ro');
+        await dialog.getByRole('combobox', {name: english ? /Category/ : /Categorie/}).selectOption('construction');
+        await dialog.getByRole('button', {name: english ? 'Add supplier' : 'Adaugă furnizor', exact: true}).click();
+        await expect(page.getByRole('heading', {name: 'Atelier Verde SRL', level: 1})).toBeVisible();
+      }
     } else if (action === 'onboarding-step2' || action === 'onboarding-step3') {
       if (route !== '/onboarding' && route !== '/en/onboarding') throw new Error('Onboarding capture action requires an onboarding route.');
       await page.getByRole('button', {name: route.startsWith('/en') ? 'Continue' : 'Continuă'}).click();

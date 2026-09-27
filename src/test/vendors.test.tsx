@@ -8,6 +8,7 @@ import {vendorsListFixture} from '@/features/vendors/fixtures';
 
 vi.mock('@/i18n/navigation', () => ({
   usePathname: () => '/vendors',
+  useRouter: () => ({push: vi.fn()}),
   Link: ({locale, href, ...props}: {locale?: string; href: string; children: React.ReactNode}) =>
     <a href={locale === 'en' ? `/en${href}` : href} {...props} />
 }));
@@ -33,7 +34,7 @@ describe('vendors list', () => {
     const navigation = screen.getByRole('navigation', {name: 'Navigare în aplicație'});
     expect(within(navigation).getByRole('link', {name: 'Furnizori'})).toHaveAttribute('aria-current', 'page');
     expect(within(navigation).getByRole('link', {name: 'Dashboard'})).not.toHaveAttribute('aria-current');
-    expect(screen.getByRole('button', {name: 'Adaugă furnizor'})).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', {name: 'Adaugă furnizor'})).toBeEnabled();
     const summary = screen.getByRole('region', {name: 'Rezumat furnizori'});
     for (const count of ['24', '16', '5', '3']) expect(within(summary).getByText(count)).toBeVisible();
 

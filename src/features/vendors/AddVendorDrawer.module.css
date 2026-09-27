@@ -1,0 +1,28 @@
+.content h2 {color: #15213e; font-size: 29px; font-weight: 750; letter-spacing: -.04em; line-height: 1.18; margin-top: 12px;}
+.heroIcon {align-items: center; background: #e5f0ff; border-radius: 50%; color: #0861d8; display: inline-flex; height: 61px; justify-content: center; width: 61px;}
+.intro {color: #405a7e; font-size: 14px; line-height: 1.48; margin-top: 8px;}
+.form {display: grid; gap: 20px; margin-top: 28px; min-width: 0;}
+.row {display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-width: 0;}
+.field {gap: 7px; min-width: 0;}
+.field label, .selectField label, .textareaField label {color: #1d3256; font-size: 14px; font-weight: 650; line-height: 1.25;}
+.field input, .selectWrap select, .textareaField textarea {border: 1px solid #cbdcf3; border-radius: 8px; color: #23395f; font-size: 14px; min-width: 0; width: 100%;}
+.field input {height: 42px;}
+.field input::placeholder, .textareaField textarea::placeholder {color: #8198bb;}
+.selectField, .textareaField {display: grid; gap: 7px; min-width: 0;}
+.selectField label span, .error {color: #dc2440;}
+.selectWrap {align-items: center; display: flex; position: relative;}
+.selectWrap select {appearance: none; background: #fff; height: 42px; padding: 0 30px 0 12px;}
+.selectWrap svg {color: #38608c; pointer-events: none; position: absolute; right: 10px;}
+.selectWrap:focus-within {outline: 3px solid var(--color-focus); outline-offset: 2px;}
+.selectWrap select:focus-visible {outline: none;}
+.selectWrap select[aria-invalid='true'] {border-color: #dc2440;}
+.error {font-size: 12px; line-height: 1.3;}
+.textareaField textarea {line-height: 1.45; min-height: 60px; padding: 10px 12px; resize: vertical;}
+.notice {align-items: flex-start; background: #eaf3ff; border-radius: 8px; color: #0757cb; display: flex; gap: 12px; padding: 14px;}
+.notice svg {flex: 0 0 auto;}
+.notice p {display: grid; font-size: 13px; gap: 3px; line-height: 1.42;}
+.notice strong {font-weight: 700;}
+.actions {background: #fff; bottom: -25px; display: flex; gap: 12px; justify-content: flex-end; margin-bottom: -25px; margin-top: 2px; padding: 12px 0 25px; position: sticky;}
+.actions :global(button) {font-size: 14px; min-height: 46px; min-width: 0;}
+@media (max-width: 600px) {.actions {bottom: -24px; margin-bottom: -24px; padding-bottom: 24px;}}
+@media (max-width: 375px) {.content h2 {font-size: 25px;}.row {gap: 16px; grid-template-columns: minmax(0, 1fr);}.actions {bottom: -24px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); margin-bottom: -24px; padding-bottom: 24px;}.actions :global(button) {padding-inline: 8px;}}

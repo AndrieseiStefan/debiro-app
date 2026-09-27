@@ -1,8 +1,8 @@
 'use client';
 
-import {useState, type ReactNode} from 'react';
+import {useCallback, useRef, useState, type ReactNode} from 'react';
 import {useTranslations} from 'next-intl';
-import {Link} from '@/i18n/navigation';
+import {Link, useRouter} from '@/i18n/navigation';
 import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
 import {AuthenticatedBreadcrumbs} from '@/components/layout/AuthenticatedBreadcrumbs';
@@ -10,6 +10,8 @@ import {AuthenticatedPageHeader, AuthenticatedPagePrimaryAction} from '@/compone
 import {StatusBadge, type StatusTone} from '@/components/ui/StatusBadge';
 import {Surface} from '@/components/ui/Surface';
 import type {VendorCategory, VendorListItem, VendorStatus, VendorsListViewModel} from './types';
+import {AddVendorDrawer} from './AddVendorDrawer';
+import {createLocalVendor, toVendorListItem, useCreatedVendors, type CreatedVendor} from './created-vendors';
 import styles from './VendorsListPage.module.css';
 
 const categories: VendorCategory[] = ['construction', 'cleaning', 'software', 'materials', 'logistics', 'energy', 'food', 'medical'];
@@ -43,7 +45,7 @@ function VendorStatusBadge({status}: {status: VendorStatus}) {
 function VendorRow({vendor, locale, selected, onSelect}: {vendor: VendorListItem; locale: string; selected: boolean; onSelect: (id: string, checked: boolean) => void}) {
   const t = useTranslations('Vendors');
   const initials = vendor.name.split(/\s+/).filter((word) => /[\p{L}\p{N}]/u.test(word)).slice(0, 2).map((word) => word[0]).join('').toUpperCase();
-  const documentPercent = vendor.documentCount / vendor.documentTarget * 100;
+  const documentPercent = vendor.documentTarget > 0 ? vendor.documentCount / vendor.documentTarget * 100 : 0;
 
   return <tr>
     <td className={styles.checkboxCell}><input type="checkbox" aria-label={t('selectVendor', {name: vendor.name})} checked={selected} onChange={(event) => onSelect(vendor.id, event.target.checked)} /></td>
@@ -55,12 +57,19 @@ function VendorRow({vendor, locale, selected, onSelect}: {vendor: VendorListItem
     <td><VendorStatusBadge status={vendor.status} /></td>
     <td><span className={styles.documents}><span className={styles.progressTrack}><span className={styles.progressFill} data-status={vendor.status} style={{width: `${documentPercent}%`}} /></span><span>{vendor.documentCount}/{vendor.documentTarget}</span></span></td>
     <td><time className={styles.expiry} data-tone={vendor.nextExpiry.tone}>{locale === 'en' ? vendor.nextExpiry.en : vendor.nextExpiry.ro}</time></td>
-    <td className={styles.actionsCell}>{vendor.id === 'construct-pro' ? <Link href={`/vendors/${vendor.id}`} aria-label={t('detailsAction', {name: vendor.name})} className={styles.rowAction}><AppIcon name="more" size={21} /></Link> : <button type="button" aria-disabled="true" aria-label={t('rowAction', {name: vendor.name})} className={styles.rowAction}><AppIcon name="more" size={21} /></button>}</td>
+    <td className={styles.actionsCell}>{vendor.id === 'construct-pro' || vendor.id.startsWith('local-') ? <Link href={`/vendors/${vendor.id}`} aria-label={t('detailsAction', {name: vendor.name})} className={styles.rowAction}><AppIcon name="more" size={21} /></Link> : <button type="button" aria-disabled="true" aria-label={t('rowAction', {name: vendor.name})} className={styles.rowAction}><AppIcon name="more" size={21} /></button>}</td>
   </tr>;
 }
 
 export function VendorsListPage({locale, view}: {locale: string; view: VendorsListViewModel}) {
   const t = useTranslations('Vendors');
+  const router = useRouter();
+  const createdVendors = useCreatedVendors();
+  const allVendors = [...createdVendors.map(toVendorListItem), ...view.vendors];
+  const [addPhase, setAddPhase] = useState<'closed' | 'open' | 'closing'>('closed');
+  const addTriggerRef = useRef<HTMLButtonElement>(null);
+  const closeAdd = useCallback(() => setAddPhase('closing'), []);
+  const finishAdd = useCallback(() => setAddPhase('closed'), []);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<VendorCategory | 'all'>('all');
   const [status, setStatus] = useState<VendorStatus | 'all'>('all');
@@ -68,11 +77,11 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const counts = {
-    compliant: view.vendors.filter((vendor) => vendor.status === 'compliant').length,
-    attention: view.vendors.filter((vendor) => vendor.status === 'attention').length,
-    noncompliant: view.vendors.filter((vendor) => vendor.status === 'noncompliant').length
+    compliant: allVendors.filter((vendor) => vendor.status === 'compliant').length,
+    attention: allVendors.filter((vendor) => vendor.status === 'attention').length,
+    noncompliant: allVendors.filter((vendor) => vendor.status === 'noncompliant').length
   };
-  const filtered = view.vendors.filter((vendor) => {
+  const filtered = allVendors.filter((vendor) => {
     const matchesQuery = `${vendor.name} ${vendor.registrationNumber} ${vendor.contactName ?? ''}`.toLocaleLowerCase(locale).includes(query.trim().toLocaleLowerCase(locale));
     return matchesQuery && (category === 'all' || vendor.category === category) && (status === 'all' || vendor.status === status);
   });
@@ -87,6 +96,11 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
     setSelectedIds((current) => checked ? [...current, id] : current.filter((selectedId) => selectedId !== id));
   }
 
+  function createVendor(input: Omit<CreatedVendor, 'id'>) {
+    const vendor = createLocalVendor(input);
+    router.push(`/vendors/${vendor.id}`);
+  }
+
   return <AuthenticatedAppShell locale={locale} currentPath="/vendors" organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={view.notificationCount}>
     <div className={styles.pageContent}>
       <AuthenticatedPageHeader
@@ -94,12 +108,12 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
         title={t('title')}
         titleId="vendors-title"
         description={t('description')}
-        actions={<AuthenticatedPagePrimaryAction icon="plus" aria-disabled="true">{t('addVendor')}</AuthenticatedPagePrimaryAction>}
+        actions={<AuthenticatedPagePrimaryAction icon="plus" onClick={(event) => {addTriggerRef.current = event.currentTarget; setAddPhase('open');}}>{t('addVendor')}</AuthenticatedPagePrimaryAction>}
       />
 
       <section className={styles.summaryGrid} aria-label={t('summaryLabel')}>
         {(['all', ...statuses] as const).map((item) => {
-          const value = item === 'all' ? view.vendors.length : counts[item];
+          const value = item === 'all' ? allVendors.length : counts[item];
           const icon = item === 'all' ? 'users' : statusIcons[item];
           return <Surface key={item} className={styles.summaryCard} data-status={item}>
             <span className={styles.summaryIcon}><AppIcon name={icon} size={25} /></span>
@@ -160,5 +174,6 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
 
       <aside className={styles.banner} aria-label={t('bannerTitle')}><div><h2>{t('bannerTitle')}</h2><p>{t('bannerDescription')}</p></div><p className={styles.bannerHandwriting}>{t('bannerHandwriting')}</p></aside>
     </div>
+    {addPhase !== 'closed' && <AddVendorDrawer phase={addPhase} onClose={closeAdd} onExited={finishAdd} triggerRef={addTriggerRef} onCreate={createVendor}/>}
   </AuthenticatedAppShell>;
 }

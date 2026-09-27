@@ -48,10 +48,10 @@ export type VendorDetailsViewModel = {
   organization: VendorsListViewModel['organization'];
   notificationCount: number;
   vendor: VendorListItem;
-  registrationCode: string;
-  categoryDetail: {ro: string; en: string};
+  registrationCode?: string;
+  categoryDetail?: {ro: string; en: string};
   validDocumentCount: number;
-  invitationPreview: {
+  invitationPreview?: {
     /** Deterministic display-only URL; not a generated access token. */
     demoUploadUrl: string;
     /** Local route used only to preview the matching E1 supplier portal fixture. */
@@ -60,12 +60,14 @@ export type VendorDetailsViewModel = {
     referenceDate: string;
   };
   contact: {
-    name: string;
-    role: {ro: string; en: string};
+    name?: string;
+    role?: {ro: string; en: string};
     email: string;
-    phone: string;
-    address: {ro: string; en: string};
-    website: string;
+    phone?: string;
+    address?: {ro: string; en: string};
+    website?: string;
   };
+  industry?: string;
+  notes?: string;
   documents: VendorDocumentRow[];
 };

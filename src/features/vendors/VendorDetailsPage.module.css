@@ -2,17 +2,23 @@
 .vendorHeader {align-items: center; display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) 252px max-content; min-width: 0;}
 .identityBlock {align-self: stretch; min-width: 0;}
 .titleLine {align-items: center; display: flex; gap: 26px; min-width: 0;}
-.titleLine > span:last-child {min-width: 0; overflow-wrap: normal;}
+.titleLine > span:last-child {min-width: 0; overflow-wrap: anywhere;}
 .vendorIcon {align-items: center; background: #e5f0ff; border-radius: 12px; color: #075ad3; display: inline-flex; flex: 0 0 86px; height: 86px; justify-content: center;}
 .identityMeta {align-items: center; color: #284269; display: flex; flex-wrap: wrap; font-size: 14px; gap: 12px; line-height: 1.3; margin-left: 112px; min-width: 0;}
+.identityMeta > span:first-child {overflow-wrap: anywhere;}
 .metaDivider {background: #c7d6ea; height: 16px; width: 1px;}
 .categoryChip {align-items: center; background: #edf3fc; border-radius: 999px; color: #4b658a; display: inline-flex; flex: 0 0 auto; font-size: 12px; font-weight: 650; gap: 6px; max-width: 100%; padding: 3px 11px; white-space: nowrap; width: max-content;}
+.industryMeta {color: #58729a; font-size: 12px;}
 .complianceSummary {align-items: center; background: linear-gradient(110deg, #edfcf6, #e9faf2); border-radius: 12px; display: flex; gap: 14px; min-height: 120px; min-width: 0; padding: 18px; width: 252px;}
 .complianceIcon {align-items: center; background: #0da778; border: 14px solid #cff5e4; border-radius: 50%; color: #fff; display: inline-flex; flex: 0 0 64px; height: 64px; justify-content: center;}
+.complianceSummary[data-setup='true'] {background: linear-gradient(110deg, #fff8e9, #fff2d8);}
+.complianceSummary[data-setup='true'] .complianceIcon {background: #e39a12; border-color: #ffedc7;}
+.complianceSummary[data-setup='true'] strong, .complianceSummary[data-setup='true'] small {white-space: normal;}
 .complianceSummary strong {color: #113047; display: block; font-size: 20px; white-space: nowrap;}
 .complianceSummary small {color: #385775; display: block; font-size: 12px; line-height: 1.35; margin-top: 4px; white-space: nowrap;}
 .pageActions {display: flex; gap: 10px; min-width: 0;}
 .inviteAction {border-color: #aaccff; color: #0757c6; font-size: 15px; min-height: 52px;}
+.inviteAction[aria-disabled='true'] {cursor: default;}
 .contacts {align-items: stretch; background: #dce7f6; display: flex; flex-wrap: wrap; gap: 1px; margin-top: 20px; overflow: hidden; padding: 1px;}
 .contactItem {align-items: center; background: #fff; display: flex; flex: 1 1 calc((100% - 2px) / 3); gap: 12px; min-width: 0; padding: 14px 16px;}
 .contactIcon {align-items: center; background: #e6f0ff; border-radius: 50%; color: #095dd4; display: inline-flex; flex: 0 0 39px; height: 39px; justify-content: center;}
@@ -61,6 +67,9 @@
 .notice > span {flex: 1 1 auto;}
 .notice button {align-items: center; background: none; border: 0; color: #0755c5; display: inline-flex; flex: 0 0 auto; font-size: 13px; font-weight: 650; gap: 8px; white-space: nowrap;}
 .noResults {color: #5d7090; padding: 24px; text-align: center;}
+.notesPanel {margin-top: 16px; min-height: 150px; padding: 24px;}
+.notesPanel h2 {color: #142649; font-size: 18px;}
+.notesPanel p {color: #385575; font-size: 14px; line-height: 1.5; margin-top: 12px; white-space: pre-wrap;}
 .banner {align-items: center; background: linear-gradient(110deg, #f1f8ff, #eaf4ff 57%, #f4faff); border: 1px solid #d8e7fb; border-radius: 12px; box-shadow: var(--shadow-card); display: flex; height: 116px; justify-content: space-between; margin-top: 8px; overflow: hidden; padding: 16px 32px; position: relative;}
 .banner::before {background: url('/assets/dashboard-mountains.png') center / contain no-repeat; bottom: -113px; content: ''; height: 322px; pointer-events: none; position: absolute; right: -10px; width: 950px;}
 .banner > div, .bannerHandwriting {position: relative; z-index: 1;}

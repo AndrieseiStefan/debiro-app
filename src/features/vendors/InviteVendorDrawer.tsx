@@ -1,10 +1,10 @@
 'use client';
 
-import {useEffect, useRef, useState, type FormEvent, type RefObject} from 'react';
-import {createPortal} from 'react-dom';
+import {useRef, useState, type FormEvent, type RefObject} from 'react';
 import {useTranslations} from 'next-intl';
 import {AppIcon} from '@/components/layout/AppIcon';
 import {Button} from '@/components/ui/Button';
+import {Drawer, type DrawerPhase} from '@/components/ui/Drawer';
 import {Field} from '@/components/ui/Field';
 import {Link} from '@/i18n/navigation';
 import type {VendorDetailsViewModel} from './types';
@@ -12,7 +12,6 @@ import styles from './InviteVendorDrawer.module.css';
 
 type Errors = Partial<Record<'name' | 'email' | 'validity' | 'message', string>>;
 const maxMessageLength = 500;
-const focusableSelector = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
 
 function DrawerIcon({name}: {name: 'mail' | 'link' | 'copy' | 'eye' | 'lock' | 'send'}) {
   const paths = {
@@ -27,13 +26,13 @@ function DrawerIcon({name}: {name: 'mail' | 'link' | 'copy' | 'eye' | 'lock' | '
 }
 
 export function InviteVendorDrawer({phase, onClose, onExited, triggerRef, vendorName, contactEmail, preview, locale}: {
-  phase: 'open' | 'closing';
+  phase: DrawerPhase;
   onClose: () => void;
   onExited: () => void;
   triggerRef: RefObject<HTMLButtonElement | null>;
   vendorName: string;
   contactEmail: string;
-  preview: VendorDetailsViewModel['invitationPreview'];
+  preview: NonNullable<VendorDetailsViewModel['invitationPreview']>;
   locale: string;
 }) {
   const t = useTranslations('InviteVendor');
@@ -46,55 +45,7 @@ export function InviteVendorDrawer({phase, onClose, onExited, triggerRef, vendor
   const [errors, setErrors] = useState<Errors>({});
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const [submitNote, setSubmitNote] = useState('');
-  const panelRef = useRef<HTMLElement>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (phase !== 'closing') return;
-    const timer = window.setTimeout(onExited, 240);
-    return () => window.clearTimeout(timer);
-  }, [phase, onExited]);
-
-  useEffect(() => {
-    panelRef.current?.focus();
-    const background = document.querySelector<HTMLElement>('main')?.parentElement;
-    const trigger = triggerRef.current;
-    const previousInert = background?.inert ?? false;
-    const previousHidden = background?.getAttribute('aria-hidden');
-    const previousOverflow = document.body.style.overflow;
-    const previousPadding = document.body.style.paddingRight;
-    const scrollX = window.scrollX;
-    const scrollY = window.scrollY;
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    if (background) {background.inert = true; background.setAttribute('aria-hidden', 'true');}
-    document.body.style.overflow = 'hidden';
-    if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`;
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {event.preventDefault(); onClose(); return;}
-      if (event.key !== 'Tab') return;
-      const focusables = [...(panelRef.current?.querySelectorAll<HTMLElement>(focusableSelector) ?? [])].filter((item) => item.getClientRects().length > 0);
-      if (focusables.length === 0) {event.preventDefault(); panelRef.current?.focus(); return;}
-      const first = focusables[0]!;
-      const last = focusables[focusables.length - 1]!;
-      if (!panelRef.current?.contains(document.activeElement)) {event.preventDefault(); first.focus();}
-      else if (event.shiftKey && document.activeElement === first) {event.preventDefault(); last.focus();}
-      else if (!event.shiftKey && document.activeElement === last) {event.preventDefault(); first.focus();}
-    }
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-      if (background) {
-        background.inert = previousInert;
-        if (previousHidden == null) background.removeAttribute('aria-hidden');
-        else background.setAttribute('aria-hidden', previousHidden);
-      }
-      document.body.style.overflow = previousOverflow;
-      document.body.style.paddingRight = previousPadding;
-      if (window.scrollX !== scrollX || window.scrollY !== scrollY) window.scrollTo(scrollX, scrollY);
-      trigger?.focus();
-    };
-  }, [onClose, triggerRef]);
 
   const expiry = new Date(`${preview.referenceDate}T00:00:00Z`);
   expiry.setUTCDate(expiry.getUTCDate() + validityDays);
@@ -121,10 +72,7 @@ export function InviteVendorDrawer({phase, onClose, onExited, triggerRef, vendor
     } catch {setCopyState('failed');}
   }
 
-  return createPortal(<div className={styles.backdrop} data-phase={phase} onMouseDown={(event) => {if (event.target === event.currentTarget) onClose();}}>
-    <aside ref={panelRef} role="dialog" aria-modal="true" aria-labelledby="invite-title" aria-describedby="invite-description" tabIndex={-1} className={styles.drawer} data-phase={phase}>
-      <div className={styles.content}>
-        <button type="button" className={styles.close} aria-label={t('close')} onClick={onClose}><AppIcon name="close" size={23}/></button>
+  return <Drawer phase={phase} onClose={onClose} onExited={onExited} triggerRef={triggerRef} titleId="invite-title" descriptionId="invite-description" closeLabel={t('close')} contentClassName={styles.content}>
         <span className={styles.heroIcon}><AppIcon name="userPlus" size={29}/></span>
         <h2 id="invite-title">{t('title')}</h2>
         <p id="invite-description" className={styles.intro}>{t('description')}</p>
@@ -145,7 +93,5 @@ export function InviteVendorDrawer({phase, onClose, onExited, triggerRef, vendor
           {submitNote && <p className={styles.demoNote} role="status">{submitNote}</p>}
         </form>
         <p className={styles.security}><DrawerIcon name="lock" />{t('securityNote')}</p>
-      </div>
-    </aside>
-  </div>, document.body);
+  </Drawer>;
 }

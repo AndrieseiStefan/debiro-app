@@ -8,7 +8,7 @@ test('renders the Romanian vendors list inside the shared authenticated shell', 
   const navigation = page.getByRole('navigation', {name: 'Navigare în aplicație'});
   await expect(navigation.getByRole('link', {name: 'Furnizori'})).toHaveAttribute('aria-current', 'page');
   await expect(navigation.getByRole('link', {name: 'Dashboard'})).not.toHaveAttribute('aria-current');
-  await expect(page.getByRole('button', {name: 'Adaugă furnizor'})).toHaveAttribute('aria-disabled', 'true');
+  await expect(page.getByRole('button', {name: 'Adaugă furnizor'})).toBeEnabled();
   await expect(page.getByRole('table').getByRole('row')).toHaveCount(9);
   await expect(page.getByText('Afișez 1 – 8 din 24 furnizori')).toBeVisible();
   await expect(page.getByRole('link', {name: 'Detalii pentru Construct Pro SRL'})).toHaveAttribute('href', '/vendors/construct-pro');

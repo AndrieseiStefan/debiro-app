@@ -1,0 +1,9 @@
+# Add Vendor (E1-015)
+
+The `Adaugă furnizor` action on `/vendors` and `/en/vendors` opens a modal right-side drawer based on [canonical mockup 15](../design/mockups/15-add-vendor.png). It uses the same shared `Drawer` mechanics as [Invite Vendor](invite-vendor.md): backdrop, entry/exit animation, internal scroll, Escape/X/backdrop close, focus trap and return, inert background, scroll lock, and reduced-width geometry. Its form content is feature-owned. The longer form keeps its actions visible while its fields scroll.
+
+Name, CUI/tax ID, contact email, and category are required. Inputs are trimmed; email and a supplied website receive local format validation. Registration number, contact person, phone, industry, address, website, and notes remain absent unless entered. Category uses the Vendors table taxonomy; industry is separate descriptive text, with no invented industry taxonomy. The E1-015 brief adds required CUI and optional registration/website fields to the mockup form. No registry lookup occurs.
+
+Submission creates a browser-memory vendor, navigates to the existing Vendor Details screen, and keeps the vendor in the Vendors list across normal client-side navigation and locale changes. A full refresh clears this transient state. The new row has the existing attention status, `0/0` documents, and no expiration. Details show a setup-needed summary, supplied contact/metadata and note, and zero documents; no requirements, invitation, compliance result, expiry, or optional value is fabricated. The fixture vendors retain their existing content and behavior.
+
+RO and EN are supported. No backend, API, database, authentication, persistence, email delivery, supplier invitation, document upload, or compliance calculation is implemented. Captures in `artifacts/visual/` are ignored, unapproved comparison artifacts.
