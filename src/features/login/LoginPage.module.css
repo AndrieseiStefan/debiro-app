@@ -160,10 +160,21 @@
   position: relative;
 }
 
+.loginField {gap: 4px;}
+
+.loginField label {
+  color: #1b3158;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
 .loginField input {
-  border-color: #c5d9f8;
-  font-size: 14px;
-  height: 44px;
+  border-color: #cbdcf2;
+  border-radius: 7px;
+  color: #1c3156;
+  font-size: 13px;
+  height: 40px;
   padding-left: 44px;
   padding-right: 44px;
 }
@@ -175,7 +186,7 @@
   left: 14px;
   pointer-events: none;
   position: absolute;
-  top: 36px;
+  top: 31px;
 }
 
 .fieldIcon svg,
@@ -195,7 +206,7 @@
   padding: 0;
   position: absolute;
   right: 4px;
-  top: 25px;
+  top: 20px;
   width: 40px;
 }
 
@@ -214,13 +225,13 @@
 .forgotPassword[aria-disabled='true'] {cursor: default;}
 
 .submitButton {
-  font-size: 16px;
+  font-size: 15px;
   gap: 16px;
-  min-height: 48px;
+  min-height: 46px;
   width: 100%;
 }
 
-.submitButton svg {height: 18px; width: 18px;}
+.submitButton svg {height: 20px; width: 20px;}
 
 .separator {
   align-items: center;

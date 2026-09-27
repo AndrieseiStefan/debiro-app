@@ -78,27 +78,51 @@ test('login stays contained at canonical and reduced viewport widths', async ({p
   }
 });
 
-test('login shares onboarding shell geometry and uses compact controls', async ({page}) => {
+test('login shares onboarding shell and control geometry', async ({page}) => {
   await page.setViewportSize({width: 1448, height: 1086});
   await page.goto('/onboarding');
-  const onboarding = await page.evaluate(() => ({
-    header: document.querySelector('header')!.getBoundingClientRect().height,
-    shellLeft: document.querySelector('main')!.getBoundingClientRect().left,
-    shellRight: document.querySelector('main')!.getBoundingClientRect().right
-  }));
+  const onboarding = await page.evaluate(() => {
+    const companyInput = document.querySelector<HTMLInputElement>('#company-name')!;
+    const continueButton = document.querySelector<HTMLButtonElement>('main button[type="submit"]')!;
+    return {
+      header: document.querySelector('header')!.getBoundingClientRect().height,
+      shellLeft: document.querySelector('main')!.getBoundingClientRect().left,
+      shellRight: document.querySelector('main')!.getBoundingClientRect().right,
+      companyInputHeight: companyInput.getBoundingClientRect().height,
+      userInputHeight: document.querySelector('#administrator-name')!.getBoundingClientRect().height,
+      selectHeight: document.querySelector('select')!.getBoundingClientRect().height,
+      inputFontSize: getComputedStyle(companyInput).fontSize,
+      inputRadius: getComputedStyle(companyInput).borderRadius,
+      buttonHeight: continueButton.getBoundingClientRect().height,
+      buttonFontSize: getComputedStyle(continueButton).fontSize,
+      buttonRadius: getComputedStyle(continueButton).borderRadius
+    };
+  });
   await page.goto('/login');
   const login = await page.evaluate(() => {
     const main = document.querySelector('main')!.getBoundingClientRect();
     const promo = document.querySelector('main > section')!.getBoundingClientRect();
     const card = document.querySelector('main section[aria-label="Autentificare"] > div')!.getBoundingClientRect();
+    const emailInput = document.querySelector<HTMLInputElement>('#login-email')!;
+    const passwordInput = document.querySelector<HTMLInputElement>('#login-password')!;
+    const submitButton = document.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    const emailIcon = emailInput.parentElement!.parentElement!.querySelector('span[aria-hidden="true"] svg')!.getBoundingClientRect();
+    const passwordToggle = document.querySelector('button[aria-label="Afișează parola"]')!.getBoundingClientRect();
     return {
       header: document.querySelector('header')!.getBoundingClientRect().height,
       shellLeft: main.left,
       shellRight: main.right,
       promoWidth: promo.width,
       cardWidth: card.width,
-      inputHeight: document.querySelector('#login-email')!.getBoundingClientRect().height,
-      buttonHeight: document.querySelector('button[type="submit"]')!.getBoundingClientRect().height
+      emailHeight: emailInput.getBoundingClientRect().height,
+      passwordHeight: passwordInput.getBoundingClientRect().height,
+      inputFontSize: getComputedStyle(emailInput).fontSize,
+      inputRadius: getComputedStyle(emailInput).borderRadius,
+      buttonHeight: submitButton.getBoundingClientRect().height,
+      buttonFontSize: getComputedStyle(submitButton).fontSize,
+      buttonRadius: getComputedStyle(submitButton).borderRadius,
+      emailIconOffset: Math.abs((emailIcon.top + emailIcon.bottom) / 2 - (emailInput.getBoundingClientRect().top + emailInput.getBoundingClientRect().bottom) / 2),
+      passwordToggleOffset: Math.abs((passwordToggle.top + passwordToggle.bottom) / 2 - (passwordInput.getBoundingClientRect().top + passwordInput.getBoundingClientRect().bottom) / 2)
     };
   });
   expect(login.header).toBe(onboarding.header);
@@ -106,6 +130,17 @@ test('login shares onboarding shell geometry and uses compact controls', async (
   expect(login.shellRight).toBe(onboarding.shellRight);
   expect(login.promoWidth).toBe(328);
   expect(login.cardWidth).toBeLessThanOrEqual(610);
-  expect(login.inputHeight).toBe(44);
-  expect(login.buttonHeight).toBe(48);
+  expect(onboarding.companyInputHeight).toBe(40);
+  expect(onboarding.companyInputHeight).toBe(onboarding.userInputHeight);
+  expect(onboarding.companyInputHeight).toBe(onboarding.selectHeight);
+  expect(login.emailHeight).toBe(onboarding.companyInputHeight);
+  expect(login.passwordHeight).toBe(onboarding.companyInputHeight);
+  expect(login.inputFontSize).toBe(onboarding.inputFontSize);
+  expect(login.inputRadius).toBe(onboarding.inputRadius);
+  expect(onboarding.buttonHeight).toBe(46);
+  expect(login.buttonHeight).toBe(onboarding.buttonHeight);
+  expect(login.buttonFontSize).toBe(onboarding.buttonFontSize);
+  expect(login.buttonRadius).toBe(onboarding.buttonRadius);
+  expect(login.emailIconOffset).toBeLessThanOrEqual(1);
+  expect(login.passwordToggleOffset).toBeLessThanOrEqual(1);
 });
