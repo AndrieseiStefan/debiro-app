@@ -32,7 +32,7 @@ export function PublicHeader({
   showPrimaryCta = false
 }: {
   locale: string;
-  localePath: '/' | '/onboarding';
+  localePath: '/' | '/onboarding' | '/login';
   navigation?: NavigationLabels;
   helpLabel?: string;
   showLogin?: boolean;

@@ -3,10 +3,19 @@ import {expect, test} from '@playwright/test';
 
 const route = process.env.VISUAL_ROUTE ?? '/__dev/design-system';
 const action = process.env.VISUAL_ACTION;
+const viewportWidth = process.env.VISUAL_WIDTH ? Number(process.env.VISUAL_WIDTH) : undefined;
+const viewportHeight = process.env.VISUAL_HEIGHT ? Number(process.env.VISUAL_HEIGHT) : undefined;
 
 test('capture an unapproved route screenshot for manual mockup comparison', async ({page}) => {
   if (!route.startsWith('/') || route.startsWith('//') || route.includes('..')) {
     throw new Error('VISUAL_ROUTE must be a local absolute pathname without traversal.');
+  }
+  if (viewportWidth !== undefined || viewportHeight !== undefined) {
+    if (viewportWidth === undefined || viewportHeight === undefined || !Number.isInteger(viewportWidth) ||
+        !Number.isInteger(viewportHeight) || viewportWidth < 320 || viewportHeight < 320) {
+      throw new Error('VISUAL_WIDTH and VISUAL_HEIGHT must both be integers of at least 320.');
+    }
+    await page.setViewportSize({width: viewportWidth, height: viewportHeight});
   }
 
   await page.clock.setFixedTime(new Date('2025-01-15T12:00:00Z'));
@@ -26,6 +35,6 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   }
 
   const name = route === '/' ? 'root' : route.replace(/^\/+|\/+$/g, '').replace(/[^a-zA-Z0-9_-]+/g, '-');
-  const output = path.join(process.cwd(), 'artifacts', 'visual', `${name}${action ? `-${action}` : ''}.png`);
+  const output = path.join(process.cwd(), 'artifacts', 'visual', `${name}${action ? `-${action}` : ''}${viewportWidth ? `-${viewportWidth}x${viewportHeight}` : ''}.png`);
   await page.screenshot({path: output, fullPage: !action, animations: 'disabled'});
 });

@@ -77,3 +77,35 @@ test('login stays contained at canonical and reduced viewport widths', async ({p
     expect(geometry.controlsOutside, `${width}px control containment`).toBe(false);
   }
 });
+
+test('login shares onboarding shell geometry and uses compact controls', async ({page}) => {
+  await page.setViewportSize({width: 1448, height: 1086});
+  await page.goto('/onboarding');
+  const onboarding = await page.evaluate(() => ({
+    header: document.querySelector('header')!.getBoundingClientRect().height,
+    shellLeft: document.querySelector('main')!.getBoundingClientRect().left,
+    shellRight: document.querySelector('main')!.getBoundingClientRect().right
+  }));
+  await page.goto('/login');
+  const login = await page.evaluate(() => {
+    const main = document.querySelector('main')!.getBoundingClientRect();
+    const promo = document.querySelector('main > section')!.getBoundingClientRect();
+    const card = document.querySelector('main section[aria-label="Autentificare"] > div')!.getBoundingClientRect();
+    return {
+      header: document.querySelector('header')!.getBoundingClientRect().height,
+      shellLeft: main.left,
+      shellRight: main.right,
+      promoWidth: promo.width,
+      cardWidth: card.width,
+      inputHeight: document.querySelector('#login-email')!.getBoundingClientRect().height,
+      buttonHeight: document.querySelector('button[type="submit"]')!.getBoundingClientRect().height
+    };
+  });
+  expect(login.header).toBe(onboarding.header);
+  expect(login.shellLeft).toBe(onboarding.shellLeft);
+  expect(login.shellRight).toBe(onboarding.shellRight);
+  expect(login.promoWidth).toBe(328);
+  expect(login.cardWidth).toBeLessThanOrEqual(610);
+  expect(login.inputHeight).toBe(44);
+  expect(login.buttonHeight).toBe(48);
+});

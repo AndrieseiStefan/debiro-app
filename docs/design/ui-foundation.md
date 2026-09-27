@@ -36,7 +36,7 @@ Each screen owns its view data beside the feature (for example `src/features/<fe
 
 DEBIRO has three top-level layout families:
 
-- **Public/pre-auth:** `PublicHeader` with centered `PublicContainer`/`PageContainer` geometry for landing and onboarding. Login follows its approved full-height split composition while reusing the existing low-level public primitives and visual assets.
+- **Public/pre-auth:** `PublicHeader` with centered `PublicContainer`/`PageContainer` geometry for landing, onboarding, and login. Login's E1-014A scale normalization supersedes its mockup's full-bleed split geometry while preserving its content and behavior.
 - **External supplier portal:** its own portal header and supplier-facing shell, with no authenticated navigation. It reuses only the low-level centered geometry through `PortalContainer`; it is not a `PublicHeader` or public-page shell.
 - **Authenticated app:** `AuthenticatedAppShell` with fluid viewport width, not the centered 1350px constraint; see the separate contract below.
 
@@ -66,9 +66,9 @@ Vendor Details also uses the supporting-content slot and two page actions. Below
 
 ## Shared Header Contract
 
-Landing and onboarding use one public/pre-auth `PublicHeader`, and future applicable pages must reuse it. Its inner content uses the same centered 1350px page shell and responsive gutters (32px desktop, 24px tablet, 16px mobile). The top brand area contains only the text wordmark `DEBIRO`; screen-specific taglines do not appear beneath it. The header shares geometry, shell, brand placement, locale behavior, and responsive layout infrastructure, but each page configures its own optional navigation, help, authentication, and primary CTA regions. This must not create separate header implementations. Landing shows navigation, locale, authentication, and trial CTA; onboarding shows only brand, help, and locale.
+Landing, onboarding, and login use one public/pre-auth `PublicHeader`, and future applicable pages must reuse it. Its inner content uses the same centered 1350px page shell and responsive gutters (32px desktop, 24px tablet, 16px mobile). The top brand area contains only the text wordmark `DEBIRO`; screen-specific taglines do not appear beneath it. The header shares geometry, shell, brand placement, locale behavior, and responsive layout infrastructure, but each page configures its own optional navigation, help, authentication, and primary CTA regions. This must not create separate header implementations. Landing shows navigation, locale, authentication, and trial CTA; onboarding and login show only brand, help, and locale.
 
-The single-row header has a deterministic 66px outer height with vertically centered content. Landing retains its approved local reflow: navigation hides below 864px; brand, compact locale, authentication, and trial CTA stay on one row through 497px; at 496px and below, authentication and trial CTA move together to a second row. Onboarding has fewer actions and stays on one row while brand, help, and locale fit cleanly. At its separate 396px header-local collision point, brand and locale stay on row one while help moves to a centered second row. Locale and help retain intrinsic widths. These configuration-specific transitions do not change the three global layout modes or canonical gutters.
+The single-row header has a deterministic 66px outer height with vertically centered content. Landing retains its approved local reflow: navigation hides below 864px; brand, compact locale, authentication, and trial CTA stay on one row through 497px; at 496px and below, authentication and trial CTA move together to a second row. Onboarding and login have fewer actions and stay on one row while brand, help, and locale fit cleanly. At their separate 396px header-local collision point, brand and locale stay on row one while help moves to a centered second row. Locale and help retain intrinsic widths. These configuration-specific transitions do not change the three global layout modes or canonical gutters.
 
 ## Responsive Contract
 
