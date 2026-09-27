@@ -14,7 +14,7 @@ test('renders the canonical Romanian dashboard in the authenticated shell', asyn
   await expect(page.getByRole('heading', {name: 'Status furnizori'})).toBeVisible();
   await expect(page.getByRole('heading', {name: 'Activitate recentă'})).toBeVisible();
   await expect(page.getByRole('table').getByRole('row')).toHaveCount(6);
-  await expect(page.getByRole('button', {name: 'Adaugă furnizor'})).toHaveAttribute('aria-disabled', 'true');
+  await expect(page.getByRole('button', {name: 'Adaugă furnizor'})).toHaveCount(0);
   await expect(page.getByRole('img', {name: 'Status furnizori: 24 furnizori'})).toBeVisible();
   await expect(page.getByRole('banner').getByText('DEBIRO')).toHaveCount(0);
 });
@@ -25,6 +25,7 @@ test('renders English localization and switches back to Romanian', async ({page}
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.getByRole('heading', {level: 1})).toHaveText('Welcome, Andrei!');
   await expect(page.getByRole('heading', {name: 'Documents needing attention'})).toBeVisible();
+  await expect(page.getByRole('button', {name: 'Add supplier'})).toHaveCount(0);
   await page.setViewportSize({width: 320, height: 700});
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
   await page.getByRole('link', {name: 'RO', exact: true}).click();

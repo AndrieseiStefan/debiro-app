@@ -86,7 +86,7 @@ test('retains optional details and notes without conflating category and industr
   await expect(page.getByRole('row', {name: /Blue Ridge SRL/})).toContainText('Construcții');
 });
 
-test('shares drawer closing, focus, and responsive containment with Invite Vendor', async ({page}) => {
+test('keeps inline actions after the form while sharing drawer closing, focus, and responsive containment', async ({page}) => {
   await page.goto('/vendors');
   for (const width of [1448, 1024, 801, 758, 600, 375, 320]) {
     await page.setViewportSize({width, height: width === 1448 ? 1086 : width === 375 ? 812 : 768});
@@ -99,6 +99,30 @@ test('shares drawer closing, focus, and responsive containment with Invite Vendo
     expect(geometry.height).toBe(geometry.viewportHeight);
     expect(geometry.documentWidth).toBeLessThanOrEqual(width);
     expect(geometry.scrollHeight).toBeGreaterThan(geometry.height);
+    const actionGeometry = () => dialog.evaluate((element) => {
+      const actions = element.querySelector('[data-add-vendor-actions]')!;
+      const notice = element.querySelector('[data-add-vendor-notice]')!;
+      const actionBox = actions.getBoundingClientRect();
+      const noticeBox = notice.getBoundingClientRect();
+      return {scrollTop: element.scrollTop, position: getComputedStyle(actions).position, actionTop: actionBox.top, actionBottom: actionBox.bottom, noticeBottom: noticeBox.bottom, panelBottom: element.getBoundingClientRect().bottom};
+    });
+    const initial = await actionGeometry();
+    expect(initial.position).toBe('static');
+    expect(initial.scrollTop).toBe(0);
+    expect(initial.actionTop, `${width}px actions visible before scrolling`).toBeGreaterThanOrEqual(initial.panelBottom - 1);
+    expect(initial.actionTop).toBeGreaterThan(initial.noticeBottom);
+    await dialog.evaluate((element) => {element.scrollTop = (element.scrollHeight - element.clientHeight) / 2;});
+    const middle = await actionGeometry();
+    expect(middle.scrollTop).toBeGreaterThan(0);
+    expect(middle.actionTop).toBeLessThan(initial.actionTop);
+    expect(middle.actionTop).toBeGreaterThan(middle.noticeBottom);
+    await dialog.evaluate((element) => {element.scrollTop = element.scrollHeight;});
+    const end = await actionGeometry();
+    expect(end.scrollTop).toBeGreaterThan(middle.scrollTop);
+    expect(end.actionBottom).toBeLessThanOrEqual(end.panelBottom + 1);
+    expect(end.actionTop).toBeGreaterThan(end.noticeBottom);
+    await expect(dialog.getByRole('button', {name: 'Anulează'})).toBeInViewport();
+    await expect(dialog.getByRole('button', {name: 'Adaugă furnizor'})).toBeInViewport();
     await dialog.getByRole('button', {name: 'Adaugă furnizor'}).scrollIntoViewIfNeeded();
     await dialog.getByRole('button', {name: 'Adaugă furnizor'}).focus();
     await page.keyboard.press('Tab');

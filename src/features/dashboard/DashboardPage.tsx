@@ -2,7 +2,7 @@ import type {CSSProperties} from 'react';
 import {useTranslations} from 'next-intl';
 import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
-import {AuthenticatedPageHeader, AuthenticatedPagePrimaryAction} from '@/components/layout/AuthenticatedPageHeader';
+import {AuthenticatedPageHeader} from '@/components/layout/AuthenticatedPageHeader';
 import {StatusBadge, type StatusTone} from '@/components/ui/StatusBadge';
 import {Surface} from '@/components/ui/Surface';
 import type {DashboardActivityKind, DashboardDocumentStatus, DashboardViewModel, LocalizedSample} from './types';
@@ -163,7 +163,6 @@ export function DashboardPage({locale, view}: {locale: string; view: DashboardVi
           titleId="dashboard-title"
           description={t('welcomeDescription', {count: suppliers.total})}
           supportingContent={<div className={styles.complianceCallout}><span><AppIcon name="target" size={27} /></span><p>{t('calloutOne')}<br />{t('calloutTwo')}</p></div>}
-          actions={<AuthenticatedPagePrimaryAction icon="plus" aria-disabled="true">{t('addSupplier')}</AuthenticatedPagePrimaryAction>}
         />
 
         <section className={styles.metricGrid} aria-label={t('supplierStatusTitle')}>

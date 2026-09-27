@@ -104,8 +104,8 @@ export function AddVendorDrawer({phase, onClose, onExited, triggerRef, onCreate}
       <div className={styles.textareaField}><label htmlFor="add-vendor-address">{t('address')}</label><textarea id="add-vendor-address" placeholder={t('addressPlaceholder')} value={values.address} onChange={(event) => update('address', event.target.value)}/></div>
       <Field id="add-vendor-website" label={t('website')} placeholder={t('websitePlaceholder')} type="url" value={values.website} onChange={(event) => update('website', event.target.value)} error={errors.website} className={styles.field}/>
       <div className={styles.textareaField}><label htmlFor="add-vendor-notes">{t('notes')}</label><textarea id="add-vendor-notes" placeholder={t('notesPlaceholder')} value={values.notes} onChange={(event) => update('notes', event.target.value)}/></div>
-      <div className={styles.notice}><AppIcon name="info" size={22}/><p><strong>{t('noticeTitle')}</strong><span>{t('noticeDescription')}</span></p></div>
-      <div className={styles.actions}><Button variant="secondary" onClick={onClose}>{t('cancel')}</Button><Button type="submit">{t('submit')}</Button></div>
+      <div className={styles.notice} data-add-vendor-notice><AppIcon name="info" size={22}/><p><strong>{t('noticeTitle')}</strong><span>{t('noticeDescription')}</span></p></div>
+      <div className={styles.actions} data-add-vendor-actions><Button variant="secondary" onClick={onClose}>{t('cancel')}</Button><Button type="submit">{t('submit')}</Button></div>
     </form>
   </Drawer>;
 }

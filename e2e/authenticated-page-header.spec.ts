@@ -7,7 +7,7 @@ const viewports = [
   {width: 375, height: 812}
 ] as const;
 
-test('shares authenticated page-header anchors and primary action geometry', async ({page}) => {
+test('shares authenticated page-header anchors while Dashboard has no CTA', async ({page}) => {
   for (const viewport of viewports) {
     await test.step(`${viewport.width} × ${viewport.height}`, async () => {
       await page.setViewportSize(viewport);
@@ -18,7 +18,8 @@ test('shares authenticated page-header anchors and primary action geometry', asy
         const header = page.locator('main section[aria-labelledby]').first();
         const action = header.locator('[data-page-primary-action]');
         await expect(header.getByRole('heading', {level: 1})).toBeVisible();
-        await expect(action).toBeVisible();
+        if (route === '/dashboard') await expect(action).toHaveCount(0);
+        else await expect(action).toBeVisible();
 
         const geometry = await header.evaluate((element) => {
           const rect = (node: Element) => {
@@ -28,10 +29,9 @@ test('shares authenticated page-header anchors and primary action geometry', asy
           const context = element.firstElementChild!;
           const heading = element.querySelector('h1')!;
           const description = heading.nextElementSibling!;
-          const action = element.querySelector('[data-page-primary-action]')!;
+          const action = element.querySelector('[data-page-primary-action]');
           const support = element.querySelector('[data-page-header-support]');
           const feature = element.nextElementSibling!;
-          const buttonStyle = getComputedStyle(action);
           const headingStyle = getComputedStyle(heading);
           const descriptionStyle = getComputedStyle(description);
           return {
@@ -40,11 +40,9 @@ test('shares authenticated page-header anchors and primary action geometry', asy
             context: rect(context),
             heading: rect(heading),
             description: rect(description),
-            action: rect(action),
+            action: action ? rect(action) : null,
             support: support ? rect(support) : null,
             feature: rect(feature),
-            buttonStyle: [buttonStyle.height, buttonStyle.paddingLeft, buttonStyle.paddingRight, buttonStyle.fontSize, buttonStyle.fontWeight, buttonStyle.borderRadius, buttonStyle.backgroundColor, buttonStyle.boxShadow],
-            iconSize: rect(action.querySelector('svg')!).width,
             headingStyle: [headingStyle.fontFamily, headingStyle.fontSize, headingStyle.fontWeight, headingStyle.lineHeight, headingStyle.letterSpacing],
             descriptionStyle: [descriptionStyle.fontFamily, descriptionStyle.fontSize, descriptionStyle.lineHeight, descriptionStyle.marginTop]
           };
@@ -55,14 +53,16 @@ test('shares authenticated page-header anchors and primary action geometry', asy
         expect(geometry.heading.left).toBeCloseTo(geometry.header.left, 0);
         expect(geometry.description.left).toBeCloseTo(geometry.header.left, 0);
         expect(geometry.description.right).toBeLessThanOrEqual(geometry.header.right + 1);
-        expect(geometry.action.left).toBeGreaterThanOrEqual(geometry.header.left - 1);
-        expect(geometry.action.right).toBeLessThanOrEqual(geometry.header.right + 1);
-        expect(geometry.action.bottom).toBeLessThanOrEqual(geometry.feature.top);
+        if (geometry.action) {
+          expect(geometry.action.left).toBeGreaterThanOrEqual(geometry.header.left - 1);
+          expect(geometry.action.right).toBeLessThanOrEqual(geometry.header.right + 1);
+          expect(geometry.action.bottom).toBeLessThanOrEqual(geometry.feature.top);
+        }
         expect(geometry.description.bottom).toBeLessThanOrEqual(geometry.feature.top);
         if (geometry.support) {
           expect(geometry.support.bottom).toBeLessThanOrEqual(geometry.feature.top);
-          if (viewport.width >= 1200) expect(geometry.support.right).toBeLessThanOrEqual(geometry.action.left);
-          else if (viewport.width < 768) expect(geometry.support.bottom).toBeLessThanOrEqual(geometry.action.top);
+          expect(geometry.support.right).toBeLessThanOrEqual(geometry.header.right + 1);
+          if (viewport.width < 768) expect(geometry.support.top).toBeGreaterThanOrEqual(geometry.description.bottom - 1);
         }
         measurements.push(geometry);
       }
@@ -74,9 +74,10 @@ test('shares authenticated page-header anchors and primary action geometry', asy
       expect(dashboard.description.top).toBeCloseTo(vendors.description.top, 0);
       expect(dashboard.headingStyle).toEqual(vendors.headingStyle);
       expect(dashboard.descriptionStyle).toEqual(vendors.descriptionStyle);
-      expect(dashboard.buttonStyle).toEqual(vendors.buttonStyle);
-      expect(dashboard.iconSize).toBe(vendors.iconSize);
-      expect(dashboard.action.width).toBeCloseTo(vendors.action.width, 0);
+      expect(dashboard.action).toBeNull();
+      expect(dashboard.support).not.toBeNull();
+      expect(vendors.action).not.toBeNull();
+      expect(vendors.support).toBeNull();
     });
   }
 });
