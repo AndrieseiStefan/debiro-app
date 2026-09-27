@@ -5,11 +5,11 @@ This roadmap records direction only. Detailed requirements are created by the ta
 ## Phase 0 — Product & Repository Foundation
 
 - Repository memory — complete
-- Canonical mockup contract and eleven approved images — complete
+- Canonical mockup contract and thirteen approved images — complete
 - Architecture and stack decision — complete (TASK-002)
 - UI foundation and canonical design system tooling — complete (TASK-003); no product screens approved
 - E1-001 canonical landing page — implemented; product-owner visual approval remains pending
-- E1-002 canonical onboarding first step — implemented; product-owner visual approval remains pending
+- E1-002/E1-012 canonical three-step onboarding — implemented with optional fixture-backed Steps 2 and 3 (E1-013 absorbed); product-owner visual approval remains pending
 - E1-003 canonical dashboard overview — implemented with a fixture-backed authenticated shell; product-owner visual approval remains pending
 - E1-004 canonical Vendors List — implemented with fixture-backed local list controls; product-owner visual approval remains pending
 - E1-005 canonical Vendor Details — implemented with a typed dynamic fixture route and local document search; product-owner visual approval remains pending
@@ -23,7 +23,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 ## Agreed delivery sequence
 
 1. E1-001 landing page — implemented under an explicit task brief. The earlier complete-MVP epic planning checkpoint remains open.
-2. Implement approved mockup experiences using typed fixture data — complete for all eleven supplied canonical screens.
+2. Implement approved mockup experiences using typed fixture data — complete for all thirteen supplied canonical mockup states.
 3. Visually and interactively compare them with the canonical mockups; obtain product-owner visual approval.
 4. Before expanding beyond the supplied E1 tasks, finalize the complete Epic sequence through MVP.
 5. Define data model and API contracts, then build backend/persistence and replace fixtures with real data.
@@ -45,4 +45,4 @@ These are roadmap directions, not detailed feature specifications or a finalized
 
 ## Next task
 
-All eleven approved mockups have fixture-backed implementations. Product-owner visual approval and the broader MVP epic planning checkpoint remain open; backend and auth are not implemented.
+All thirteen approved mockups have fixture-backed implementations. Product-owner visual approval and the broader MVP epic planning checkpoint remain open; backend and auth are not implemented.

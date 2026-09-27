@@ -177,6 +177,9 @@
   text-align: center;
 }
 
+.progress li > span:last-child {white-space: nowrap;}
+.completedStepButton {align-items: center; background: transparent; border: 0; color: inherit; cursor: pointer; display: flex; flex-direction: column; font: inherit; gap: 7px; padding: 0; white-space: nowrap;}
+
 .progress li:not(:last-child)::after {
   background: #c7d7ee;
   content: '';
@@ -211,6 +214,20 @@
   background: #0c63e7;
   box-shadow: 0 3px 8px rgb(7 94 233 / 20%);
   color: #fff;
+}
+
+.completedProgress {
+  color: #075ad6 !important;
+  font-weight: 700;
+}
+
+.completedProgress .progressNumber {
+  background: #0c63e7;
+  color: #fff;
+}
+
+.completedProgress::after {
+  background: #0c63e7 !important;
 }
 
 .contentGrid {
@@ -253,6 +270,110 @@
 .formCard + .formCard {
   margin-top: 22px;
 }
+
+.optionalStepBody {
+  margin-top: 26px;
+}
+
+.templateOptions {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.templateOption {
+  align-items: center;
+  border: 1px solid #d8e5f8;
+  border-radius: 8px;
+  color: #16325e;
+  cursor: pointer;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 26px 48px minmax(0, 1fr) auto;
+  min-height: 62px;
+  padding: 8px 12px;
+}
+
+.templateOption[data-selected='true'] {
+  background: #f2f8ff;
+  border-color: #5b9bff;
+}
+
+.templateOption input,
+.requirementRow input {
+  accent-color: #0864ee;
+  height: 20px;
+  margin: 0;
+  width: 20px;
+}
+
+.templateIcon {
+  align-items: center;
+  background: #e9f2ff;
+  border-radius: 10px;
+  color: #0a62dc;
+  display: flex;
+  height: 42px;
+  justify-content: center;
+  width: 42px;
+}
+
+.templateCopy {min-width: 0;}
+.templateCopy strong, .templateCopy small {display: block;}
+.templateCopy strong {font-size: 13px; line-height: 1.25;}
+.templateCopy small {color: #567098; font-size: 12px; line-height: 1.3; margin-top: 4px;}
+.recommendedBadge {background: #deedff; border-radius: 14px; color: #0560e5; font-size: 11px; font-weight: 700; padding: 5px 9px; white-space: nowrap;}
+.templateOption > svg {color: #3a639a;}
+
+.requirementList {display: grid; gap: 4px; margin-top: 14px;}
+.requirementRow {
+  align-items: center;
+  border: 1px solid #d8e5f8;
+  border-radius: 7px;
+  color: #19355f;
+  cursor: pointer;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 26px 32px minmax(0, 1fr) 80px 22px;
+  min-height: 40px;
+  padding: 5px 10px;
+}
+.requirementRow > svg {color: #44689a;}
+.requirementName {font-size: 13px; min-width: 0;}
+.requirementBadge {background: #eff3f9; border-radius: 15px; color: #4e658a; font-size: 11px; padding: 4px 7px; text-align: center;}
+.requirementBadge[data-required='true'] {background: #ffe8eb; color: #d52749;}
+.requirementInfo {color: #3e6eae; display: flex;}
+.stepInfo {align-items: center; background: #eaf3ff; border-radius: 8px; color: #5573a1; display: flex; font-size: 12px; gap: 12px; line-height: 1.4; margin-top: 12px; min-height: 46px; padding: 9px 14px;}
+.stepInfo > svg {background: #4f93e8; border-radius: 50%; color: #fff; flex: 0 0 22px; padding: 3px;}
+.infoEmphasis {color: #075ceb; font-weight: 650; text-decoration: underline;}
+.optionalActions {align-items: center; display: flex; justify-content: space-between; margin-top: 18px;}
+.skipAction {background: transparent; border: 0; color: #075ceb; cursor: pointer; font-size: 15px; font-weight: 650; padding: 8px 0;}
+.skipAction:hover {color: #003fba;}
+.optionalSubmit {align-items: center; display: flex; flex-direction: column; gap: 5px;}
+.optionalSubmit > span {color: #5c7191; font-size: 12px; text-align: center; width: 100%;}
+
+.supplierStepBody {display: flex; flex-direction: column; min-height: 683px;}
+.supplierStepBody .optionalActions {margin-top: auto; padding-top: 18px;}
+.supplierRows {display: grid; gap: 10px; margin-top: 22px;}
+.supplierRow {align-items: end; border: 1px solid #d8e5f8; border-radius: 8px; display: grid; gap: 10px; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr) auto 38px; padding: 14px;}
+.supplierField {display: grid; gap: 6px; min-width: 0;}
+.supplierField label, .supplierStatus > span {color: #1b3158; font-size: 12px; font-weight: 650; line-height: 1.2;}
+.supplierField input {border: 1px solid #cbdcf2; border-radius: 7px; color: #1c3156; font: inherit; font-size: 13px; height: 40px; min-width: 0; padding: 0 12px; width: 100%;}
+.supplierField > input {font-size: 12px; padding-inline: 9px;}
+.supplierField input[aria-invalid='true'] {border-color: #e03556;}
+.supplierField small {color: #c92143; font-size: 11px;}
+.supplierEmail {min-width: 0; position: relative;}
+.supplierEmail > svg {color: #5070a0; left: 11px; position: absolute; top: 11px;}
+.supplierEmail input {font-size: 11px; padding-left: 31px; padding-right: 6px;}
+.supplierEmail > svg {left: 8px; width: 16px;}
+.supplierStatus {display: grid; gap: 6px;}
+.supplierStatus strong {align-items: center; background: #f1f4f9; border-radius: 7px; color: #60718a; display: inline-flex; font-size: 11px; font-weight: 650; gap: 5px; height: 40px; justify-content: center; padding: 0 8px; white-space: nowrap;}
+.supplierStatus strong[data-ready='true'] {background: #e0f7ed; color: #07986d;}
+.removeSupplier {align-items: center; background: #fff; border: 1px solid #d8e5f8; border-radius: 7px; color: #4d6c9a; cursor: pointer; display: flex; height: 40px; justify-content: center; width: 38px;}
+.removeSupplier:hover {background: #fff2f4; color: #c92143;}
+.addSupplier {align-items: center; background: #fff; border: 1px dashed #a8cbff; border-radius: 8px; color: #075ceb; cursor: pointer; display: flex; font-size: 14px; font-weight: 650; gap: 10px; justify-content: center; margin-top: 12px; min-height: 68px; width: 100%;}
+.addSupplier:hover {background: #f4f9ff;}
+.emptySuppliers {color: #567098; font-size: 13px; padding: 12px 0;}
 
 .cardHeading {
   align-items: center;
@@ -551,6 +672,12 @@
   right: 0;
 }
 
+.quoteIllustration[data-step='2']::before {background: #a9d5ff; clip-path: polygon(0 100%, 0 53%, 12% 53%, 12% 30%, 19% 30%, 19% 65%, 32% 65%, 32% 40%, 42% 40%, 42% 100%);}
+.quoteIllustration[data-step='3']::before {background: #8dc2fa;}
+.companyBubble {align-items: center; background: #e7f2ff; border: 2px solid white; border-radius: 50%; color: #0b63dc; display: flex; height: 46px; justify-content: center; position: absolute; width: 46px; z-index: 2;}
+.companyBubbleLeft {left: 15px; top: 87px;}
+.companyBubbleRight {right: 24px; top: 104px;}
+
 .quoteIllustration::after {
   background: #e0f1ff;
   clip-path: polygon(0 100%, 0 74%, 23% 48%, 39% 79%, 54% 63%, 73% 82%, 100% 54%, 100% 100%);
@@ -655,6 +782,8 @@
   width: 38px;
 }
 
+.completedStepCard .stepNumber {background: #0da878; color: #fff;}
+
 .stepCard strong,
 .stepCard small,
 .securityCard strong,
@@ -751,6 +880,8 @@
     grid-column: 1 / -1;
     margin-top: 0;
   }
+
+  .supplierStepBody {min-height: 0;}
 }
 
 @media (max-width: 767px) {
@@ -789,6 +920,8 @@
     gap: 5px;
     min-width: 0;
   }
+
+  .progress li > span:last-child, .completedStepButton {white-space: normal;}
 
   .progress li::after {
     display: none;
@@ -870,4 +1003,23 @@
   .securityCard {
     grid-column: 1;
   }
+
+  .templateOption {grid-template-columns: 22px 42px minmax(0, 1fr);}
+  .templateOption .recommendedBadge, .templateOption > svg {grid-column: 3; justify-self: start;}
+  .supplierRow {grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);}
+  .supplierStatus {grid-column: 1;}
+  .removeSupplier {grid-column: 2; justify-self: end;}
+  .optionalActions {align-items: stretch; flex-direction: column-reverse; gap: 8px;}
+  .optionalSubmit, .optionalSubmit .continueButton {width: 100%;}
+  .skipAction {align-self: center;}
+}
+
+@media (max-width: 600px) {
+  .supplierRow {grid-template-columns: minmax(0, 1fr) auto;}
+  .supplierField {grid-column: 1 / -1;}
+  .supplierStatus {grid-column: 1;}
+  .removeSupplier {grid-column: 2;}
+  .requirementRow {grid-template-columns: 22px 24px minmax(0, 1fr) 20px;}
+  .requirementBadge {grid-column: 3; grid-row: 2; justify-self: start;}
+  .requirementInfo {grid-column: 4; grid-row: 1 / 3;}
 }

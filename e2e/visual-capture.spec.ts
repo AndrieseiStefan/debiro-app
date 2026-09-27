@@ -15,9 +15,14 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   await page.waitForLoadState('networkidle');
   await page.evaluate(async () => { await document.fonts.ready; });
   if (action) {
-    if (action !== 'invite-vendor') throw new Error('Unknown VISUAL_ACTION.');
-    await page.getByRole('button', {name: 'Invită furnizor'}).click();
-    await expect(page.getByRole('dialog', {name: 'Invită furnizorul să încarce documentele'})).toBeVisible();
+    if (action === 'invite-vendor') {
+      await page.getByRole('button', {name: 'Invită furnizor'}).click();
+      await expect(page.getByRole('dialog', {name: 'Invită furnizorul să încarce documentele'})).toBeVisible();
+    } else if (action === 'onboarding-step2' || action === 'onboarding-step3') {
+      if (route !== '/onboarding' && route !== '/en/onboarding') throw new Error('Onboarding capture action requires an onboarding route.');
+      await page.getByRole('button', {name: route.startsWith('/en') ? 'Continue' : 'Continuă'}).click();
+      if (action === 'onboarding-step3') await page.getByRole('button', {name: route.startsWith('/en') ? 'Continue' : 'Continuă'}).click();
+    } else throw new Error('Unknown VISUAL_ACTION.');
   }
 
   const name = route === '/' ? 'root' : route.replace(/^\/+|\/+$/g, '').replace(/[^a-zA-Z0-9_-]+/g, '-');

@@ -138,7 +138,53 @@
       "suppliers": {"title": "Invită primii furnizori", "description": "Adaugă furnizorii existenți și trimite-le invitații să se alăture DEBIRO."}
     },
     "securityTitle": "Datele tale sunt în siguranță",
-    "securityDescription": "Folosim criptare avansată și respectăm cele mai înalte standarde de securitate."
+    "securityDescription": "Folosim criptare avansată și respectăm cele mai înalte standarde de securitate.",
+    "requirements": {
+      "heading": "Configurează cerințele documentelor",
+      "lead": "Alege un șablon sau personalizează cerințele documentelor pentru furnizorii tăi. Acest pas este opțional și poate fi configurat și ulterior.",
+      "templateHeading": "Șablon recomandat",
+      "templateDescription": "Pornim de la un set de cerințe potrivit companiei tale.",
+      "templates": {
+        "construction": {"title": "Subcontractori construcții", "description": "Set complet de documente pentru subcontractori din domeniul construcțiilor."},
+        "general": {"title": "Șablon general", "description": "Un set standard de documente pentru majoritatea industriilor."}
+      },
+      "recommended": "Recomandat",
+      "documentsHeading": "Documente inițiale",
+      "documentsDescription": "Selectează documentele pe care dorești să le soliciți furnizorilor tăi. Poți modifica oricând această listă ulterior.",
+      "documents": {"registration": "Certificat de înregistrare", "tax": "Certificat fiscal", "insurance": "Asigurare răspundere civilă", "fireSafety": "Autorizație ISU", "iso": "Certificat ISO 9001"},
+      "required": "Obligatoriu",
+      "optional": "Opțional",
+      "documentInfo": "Cerința poate fi modificată ulterior.",
+      "noteBefore": "Poți adăuga, elimina sau modifica cerințele documentelor oricând din secțiunea",
+      "noteSection": "Cerințe",
+      "skip": "Configurează mai târziu",
+      "stepCount": "Pasul 2 din 3",
+      "quote": "Furnizori verificați. Proiecte mai sigure."
+    },
+    "suppliers": {
+      "heading": "Invită primii furnizori",
+      "lead": "Adaugă furnizori existenți și trimite-le invitații pentru a începe colaborarea. Acest pas este opțional și poate fi completat și mai târziu.",
+      "invitesHeading": "Invitații inițiale",
+      "invitesDescription": "Poți adăuga câțiva furnizori acum sau poți continua și reveni ulterior.",
+      "name": "Numele furnizorului",
+      "email": "Email de contact",
+      "status": "Status",
+      "ready": "Gata de invitat",
+      "incomplete": "Incomplet",
+      "nameError": "Introdu numele furnizorului.",
+      "emailError": "Introdu o adresă de email validă.",
+      "remove": "Elimină {name}",
+      "unnamed": "furnizorul fără nume",
+      "empty": "Nu ai adăugat încă furnizori.",
+      "add": "Adaugă alt furnizor",
+      "noteBefore": "Invitațiile pot fi retrimise sau completate mai târziu din secțiunea",
+      "noteSection": "Furnizori",
+      "skip": "Sari peste",
+      "finish": "Finalizează configurarea",
+      "stepCount": "Pasul 3 din 3",
+      "quote": "Primii pași spre colaborări mai simple.",
+      "quoteHandwriting": "Furnizori verificați. Parteneriate de încredere."
+    }
   },
   "AppShell": {
     "sidebarLabel": "Bară laterală aplicație",

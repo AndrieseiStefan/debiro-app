@@ -7,6 +7,7 @@ import {OnboardingPage} from '@/features/onboarding/OnboardingPage';
 import {onboardingFixture} from '@/features/onboarding/fixtures';
 
 vi.mock('@/i18n/navigation', () => ({
+  useRouter: () => ({push: vi.fn()}),
   Link: ({locale, href, ...props}: {locale?: string; href: string; children: React.ReactNode}) =>
     <a href={locale === 'en' ? `/en${href}` : href} {...props} />
 }));

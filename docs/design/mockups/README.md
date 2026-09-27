@@ -1,6 +1,6 @@
 # Approved Mockups
 
-This directory contains eleven approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
+This directory contains thirteen approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
 
 ## Expected initial mapping
 
@@ -17,6 +17,8 @@ This directory contains eleven approved product mockup images listed below. They
 | `09-document-review.png` | Document preview and extracted-information review |
 | `10-audit-activity.png` | Activity and audit experience |
 | `11-documents.png` | Global authenticated Documents page |
+| `12-onboarding-step2.png` | Optional document requirements onboarding step |
+| `13-onboarding-step3.png` | Optional first-supplier invitations onboarding step |
 
 ## Contract
 

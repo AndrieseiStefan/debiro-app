@@ -43,6 +43,102 @@ test('renders English copy and switches locale without changing routing conventi
   await expect(page.locator('html')).toHaveAttribute('lang', 'ro');
 });
 
+test('configures requirements locally, preserves selections, and validates supplier rows', async ({page}) => {
+  await page.goto('/onboarding');
+  await page.getByRole('button', {name: 'Continuă'}).click();
+  await expect(page.getByRole('heading', {level: 1})).toHaveText('Configurează cerințele documentelor');
+  await expect(page.getByRole('list', {name: 'Progres configurare'}).locator('[aria-current="step"]')).toContainText('Cerințe documente');
+  const tax = page.getByRole('checkbox', {name: /Certificat fiscal/});
+  await expect(tax).toBeChecked();
+  await page.getByRole('radio', {name: /Șablon general/}).check();
+  await expect(page.getByRole('checkbox', {name: /Asigurare răspundere civilă/})).not.toBeChecked();
+  await tax.uncheck();
+  await page.getByRole('button', {name: 'Continuă'}).click();
+  await expect(page.getByRole('heading', {level: 1})).toHaveText('Invită primii furnizori');
+  await expect(page.getByRole('list', {name: 'Progres configurare'}).locator('[aria-current="step"]')).toContainText('Invită primii furnizori');
+  await page.getByRole('button', {name: 'Cerințe documente'}).click();
+  await expect(page.getByRole('radio', {name: /Șablon general/})).toBeChecked();
+  await expect(tax).not.toBeChecked();
+  await page.getByRole('button', {name: 'Continuă'}).click();
+
+  await page.getByRole('button', {name: 'Adaugă alt furnizor'}).click();
+  const names = page.getByLabel(/^Numele furnizorului/);
+  const emails = page.getByLabel(/^Email de contact/);
+  await expect(names).toHaveCount(3);
+  await names.nth(2).fill('Furnizor Test');
+  await emails.nth(2).fill('invalid-email');
+  await page.getByRole('button', {name: 'Finalizează configurarea'}).click();
+  await expect(page).toHaveURL(/\/onboarding$/);
+  await expect(page.getByText('Introdu o adresă de email validă.')).toBeVisible();
+  await emails.nth(2).fill('test@example.ro');
+  await names.nth(2).fill('');
+  await page.getByRole('button', {name: 'Finalizează configurarea'}).click();
+  await expect(page.getByText('Introdu numele furnizorului.')).toBeVisible();
+  await names.nth(2).fill('Furnizor Test');
+  await expect(page.getByText('Gata de invitat')).toHaveCount(3);
+  await page.getByRole('button', {name: 'Elimină Furnizor Test'}).click();
+  await expect(names).toHaveCount(2);
+  await page.getByRole('button', {name: 'Finalizează configurarea'}).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+});
+
+test('optional steps can be skipped; empty supplier list does not block completion', async ({page}) => {
+  await page.goto('/onboarding');
+  await page.getByRole('button', {name: 'Continuă'}).click();
+  await page.getByRole('button', {name: 'Configurează mai târziu'}).click();
+  await page.getByRole('button', {name: 'Elimină Construct Pro SRL'}).click();
+  await page.getByRole('button', {name: 'Elimină Global Clean Services'}).click();
+  await expect(page.getByText('Nu ai adăugat încă furnizori.')).toBeVisible();
+  await page.getByRole('button', {name: 'Adaugă alt furnizor'}).click();
+  await page.getByRole('button', {name: 'Finalizează configurarea'}).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await page.goto('/onboarding');
+  await page.getByRole('button', {name: 'Continuă'}).click();
+  await page.getByRole('button', {name: 'Configurează mai târziu'}).click();
+  await page.getByRole('button', {name: 'Adaugă alt furnizor'}).click();
+  await page.getByRole('button', {name: 'Sari peste'}).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+});
+
+test('English onboarding completes all three steps with locale-aware dashboard navigation', async ({page}) => {
+  await page.goto('/en/onboarding');
+  await page.getByRole('button', {name: 'Continue'}).click();
+  await expect(page.getByRole('heading', {level: 1})).toHaveText('Configure document requirements');
+  await page.getByRole('button', {name: 'Continue'}).click();
+  await expect(page.getByRole('heading', {level: 1})).toHaveText('Invite your first suppliers');
+  await page.getByRole('button', {name: 'Finish setup'}).click();
+  await expect(page).toHaveURL(/\/en\/dashboard$/);
+});
+
+test('steps two and three stay contained at the required viewport widths', async ({page}) => {
+  const widths = [[1448, 1086], [1024, 768], [768, 833], [600, 800], [375, 812], [320, 700]];
+  for (const targetStep of [2, 3]) {
+    await page.goto('/onboarding');
+    await page.getByRole('button', {name: 'Continuă'}).click();
+    if (targetStep === 3) await page.getByRole('button', {name: 'Continuă'}).click();
+    for (const [width, height] of widths) {
+      await page.setViewportSize({width, height});
+      const geometry = await page.evaluate(() => {
+        const form = document.querySelector('[class*="formColumn"]')!.getBoundingClientRect();
+        const guidance = document.querySelector('aside[aria-label]')!.getBoundingClientRect();
+        const controls = [...document.querySelectorAll('input, button')].map((element) => element.getBoundingClientRect());
+        return {
+          documentWidth: document.documentElement.scrollWidth,
+          formRight: form.right,
+          guidanceLeft: guidance.left,
+          formBottom: form.bottom,
+          guidanceTop: guidance.top,
+          controlOutsideViewport: controls.some((rect) => rect.left < -1 || rect.right > innerWidth + 1)
+        };
+      });
+      expect(geometry.documentWidth, `step ${targetStep}, ${width}px overflow`).toBeLessThanOrEqual(width);
+      expect(geometry.controlOutsideViewport, `step ${targetStep}, ${width}px control containment`).toBe(false);
+      if (width >= 1200) expect(geometry.guidanceLeft, `step ${targetStep}, ${width}px rail overlap`).toBeGreaterThanOrEqual(geometry.formRight + 15);
+      else expect(geometry.guidanceTop, `step ${targetStep}, ${width}px rail stacking`).toBeGreaterThanOrEqual(geometry.formBottom);
+    }
+  }
+});
+
 test('keeps onboarding readable and non-overlapping across responsive modes', async ({page}) => {
   await page.goto('/onboarding');
   const matrix = [...Object.values(viewports), ...boundaryViewports, ...regressionViewports];

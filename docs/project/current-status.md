@@ -10,11 +10,11 @@
 
 **Domain strategy:** Single domain
 
-**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and all eleven approved fixture-backed canonical experiences are implemented; backend/auth integrations are not.
+**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and all thirteen approved fixture-backed canonical mockup states are implemented; backend/auth integrations are not.
 
 ## Design state
 
-Eleven approved product mockups are present in `docs/design/mockups/`. They are canonical contracts requiring:
+Thirteen approved product mockups are present in `docs/design/mockups/`. They are canonical contracts requiring:
 
 - UI fidelity as close to 1:1 as technically practical
 - Interaction fidelity as close to 1:1 as technically practical
@@ -33,7 +33,7 @@ The final logo is not yet designed and must not be invented.
 - Romanian-default and English `next-intl` routing, foundation and implemented-screen catalogs, typed view-data convention
 - Reusable low-level UI/layout primitives, accessibility baseline, Vitest/RTL and Playwright test tooling, deterministic visual capture, development-only design-system preview
 - E1-001 canonical landing page at `/` (Romanian) and `/en` (English), using a typed static dashboard preview and no provider data; see [landing page](../features/landing-page.md)
-- E1-002 canonical onboarding first step at `/onboarding` (Romanian) and `/en/onboarding` (English), using a typed form fixture and browser-local interactions only; see [onboarding](../features/onboarding.md)
+- E1-002/E1-012 canonical three-step onboarding at `/onboarding` (Romanian) and `/en/onboarding` (English), using typed fixtures and browser-local interactions only; Steps 2 and 3 are optional and no data is persisted or sent; see [onboarding](../features/onboarding.md)
 - E1-003 canonical dashboard overview at `/dashboard` (Romanian) and `/en/dashboard` (English), using an independent authenticated app shell and deterministic view fixture; see [dashboard](../features/dashboard.md)
 - E1-004 canonical Vendors List at `/vendors` (Romanian) and `/en/vendors` (English), reusing the authenticated shell with typed presentation fixtures and local list controls; see [vendors](../features/vendors.md)
 - E1-005 canonical Vendor Details at `/vendors/construct-pro` and `/en/vendors/construct-pro`, with a dynamic fixture-backed route, document search, and list-to-details navigation; see [vendor details](../features/vendor-details.md)
@@ -51,7 +51,7 @@ TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to
 
 ## Not implemented
 
-- Later onboarding steps and functional backend workflows
+- Functional onboarding persistence, accounts, and invitation delivery
 - Product-owner visual approval and approved regression baselines
 - Backend or API
 - Database, schemas, or migrations
@@ -63,4 +63,4 @@ TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to
 
 ## Next
 
-All eleven approved canonical screens have fixture-backed implementations; product-owner visual approval remains pending. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).
+All thirteen approved canonical mockup states have fixture-backed implementations; product-owner visual approval remains pending. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).

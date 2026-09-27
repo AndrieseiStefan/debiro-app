@@ -4,9 +4,9 @@
 
 ## Canonical source and scope
 
-The original ten 1448 × 1086 images and the later 1536 × 1024 Documents mockup in [mockups/](mockups/README.md) were inspected. They remain the contract for each screen's composition, behavior, typography, and exact visible Romanian copy. This foundation extracts only recurring treatments; it is not approval of a screen or permission to reinterpret one. Sample names and counts are not locked. The only approved mockup-copy substitution is temporary `ComplyHub` branding to plain uppercase `DEBIRO`.
+The original ten 1448 × 1086 images, the later 1536 × 1024 Documents mockup, and two onboarding follow-on mockups in [mockups/](mockups/README.md) were inspected. They remain the contract for each screen's composition, behavior, typography, and exact visible Romanian copy. This foundation extracts only recurring treatments; it is not approval of a screen or permission to reinterpret one. Sample names and counts are not locked. The only approved mockup-copy substitution is temporary `ComplyHub` branding to plain uppercase `DEBIRO`.
 
-The desktop mockups repeatedly show a pale page background, white bordered surfaces, dark blue text, blue primary actions, restrained status colors, and a spacious 4/8px-based rhythm. App views use an approximately 260px sidebar, 72px top bar, 28px content gutters, 12px card corners, and 8px field corners. The invite/review side panel is approximately 502px wide. These are starting measurements, not blanket overrides of individual mockup geometry. All eleven approved image files are unchanged.
+The desktop mockups repeatedly show a pale page background, white bordered surfaces, dark blue text, blue primary actions, restrained status colors, and a spacious 4/8px-based rhythm. App views use an approximately 260px sidebar, 72px top bar, 28px content gutters, 12px card corners, and 8px field corners. The invite/review side panel is approximately 502px wide. These are starting measurements, not blanket overrides of individual mockup geometry. The approved image files remain unchanged.
 
 ## Typography and tokens
 
@@ -28,7 +28,7 @@ For each new canonical screen, inspect and reuse existing components and page co
 
 ## View data and localization
 
-Each screen owns its view data beside the feature (for example `src/features/<feature>/types.ts`). When an input-dependent source is needed, its page can use `ViewDataSource<TInput, TView>` from `src/lib/view-data.ts`. During visual-first work, deterministic fixtures provide the view; later a server/application adapter can provide the same view shape. Presentation components receive typed view props and never import fixtures, provider SDKs, or demo records directly. E1-001's landing page uses a typed static miniature-dashboard fixture, and E1-002's onboarding screen uses a typed first-step form fixture and local client state. Neither defines a business-domain schema.
+Each screen owns its view data beside the feature (for example `src/features/<feature>/types.ts`). When an input-dependent source is needed, its page can use `ViewDataSource<TInput, TView>` from `src/lib/view-data.ts`. During visual-first work, deterministic fixtures provide the view; later a server/application adapter can provide the same view shape. Presentation components receive typed view props and never import fixtures, provider SDKs, or demo records directly. E1-001's landing page uses a typed static miniature-dashboard fixture, and onboarding uses typed form, requirement-selection, and supplier-row fixtures with local client state. Neither defines a business-domain schema.
 
 `next-intl` uses `messages/ro.json` as source and `messages/en.json` as the secondary catalog. Romanian is canonical at `/`; English is at `/en` (`localePrefix: 'as-needed'`). `/ro` redirects to `/`. Foundation-only keys use the `Foundation` namespace. Server pages resolve messages through the i18n layer; user-facing primitives receive text as props. Missing keys throw in development, and tests assert locale-key parity. Screen tasks transcribe approved Romanian copy exactly and supply English translations for review.
 
