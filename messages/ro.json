@@ -140,7 +140,7 @@
     "securityTitle": "Datele tale sunt în siguranță",
     "securityDescription": "Folosim criptare avansată și respectăm cele mai înalte standarde de securitate.",
     "requirements": {
-      "heading": "Configurează cerințele documentelor",
+      "heading": "Configurează cerințele documentelor · Opțional",
       "lead": "Alege un șablon sau personalizează cerințele documentelor pentru furnizorii tăi. Acest pas este opțional și poate fi configurat și ulterior.",
       "templateHeading": "Șablon recomandat",
       "templateDescription": "Pornim de la un set de cerințe potrivit companiei tale.",
@@ -162,7 +162,7 @@
       "quote": "Furnizori verificați. Proiecte mai sigure."
     },
     "suppliers": {
-      "heading": "Invită primii furnizori",
+      "heading": "Invită primii furnizori · Opțional",
       "lead": "Adaugă furnizori existenți și trimite-le invitații pentru a începe colaborarea. Acest pas este opțional și poate fi completat și mai târziu.",
       "invitesHeading": "Invitații inițiale",
       "invitesDescription": "Poți adăuga câțiva furnizori acum sau poți continua și reveni ulterior.",
@@ -176,6 +176,7 @@
       "remove": "Elimină {name}",
       "unnamed": "furnizorul fără nume",
       "empty": "Nu ai adăugat încă furnizori.",
+      "addFirst": "Adaugă furnizor",
       "add": "Adaugă alt furnizor",
       "noteBefore": "Invitațiile pot fi retrimise sau completate mai târziu din secțiunea",
       "noteSection": "Furnizori",

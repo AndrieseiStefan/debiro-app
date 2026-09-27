@@ -21,7 +21,7 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
     } else if (action === 'onboarding-step2' || action === 'onboarding-step3') {
       if (route !== '/onboarding' && route !== '/en/onboarding') throw new Error('Onboarding capture action requires an onboarding route.');
       await page.getByRole('button', {name: route.startsWith('/en') ? 'Continue' : 'Continuă'}).click();
-      if (action === 'onboarding-step3') await page.getByRole('button', {name: route.startsWith('/en') ? 'Continue' : 'Continuă'}).click();
+      if (action === 'onboarding-step3') await page.getByRole('button', {name: route.startsWith('/en') ? 'Configure later' : 'Configurează mai târziu'}).click();
     } else throw new Error('Unknown VISUAL_ACTION.');
   }
 

@@ -16,17 +16,19 @@ import styles from './OnboardingPage.module.css';
 const stepIds = ['company', 'requirements', 'suppliers'] as const;
 const requirementIds = ['registration', 'tax', 'insurance', 'fireSafety', 'iso'] as const;
 type RequirementId = (typeof requirementIds)[number];
+type RequirementTemplate = 'construction' | 'general';
 type SupplierRow = {id: number; name: string; email: string};
 
 function validEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
-function RequirementsStep({template, onTemplateChange, selected, onToggle, onContinue}: {
-  template: 'construction' | 'general';
-  onTemplateChange: (value: 'construction' | 'general') => void;
+function RequirementsStep({template, onTemplateChange, selected, onToggle, onSkip, onContinue}: {
+  template: RequirementTemplate | null;
+  onTemplateChange: (value: RequirementTemplate) => void;
   selected: RequirementId[];
   onToggle: (id: RequirementId) => void;
+  onSkip: () => void;
   onContinue: () => void;
 }) {
   const t = useTranslations('Onboarding');
@@ -66,23 +68,24 @@ function RequirementsStep({template, onTemplateChange, selected, onToggle, onCon
         <p className={styles.stepInfo}><OnboardingIcon name="info" size={22} /><span>{t('requirements.noteBefore')} <span className={styles.infoEmphasis}>{t('requirements.noteSection')}</span>.</span></p>
       </Surface>
       <div className={styles.optionalActions}>
-        <button type="button" className={styles.skipAction} onClick={onContinue}>{t('requirements.skip')}</button>
-        <div className={styles.optionalSubmit}><Button type="button" className={styles.continueButton} onClick={onContinue}>{t('continue')}<OnboardingIcon name="arrow" size={20} /></Button><span>{t('requirements.stepCount')}</span></div>
+        <button type="button" className={styles.skipAction} onClick={onSkip}>{t('requirements.skip')}</button>
+        <div className={styles.optionalSubmit}><Button type="button" className={styles.continueButton} disabled={selected.length === 0} onClick={onContinue}>{t('continue')}<OnboardingIcon name="arrow" size={20} /></Button><span>{t('requirements.stepCount')}</span></div>
       </div>
     </div>
   </>;
 }
 
-function SuppliersStep({rows, onAdd, onUpdate, onRemove, onSkip, onFinish, submitted}: {
+function SuppliersStep({rows, onAdd, onUpdate, onRemove, onSkip, onFinish}: {
   rows: SupplierRow[];
   onAdd: () => void;
   onUpdate: (id: number, field: 'name' | 'email', value: string) => void;
   onRemove: (id: number) => void;
   onSkip: () => void;
   onFinish: (event: FormEvent<HTMLFormElement>) => void;
-  submitted: boolean;
 }) {
   const t = useTranslations('Onboarding');
+  const populatedRows = rows.filter((row) => row.name.trim() || row.email.trim());
+  const canFinish = populatedRows.length > 0 && populatedRows.every((row) => row.name.trim() && validEmail(row.email));
   return <>
     <h1 id="onboarding-heading">{t('suppliers.heading')}</h1>
     <p className={styles.lead}>{t('suppliers.lead')}</p>
@@ -96,8 +99,8 @@ function SuppliersStep({rows, onAdd, onUpdate, onRemove, onSkip, onFinish, submi
           {rows.length === 0 && <p className={styles.emptySuppliers}>{t('suppliers.empty')}</p>}
           {rows.map((row) => {
             const populated = Boolean(row.name.trim() || row.email.trim());
-            const nameError = submitted && populated && !row.name.trim();
-            const emailError = submitted && populated && !validEmail(row.email);
+            const nameError = populated && !row.name.trim();
+            const emailError = populated && !validEmail(row.email);
             const ready = Boolean(row.name.trim()) && validEmail(row.email);
             return <div className={styles.supplierRow} key={row.id}>
               <div className={styles.supplierField}>
@@ -115,12 +118,12 @@ function SuppliersStep({rows, onAdd, onUpdate, onRemove, onSkip, onFinish, submi
             </div>;
           })}
         </div>
-        <button type="button" className={styles.addSupplier} onClick={onAdd}><OnboardingIcon name="plus" size={22} />{t('suppliers.add')}</button>
+        <button type="button" className={styles.addSupplier} onClick={onAdd}><OnboardingIcon name="plus" size={22} />{t(rows.length === 0 ? 'suppliers.addFirst' : 'suppliers.add')}</button>
         <p className={styles.stepInfo}><OnboardingIcon name="info" size={22} /><span>{t('suppliers.noteBefore')} <span className={styles.infoEmphasis}>{t('suppliers.noteSection')}</span>.</span></p>
       </Surface>
       <div className={styles.optionalActions}>
         <button type="button" className={styles.skipAction} onClick={onSkip}>{t('suppliers.skip')}</button>
-        <div className={styles.optionalSubmit}><Button type="submit" className={styles.continueButton}>{t('suppliers.finish')}<OnboardingIcon name="arrow" size={20} /></Button><span>{t('suppliers.stepCount')}</span></div>
+        <div className={styles.optionalSubmit}><Button type="submit" className={styles.continueButton} disabled={!canFinish}>{t('suppliers.finish')}<OnboardingIcon name="arrow" size={20} /></Button><span>{t('suppliers.stepCount')}</span></div>
       </div>
     </form>
   </>;
@@ -145,11 +148,10 @@ export function OnboardingPage({locale, fixture}: {locale: string; fixture: Onbo
   const t = useTranslations('Onboarding');
   const router = useRouter();
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [template, setTemplate] = useState<'construction' | 'general'>('construction');
-  const [selectedRequirements, setSelectedRequirements] = useState<RequirementId[]>([...fixture.requirementIds]);
-  const [supplierRows, setSupplierRows] = useState<SupplierRow[]>(fixture.suppliers.map((supplier) => ({...supplier})));
-  const [suppliersSubmitted, setSuppliersSubmitted] = useState(false);
-  const nextSupplierId = useRef(fixture.suppliers.length + 1);
+  const [template, setTemplate] = useState<RequirementTemplate | null>(null);
+  const [selectedRequirements, setSelectedRequirements] = useState<RequirementId[]>([]);
+  const [supplierRows, setSupplierRows] = useState<SupplierRow[]>([]);
+  const nextSupplierId = useRef(1);
   const [password, setPassword] = useState<string>(fixture.password);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const passwordChecks = [
@@ -168,9 +170,15 @@ export function OnboardingPage({locale, fixture}: {locale: string; fixture: Onbo
     setSelectedRequirements((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
   }
 
-  function chooseTemplate(value: 'construction' | 'general') {
+  function chooseTemplate(value: RequirementTemplate) {
     setTemplate(value);
-    setSelectedRequirements(value === 'construction' ? [...fixture.requirementIds] : ['registration', 'tax']);
+    setSelectedRequirements(value === 'construction' ? [...fixture.constructionRequirementIds] : [...fixture.generalRequirementIds]);
+  }
+
+  function skipRequirements() {
+    setTemplate(null);
+    setSelectedRequirements([]);
+    setStep(3);
   }
 
   function updateSupplier(id: number, field: 'name' | 'email', value: string) {
@@ -179,9 +187,8 @@ export function OnboardingPage({locale, fixture}: {locale: string; fixture: Onbo
 
   function finishOnboarding(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSuppliersSubmitted(true);
     const populatedRows = supplierRows.filter((row) => row.name.trim() || row.email.trim());
-    if (populatedRows.some((row) => !row.name.trim() || !validEmail(row.email))) return;
+    if (populatedRows.length === 0 || populatedRows.some((row) => !row.name.trim() || !validEmail(row.email))) return;
     router.push('/dashboard');
   }
 
@@ -272,7 +279,7 @@ export function OnboardingPage({locale, fixture}: {locale: string; fixture: Onbo
                     <span>{t('stepCount')}</span>
                   </div>
                 </form>
-                </> : step === 2 ? <RequirementsStep template={template} onTemplateChange={chooseTemplate} selected={selectedRequirements} onToggle={toggleRequirement} onContinue={() => setStep(3)} /> : <SuppliersStep rows={supplierRows} onAdd={() => {setSupplierRows((current) => [...current, {id: nextSupplierId.current++, name: '', email: ''}]);}} onUpdate={updateSupplier} onRemove={(id) => setSupplierRows((current) => current.filter((row) => row.id !== id))} onSkip={() => router.push('/dashboard')} onFinish={finishOnboarding} submitted={suppliersSubmitted} />}
+                </> : step === 2 ? <RequirementsStep template={template} onTemplateChange={chooseTemplate} selected={selectedRequirements} onToggle={toggleRequirement} onSkip={skipRequirements} onContinue={() => {if (selectedRequirements.length > 0) setStep(3);}} /> : <SuppliersStep rows={supplierRows} onAdd={() => {setSupplierRows((current) => [...current, {id: nextSupplierId.current++, name: '', email: ''}]);}} onUpdate={updateSupplier} onRemove={(id) => setSupplierRows((current) => current.filter((row) => row.id !== id))} onSkip={() => {setSupplierRows([]); router.push('/dashboard');}} onFinish={finishOnboarding} />}
               </div>
 
               <aside className={styles.rightRail} aria-label={t('guidanceLabel')}>

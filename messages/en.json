@@ -140,7 +140,7 @@
     "securityTitle": "Your data is safe",
     "securityDescription": "We use advanced encryption and follow the highest security standards.",
     "requirements": {
-      "heading": "Configure document requirements",
+      "heading": "Configure document requirements · Optional",
       "lead": "Choose a template or customize the document requirements for your suppliers. This step is optional and can be configured later.",
       "templateHeading": "Recommended template",
       "templateDescription": "Start with a set of requirements suited to your company.",
@@ -162,7 +162,7 @@
       "quote": "Verified suppliers. Safer projects."
     },
     "suppliers": {
-      "heading": "Invite your first suppliers",
+      "heading": "Invite your first suppliers · Optional",
       "lead": "Add existing suppliers and invite them to start working together. This step is optional and can be completed later.",
       "invitesHeading": "Initial invitations",
       "invitesDescription": "Add a few suppliers now, or continue and return later.",
@@ -176,6 +176,7 @@
       "remove": "Remove {name}",
       "unnamed": "unnamed supplier",
       "empty": "You have not added any suppliers yet.",
+      "addFirst": "Add supplier",
       "add": "Add another supplier",
       "noteBefore": "Invitations can be resent or completed later from the",
       "noteSection": "Suppliers section",
