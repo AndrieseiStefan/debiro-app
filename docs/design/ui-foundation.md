@@ -4,7 +4,7 @@
 
 ## Canonical source and scope
 
-The original ten 1448 × 1086 images, the later 1536 × 1024 Documents mockup, and two onboarding follow-on mockups in [mockups/](mockups/README.md) were inspected. They remain the contract for each screen's composition, behavior, typography, and visible Romanian copy except where an explicit later task supersedes a detail (E1-012A/B do so for onboarding optional-step defaults, copy, and actions). This foundation extracts only recurring treatments; it is not approval of a screen or permission to reinterpret one. Sample names and counts are not locked. Temporary `ComplyHub` branding is replaced by plain uppercase `DEBIRO`.
+The original ten 1448 × 1086 images, the later Documents mockup, two onboarding follow-on mockups, and the Login mockup in [mockups/](mockups/README.md) were inspected. They remain the contract for each screen's composition, behavior, typography, and visible Romanian copy except where an explicit later task supersedes a detail (E1-012A/B do so for onboarding optional-step defaults, copy, and actions). This foundation extracts only recurring treatments; it is not approval of a screen or permission to reinterpret one. Sample names and counts are not locked. Temporary `ComplyHub` branding is replaced by plain uppercase `DEBIRO`.
 
 The desktop mockups repeatedly show a pale page background, white bordered surfaces, dark blue text, blue primary actions, restrained status colors, and a spacious 4/8px-based rhythm. App views use an approximately 260px sidebar, 72px top bar, 28px content gutters, 12px card corners, and 8px field corners. The invite/review side panel is approximately 502px wide. These are starting measurements, not blanket overrides of individual mockup geometry. The approved image files remain unchanged.
 
@@ -36,7 +36,7 @@ Each screen owns its view data beside the feature (for example `src/features/<fe
 
 DEBIRO has three top-level layout families:
 
-- **Public/pre-auth:** `PublicHeader` with centered `PublicContainer`/`PageContainer` geometry for landing and onboarding.
+- **Public/pre-auth:** `PublicHeader` with centered `PublicContainer`/`PageContainer` geometry for landing and onboarding. Login follows its approved full-height split composition while reusing the existing low-level public primitives and visual assets.
 - **External supplier portal:** its own portal header and supplier-facing shell, with no authenticated navigation. It reuses only the low-level centered geometry through `PortalContainer`; it is not a `PublicHeader` or public-page shell.
 - **Authenticated app:** `AuthenticatedAppShell` with fluid viewport width, not the centered 1350px constraint; see the separate contract below.
 

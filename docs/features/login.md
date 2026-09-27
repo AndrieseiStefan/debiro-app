@@ -1,0 +1,7 @@
+# Login Screen
+
+E1-014 implements the existing-user login UI at `/login` and `/en/login` against [canonical mockup 14](../design/mockups/14-login.png). Its full-height split composition is specific to the approved mockup; it reuses the text-only `DEBIRO` wordmark, Button, Field, Surface, existing public icons and mountain artwork, and the repository's locale-aware navigation. The Romanian visible copy follows the mockup; English preserves its meaning. The supplied mockup remains unchanged.
+
+Email and password are required. Inline local validation distinguishes an empty email from an invalid format and marks an empty password; the primary action stays disabled until both values are valid. The password visibility toggle changes only the input type. A valid submission uses a typed, local success-path fixture to navigate to Dashboard; it creates no identity, session, cookie, user lookup, or authorization state. `Începe gratuit` links to locale-matched onboarding. Forgot password and help remain visible, inert controls because their destinations are not implemented. There is no Google/social login or password-reset flow.
+
+The promotional area reflows above the login card on narrow screens so the form stays usable without horizontal overflow. The reused mountain artwork is a decorative approximation because no separate canonical source asset was supplied for the login mockup. Visual captures are ignored review artifacts, not approved baselines.

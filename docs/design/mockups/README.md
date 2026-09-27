@@ -1,6 +1,6 @@
 # Approved Mockups
 
-This directory contains thirteen approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
+This repository tracks fourteen approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
 
 ## Expected initial mapping
 
@@ -19,6 +19,7 @@ This directory contains thirteen approved product mockup images listed below. Th
 | `11-documents.png` | Global authenticated Documents page |
 | `12-onboarding-step2.png` | Optional document requirements onboarding step |
 | `13-onboarding-step3.png` | Optional add-suppliers onboarding step; E1-012B supersedes its invitation wording and actions |
+| `14-login.png` | Existing-user login screen |
 
 ## Contract
 
