@@ -251,6 +251,7 @@
     "bannerHandwriting": "More than compliance"
   },
   "Notifications": {
+    "breadcrumbLabel": "Page navigation",
     "eyebrow": "NOTIFICATIONS AND ACTIVITY",
     "title": "Notifications and Audit Activity",
     "description": "See what needs your attention, follow notifications, and review the activity history.",
@@ -445,7 +446,6 @@
   },
   "Requirements": {
     "breadcrumbLabel": "Page navigation",
-    "breadcrumbDocuments": "Documents",
     "title": "Document requirements",
     "description": "Define requirement templates for different supplier categories. Make sure every supplier uploads and maintains the documents required by company policy and law.",
     "calloutOne": "One set of rules.",

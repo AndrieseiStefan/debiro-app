@@ -39,6 +39,7 @@ function RequirementIcon({tone}: {tone: RequirementRuleView['tone']}) {
 
 export function RequirementsPage({locale, view}: {locale: string; view: RequirementsViewModel}) {
   const t = useTranslations('Requirements');
+  const app = useTranslations('AppShell');
   const language = locale === 'en' ? 'en' : 'ro';
   const [selectedId, setSelectedId] = useState(view.templates[0].id);
   const [query, setQuery] = useState('');
@@ -54,7 +55,7 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
   return <AuthenticatedAppShell locale={locale} currentPath="/requirements" organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={view.notificationCount}>
     <div className={styles.page}>
       <AuthenticatedPageHeader
-        context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: t('breadcrumbDocuments')}, {label: t('title')}]} />}
+        context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: app('navigation.requirements')}]} />}
         title={t('title')}
         titleId="requirements-title"
         description={t('description')}

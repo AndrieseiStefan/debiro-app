@@ -6,7 +6,7 @@ import {notificationsFixture} from '@/features/notifications/fixtures';
 import {NotificationsPage} from '@/features/notifications/NotificationsPage';
 import {auditEventsToCsv, filterAuditEvents, filterNotifications} from '@/features/notifications/selectors';
 
-vi.mock('@/i18n/navigation', () => ({Link: ({href, ...props}: {href: string; children: React.ReactNode}) => <a href={href} {...props} />}));
+vi.mock('@/i18n/navigation', () => ({usePathname: () => '/notifications', Link: ({href, ...props}: {href: string; children: React.ReactNode}) => <a href={href} {...props} />}));
 
 function renderPage(view = notificationsFixture) {
   return render(<NextIntlClientProvider locale="ro" messages={ro}><NotificationsPage locale="ro" view={view} /></NextIntlClientProvider>);

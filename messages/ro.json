@@ -251,6 +251,7 @@
     "bannerHandwriting": "Mai mult decât conformitate"
   },
   "Notifications": {
+    "breadcrumbLabel": "Navigare pe pagină",
     "eyebrow": "NOTIFICĂRI ȘI ACTIVITATE",
     "title": "Notificări și Activitate de Audit",
     "description": "Vezi ce necesită atenția ta, urmărește notificările și verifică istoricul activităților.",
@@ -445,7 +446,6 @@
   },
   "Requirements": {
     "breadcrumbLabel": "Navigare pe pagină",
-    "breadcrumbDocuments": "Documente",
     "title": "Cerințe documente",
     "description": "Definește șabloane de cerințe pentru diferite categorii de furnizori. Asigură-te că toți furnizorii încarcă și mențin documentele necesare conform politicilor companiei și cerințelor legale.",
     "calloutOne": "Un singur set de reguli.",

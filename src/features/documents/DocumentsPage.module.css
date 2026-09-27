@@ -1,5 +1,4 @@
 .page {min-width: 0;}
-.contextArrow {color: #5b80b8; font-size: 22px; line-height: 1; margin-right: 9px;}
 .summaryGrid {display: grid; gap: 10px; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 24px;}
 .summaryCard {height: 119px; min-width: 0; overflow: hidden; padding: 0;}
 .summaryBody, .summaryAction {align-items: flex-start; background: transparent; border: 0; color: inherit; display: flex; gap: 19px; height: 100%; padding: 16px 15px; text-align: left; width: 100%;}

@@ -7,6 +7,7 @@ import {documentsFixture} from '@/features/documents/fixtures';
 import {getDocumentReviewFixture} from '@/features/document-review/fixtures';
 
 vi.mock('@/i18n/navigation', () => ({
+  usePathname: () => '/documents',
   Link: ({href, ...props}: {href: string; children: React.ReactNode}) => <a href={href} {...props} />
 }));
 

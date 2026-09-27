@@ -7,6 +7,7 @@ import ro from '../../messages/ro.json';
 import en from '../../messages/en.json';
 
 vi.mock('@/i18n/navigation', () => ({
+  usePathname: () => '/documents/construct-pro-tax-2024/review',
   Link: ({locale, href, ...props}: {locale?: string; href: string; children: React.ReactNode}) =>
     <a href={locale === 'en' ? `/en${href}` : href} {...props} />
 }));
@@ -30,7 +31,7 @@ describe('document review', () => {
     expect(screen.getByRole('navigation', {name: 'Navigare în aplicație'}).getAttribute('aria-label')).toBe('Navigare în aplicație');
     expect(within(screen.getByRole('navigation', {name: 'Navigare în aplicație'})).getByText('Documente').closest('[aria-current]')).toHaveAttribute('aria-current', 'page');
     const breadcrumb = screen.getByRole('navigation', {name: 'Navigare pe pagină'});
-    expect(breadcrumb).toHaveTextContent('DocumenteRevizuiește documentul');
+    expect(breadcrumb).toHaveTextContent('DashboardDocumenteRevizuiește documentul');
     expect(within(breadcrumb).queryByText('Furnizori')).not.toBeInTheDocument();
     expect(within(breadcrumb).queryByText('Construct Pro SRL')).not.toBeInTheDocument();
     expect(within(breadcrumb).getByText('Revizuiește documentul')).toHaveAttribute('aria-current', 'page');

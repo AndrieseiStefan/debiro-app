@@ -90,7 +90,7 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
   return <AuthenticatedAppShell locale={locale} currentPath="/vendors" organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={view.notificationCount}>
     <div className={styles.pageContent}>
       <AuthenticatedPageHeader
-        context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: 'Dashboard', href: '/dashboard'}, {label: t('title')}]} />}
+        context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: t('title')}]} />}
         title={t('title')}
         titleId="vendors-title"
         description={t('description')}

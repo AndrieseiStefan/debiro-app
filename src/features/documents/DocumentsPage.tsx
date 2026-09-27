@@ -102,7 +102,7 @@ export function DocumentsPage({locale, view}: {locale: string; view: DocumentsVi
   return <AuthenticatedAppShell locale={locale} currentPath="/documents" organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={view.notificationCount}>
     <div className={styles.page}>
       <AuthenticatedPageHeader
-        context={<><span className={styles.contextArrow} aria-hidden="true">‹</span><AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: t('title')}]} /></>}
+        context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: t('title')}]} />}
         title={t('title')}
         titleId="documents-title"
         description={t('description')}

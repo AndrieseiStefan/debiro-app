@@ -7,7 +7,7 @@ test('renders Romanian document review and local human confirmation', async ({pa
   await expect(page.getByRole('heading', {level: 1, name: 'Revizuiește documentul'})).toBeVisible();
   await expect(page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByText('Documente').locator('..')).toHaveAttribute('aria-current', 'page');
   const breadcrumb = page.getByRole('navigation', {name: 'Navigare pe pagină'});
-  await expect(breadcrumb).toHaveText('DocumenteRevizuiește documentul');
+  await expect(breadcrumb).toHaveText('DashboardDocumenteRevizuiește documentul');
   await expect(breadcrumb.getByText('Furnizori')).toHaveCount(0);
   await expect(breadcrumb.getByText('Construct Pro SRL')).toHaveCount(0);
   await expect(page.getByRole('region', {name: 'Previzualizare document'}).first()).toBeVisible();

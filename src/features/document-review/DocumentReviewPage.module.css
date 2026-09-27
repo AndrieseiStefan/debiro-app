@@ -1,6 +1,7 @@
 .page {min-width: 0;}
 .contextRow {align-items: center; column-gap: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; min-width: 0; row-gap: 10px;}
-.contextRow nav {flex: 1 1 auto; flex-wrap: nowrap; min-width: max-content;}
+.contextRow nav {column-gap: 4px; flex: 1 1 auto; flex-wrap: nowrap; min-width: max-content;}
+.contextRow nav > span {gap: 4px;}
 .backLink {align-items: center; color: #0954bd; display: inline-flex; flex: 0 0 auto; font-size: 14px; font-weight: 650; gap: 9px; text-decoration: none; white-space: nowrap;}
 .backLink:hover {color: var(--color-action-hover); text-decoration: none;}
 .backLink span {font-size: 23px; font-weight: 400; line-height: 0.7;}
@@ -113,6 +114,9 @@
   .viewer {padding: 12px;}
   .extractionHeading {align-items: flex-start; flex-direction: column;}
   .fieldRow {grid-template-columns: minmax(0, 1fr);}
+}
+@media (max-width: 599px) {
+  .contextRow nav {flex: 1 1 100%; flex-wrap: wrap; min-width: 0;}
 }
 @media (max-width: 380px) {
   .pageHeader h1 {font-size: 30px;}

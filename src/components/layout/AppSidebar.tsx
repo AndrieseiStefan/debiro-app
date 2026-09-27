@@ -1,6 +1,8 @@
+'use client';
+
 import {useTranslations} from 'next-intl';
 import {BrandWordmark} from '@/components/brand/BrandWordmark';
-import {Link} from '@/i18n/navigation';
+import {Link, usePathname} from '@/i18n/navigation';
 import {AppIcon, type AppIconName} from './AppIcon';
 import {AppUtilities} from './AppUtilities';
 import styles from './AppSidebar.module.css';
@@ -24,6 +26,12 @@ export function AppSidebar({locale, currentPath, organizationName, userName, use
   notificationCount: number;
 }) {
   const t = useTranslations('AppShell');
+  const pathname = usePathname().replace(/^\/(?:en|ro)(?=\/|$)/, '').replace(/\/+$/, '') || '/';
+  const activeSection = pathname === '/' || pathname === '/dashboard' ? 'dashboard' :
+    pathname === '/vendors' || pathname.startsWith('/vendors/') ? 'suppliers' :
+      pathname === '/documents' || pathname.startsWith('/documents/') ? 'documents' :
+        pathname === '/requirements' || pathname.startsWith('/requirements/') ? 'requirements' :
+          pathname === '/notifications' || pathname.startsWith('/notifications/') ? 'notifications' : null;
 
   return (
     <div className={styles.sidebarContents}>
@@ -41,7 +49,7 @@ export function AppSidebar({locale, currentPath, organizationName, userName, use
           const content = <><AppIcon name={item.icon} size={22} /><span>{t(`navigation.${item.id}`)}</span>{item.id === 'notifications' && <span className={styles.notificationCount}>{notificationCount}</span>}</>;
           if (item.id === 'dashboard' || item.id === 'suppliers' || item.id === 'requirements' || item.id === 'documents' || item.id === 'notifications') {
             const path = item.id === 'dashboard' ? '/dashboard' : item.id === 'suppliers' ? '/vendors' : item.id === 'requirements' ? '/requirements' : item.id === 'notifications' ? '/notifications' : '/documents';
-            const active = currentPath === path || ((item.id === 'suppliers' || item.id === 'documents') && currentPath.startsWith(`${path}/`));
+            const active = activeSection === item.id;
             return <Link key={item.id} href={path} aria-current={active ? 'page' : undefined} className={`${styles.navItem} ${active ? styles.active : ''}`}>{content}</Link>;
           }
           return <button key={item.id} type="button" aria-disabled="true" className={styles.navItem}>{content}</button>;

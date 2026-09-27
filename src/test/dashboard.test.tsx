@@ -7,6 +7,7 @@ import {DashboardPage} from '@/features/dashboard/DashboardPage';
 import {dashboardFixture} from '@/features/dashboard/fixtures';
 
 vi.mock('@/i18n/navigation', () => ({
+  usePathname: () => '/dashboard',
   Link: ({locale, href, ...props}: {locale?: string; href: string; children: React.ReactNode}) =>
     <a href={locale === 'en' ? `/en${href}` : href} {...props} />
 }));

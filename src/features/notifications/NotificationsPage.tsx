@@ -4,6 +4,7 @@ import {useState} from 'react';
 import {useTranslations} from 'next-intl';
 import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
+import {AuthenticatedBreadcrumbs} from '@/components/layout/AuthenticatedBreadcrumbs';
 import {AuthenticatedPageHeader} from '@/components/layout/AuthenticatedPageHeader';
 import {EmptyState} from '@/components/ui/EmptyState';
 import {StatusBadge} from '@/components/ui/StatusBadge';
@@ -32,6 +33,7 @@ function EventIcon({type}: {type: NotificationActivityType}) {
 
 export function NotificationsPage({locale, view}: {locale: string; view: NotificationsViewModel}) {
   const t = useTranslations('Notifications');
+  const app = useTranslations('AppShell');
   const language = locale === 'en' ? 'en' : 'ro';
   const [category, setCategory] = useState<ActivityCategory>('all');
   const [range, setRange] = useState<ActivityRange>('last30');
@@ -81,7 +83,7 @@ export function NotificationsPage({locale, view}: {locale: string; view: Notific
 
   return <AuthenticatedAppShell locale={locale} currentPath="/notifications" organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={unreadCount}>
     <div className={styles.page}>
-      <AuthenticatedPageHeader context={<span className={styles.eyebrow}>{t('eyebrow')}</span>} title={t('title')} titleId="notifications-title" description={t('description')}
+      <AuthenticatedPageHeader context={<div className={styles.contextLine}><AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: app('navigation.notifications')}]} /><span className={styles.eyebrow}>{t('eyebrow')}</span></div>} title={t('title')} titleId="notifications-title" description={t('description')}
         supportingContent={<div className={styles.headerCallout}><span><AppIcon name="file" size={26} /></span><p>{t('traceabilityTitle')}<br />{t('traceabilityDescription')}</p></div>} />
 
       <div className={styles.toolbar}>
