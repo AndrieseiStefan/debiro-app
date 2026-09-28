@@ -1,0 +1,88 @@
+.page {display: grid; gap: 16px; min-width: 0; padding-bottom: 24px;}
+.page > :first-child {margin-bottom: 0;}
+.headerActions {display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end;}
+.headerActions :global(button) {font-size: 13px; min-height: 46px; padding-inline: 16px; white-space: nowrap;}
+.companySummary {align-items: center; display: flex; gap: 18px; min-height: 94px; min-width: 0; padding: 15px 18px;}
+.companyIcon {align-items: center; background: #e5f1ff; border-radius: 50%; color: #075ceb; display: flex; flex: 0 0 60px; height: 60px; justify-content: center;}
+.companyCopy {flex: 1 1 auto; min-width: 0;}
+.companyCopy h2 {color: #152044; font-size: 22px; letter-spacing: -.035em; line-height: 1.2;}
+.companyCopy p {color: #5975a4; display: flex; flex-wrap: wrap; font-size: 13px; gap: 11px; line-height: 1.4; margin-top: 4px;}
+.companyBadges {display: flex; flex: 0 0 auto; flex-wrap: wrap; gap: 12px; justify-content: flex-end;}
+.plan, .trial {align-items: center; border-radius: 999px; display: inline-flex; font-size: 13px; font-weight: 650; gap: 8px; padding: 8px 13px; white-space: nowrap;}
+.plan {background: #e9f3ff; color: #075ceb;}
+.trial {background: #fff0d7; color: #d67c00;}
+.summaryGrid {display: grid; gap: 16px; grid-template-columns: repeat(4, minmax(0, 1fr)); min-width: 0;}
+.summaryCard {align-items: center; display: grid; gap: 12px; grid-template-columns: 52px minmax(0, 1fr); min-height: 116px; padding: 15px;}
+.summaryCard > div {min-width: 0;}
+.summaryIcon, .headingIcon {align-items: center; background: #e8f2ff; border-radius: 50%; color: #075ceb; display: flex; flex: 0 0 auto; justify-content: center;}
+.summaryIcon {height: 52px; width: 52px;}
+.summaryCard h2 {color: #385e9d; font-size: 13px; font-weight: 650; line-height: 1.3;}
+.summaryCard strong {color: #132144; display: block; font-size: 25px; letter-spacing: -.04em; line-height: 1.18; margin-top: 3px; overflow-wrap: anywhere;}
+.summaryCard p {color: #5d79a7; font-size: 12px; line-height: 1.35; margin-top: 8px;}
+.detailsGrid {display: grid; gap: 18px; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); min-width: 0;}
+.billingPanel, .invoicesPanel {min-width: 0; overflow: hidden; padding: 0;}
+.panelHeading {align-items: center; border-bottom: 1px solid #e1eaf6; display: flex; gap: 12px; min-height: 68px; padding: 12px 18px;}
+.panelHeading h2, .panelTitle {color: #132144; font-size: 17px; letter-spacing: -.025em;}
+.panelHeading h2 {flex: 1 1 auto;}
+.panelHeading :global(button) {font-size: 12px; min-height: 40px; padding-inline: 12px; white-space: nowrap;}
+.headingIcon {height: 40px; width: 40px;}
+.billingRows {padding: 0 20px 12px;}
+.billingRow {border-bottom: 1px solid #e1eaf6; display: grid; gap: 12px; grid-template-columns: minmax(0, 200px) minmax(0, 1fr); min-height: 54px; padding: 15px 0;}
+.billingRow:last-child {border-bottom: 0;}
+.billingRow dt {color: #5d79a7; font-size: 13px;}
+.billingRow dd {color: #12326b; font-size: 13px; overflow-wrap: anywhere;}
+.sidePanels {display: grid; gap: 12px; min-width: 0;}
+.paymentPanel, .limitsPanel {min-width: 0; padding: 12px;}
+.panelTitle {align-items: center; display: flex; gap: 12px;}
+.paymentMethod {align-items: center; border: 1px solid #e1eaf6; border-radius: 9px; display: flex; gap: 12px; margin-top: 12px; min-width: 0; padding: 10px;}
+.cardBrand {border: 1px solid #dce7f9; border-radius: 6px; color: #123fc0; display: inline-flex; flex: 0 0 56px; font-size: 17px; font-style: italic; font-weight: 850; height: 38px; align-items: center; justify-content: center; text-transform: uppercase;}
+.paymentMethod > div {flex: 1 1 auto; min-width: 0;}
+.paymentMethod strong {color: #14234b; font-size: 15px; white-space: nowrap;}
+.paymentMethod p {color: #6683af; font-size: 12px; margin-top: 3px; white-space: nowrap;}
+.paymentMethod :global(button) {font-size: 12px; min-height: 38px; padding-inline: 10px; white-space: nowrap;}
+.limitsList {display: grid; gap: 9px 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); list-style: none; margin: 13px 4px 0; padding: 0;}
+.limitsList li {align-items: center; color: #5975a4; display: flex; font-size: 12px; gap: 8px; min-width: 0;}
+.limitsList svg {background: #0ca36c; border-radius: 50%; color: #fff; flex: 0 0 18px; padding: 2px;}
+.companyNotice {align-items: start; background: #eaf3ff; border: 1px solid #d9e9fc; border-radius: 9px; color: #075ceb; display: flex; gap: 14px; min-width: 0; padding: 14px 16px;}
+.companyNotice > svg {background: #1261df; border-radius: 50%; color: #fff; flex: 0 0 28px; padding: 5px;}
+.companyNotice p {display: grid; font-size: 12px; gap: 5px; line-height: 1.4;}
+.companyNotice strong {color: #132f69;}
+.invoicesPanel > .panelTitle {min-height: 55px; padding: 8px 18px;}
+.invoiceScroll {max-width: 100%; overflow-x: auto; scrollbar-width: thin;}
+.invoiceTable {border-collapse: collapse; min-width: 740px; width: 100%;}
+.invoiceTable th {border-block: 1px solid #e1eaf6; color: #4c70a2; font-size: 11px; font-weight: 650; padding: 9px 18px; text-align: left; white-space: nowrap;}
+.invoiceTable th svg {display: inline-block; margin-left: 8px; vertical-align: middle;}
+.invoiceTable td {border-bottom: 1px solid #e1eaf6; color: #12326b; font-size: 13px; padding: 8px 18px; white-space: nowrap;}
+.invoiceTable tr:last-child td {border-bottom: 0;}
+.paid {align-items: center; background: #dff8eb; border-radius: 99px; color: #0a9c69; display: inline-flex; font-size: 12px; gap: 6px; padding: 5px 9px;}
+.paid svg {background: #0a9c69; border-radius: 50%; color: #fff; padding: 2px;}
+.invoiceActions {align-items: center; display: flex; gap: 12px; justify-content: space-between;}
+.invoiceActions button {align-items: center; background: #fff; border: 1px solid #d6e5fa; border-radius: 6px; color: #075ceb; display: inline-flex; font-size: 12px; gap: 8px; min-height: 31px; padding: 5px 9px; white-space: nowrap;}
+.invoiceActions button:last-child {border: 0; color: #315a91; padding-inline: 5px;}
+@media (max-width: 1199px) {
+  .companySummary {flex-wrap: wrap;}
+  .companyBadges {justify-content: flex-start;}
+  .summaryGrid {grid-template-columns: repeat(2, minmax(0, 1fr));}
+  .detailsGrid {grid-template-columns: minmax(0, 1fr);}
+  .sidePanels {grid-template-columns: repeat(2, minmax(0, 1fr));}
+  .companyNotice {grid-column: 1 / -1;}
+}
+@media (max-width: 767px) {
+  .headerActions {justify-content: flex-start;}
+}
+@media (max-width: 600px) {
+  .headerActions {display: grid; grid-template-columns: minmax(0, 1fr);}
+  .headerActions :global(button) {width: 100%;}
+  .companySummary {align-items: start; gap: 12px;}
+  .companyIcon {flex-basis: 48px; height: 48px;}
+  .companyCopy h2 {font-size: 19px;}
+  .companyBadges {flex-basis: 100%;}
+  .summaryGrid, .sidePanels {grid-template-columns: minmax(0, 1fr);}
+  .companyNotice {grid-column: auto;}
+  .panelHeading {align-items: flex-start; flex-wrap: wrap;}
+  .panelHeading h2 {align-self: center;}
+  .panelHeading :global(button) {flex-basis: 100%;}
+  .billingRow {gap: 4px; grid-template-columns: minmax(0, 1fr); min-height: 0;}
+  .paymentMethod {flex-wrap: wrap;}
+  .paymentMethod :global(button) {flex-basis: 100%;}
+}

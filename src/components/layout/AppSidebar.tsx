@@ -95,7 +95,7 @@ export function AppSidebar({locale, currentPath, organizationName, userName, use
             {settingsExpanded && <div id="company-settings-subnav" className={styles.settingsSubnav}>
               <button type="button" className={styles.settingsLink} aria-disabled="true"><AppIcon name="building" size={18}/>{t('navigation.companyProfile')}</button>
               <Link href="/company/settings/members" aria-current={pathname === '/company/settings/members' ? 'page' : undefined} className={`${styles.settingsLink} ${pathname === '/company/settings/members' ? styles.settingsActive : ''}`}><AppIcon name="users" size={18}/>{t('navigation.membersAccess')}</Link>
-              <button type="button" className={styles.settingsLink} aria-disabled="true"><AppIcon name="file" size={18}/>{t('navigation.plansBilling')}</button>
+              <Link href="/company/settings/billing" aria-current={pathname === '/company/settings/billing' ? 'page' : undefined} className={[styles.settingsLink, pathname === '/company/settings/billing' ? styles.settingsActive : ''].filter(Boolean).join(' ')}><AppIcon name="file" size={18}/>{t('navigation.plansBilling')}</Link>
             </div>}
           </div>;
           if (item.id === 'dashboard' || item.id === 'suppliers' || item.id === 'requirements' || item.id === 'documents' || item.id === 'notifications') {

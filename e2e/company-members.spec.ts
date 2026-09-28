@@ -12,7 +12,7 @@ test('company settings expands, highlights Members & Access, and keeps company c
   await expect(settings).toHaveAttribute('aria-expanded', 'true');
   await expect(navigation.getByRole('link', {name: 'Membri și acces'})).toHaveAttribute('aria-current', 'page');
   await expect(navigation.getByRole('button', {name: 'Profil companie'})).toHaveAttribute('aria-disabled', 'true');
-  await expect(navigation.getByRole('button', {name: 'Plan și facturare'})).toHaveAttribute('aria-disabled', 'true');
+  await expect(navigation.getByRole('link', {name: 'Plan și facturare'})).toHaveAttribute('href', '/company/settings/billing');
   await expect(page.getByRole('button', {name: 'Demo Company SRL'})).toBeVisible();
   await settings.click();
   await expect(settings).toHaveAttribute('aria-expanded', 'false');

@@ -10,6 +10,7 @@ import {Button} from '@/components/ui/Button';
 import {Surface} from '@/components/ui/Surface';
 import type {DrawerPhase} from '@/components/ui/Drawer';
 import {createLocalInvitation, useLocalInvitations} from './local-invitations';
+import {getCompanyMembershipSummary} from './membership-summary';
 import {InviteMemberDrawer} from './InviteMemberDrawer';
 import {companyRoles, type CompanyMembership, type CompanyRole, type CompanySettingsViewModel} from './types';
 import styles from './MembersAccessPage.module.css';
@@ -24,9 +25,7 @@ export function MembersAccessPage({locale, view}: {locale: string; view: Company
   const t = useTranslations('CompanyMembers');
   const app = useTranslations('AppShell');
   const localInvitations = useLocalInvitations(view.company.id);
-  const members = [...view.members.filter((member) => member.companyId === view.company.id), ...localInvitations];
-  const activeCount = members.filter((member) => member.status === 'active').length;
-  const pendingCount = members.filter((member) => member.status === 'invited').length;
+  const {members, activeCount, pendingCount} = getCompanyMembershipSummary(view, localInvitations);
   const currentMembership = members.find((member) => member.isCurrentUser);
   const [drawerPhase, setDrawerPhase] = useState<DrawerPhase | null>(null);
   const inviteTriggerRef = useRef<HTMLButtonElement>(null);

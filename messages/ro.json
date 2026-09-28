@@ -305,6 +305,66 @@
       "roleRequired": "Selectează un rol."
     }
   },
+  "CompanyBilling": {
+    "breadcrumbLabel": "Navigare pe pagină",
+    "title": "Plan și facturare",
+    "description": "Gestionează abonamentul companiei active, datele de facturare și membrii incluși în plan.",
+    "upgradePlan": "Upgrade plan",
+    "viewAllInvoices": "Vezi toate facturile",
+    "demoUnavailable": "Acțiune indisponibilă în demonstrația locală.",
+    "taxId": "CUI",
+    "companyRole": "{role}: {name}",
+    "trialDays": "Trial • {count} zile rămase",
+    "summaryLabel": "Rezumat plan și facturare",
+    "currentPlan": "Plan curent",
+    "includedUsers": "{count} utilizatori incluși",
+    "activeMembers": "Membri activi",
+    "availableSeats": "{count, plural, one {# loc disponibil} other {# locuri disponibile}}",
+    "billingTitle": "Facturare",
+    "monthlyPrice": "{amount} € / lună",
+    "nextPayment": "Următoarea plată: {date}",
+    "accessibleCompanies": "Companii accesibile",
+    "separateSubscriptions": "abonamente separate",
+    "invoiceAmount": "{amount} €",
+    "billing": {
+      "title": "Date de facturare",
+      "update": "Actualizează datele de facturare",
+      "legalName": "Denumire legală",
+      "taxId": "CUI / Cod fiscal",
+      "email": "Email facturare",
+      "address": "Adresă",
+      "contact": "Persoană de contact"
+    },
+    "payment": {
+      "title": "Metodă de plată",
+      "masked": "•••• {lastFour}",
+      "expires": "Expiră {month}/{year}",
+      "change": "Schimbă cardul"
+    },
+    "limits": {
+      "title": "Limite plan",
+      "members": "{count} membri",
+      "unlimitedDocuments": "Documente nelimitate",
+      "customRequirements": "Cerințe personalizate",
+      "notificationsAudit": "Notificări și audit"
+    },
+    "notice": {
+      "title": "Abonamentul aparține companiei active.",
+      "description": "Dacă adaugi o companie nouă, aceasta primește propriul trial și propriul abonament."
+    },
+    "invoices": {
+      "title": "Facturi",
+      "region": "Istoric facturi",
+      "number": "FACTURĂ",
+      "date": "DATA",
+      "amount": "SUMĂ",
+      "status": "STATUS",
+      "actions": "ACȚIUNI",
+      "paid": "Plătită",
+      "download": "Descarcă",
+      "moreActions": "Alte acțiuni pentru {number}"
+    }
+  },
   "Dashboard": {
     "welcomeEyebrow": "BINE AI REVENIT ÎN DEBIRO",
     "welcomeTitle": "Bun venit, {name}!",

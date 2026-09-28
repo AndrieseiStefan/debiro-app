@@ -305,6 +305,66 @@
       "roleRequired": "Select a role."
     }
   },
+  "CompanyBilling": {
+    "breadcrumbLabel": "Page navigation",
+    "title": "Plan & billing",
+    "description": "Manage the active company's subscription, billing details, and members included in the plan.",
+    "upgradePlan": "Upgrade plan",
+    "viewAllInvoices": "View all invoices",
+    "demoUnavailable": "This action is unavailable in the local demo.",
+    "taxId": "Tax ID",
+    "companyRole": "{role}: {name}",
+    "trialDays": "Trial • {count} days remaining",
+    "summaryLabel": "Plan and billing summary",
+    "currentPlan": "Current plan",
+    "includedUsers": "{count} included users",
+    "activeMembers": "Active members",
+    "availableSeats": "{count, plural, one {# available seat} other {# available seats}}",
+    "billingTitle": "Billing",
+    "monthlyPrice": "€{amount} / month",
+    "nextPayment": "Next payment: {date}",
+    "accessibleCompanies": "Accessible companies",
+    "separateSubscriptions": "separate subscriptions",
+    "invoiceAmount": "€{amount}",
+    "billing": {
+      "title": "Billing details",
+      "update": "Update billing details",
+      "legalName": "Legal name",
+      "taxId": "Tax ID",
+      "email": "Billing email",
+      "address": "Address",
+      "contact": "Contact person"
+    },
+    "payment": {
+      "title": "Payment method",
+      "masked": "•••• {lastFour}",
+      "expires": "Expires {month}/{year}",
+      "change": "Change card"
+    },
+    "limits": {
+      "title": "Plan limits",
+      "members": "{count} members",
+      "unlimitedDocuments": "Unlimited documents",
+      "customRequirements": "Custom requirements",
+      "notificationsAudit": "Notifications and audit"
+    },
+    "notice": {
+      "title": "The subscription belongs to the active company.",
+      "description": "If you add a new company, it receives its own trial and subscription."
+    },
+    "invoices": {
+      "title": "Invoices",
+      "region": "Invoice history",
+      "number": "INVOICE",
+      "date": "DATE",
+      "amount": "AMOUNT",
+      "status": "STATUS",
+      "actions": "ACTIONS",
+      "paid": "Paid",
+      "download": "Download",
+      "moreActions": "More actions for {number}"
+    }
+  },
   "Dashboard": {
     "welcomeEyebrow": "WELCOME BACK TO DEBIRO",
     "welcomeTitle": "Welcome, {name}!",
