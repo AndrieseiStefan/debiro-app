@@ -30,7 +30,7 @@ describe('document requirements', () => {
     for (const name of ['Certificat de înregistrare', 'Asigurare Răspundere Civilă', 'Certificare ISO 9001', 'Autorizație de lucru', 'Declarație SSM']) expect(within(table).getByText(name)).toBeVisible();
     expect(within(table).getAllByText('Obligatoriu')).toHaveLength(4);
     expect(within(table).getByText('Opțional')).toBeVisible();
-    expect(screen.getByRole('button', {name: 'Șablon nou'})).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', {name: 'Șablon nou'})).not.toHaveAttribute('aria-disabled');
     expect(screen.getByRole('button', {name: 'Salvează șablon'})).toHaveAttribute('aria-disabled', 'true');
   });
 

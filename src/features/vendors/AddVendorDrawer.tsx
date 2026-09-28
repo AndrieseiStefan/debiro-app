@@ -7,7 +7,7 @@ import {Button} from '@/components/ui/Button';
 import {Drawer, type DrawerPhase} from '@/components/ui/Drawer';
 import {Field} from '@/components/ui/Field';
 import type {CreatedVendor} from './created-vendors';
-import type {VendorCategory} from './types';
+import {vendorCategories, type VendorCategory} from './types';
 import styles from './AddVendorDrawer.module.css';
 
 type Values = {
@@ -25,7 +25,6 @@ type Values = {
 };
 
 type Errors = Partial<Record<'name' | 'cui' | 'email' | 'category' | 'website', string>>;
-const categoryOptions: VendorCategory[] = ['construction', 'cleaning', 'software', 'materials', 'logistics', 'energy', 'food', 'medical'];
 const optional = (value: string) => value.trim() || undefined;
 
 function validWebsite(value: string) {
@@ -98,7 +97,7 @@ export function AddVendorDrawer({phase, onClose, onExited, triggerRef, onCreate}
       </div>
       <Field id="add-vendor-contactName" label={t('contactName')} placeholder={t('contactPlaceholder')} value={values.contactName} onChange={(event) => update('contactName', event.target.value)} className={styles.field}/>
       <div className={styles.row}>
-        <div className={styles.selectField}><label htmlFor="add-vendor-category">{t('category')} <span>*</span></label><div className={styles.selectWrap}><select id="add-vendor-category" required value={values.category} onChange={(event) => update('category', event.target.value as VendorCategory | '')} aria-invalid={Boolean(errors.category)} aria-describedby={errors.category ? 'add-vendor-category-error' : undefined}><option value="">{t('categoryPlaceholder')}</option>{categoryOptions.map((category) => <option key={category} value={category}>{vendorsT(`category.${category}`)}</option>)}</select><AppIcon name="chevronDown" size={17}/></div>{errors.category && <p id="add-vendor-category-error" className={styles.error} role="alert">{errors.category}</p>}</div>
+        <div className={styles.selectField}><label htmlFor="add-vendor-category">{t('category')} <span>*</span></label><div className={styles.selectWrap}><select id="add-vendor-category" required value={values.category} onChange={(event) => update('category', event.target.value as VendorCategory | '')} aria-invalid={Boolean(errors.category)} aria-describedby={errors.category ? 'add-vendor-category-error' : undefined}><option value="">{t('categoryPlaceholder')}</option>{vendorCategories.map((category) => <option key={category} value={category}>{vendorsT(`category.${category}`)}</option>)}</select><AppIcon name="chevronDown" size={17}/></div>{errors.category && <p id="add-vendor-category-error" className={styles.error} role="alert">{errors.category}</p>}</div>
         <Field id="add-vendor-industry" label={t('industry')} placeholder={t('industryPlaceholder')} value={values.industry} onChange={(event) => update('industry', event.target.value)} className={styles.field}/>
       </div>
       <div className={styles.textareaField}><label htmlFor="add-vendor-address">{t('address')}</label><textarea id="add-vendor-address" placeholder={t('addressPlaceholder')} value={values.address} onChange={(event) => update('address', event.target.value)}/></div>

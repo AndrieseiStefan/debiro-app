@@ -73,7 +73,7 @@ export function CompanySwitcher() {
         {snapshot.companies.map((record, index) => {
           const membership = getCurrentMembership(record);
           const isActive = record.company.id === snapshot.activeCompanyId;
-          return <button ref={index === 0 ? firstCompanyRef : undefined} type="button" key={record.company.id} aria-pressed={isActive} className={styles.company} onClick={() => {switchActiveCompany(record.company.id); setOpen(false); triggerRef.current?.focus({preventScroll: true});}}>
+          return <button ref={index === 0 ? firstCompanyRef : undefined} type="button" key={record.company.id} data-company-switch-id={record.company.id} aria-pressed={isActive} className={styles.company} onClick={() => {switchActiveCompany(record.company.id); setOpen(false); triggerRef.current?.focus({preventScroll: true});}}>
             <span className={styles.companyAvatar} aria-hidden="true">{record.company.name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toLocaleUpperCase()}</span>
             <span className={styles.companyCopy}><strong>{record.company.name}</strong>{membership ? <RoleBadge role={membership.role} label={roles(`roles.${membership.role}`)} className={styles.role} iconSize={13}/> : <small>—</small>}</span>
             {isActive && <AppIcon name="check" size={18}/>}

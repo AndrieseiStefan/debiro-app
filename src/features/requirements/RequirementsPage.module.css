@@ -34,6 +34,14 @@
 .editorIdentity {flex: 1 1 auto; min-width: 0;}
 .editorIdentity h2 {color: #142448; font-size: 21px; font-weight: 750; letter-spacing: -.03em; line-height: 1.15;}
 .editorIdentity p {color: #526b91; font-size: 15px; line-height: 1.35; margin-top: 5px;}
+.draftFields {border-top: 1px solid #e0eafa; display: grid; gap: 14px 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 16px 18px 20px;}
+.draftFields label {color: #203558; display: grid; font-size: 13px; font-weight: 700; gap: 7px; min-width: 0;}
+.draftFields em {color: #d72d4b; font-style: normal;}
+.draftFields input, .draftFields select, .draftFields textarea {background: #fff; border: 1px solid #cbdcf4; border-radius: 7px; color: #1b3153; font: inherit; font-size: 14px; min-height: 40px; min-width: 0; padding: 9px 11px; width: 100%;}
+.draftFields textarea {min-height: 72px; resize: vertical;}
+.draftFields [aria-invalid='true'] {border-color: #d52b4a;}
+.draftFields small, .draftError {color: #c42342; font-size: 12px; font-weight: 500; line-height: 1.35;}
+.draftDescription {grid-column: 1 / -1;}
 .editorActions {align-items: center; display: flex; flex: 0 0 auto; gap: 10px;}
 .editorActions :global(button) {min-height: 39px;}
 .editorActions :global(button:last-child) {color: #075bd1; font-size: 14px; padding-inline: 15px;}
@@ -74,14 +82,27 @@
 .mandatory span[data-required='true'] {color: #078557;}
 .rulesTable select {background: #fff; border: 1px solid #d1e1f6; border-radius: 7px; color: #1e3760; font: inherit; height: 37px; padding: 0 8px; width: 100%;}
 .rowAction {background: transparent; border: 0; color: #3d639d; padding: 8px;}
+.documentEmpty {align-items: center; color: #607ba6; display: flex; flex-direction: column; gap: 8px; padding: 28px 14px 32px; text-align: center;}
+.documentEmpty > svg {color: #0b61dd;}
+.documentEmpty h4 {color: #1b2e50; font-size: 16px;}
+.documentEmpty p {font-size: 13px; line-height: 1.4;}
+.documentEmpty :global(button) {margin-top: 6px;}
+.draftError {padding: 0 16px 13px;}
 .notice {align-items: center; background: #eaf4ff; border-radius: 8px; color: #0754bf; display: flex; font-size: 13px; gap: 16px; margin: 0 12px 17px; min-height: 65px; padding: 12px 18px;}
 .notice > span {align-items: center; background: #3b8ceb; border-radius: 50%; color: #fff; display: inline-flex; flex: 0 0 23px; height: 23px; justify-content: center;}
 .notice > span svg {height: 17px; width: 17px;}
 .footer {align-items: center; border-top: 1px solid #e1ebf9; display: flex; gap: 12px; justify-content: space-between; min-height: 81px; padding: 12px 16px;}
-.footerRight {display: flex; gap: 12px;}
+.footerRight {display: flex; gap: 12px; margin-left: auto;}
 .footer :global(button) {min-height: 47px;}
 .footer :global(button:last-child) {font-size: 14px;}
 .srOnly {clip: rect(0 0 0 0); clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px;}
+.confirmBackdrop {align-items: center; background: rgb(14 31 57 / 58%); display: flex; inset: 0; justify-content: center; padding: 16px; position: fixed; z-index: 1100;}
+.confirmDialog {background: #fff; border-radius: 11px; box-shadow: 0 16px 45px rgb(12 31 62 / 23%); max-width: 440px; padding: 24px; width: 100%;}
+.confirmDialog h2 {color: #182a4e; font-size: 20px;}
+.confirmDialog p {color: #58749e; font-size: 14px; line-height: 1.45; margin-top: 8px;}
+.confirmDialog > div {display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 23px;}
+.confirmDialog :global(button) {flex: 1 0 max-content;}
+.draftFields input:focus-visible, .draftFields select:focus-visible, .draftFields textarea:focus-visible, .addTemplate:focus-visible, .templateItem:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 2px;}
 
 @media (max-width: 1199px) {
   .workspace {grid-template-columns: minmax(0, 1fr);}
@@ -93,12 +114,14 @@
   .headerCallout {white-space: normal;}
   .templateList {grid-template-columns: minmax(0, 1fr);}
   .editorTop {align-items: flex-start; flex-wrap: wrap;}
+  .draftFields {grid-template-columns: minmax(0, 1fr);}
   .editorIdentity {flex-basis: calc(100% - 90px);}
   .editorActions {width: 100%;}
   .editorActions :global(button:last-child) {flex: 1;}
   .sectionHeading {align-items: flex-start; flex-direction: column;}
   .footer {align-items: stretch; flex-direction: column;}
   .footerRight {display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));}
+  .footerRight {margin-left: 0;}
   .footerRight :global(button) {min-width: 0; padding-inline: 8px;}
 }
 @media (max-width: 375px) {

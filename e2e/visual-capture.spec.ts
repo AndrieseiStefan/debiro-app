@@ -42,6 +42,14 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
       await page.getByRole('button', {name: 'Demo Company SRL'}).click();
       await page.getByRole('dialog', {name: route.startsWith('/en') ? 'Switch company' : 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
       await expect(page.getByRole('heading', {name: 'Global Clean Services'})).toBeVisible();
+    } else if (action === 'requirement-draft' || action === 'requirement-suggestions' || action === 'requirement-custom') {
+      if (route !== '/requirements' && route !== '/en/requirements') throw new Error('Requirement captures require the Requirements route.');
+      const english = route.startsWith('/en');
+      if (action === 'requirement-draft') await page.getByRole('button', {name: english ? 'New template' : 'Șablon nou', exact: true}).click();
+      else {
+        await page.getByRole('button', {name: english ? 'Add document' : 'Adaugă document'}).click();
+        if (action === 'requirement-custom') await page.getByRole('dialog', {name: english ? 'Add document' : 'Adaugă document'}).getByRole('button', {name: english ? 'Custom document' : 'Document personalizat'}).click();
+      }
     } else if (action === 'invite-vendor') {
       await page.getByRole('button', {name: 'Invită furnizor'}).click();
       await expect(page.getByRole('dialog', {name: 'Invită furnizorul să încarce documentele'})).toBeVisible();

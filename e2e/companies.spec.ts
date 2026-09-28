@@ -50,7 +50,8 @@ test('switcher closes accessibly, preserves route, and prevents demo data leakag
   for (const path of ['/dashboard', '/documents', '/requirements', '/notifications']) {
     await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: path === '/dashboard' ? 'Dashboard' : path === '/documents' ? 'Documente' : path === '/requirements' ? 'Cerințe' : 'Notificări'}).click();
     await expect(page).toHaveURL(new RegExp(`${path}$`));
-    await expect(page.getByText('Nu există date pentru această companie în demonstrația locală.')).toBeVisible();
+    if (path === '/requirements') await expect(page.getByText('Nu există șabloane pentru această companie')).toBeVisible();
+    else await expect(page.getByText('Nu există date pentru această companie în demonstrația locală.')).toBeVisible();
     await expect(page.getByText('Construct Pro SRL')).toHaveCount(0);
   }
   await page.getByRole('button', {name: 'Global Clean Services'}).click();

@@ -1,6 +1,6 @@
 # Approved Mockups
 
-This repository tracks twenty-two approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
+This repository tracks twenty-four approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
 
 ## Expected initial mapping
 
@@ -28,6 +28,8 @@ This repository tracks twenty-two approved product mockup images listed below. T
 | `20-profile-dropdown-menu.png` | Global-user profile dropdown; E1-020 omits the pictured company-management shortcuts |
 | `21-Profile-my-companies.png` | Global-user My Companies page and local company creation |
 | `22-change-company-popup.png` | Authenticated active-company switcher |
+| `23A-Add-suggested-document-to-template.png` | Add catalog suggestion to a requirement template |
+| `23B-Add-personalized-document-to-template.png` | Add custom document to a requirement template |
 
 ## Contract
 

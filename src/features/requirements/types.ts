@@ -1,3 +1,5 @@
+import type {VendorCategory} from '@/features/vendors/types';
+
 export type LocalizedText = {ro: string; en: string};
 
 // Presentation-only template rules. These are not uploaded supplier documents.
@@ -24,4 +26,50 @@ export type RequirementsViewModel = {
   organization: {name: string};
   notificationCount: number;
   templates: RequirementTemplateView[];
+};
+
+export type ExpiryWarningDays = 7 | 15 | 30 | 60 | 90;
+export type ValidityMonths = 1 | 3 | 6 | 12 | 24 | 36;
+
+type DocumentRules = {
+  id: string;
+  templateId: string;
+  required: boolean;
+  expiryWarningDays: ExpiryWarningDays;
+  validityMonths: ValidityMonths;
+  issuer?: string;
+};
+
+export type RequirementTemplateDocument = DocumentRules & (
+  | {catalogDocumentTypeId: string; customName?: never; customDescription?: never}
+  | {catalogDocumentTypeId?: never; customName: string; customDescription?: string}
+);
+
+export type RequirementTemplate = {
+  id: string;
+  title: LocalizedText;
+  subtitle: LocalizedText;
+  icon: RequirementTemplateView['icon'];
+  categoryId?: VendorCategory;
+  documents: RequirementTemplateDocument[];
+};
+
+export type TemplateDraft = {
+  id: string;
+  name: string;
+  description: string;
+  categoryId: VendorCategory | '';
+  documents: RequirementTemplateDocument[];
+  isNew: true;
+  isDirty: boolean;
+};
+
+export type CatalogCandidate = {
+  normalizedName: string;
+  displayName: string;
+  description?: string;
+  usageCount: number;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  status: 'pending' | 'promoted' | 'merged' | 'rejected';
 };

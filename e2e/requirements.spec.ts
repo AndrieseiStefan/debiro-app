@@ -48,3 +48,144 @@ test('keeps direct and client-navigated Requirements geometry equivalent', async
     expect(await measure()).toEqual(direct);
   }
 });
+
+test('creates a company-scoped template with catalog and custom documents', async ({page}) => {
+  await page.goto(roPath);
+  await page.getByRole('button', {name: 'Adaugă șablon nou'}).click();
+  await expect(page.getByRole('heading', {name: 'Creare șablon'})).toBeVisible();
+  await expect(page.getByRole('tab', {name: 'Documente necesare (0)'})).toBeVisible();
+  await expect(page.getByText('Nu ai adăugat documente încă')).toBeVisible();
+  await expect(page.getByRole('button', {name: 'Salvează șablon'})).toBeDisabled();
+  await page.getByRole('textbox', {name: /Nume șablon/}).fill('Șablon QA nou');
+  await page.getByRole('combobox', {name: /Categorie \/ Aplicabilitate/}).selectOption('construction');
+  await expect(page.getByText('Adaugă cel puțin un document înainte de a salva șablonul.')).toBeVisible();
+  await expect(page.getByRole('button', {name: 'Salvează șablon'})).toBeDisabled();
+
+  await page.getByRole('button', {name: 'Adaugă document'}).first().click();
+  const drawer = page.getByRole('dialog', {name: 'Adaugă document'});
+  await expect(drawer).toBeVisible();
+  await expect(drawer.getByRole('button', {name: 'Din sugestii'})).toHaveAttribute('aria-pressed', 'true');
+  await expect(drawer.getByRole('textbox', {name: 'Nume document'})).toHaveCount(0);
+  await drawer.getByRole('searchbox', {name: 'Caută document'}).fill('fiscal');
+  await expect(drawer.getByRole('button', {name: /Certificat fiscal/})).toBeVisible();
+  await drawer.getByRole('button', {name: /Certificat fiscal/}).click();
+  await drawer.getByRole('button', {name: 'Adaugă documentul'}).click();
+  await expect(drawer).toHaveCount(0);
+  await expect(page.getByRole('tab', {name: 'Documente necesare (1)'})).toBeVisible();
+  await expect(page.getByRole('table').getByText('Certificat fiscal', {exact: true})).toBeVisible();
+
+  await page.getByRole('button', {name: 'Adaugă document'}).first().click();
+  await drawer.getByRole('button', {name: 'Document personalizat'}).click();
+  await drawer.getByRole('textbox', {name: /Nume document/}).fill('  Aviz   tehnic QA  ');
+  await drawer.getByRole('textbox', {name: /Emitent \/ Autoritate/}).fill('Primărie');
+  await drawer.getByRole('combobox', {name: 'Alertă expirare'}).selectOption('60');
+  await drawer.getByRole('combobox', {name: 'Valabilitate'}).selectOption('24');
+  await drawer.getByRole('button', {name: 'Adaugă documentul'}).click();
+  await expect(page.getByRole('tab', {name: 'Documente necesare (2)'})).toBeVisible();
+  const customRow = page.getByRole('row').filter({hasText: 'Aviz tehnic QA'});
+  await expect(customRow.getByRole('combobox', {name: /Alertă expirare/})).toHaveValue('60');
+  await expect(customRow.getByRole('combobox', {name: /Valabilitate/})).toHaveValue('24');
+
+  await page.getByRole('button', {name: 'Salvează șablon'}).click();
+  await expect(page.getByRole('heading', {name: 'Șablon QA nou'})).toBeVisible();
+  await expect(page.locator('[data-template-id^="local-template-"]')).toContainText('2 documente');
+  await page.getByRole('button', {name: 'Demo Company SRL'}).click();
+  const switcher = page.getByRole('dialog', {name: 'Schimbă compania'});
+  await expect(switcher).toBeVisible();
+  const otherCompany = switcher.locator('[data-company-switch-id]:not([aria-pressed="true"])').first();
+  await otherCompany.click();
+  await expect(page.getByRole('heading', {name: 'Șablon QA nou'})).toHaveCount(0);
+  await expect(page.getByRole('button', {name: /Șablon QA nou/})).toHaveCount(0);
+});
+
+test('protects a dirty draft, and preserves English document flow', async ({page}) => {
+  await page.goto(roPath);
+  await page.getByRole('button', {name: 'Adaugă șablon nou'}).click();
+  await page.getByRole('textbox', {name: /Nume șablon/}).fill('Abandoned template QA');
+  await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Furnizori'}).click();
+  await expect(page.getByRole('alertdialog', {name: 'Renunți la modificările nesalvate?'})).toBeVisible();
+  await page.getByRole('button', {name: 'Continuă editarea'}).click();
+  await expect(page).toHaveURL(/\/requirements$/);
+  await expect(page.getByRole('textbox', {name: /Nume șablon/})).toHaveValue('Abandoned template QA');
+  await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Furnizori'}).click();
+  await page.getByRole('button', {name: 'Renunță la modificări'}).click();
+  await expect(page).toHaveURL(/\/vendors$/);
+
+  await page.goto('/en/requirements');
+  await page.getByRole('button', {name: 'Add new template'}).click();
+  await expect(page.getByRole('heading', {name: 'Create template'})).toBeVisible();
+  await page.getByRole('button', {name: 'Add document'}).first().click();
+  const drawer = page.getByRole('dialog', {name: 'Add document'});
+  await drawer.getByRole('searchbox', {name: 'Search documents'}).fill('does-not-exist');
+  await expect(drawer.getByText('No documents match your search.')).toBeVisible();
+  await drawer.getByRole('button', {name: 'Create custom document'}).click();
+  await expect(drawer.getByRole('textbox', {name: /Document name/})).toBeVisible();
+});
+
+test('rejects duplicate documents and template names, and discards dirty documents', async ({page}) => {
+  await page.goto(roPath);
+  await page.getByRole('button', {name: 'Adaugă șablon nou'}).click();
+  await page.getByRole('textbox', {name: /Nume șablon/}).fill(' subcontractor   construcții ');
+  await expect(page.getByRole('button', {name: 'Salvează șablon'})).toBeDisabled();
+  await expect(page.getByText('Există deja un șablon cu acest nume în compania activă.')).toBeVisible();
+  await page.getByRole('textbox', {name: /Nume șablon/}).fill('Șablon temporar');
+  await page.getByRole('combobox', {name: /Categorie \/ Aplicabilitate/}).selectOption('construction');
+  await page.getByRole('button', {name: 'Adaugă document'}).first().click();
+  const drawer = page.getByRole('dialog', {name: 'Adaugă document'});
+  await drawer.getByRole('button', {name: 'Adaugă documentul'}).click();
+  await expect(drawer).toHaveCount(0);
+  await page.getByRole('button', {name: 'Adaugă document'}).first().click();
+  await drawer.getByRole('button', {name: 'Adaugă documentul'}).click();
+  await expect(drawer.getByRole('alert')).toHaveText('Acest document există deja în șablon.');
+  await drawer.getByRole('button', {name: 'Document personalizat'}).click();
+  await drawer.getByRole('textbox', {name: /Nume document/}).fill('CERTIFICAT FISCAL');
+  await drawer.getByRole('button', {name: 'Adaugă documentul'}).click();
+  await expect(drawer.getByRole('alert')).toHaveText('Acest document există deja în șablon.');
+  await drawer.getByRole('button', {name: 'Închide adăugarea documentului'}).click();
+  await page.getByRole('button', {name: 'Anulează'}).click();
+  await expect(page.getByRole('alertdialog')).toBeVisible();
+  await page.getByRole('button', {name: 'Renunță la modificări'}).click();
+  await expect(page.getByRole('heading', {name: 'Creare șablon'})).toHaveCount(0);
+  await expect(page.getByRole('button', {name: /Șablon temporar/})).toHaveCount(0);
+});
+
+test('keeps draft and Add Document drawer contained at supported widths', async ({page}) => {
+  await page.goto(roPath);
+  await page.getByRole('button', {name: 'Adaugă șablon nou'}).click();
+  await page.getByRole('button', {name: 'Adaugă document'}).first().click();
+  const drawer = page.getByRole('dialog', {name: 'Adaugă document'});
+  for (const width of [1448, 1024, 758, 600, 375, 320]) {
+    await page.setViewportSize({width, height: width === 1448 ? 1086 : 812});
+    await expect(drawer).toBeVisible();
+    await expect.poll(() => drawer.evaluate((element) => element.getBoundingClientRect().right)).toBeLessThanOrEqual(width + 1);
+    const geometry = await page.evaluate(() => {
+      const dialog = document.querySelector<HTMLElement>('[role="dialog"][aria-modal="true"]')!;
+      const rect = dialog.getBoundingClientRect();
+      return {document: document.documentElement.scrollWidth, left: rect.left, right: rect.right, body: dialog.scrollHeight, viewport: dialog.clientHeight};
+    });
+    expect(geometry.document, `document overflow at ${width}px`).toBeLessThanOrEqual(width);
+    expect(geometry.left, `drawer left at ${width}px`).toBeGreaterThanOrEqual(-1);
+    expect(geometry.right, `drawer right at ${width}px`).toBeLessThanOrEqual(width + 1);
+    expect(geometry.viewport, `drawer height at ${width}px`).toBeLessThanOrEqual(812 + (width === 1448 ? 274 : 0));
+    await drawer.getByRole('button', {name: 'Document personalizat'}).click();
+    await expect(drawer.getByRole('button', {name: 'Adaugă documentul'})).toBeVisible();
+    await drawer.getByRole('button', {name: 'Din sugestii'}).click();
+  }
+});
+
+test('confirms before switching companies with an edited template draft', async ({page}) => {
+  await page.goto(roPath);
+  await page.getByRole('button', {name: 'Adaugă șablon nou'}).click();
+  await page.getByRole('textbox', {name: /Nume șablon/}).fill('Draft for current company');
+  await page.getByRole('button', {name: 'Demo Company SRL'}).click();
+  await page.getByRole('dialog', {name: 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
+  await expect(page.getByRole('alertdialog', {name: 'Renunți la modificările nesalvate?'})).toBeVisible();
+  await page.getByRole('button', {name: 'Continuă editarea'}).click();
+  await expect(page.getByRole('textbox', {name: /Nume șablon/})).toHaveValue('Draft for current company');
+  await expect(page.getByRole('button', {name: 'Demo Company SRL'})).toBeVisible();
+  await page.getByRole('button', {name: 'Demo Company SRL'}).click();
+  await page.getByRole('dialog', {name: 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
+  await page.getByRole('button', {name: 'Renunță la modificări'}).click();
+  await expect(page.getByRole('heading', {name: 'Nu există șabloane pentru această companie'})).toBeVisible();
+  await expect(page.getByRole('button', {name: 'Global Clean Services'})).toBeVisible();
+});

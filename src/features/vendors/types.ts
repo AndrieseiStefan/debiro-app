@@ -11,6 +11,8 @@ export type VendorCategory =
   | 'food'
   | 'medical';
 
+export const vendorCategories: VendorCategory[] = ['construction', 'cleaning', 'software', 'materials', 'logistics', 'energy', 'food', 'medical'];
+
 export type VendorListItem = {
   id: string;
   name: string;

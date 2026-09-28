@@ -9,12 +9,11 @@ import {AuthenticatedBreadcrumbs} from '@/components/layout/AuthenticatedBreadcr
 import {AuthenticatedPageHeader, AuthenticatedPagePrimaryAction} from '@/components/layout/AuthenticatedPageHeader';
 import {StatusBadge, type StatusTone} from '@/components/ui/StatusBadge';
 import {Surface} from '@/components/ui/Surface';
-import type {VendorCategory, VendorListItem, VendorStatus, VendorsListViewModel} from './types';
+import {vendorCategories, type VendorCategory, type VendorListItem, type VendorStatus, type VendorsListViewModel} from './types';
 import {AddVendorDrawer} from './AddVendorDrawer';
 import {createLocalVendor, toVendorListItem, useCreatedVendors, type CreatedVendor} from './created-vendors';
 import styles from './VendorsListPage.module.css';
 
-const categories: VendorCategory[] = ['construction', 'cleaning', 'software', 'materials', 'logistics', 'energy', 'food', 'medical'];
 const statuses: VendorStatus[] = ['compliant', 'attention', 'noncompliant'];
 const statusTones: Record<VendorStatus, StatusTone> = {compliant: 'success', attention: 'warning', noncompliant: 'danger'};
 const statusIcons: Record<VendorStatus, AppIconName> = {compliant: 'check', attention: 'clock', noncompliant: 'close'};
@@ -130,7 +129,7 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
         </label>
         <label className={styles.selectField}><span>{t('categoryLabel')}</span><select value={category} onChange={(event) => {setCategory(event.target.value as VendorCategory | 'all'); setPage(1);}}>
           <option value="all">{t('allCategories')}</option>
-          {categories.map((item) => <option key={item} value={item}>{t(`category.${item}`)}</option>)}
+          {vendorCategories.map((item) => <option key={item} value={item}>{t(`category.${item}`)}</option>)}
         </select><AppIcon name="chevronDown" size={17} /></label>
         <label className={styles.selectField}><span>{t('statusLabel')}</span><select value={status} onChange={(event) => {setStatus(event.target.value as VendorStatus | 'all'); setPage(1);}}>
           <option value="all">{t('allStatuses')}</option>

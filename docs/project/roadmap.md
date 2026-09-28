@@ -5,7 +5,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 ## Phase 0 — Product & Repository Foundation
 
 - Repository memory — complete
-- Canonical mockup contract and twenty-two approved images — complete
+- Canonical mockup contract and twenty-four approved images — complete
 - Architecture and stack decision — complete (TASK-002)
 - UI foundation and canonical design system tooling — complete (TASK-003); no product screens approved
 - E1-001 canonical landing page — implemented; product-owner visual approval remains pending
@@ -13,7 +13,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 - E1-003 canonical dashboard overview — implemented with a fixture-backed authenticated shell; product-owner visual approval remains pending
 - E1-004 canonical Vendors List — implemented with fixture-backed local list controls; product-owner visual approval remains pending
 - E1-005 canonical Vendor Details — implemented with a typed dynamic fixture route and local document search; product-owner visual approval remains pending
-- E1-006 canonical Document Requirements — implemented with typed presentation fixtures and browser-local controls; product-owner visual approval remains pending
+- E1-006/E1-023 Document Requirements — implemented with company-scoped browser-memory template creation, Add Document drawer, and local rule controls; product-owner visual approval remains pending
 - E1-007 canonical Invite Vendor drawer — implemented from Vendor Details with a local preview form; product-owner visual approval remains pending
 - E1-008 canonical Supplier Upload Portal — implemented as a separate external-supplier layout with a deterministic token fixture and browser-local file selection; product-owner visual approval remains pending
 - E1-009 canonical Document Review — implemented with a deterministic document fixture, local edits and human confirmation only; product-owner visual approval remains pending
@@ -28,7 +28,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 ## Agreed delivery sequence
 
 1. E1-001 landing page — implemented under an explicit task brief. The earlier complete-MVP epic planning checkpoint remains open.
-2. Implement approved mockup experiences using typed fixture/browser-local data — complete for all twenty-two tracked canonical mockup states.
+2. Implement approved mockup experiences using typed fixture/browser-local data — complete for all twenty-four tracked canonical mockup states.
 3. Visually and interactively compare them with the canonical mockups; obtain product-owner visual approval.
 4. Before expanding beyond the supplied E1 tasks, finalize the complete Epic sequence through MVP.
 5. Define data model and API contracts, then build backend/persistence and replace fixtures with real data.
@@ -50,4 +50,4 @@ These are roadmap directions, not detailed feature specifications or a finalized
 
 ## Next task
 
-All twenty-two tracked mockups have fixture/browser-local implementations. Product-owner visual approval and the broader MVP epic planning checkpoint remain open; backend and auth are not implemented.
+All twenty-four tracked mockups have fixture/browser-local implementations. Product-owner visual approval and the broader MVP epic planning checkpoint remain open; backend and auth are not implemented.
