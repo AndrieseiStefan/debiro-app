@@ -2,6 +2,7 @@
 
 import {useTranslations} from 'next-intl';
 import {BrandWordmark} from '@/components/brand/BrandWordmark';
+import type {NotificationActivityItem} from '@/features/notifications/types';
 import {Link, usePathname} from '@/i18n/navigation';
 import {AppIcon, type AppIconName} from './AppIcon';
 import {AppUtilities} from './AppUtilities';
@@ -17,13 +18,15 @@ const items = [
   {id: 'settings', icon: 'settings'}
 ] as const satisfies ReadonlyArray<{id: string; icon: AppIconName}>;
 
-export function AppSidebar({locale, currentPath, organizationName, userName, userInitials, notificationCount}: {
+export function AppSidebar({locale, currentPath, organizationName, userName, userInitials, notificationCount, notifications, notificationReferenceTime}: {
   locale: string;
   currentPath: string;
   organizationName: string;
   userName: string;
   userInitials: string;
   notificationCount: number;
+  notifications: NotificationActivityItem[];
+  notificationReferenceTime: string;
 }) {
   const t = useTranslations('AppShell');
   const pathname = usePathname().replace(/^\/(?:en|ro)(?=\/|$)/, '').replace(/\/+$/, '') || '/';
@@ -41,12 +44,12 @@ export function AppSidebar({locale, currentPath, organizationName, userName, use
       </div>
 
       <div className={styles.reducedUtilities}>
-        <AppUtilities locale={locale} currentPath={currentPath} userInitials={userInitials} userName={userName} compact />
+        <AppUtilities locale={locale} currentPath={currentPath} userInitials={userInitials} userName={userName} notifications={notifications} notificationReferenceTime={notificationReferenceTime} compact />
       </div>
 
       <nav className={styles.navigation} aria-label={t('navigationLabel')}>
         {items.map((item) => {
-          const content = <><AppIcon name={item.icon} size={22} /><span>{t(`navigation.${item.id}`)}</span>{item.id === 'notifications' && <span className={styles.notificationCount}>{notificationCount}</span>}</>;
+          const content = <><AppIcon name={item.icon} size={22} /><span>{t(`navigation.${item.id}`)}</span>{item.id === 'notifications' && notificationCount > 0 && <span className={styles.notificationCount}>{notificationCount}</span>}</>;
           if (item.id === 'dashboard' || item.id === 'suppliers' || item.id === 'requirements' || item.id === 'documents' || item.id === 'notifications') {
             const path = item.id === 'dashboard' ? '/dashboard' : item.id === 'suppliers' ? '/vendors' : item.id === 'requirements' ? '/requirements' : item.id === 'notifications' ? '/notifications' : '/documents';
             const active = activeSection === item.id;

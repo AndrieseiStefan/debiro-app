@@ -24,7 +24,10 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   await page.waitForLoadState('networkidle');
   await page.evaluate(async () => { await document.fonts.ready; });
   if (action) {
-    if (action === 'invite-vendor') {
+    if (action === 'notification-bell') {
+      await page.getByRole('button', {name: route.startsWith('/en') ? 'Notifications' : 'Notificări', exact: true}).click();
+      await expect(page.getByRole('dialog', {name: route.startsWith('/en') ? 'Notifications' : 'Notificări'})).toBeVisible();
+    } else if (action === 'invite-vendor') {
       await page.getByRole('button', {name: 'Invită furnizor'}).click();
       await expect(page.getByRole('dialog', {name: 'Invită furnizorul să încarce documentele'})).toBeVisible();
     } else if (action === 'add-document' || action === 'add-document-end' || action === 'add-document-created' || action === 'add-document-review') {

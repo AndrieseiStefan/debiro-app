@@ -9,6 +9,7 @@ import {AuthenticatedPageHeader} from '@/components/layout/AuthenticatedPageHead
 import {EmptyState} from '@/components/ui/EmptyState';
 import {StatusBadge} from '@/components/ui/StatusBadge';
 import {Surface} from '@/components/ui/Surface';
+import {useNotificationItems} from './local-state';
 import {auditEventsToCsv, filterAuditEvents, filterNotifications, type ActivityCategory, type ActivityRange} from './selectors';
 import type {NotificationActivityType, NotificationsViewModel} from './types';
 import styles from './NotificationsPage.module.css';
@@ -38,10 +39,11 @@ export function NotificationsPage({locale, view}: {locale: string; view: Notific
   const [category, setCategory] = useState<ActivityCategory>('all');
   const [range, setRange] = useState<ActivityRange>('last30');
   const [expanded, setExpanded] = useState({expiring: false, missing: false, recent: false, audit: false});
-  const visibleNotifications = filterNotifications(view.notifications, category, range, view.referenceTime);
-  const rangedNotifications = filterNotifications(view.notifications, 'all', range, view.referenceTime);
+  const notifications = useNotificationItems(view.notifications);
+  const visibleNotifications = filterNotifications(notifications, category, range, view.referenceTime);
+  const rangedNotifications = filterNotifications(notifications, 'all', range, view.referenceTime);
   const auditEvents = filterAuditEvents(view.auditEvents, range, view.referenceTime);
-  const unreadCount = view.notifications.filter((item) => item.isUnread).length;
+  const unreadCount = notifications.filter((item) => item.isUnread).length;
   const expiringRows = expanded.expiring ? view.expiringDocuments : view.expiringDocuments.slice(0, 3);
   const missingRows = expanded.missing ? view.missingDocuments : view.missingDocuments.slice(0, 3);
   const recentRows = expanded.recent ? visibleNotifications : visibleNotifications.slice(0, 5);
@@ -81,7 +83,7 @@ export function NotificationsPage({locale, view}: {locale: string; view: Notific
     return count === undefined ? title : `${title} (${count})`;
   }
 
-  return <AuthenticatedAppShell locale={locale} currentPath="/notifications" organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={unreadCount}>
+  return <AuthenticatedAppShell locale={locale} currentPath="/notifications" organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={unreadCount} notificationItems={view.notifications} notificationReferenceTime={view.referenceTime}>
     <div className={styles.page}>
       <AuthenticatedPageHeader context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: app('navigation.notifications')}]} />} title={t('title')} titleId="notifications-title" description={t('description')}
         supportingContent={<div className={styles.headerCallout}><span><AppIcon name="file" size={26} /></span><p>{t('traceabilityTitle')}<br />{t('traceabilityDescription')}</p></div>} />
@@ -89,7 +91,7 @@ export function NotificationsPage({locale, view}: {locale: string; view: Notific
       <div className={styles.toolbar}>
         <nav className={styles.categoryScroll} aria-label={t('categoriesLabel')}>
           {categories.map((item) => <button key={item} type="button" className={styles.category} data-active={category === item} aria-current={category === item ? 'page' : undefined} onClick={() => setCategory(item)}>
-            <AppIcon name={item === 'uploads' ? 'file' : item === 'status' ? 'clock' : 'bell'} size={18} />{t(`categories.${item}`)}<span className={styles.categoryCount} data-unread={item === 'unread'}>{filterNotifications(view.notifications, item, range, view.referenceTime).length}</span>
+            <AppIcon name={item === 'uploads' ? 'file' : item === 'status' ? 'clock' : 'bell'} size={18} />{t(`categories.${item}`)}<span className={styles.categoryCount} data-unread={item === 'unread'}>{filterNotifications(notifications, item, range, view.referenceTime).length}</span>
           </button>)}
         </nav>
         <label className={styles.rangeControl}><AppIcon name="calendar" size={19} /><span className={styles.srOnly}>{t('rangeLabel')}</span><select value={range} onChange={(event) => setRange(event.target.value as ActivityRange)} aria-label={t('rangeLabel')}><option value="last30">{t('ranges.last30')}</option><option value="last7">{t('ranges.last7')}</option><option value="all">{t('ranges.all')}</option></select><AppIcon name="chevronDown" size={15} /></label>
@@ -115,7 +117,7 @@ export function NotificationsPage({locale, view}: {locale: string; view: Notific
 
           <Surface id="recent-section" className={styles.panel} role="region" aria-label={t('recentTitle')}>
             <div className={styles.panelHeading}><h2><EventIcon type="document_upload" />{t('recentTitle')}</h2><button type="button" onClick={() => toggle('recent')}>{t('viewAll')} <AppIcon name="arrowRight" size={16} /></button></div>
-            {view.notifications.length === 0 ? <EmptyState title={t('noNotifications')} description={t('noNotificationsDescription')} /> : visibleNotifications.length === 0 ? <EmptyState title={t('noMatches')} description={t('noMatchesDescription')} action={<button className={styles.reset} type="button" onClick={() => {setCategory('all'); setRange('last30');}}>{t('resetFilters')}</button>} /> : <div className={styles.tableScroll} role="region" aria-label={t('recentTitle')} tabIndex={0}><table className={styles.table}><thead><tr><th scope="col">{t('recentTable.type')}</th><th scope="col">{t('recentTable.description')}</th><th scope="col">{t('recentTable.vendor')}</th><th scope="col">{t('recentTable.document')}</th><th scope="col">{t('recentTable.date')}</th></tr></thead><tbody>{recentRows.map((item) => <tr key={item.id} data-notification-id={item.id}><td><EventIcon type={item.type} /></td><td><strong title={item.description[language]}>{item.title[language]}</strong>{item.isUnread && <span className={styles.unread}>{t('unreadBadge')}</span>}</td><td>{item.vendorName ?? '—'}</td><td>{item.documentName?.[language] ?? '—'}</td><td><time dateTime={item.occurredAt}>{relativeDate(item.occurredAt)}</time></td></tr>)}</tbody></table></div>}
+            {notifications.length === 0 ? <EmptyState title={t('noNotifications')} description={t('noNotificationsDescription')} /> : visibleNotifications.length === 0 ? <EmptyState title={t('noMatches')} description={t('noMatchesDescription')} action={<button className={styles.reset} type="button" onClick={() => {setCategory('all'); setRange('last30');}}>{t('resetFilters')}</button>} /> : <div className={styles.tableScroll} role="region" aria-label={t('recentTitle')} tabIndex={0}><table className={styles.table}><thead><tr><th scope="col">{t('recentTable.type')}</th><th scope="col">{t('recentTable.description')}</th><th scope="col">{t('recentTable.vendor')}</th><th scope="col">{t('recentTable.document')}</th><th scope="col">{t('recentTable.date')}</th></tr></thead><tbody>{recentRows.map((item) => <tr key={item.id} data-notification-id={item.id}><td><EventIcon type={item.type} /></td><td><strong title={item.description[language]}>{item.title[language]}</strong>{item.isUnread && <span className={styles.unread}>{t('unreadBadge')}</span>}</td><td>{item.vendorName ?? '—'}</td><td>{item.documentName?.[language] ?? '—'}</td><td><time dateTime={item.occurredAt}>{relativeDate(item.occurredAt)}</time></td></tr>)}</tbody></table></div>}
           </Surface>
         </div>
 

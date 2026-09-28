@@ -240,6 +240,17 @@
     "languageLabel": "Limbă",
     "profileLabel": "Profil utilizator"
   },
+  "NotificationCenter": {
+    "title": "Notificări",
+    "markAllRead": "Marchează toate ca citite",
+    "viewAll": "Vezi toate notificările",
+    "empty": "Nu există notificări recente.",
+    "unread": "Necitit",
+    "unreadCount": "{count, plural, one {# notificare necitită} other {# notificări necitite}}",
+    "minutesAgo": "acum {count} min",
+    "hoursAgo": "acum {count} h",
+    "yesterday": "ieri, {time}"
+  },
   "Dashboard": {
     "welcomeEyebrow": "BINE AI REVENIT ÎN DEBIRO",
     "welcomeTitle": "Bun venit, {name}!",

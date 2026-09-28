@@ -240,6 +240,17 @@
     "languageLabel": "Language",
     "profileLabel": "User profile"
   },
+  "NotificationCenter": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "viewAll": "View all notifications",
+    "empty": "No recent notifications.",
+    "unread": "Unread",
+    "unreadCount": "{count, plural, one {# unread notification} other {# unread notifications}}",
+    "minutesAgo": "{count}m ago",
+    "hoursAgo": "{count}h ago",
+    "yesterday": "yesterday, {time}"
+  },
   "Dashboard": {
     "welcomeEyebrow": "WELCOME BACK TO DEBIRO",
     "welcomeTitle": "Welcome, {name}!",
