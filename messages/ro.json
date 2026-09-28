@@ -232,7 +232,10 @@
       "requirements": "Cerințe",
       "notifications": "Notificări",
       "reports": "Rapoarte",
-      "settings": "Setări"
+      "settings": "Setări companie",
+      "companyProfile": "Profil companie",
+      "membersAccess": "Membri și acces",
+      "plansBilling": "Plan și facturare"
     },
     "searchLabel": "Caută furnizori, documente sau cerințe",
     "searchPlaceholder": "Caută furnizori, documente sau cerințe...",
@@ -250,6 +253,57 @@
     "minutesAgo": "acum {count} min",
     "hoursAgo": "acum {count} h",
     "yesterday": "ieri, {time}"
+  },
+  "CompanyMembers": {
+    "breadcrumbLabel": "Navigare pe pagină",
+    "title": "Membri și acces",
+    "description": "Administratorii pot invita membri și pot gestiona nivelurile de acces pentru compania activă.",
+    "taxId": "CUI",
+    "trialDays": "Trial • {count} zile rămase",
+    "summaryLabel": "Rezumat membri și acces",
+    "activeMembers": "Membri activi",
+    "activeMembersNote": "{active} utilizatori activi din {limit} disponibili. {pending} invitații în așteptare.",
+    "yourRole": "Rolul tău",
+    "accessibleCompanies": "Companii accesibile",
+    "accessibleCompaniesNote": "Ai acces la {count} companii în total.",
+    "noMembership": "Nu există un rol în compania activă.",
+    "membersTitle": "Membrii companiei",
+    "inviteMember": "Invită membru",
+    "tableRegion": "Membrii companiei",
+    "table": {"user": "UTILIZATOR", "email": "EMAIL", "role": "ROL", "status": "STATUS", "actions": "ACȚIUNI"},
+    "you": "Tu",
+    "memberActions": "Acțiuni pentru {name} — indisponibile în demonstrație",
+    "membersCount": "Afișez 1 – {count} din {count} membri",
+    "roleSectionTitle": "Despre roluri și permisiuni",
+    "roles": {"administrator": "Administrator", "reviewer": "Reviewer", "viewer": "Viewer"},
+    "roleDescriptions": {
+      "administrator": "Gestionează membrii și compania. Are acces complet la toate funcționalitățile.",
+      "reviewer": "Verifică și aprobă documente. Poate gestiona cerințele furnizorilor.",
+      "viewer": "Doar vizualizare. Poate consulta documentele și rapoartele."
+    },
+    "statuses": {"active": "Activ", "invited": "Invitație trimisă"},
+    "drawer": {
+      "title": "Invită membru",
+      "description": "Adaugă un nou membru în companie și setează nivelul de acces.",
+      "close": "Închide invitația",
+      "name": "Nume complet",
+      "email": "Adresă de email",
+      "company": "Companie",
+      "companyHelp": "Compania activă, precompletată pentru această invitație.",
+      "role": "Rol",
+      "subscriptionNoteTitle": "Abonamentul aparține companiei, nu utilizatorului.",
+      "subscriptionNote": "Membrii invitați vor avea acces la companie în funcție de rolul setat, în limita planului activ.",
+      "demoNotice": "Demonstrație locală: nu se trimite niciun email și nu se creează un cont.",
+      "cancel": "Anulează",
+      "submit": "Trimite invitația"
+    },
+    "validation": {
+      "nameRequired": "Introdu numele complet.",
+      "emailRequired": "Introdu adresa de email.",
+      "emailInvalid": "Introdu o adresă de email validă.",
+      "emailDuplicate": "Această adresă de email are deja un membru sau o invitație în compania activă.",
+      "roleRequired": "Selectează un rol."
+    }
   },
   "Dashboard": {
     "welcomeEyebrow": "BINE AI REVENIT ÎN DEBIRO",

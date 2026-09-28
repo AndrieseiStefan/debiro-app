@@ -1,0 +1,32 @@
+.panel {width: 420px;}
+.content {min-height: 100%; padding: 28px 28px 28px;}
+.content h2 {color: #142043; font-size: 25px; font-weight: 750; letter-spacing: -.035em; line-height: 1.2; padding-right: 30px;}
+.intro {color: #5271a0; font-size: 14px; line-height: 1.45; margin-top: 12px;}
+.form {display: flex; flex-direction: column; gap: 20px; min-height: calc(100dvh - 156px); margin-top: 29px; min-width: 0;}
+.form :global(input:not([type='radio'])) {font-size: 14px; height: 42px;}
+.roles {border: 0; min-width: 0; padding: 0;}
+.roles legend {color: #1d3256; font-size: 14px; font-weight: 650; margin-bottom: 8px;}
+.roles legend span, .error {color: #dc2440;}
+.roleOptions {border: 1px solid #d7e4f6; border-radius: 9px; display: grid; gap: 4px; padding: 5px;}
+.roleOption {align-items: center; border: 1px solid transparent; border-radius: 7px; cursor: pointer; display: grid; gap: 10px; grid-template-columns: 36px minmax(0, 1fr) 19px; min-height: 66px; padding: 8px; position: relative;}
+.roleOption[data-selected='true'] {background: #eaf3ff; border-color: #b9d6ff;}
+.roleOption input {inset: 0; opacity: 0; position: absolute; width: 100%;}
+.roleOption:focus-within {outline: 3px solid var(--color-focus); outline-offset: 1px;}
+.roleIcon {align-items: center; background: #e7f1ff; border-radius: 50%; color: #075ceb; display: flex; height: 36px; justify-content: center; width: 36px;}
+.roleIcon[data-role='reviewer'] {background: #f0ebff; color: #7425ef;}
+.roleIcon[data-role='viewer'] {background: #edf3fa; color: #31599e;}
+.roleCopy {display: grid; gap: 3px; min-width: 0;}
+.roleCopy strong {color: #152650; font-size: 13px;}
+.roleCopy small {color: #5676aa; font-size: 12px; line-height: 1.3;}
+.roleOption > svg {color: #075ceb;}
+.error {font-size: 12px; line-height: 1.4; margin-top: 6px;}
+.notice {align-items: start; background: #edf5ff; border-radius: 9px; color: #075ceb; display: flex; gap: 11px; padding: 12px;}
+.notice > svg {flex: 0 0 auto;}
+.notice p {display: grid; gap: 5px;}
+.notice strong {font-size: 12px; line-height: 1.3;}
+.notice span {color: #5272a2; font-size: 12px; line-height: 1.4;}
+.notice small {color: #416493; font-size: 11px; line-height: 1.35;}
+.actions {display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); margin-top: auto; padding-top: 12px;}
+.actions :global(button) {font-size: 13px; min-height: 46px; min-width: 0; padding-inline: 8px;}
+@media (max-width: 600px) {.panel {width: 100vw;}.content {padding: 24px 20px;}}
+@media (max-width: 375px) {.content {padding-inline: 16px;}.actions {grid-template-columns: minmax(0, 1fr);}}

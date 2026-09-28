@@ -24,7 +24,11 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   await page.waitForLoadState('networkidle');
   await page.evaluate(async () => { await document.fonts.ready; });
   if (action) {
-    if (action === 'notification-bell') {
+    if (action === 'invite-member') {
+      if (route !== '/company/settings/members' && route !== '/en/company/settings/members') throw new Error('Invite Member capture requires the Members & Access route.');
+      await page.getByRole('button', {name: route.startsWith('/en') ? 'Invite member' : 'Invită membru'}).click();
+      await expect(page.getByRole('dialog', {name: route.startsWith('/en') ? 'Invite member' : 'Invită membru'})).toBeVisible();
+    } else if (action === 'notification-bell') {
       await page.getByRole('button', {name: route.startsWith('/en') ? 'Notifications' : 'Notificări', exact: true}).click();
       await expect(page.getByRole('dialog', {name: route.startsWith('/en') ? 'Notifications' : 'Notificări'})).toBeVisible();
     } else if (action === 'invite-vendor') {

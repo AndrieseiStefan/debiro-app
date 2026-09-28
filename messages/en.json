@@ -232,7 +232,10 @@
       "requirements": "Requirements",
       "notifications": "Notifications",
       "reports": "Reports",
-      "settings": "Settings"
+      "settings": "Company settings",
+      "companyProfile": "Company profile",
+      "membersAccess": "Members & access",
+      "plansBilling": "Plan & billing"
     },
     "searchLabel": "Search suppliers, documents or requirements",
     "searchPlaceholder": "Search suppliers, documents or requirements...",
@@ -250,6 +253,57 @@
     "minutesAgo": "{count}m ago",
     "hoursAgo": "{count}h ago",
     "yesterday": "yesterday, {time}"
+  },
+  "CompanyMembers": {
+    "breadcrumbLabel": "Page navigation",
+    "title": "Members & access",
+    "description": "Administrators can invite members and manage access levels for the active company.",
+    "taxId": "Tax ID",
+    "trialDays": "Trial • {count} days remaining",
+    "summaryLabel": "Members and access summary",
+    "activeMembers": "Active members",
+    "activeMembersNote": "{active} active users of {limit} available. {pending} pending invitations.",
+    "yourRole": "Your role",
+    "accessibleCompanies": "Accessible companies",
+    "accessibleCompaniesNote": "You have access to {count} companies in total.",
+    "noMembership": "No role in the active company.",
+    "membersTitle": "Company members",
+    "inviteMember": "Invite member",
+    "tableRegion": "Company members",
+    "table": {"user": "USER", "email": "EMAIL", "role": "ROLE", "status": "STATUS", "actions": "ACTIONS"},
+    "you": "You",
+    "memberActions": "Actions for {name} — unavailable in the demo",
+    "membersCount": "Showing 1–{count} of {count} members",
+    "roleSectionTitle": "About roles and permissions",
+    "roles": {"administrator": "Administrator", "reviewer": "Reviewer", "viewer": "Viewer"},
+    "roleDescriptions": {
+      "administrator": "Manages members and the company. Has full access to all features.",
+      "reviewer": "Reviews and approves documents. Can manage supplier requirements.",
+      "viewer": "View only. Can consult documents and reports."
+    },
+    "statuses": {"active": "Active", "invited": "Invitation sent"},
+    "drawer": {
+      "title": "Invite member",
+      "description": "Add a new member to the company and set their access level.",
+      "close": "Close invitation",
+      "name": "Full name",
+      "email": "Email address",
+      "company": "Company",
+      "companyHelp": "The active company, prefilled for this invitation.",
+      "role": "Role",
+      "subscriptionNoteTitle": "The subscription belongs to the company, not the user.",
+      "subscriptionNote": "Invited members will have access to the company according to their assigned role, within the active plan.",
+      "demoNotice": "Local demo: no email is sent and no account is created.",
+      "cancel": "Cancel",
+      "submit": "Send invitation"
+    },
+    "validation": {
+      "nameRequired": "Enter the full name.",
+      "emailRequired": "Enter an email address.",
+      "emailInvalid": "Enter a valid email address.",
+      "emailDuplicate": "This email already has a member or invitation in the active company.",
+      "roleRequired": "Select a role."
+    }
   },
   "Dashboard": {
     "welcomeEyebrow": "WELCOME BACK TO DEBIRO",

@@ -47,6 +47,7 @@ The final logo is not yet designed and must not be invented.
 - E1-015 Add Vendor drawer from Vendors, using shared drawer mechanics with Invite Vendor and browser-memory vendors shown in the existing list/details screens; see [add vendor](../features/add-vendor.md)
 - E1-016 Add Document drawer from Vendor Details, using shared drawer mechanics, local file validation/metadata, exact-match demo extraction, and browser-memory document mapping into Vendor Details, Documents, and Review; see [add document](../features/add-document.md)
 - E1-017 bell notification preview in the authenticated shell, reusing E1-010 activity, with derived unread counts and browser-local mark-all-read state; see [notifications and audit](../features/notifications-audit.md)
+- E1-018 Company Settings > Members & Access at `/company/settings/members` and `/en/company/settings/members`, with company-scoped fixture memberships, an Invite Member drawer, and browser-local pending invitations; see [company members and access](../features/company-members-access.md)
 - Landing-page CTA alignment and visible brand casing standardized to `DEBIRO`; the three-mode responsive contract, shared centered 1350px page shell, shared 66px public header, stacked hero reflow, and boundary/safety viewport regression matrix are implemented in [UI foundation](../design/ui-foundation.md#page-shell-contract)
 
 ## Architecture decision

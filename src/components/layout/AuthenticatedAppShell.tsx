@@ -15,7 +15,7 @@ export function AuthenticatedAppShell({locale, currentPath, organizationName, us
   organizationName: string;
   userName: string;
   userInitials: string;
-  notificationCount: number;
+  notificationCount?: number;
   notificationItems?: NotificationActivityItem[];
   notificationReferenceTime?: string;
   children: ReactNode;

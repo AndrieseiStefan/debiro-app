@@ -1,0 +1,56 @@
+.page {display: grid; gap: 18px; min-width: 0; padding-bottom: 24px;}
+.page > :first-child {margin-bottom: 0;}
+.companySummary {align-items: center; display: flex; gap: 18px; min-height: 94px; min-width: 0; padding: 15px 18px;}
+.companyIcon {align-items: center; background: #e5f1ff; border-radius: 50%; color: #075ceb; display: flex; flex: 0 0 60px; height: 60px; justify-content: center;}
+.companyCopy {flex: 1 1 auto; min-width: 0;}
+.companyCopy h2 {color: #152044; font-size: 22px; letter-spacing: -.035em; line-height: 1.2;}
+.companyCopy p {color: #5975a4; display: flex; flex-wrap: wrap; font-size: 13px; gap: 11px; line-height: 1.4; margin-top: 4px;}
+.companyBadges {display: flex; flex: 0 0 auto; flex-wrap: wrap; gap: 12px; justify-content: flex-end;}
+.plan, .trial {align-items: center; border-radius: 999px; display: inline-flex; font-size: 13px; font-weight: 650; gap: 8px; padding: 8px 13px; white-space: nowrap;}
+.plan {background: #e9f3ff; color: #075ceb;}
+.trial {background: #fff0d7; color: #d67c00;}
+.summaryGrid {display: grid; gap: 16px; grid-template-columns: repeat(3, minmax(0, 1fr)); min-width: 0;}
+.summaryCard {align-items: start; display: grid; gap: 14px; grid-template-columns: 50px minmax(0, 1fr); min-height: 128px; padding: 17px;}
+.summaryCard > div {min-width: 0;}
+.summaryIcon {align-items: center; border-radius: 50%; display: flex; height: 50px; justify-content: center; width: 50px;}
+.summaryIcon[data-tone='blue'] {background: #e8f2ff; color: #075ceb;}
+.summaryIcon[data-tone='green'] {background: #def8ed; color: #0aa477;}
+.summaryCard h2 {color: #385e9d; font-size: 13px; font-weight: 650; line-height: 1.3;}
+.summaryCard strong {color: #132144; display: block; font-size: 25px; letter-spacing: -.04em; line-height: 1.18; margin-top: 2px; overflow-wrap: anywhere;}
+.summaryCard p {color: #5d79a7; font-size: 12px; line-height: 1.35; margin-top: 8px;}
+.membersPanel {min-width: 0; overflow: hidden; padding: 0;}
+.membersHeading {align-items: center; display: flex; gap: 12px; justify-content: space-between; padding: 18px 20px 15px;}
+.membersHeading h2 {color: #132144; font-size: 22px; letter-spacing: -.03em;}
+.membersHeading :global(button) {font-size: 13px; min-height: 44px; padding-inline: 16px;}
+.tableScroll {max-width: 100%; overflow-x: auto; scrollbar-width: thin;}
+.table {border-collapse: collapse; min-width: 730px; table-layout: auto; width: 100%;}
+.table th {background: #f1f6fd; border-block: 1px solid #e1eaf6; color: #4c70a2; font-size: 11px; font-weight: 650; padding: 13px 17px; text-align: left; white-space: nowrap;}
+.table td {border-bottom: 1px solid #e1eaf6; color: #4f6e9e; font-size: 12px; padding: 11px 17px; white-space: nowrap;}
+.table td:first-child {color: #172b51;}
+.memberIdentity {align-items: center; display: flex; gap: 10px;}
+.memberIdentity strong {font-size: 12px;}
+.avatar {align-items: center; background: #e6f1ff; border-radius: 50%; color: #075ceb; display: flex; flex: 0 0 40px; font-size: 13px; font-weight: 700; height: 40px; justify-content: center;}
+.avatar[data-role='reviewer'] {background: #ffe6ef; color: #ee315e;}
+.avatar[data-role='viewer'] {background: #dff8eb; color: #0a9d72;}
+.you {background: #e9f2ff; border-radius: 5px; color: #075ceb; font-size: 11px; font-weight: 650; padding: 3px 6px;}
+.roleBadge, .status {align-items: center; display: inline-flex; font-size: 12px; gap: 7px;}
+.roleBadge {background: #eaf3ff; border-radius: 99px; color: #075ceb; font-weight: 650; padding: 6px 9px;}
+.roleBadge[data-role='reviewer'] {background: #f0ebff; color: #6723e9;}
+.roleBadge[data-role='viewer'] {background: #eef3fa; color: #31599e;}
+.status[data-status='active'] {color: #0a9c69;}
+.status[data-status='invited'] {color: #e08000;}
+.more {background: transparent; border: 0; color: #315a91; cursor: default; padding: 4px;}
+.tableFooter {color: #6682af; font-size: 12px; padding: 14px 20px;}
+.roleExplanation {min-width: 0; padding: 16px 20px 18px;}
+.roleExplanation > h2 {align-items: center; color: #0753c5; display: flex; font-size: 14px; gap: 10px;}
+.roleGrid {display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 12px;}
+.roleInfo {align-items: start; display: grid; gap: 12px; grid-template-columns: 42px minmax(0, 1fr); min-width: 0; padding: 7px 16px;}
+.roleInfo:not(:last-child) {border-right: 1px solid #dfe9f8;}
+.roleIcon {align-items: center; background: #e8f2ff; border-radius: 50%; color: #075ceb; display: flex; height: 40px; justify-content: center; width: 40px;}
+.roleIcon[data-role='reviewer'] {background: #f0ebff; color: #6723e9;}
+.roleIcon[data-role='viewer'] {background: #eef3fa; color: #31599e;}
+.roleInfo h3 {color: #192a4e; font-size: 13px;}
+.roleInfo p {color: #607cac; font-size: 12px; line-height: 1.4; margin-top: 5px;}
+@media (max-width: 1199px) {.companySummary {flex-wrap: wrap;}.companyBadges {justify-content: flex-start;}.summaryGrid {gap: 10px;}.summaryCard {gap: 10px; padding: 14px;}.roleGrid {grid-template-columns: minmax(0, 1fr);}.roleInfo:not(:last-child) {border-bottom: 1px solid #dfe9f8; border-right: 0;}}
+@media (max-width: 800px) {.summaryGrid {grid-template-columns: repeat(auto-fit, minmax(min(100%, 215px), 1fr));}.companySummary {gap: 12px;}}
+@media (max-width: 600px) {.companySummary {align-items: start;}.companyIcon {flex-basis: 48px; height: 48px;}.companyCopy h2 {font-size: 19px;}.companyBadges {flex-basis: 100%;}.membersHeading {align-items: stretch; flex-direction: column;}.membersHeading :global(button) {width: 100%;}.summaryGrid {grid-template-columns: minmax(0, 1fr);}}
