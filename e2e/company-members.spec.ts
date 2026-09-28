@@ -89,6 +89,32 @@ test('company settings trigger keeps its full rounded geometry in each disclosur
   }
 });
 
+test('company settings trigger matches the standard desktop primary item width', async ({page}) => {
+  await page.setViewportSize({width: 1448, height: 1086});
+  await page.goto('/company/settings/members');
+  const navigation = page.getByRole('navigation', {name: 'Navigare în aplicație'});
+  const reports = navigation.getByRole('button', {name: 'Rapoarte'});
+  const settings = navigation.getByRole('button', {name: 'Setări companie'});
+
+  async function expectMatchingGeometry() {
+    const reportBounds = (await reports.boundingBox())!;
+    const settingsBounds = (await settings.boundingBox())!;
+    expect(settingsBounds.x).toBeCloseTo(reportBounds.x, 1);
+    expect(settingsBounds.width).toBeCloseTo(reportBounds.width, 1);
+    expect(settingsBounds.height).toBeCloseTo(reportBounds.height, 1);
+    expect(settingsBounds.x + settingsBounds.width).toBeCloseTo(reportBounds.x + reportBounds.width, 1);
+  }
+
+  await expectMatchingGeometry();
+  await navigation.getByRole('link', {name: 'Documente'}).click();
+  await expect(page).toHaveURL(/\/documents$/);
+  await expect(settings).toHaveAttribute('aria-expanded', 'true');
+  await expectMatchingGeometry();
+  await settings.click();
+  await expect(settings).toHaveAttribute('aria-expanded', 'false');
+  await expectMatchingGeometry();
+});
+
 test('invitation validates fields, rejects same-company duplicates, and survives client navigation', async ({page}) => {
   await page.goto('/company/settings/members');
   await page.getByRole('button', {name: 'Invită membru'}).click();
