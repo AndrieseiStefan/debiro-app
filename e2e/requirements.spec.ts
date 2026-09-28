@@ -65,6 +65,8 @@ test('creates a company-scoped template with catalog and custom documents', asyn
   const drawer = page.getByRole('dialog', {name: 'Adaugă document'});
   await expect(drawer).toBeVisible();
   await expect(drawer.getByRole('button', {name: 'Din sugestii'})).toHaveAttribute('aria-pressed', 'true');
+  await expect(drawer.getByRole('group', {name: 'Sursă document'})).toBeVisible();
+  await expect(drawer.getByText('Sursă document')).toHaveCount(0);
   await expect(drawer.getByRole('textbox', {name: 'Nume document'})).toHaveCount(0);
   await drawer.getByRole('searchbox', {name: 'Caută document'}).fill('fiscal');
   await expect(drawer.getByRole('button', {name: /Certificat fiscal/})).toBeVisible();
@@ -76,6 +78,8 @@ test('creates a company-scoped template with catalog and custom documents', asyn
 
   await page.getByRole('button', {name: 'Adaugă document'}).first().click();
   await drawer.getByRole('button', {name: 'Document personalizat'}).click();
+  await expect(drawer.getByRole('group', {name: 'Sursă document'})).toBeVisible();
+  await expect(drawer.getByText('Sursă document')).toHaveCount(0);
   await drawer.getByRole('textbox', {name: /Nume document/}).fill('  Aviz   tehnic QA  ');
   await drawer.getByRole('textbox', {name: /Emitent \/ Autoritate/}).fill('Primărie');
   await drawer.getByRole('combobox', {name: 'Alertă expirare'}).selectOption('60');

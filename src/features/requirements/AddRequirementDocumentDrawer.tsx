@@ -55,7 +55,7 @@ export function AddRequirementDocumentDrawer({phase, onClose, onExited, triggerR
     <h2 id="requirement-document-title">{common('addDocument')}</h2>
     <p id="requirement-document-description" className={styles.intro}>{mode === 'suggestions' ? t('suggestionsIntro') : t('customIntro')}</p>
     <form onSubmit={submit} noValidate className={styles.form}>
-      <fieldset className={styles.sources}><legend className={mode === 'suggestions' ? styles.srOnly : undefined}>{t('source')}</legend><div className={styles.sourceChoices}>
+      <fieldset className={styles.sources} aria-label={t('source')}><div className={styles.sourceChoices}>
         <button type="button" className={styles.source} aria-pressed={mode === 'suggestions'} onClick={() => changeMode('suggestions')}><AppIcon name="search" size={18}/>{t('suggestions')}</button>
         <button type="button" className={styles.source} aria-pressed={mode === 'custom'} onClick={() => changeMode('custom')}><AppIcon name="file" size={18}/>{t('custom')}</button>
       </div></fieldset>

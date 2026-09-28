@@ -5,7 +5,6 @@
 .intro {color: #5d78a6; font-size: 14px; line-height: 1.45; margin: 5px 0 20px;}
 .form {display: flex; flex: 1; flex-direction: column; min-height: 0;}
 .sources {border: 0; margin: 0 0 16px; min-width: 0; padding: 0;}
-.sources legend {color: #192a4e; font-size: 14px; font-weight: 700; margin-bottom: 9px;}
 .sourceChoices {display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));}
 .source {align-items: center; background: #fff; border: 1px solid #d3e2f8; color: #47618a; cursor: pointer; display: flex; font-size: 13px; gap: 8px; justify-content: center; min-height: 43px; padding: 7px 8px; white-space: nowrap;}
 .source:first-child {border-radius: 7px 0 0 7px;}
