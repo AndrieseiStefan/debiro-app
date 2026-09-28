@@ -4,6 +4,7 @@ import {useId, useLayoutEffect, useRef, useState} from 'react';
 import {useTranslations} from 'next-intl';
 import {Link} from '@/i18n/navigation';
 import {getActiveCompany, getCurrentMembership, currentUser, switchActiveCompany, useCompanyState} from '@/features/companies/company-state';
+import {RoleBadge} from '@/features/company-settings/RoleVisual';
 import {AppIcon} from './AppIcon';
 import sidebar from './AppSidebar.module.css';
 import styles from './CompanySwitcher.module.css';
@@ -74,7 +75,7 @@ export function CompanySwitcher() {
           const isActive = record.company.id === snapshot.activeCompanyId;
           return <button ref={index === 0 ? firstCompanyRef : undefined} type="button" key={record.company.id} aria-pressed={isActive} className={styles.company} onClick={() => {switchActiveCompany(record.company.id); setOpen(false); triggerRef.current?.focus({preventScroll: true});}}>
             <span className={styles.companyAvatar} aria-hidden="true">{record.company.name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toLocaleUpperCase()}</span>
-            <span className={styles.companyCopy}><strong>{record.company.name}</strong><small>{membership ? roles(`roles.${membership.role}`) : '—'}</small></span>
+            <span className={styles.companyCopy}><strong>{record.company.name}</strong>{membership ? <RoleBadge role={membership.role} label={roles(`roles.${membership.role}`)} className={styles.role} iconSize={13}/> : <small>—</small>}</span>
             {isActive && <AppIcon name="check" size={18}/>}
           </button>;
         })}

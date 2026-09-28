@@ -7,6 +7,7 @@ import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
 import {AuthenticatedPageHeader} from '@/components/layout/AuthenticatedPageHeader';
 import {Button} from '@/components/ui/Button';
 import {Surface} from '@/components/ui/Surface';
+import {RoleBadge} from '@/features/company-settings/RoleVisual';
 import {createCompany, currentUser, getCurrentMembership, switchActiveCompany, useCompanyState, type CompanyIndustry} from './company-state';
 import styles from './MyCompaniesPage.module.css';
 
@@ -68,7 +69,7 @@ export function MyCompaniesPage({locale}: {locale: string}) {
                     <h3>{record.company.name}</h3>
                     <p>{t('taxId')}: {record.company.taxId}<span aria-hidden="true">|</span>{record.company.industry[locale === 'en' ? 'en' : 'ro']}</p>
                     <div className={styles.badges}>
-                      {membership && <span className={styles.role}><AppIcon name="shield" size={16}/>{roles(`roles.${membership.role}`)}</span>}
+                      {membership && <RoleBadge role={membership.role} label={roles(`roles.${membership.role}`)} iconSize={16}/>}
                       <span className={styles.plan}><AppIcon name="crown" size={17}/>{record.company.subscription.plan}</span>
                     </div>
                   </div>

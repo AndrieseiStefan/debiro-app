@@ -2,14 +2,14 @@
 
 import {useState, type FormEvent, type RefObject} from 'react';
 import {useTranslations} from 'next-intl';
-import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
+import {AppIcon} from '@/components/layout/AppIcon';
 import {Button} from '@/components/ui/Button';
 import {Drawer, type DrawerPhase} from '@/components/ui/Drawer';
 import {Field} from '@/components/ui/Field';
 import {companyRoles, type CompanyMembership, type CompanyRole} from './types';
+import {RoleIcon} from './RoleVisual';
 import styles from './InviteMemberDrawer.module.css';
 
-const roleIcons: Record<CompanyRole, AppIconName> = {administrator: 'crown', reviewer: 'shield', viewer: 'eye'};
 type Errors = Partial<Record<'name' | 'email' | 'role', string>>;
 
 export function InviteMemberDrawer({phase, onClose, onExited, triggerRef, company, members, onInvite}: {
@@ -58,7 +58,7 @@ export function InviteMemberDrawer({phase, onClose, onExited, triggerRef, compan
         <legend>{t('drawer.role')} <span aria-hidden="true">*</span></legend>
         <div className={styles.roleOptions}>{companyRoles.map((option) => <label key={option} className={styles.roleOption} data-selected={role === option}>
           <input id={`invite-member-${option}`} type="radio" name="invite-member-role" value={option} checked={role === option} onChange={() => {setRole(option); setErrors((current) => ({...current, role: undefined}));}} required/>
-          <span className={styles.roleIcon} data-role={option}><AppIcon name={roleIcons[option]} size={20}/></span>
+          <RoleIcon role={option} size={20} diameter={36}/>
           <span className={styles.roleCopy}><strong>{t(`roles.${option}`)}</strong><small>{t(`roleDescriptions.${option}`)}</small></span>
           {role === option && <AppIcon name="check" size={19}/>}
         </label>)}</div>

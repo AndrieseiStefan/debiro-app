@@ -131,3 +131,71 @@ test('English routes and responsive layouts remain contained', async ({page}) =>
     await expect(switcher.getByRole('link', {name: 'View all companies'})).toBeVisible();
   }
 });
+
+test('membership roles keep one icon and semantic color across company surfaces', async ({page}) => {
+  const color = (selector: ReturnType<typeof page.locator>) => selector.evaluate((node) => getComputedStyle(node).color);
+  await page.goto('/profile/companies');
+  const cards = page.locator('[data-company-id]');
+  const adminBadge = cards.nth(0).locator('[data-role="administrator"]');
+  const reviewerBadge = cards.nth(1).locator('[data-role="reviewer"]');
+  await expect(adminBadge).toContainText('Administrator');
+  await expect(reviewerBadge).toContainText('Reviewer');
+  const adminColor = await color(adminBadge);
+  const reviewerColor = await color(reviewerBadge);
+  const adminIcon = await adminBadge.locator('svg').innerHTML();
+  const reviewerIcon = await reviewerBadge.locator('svg').innerHTML();
+  expect(adminColor).not.toBe(reviewerColor);
+  expect(adminIcon).not.toBe(reviewerIcon);
+
+  await page.getByRole('button', {name: 'Profil utilizator: Andrei Popescu'}).click();
+  await expect(page.getByRole('dialog', {name: 'Meniu profil'}).locator('[data-role="administrator"]')).toHaveCSS('color', adminColor);
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', {name: 'Demo Company SRL', exact: true}).click();
+  await expect(page.getByRole('dialog', {name: 'Schimbă compania'}).locator('[data-role="administrator"]')).toHaveCSS('color', adminColor);
+  await expect(page.getByRole('dialog', {name: 'Schimbă compania'}).locator('[data-role="reviewer"]')).toHaveCSS('color', reviewerColor);
+  await page.keyboard.press('Escape');
+
+  await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('button', {name: 'Setări companie'}).click();
+  await page.getByRole('link', {name: 'Membri și acces'}).click();
+  const roleCard = page.getByText('Rolul tău', {exact: true}).locator('..').locator('..');
+  await expect(roleCard.locator('[data-role="administrator"]')).toHaveCSS('color', adminColor);
+  expect(await roleCard.locator('[data-role="administrator"] svg').innerHTML()).toBe(adminIcon);
+  await expect(page.getByRole('row', {name: /Andrei Popescu/}).locator('[data-role="administrator"]')).toHaveCSS('color', adminColor);
+  await expect(page.getByRole('row', {name: /Ioana Radu/}).locator('[data-role="reviewer"]')).toHaveCSS('color', reviewerColor);
+  const explainedRoles = page.getByText('Despre roluri și permisiuni').locator('..').locator('[data-role]');
+  await expect(explainedRoles).toHaveCount(3);
+  await expect(explainedRoles.nth(2)).toHaveAttribute('data-role', 'viewer');
+  expect(await color(explainedRoles.nth(2))).not.toBe(adminColor);
+  await page.getByRole('button', {name: 'Invită membru'}).click();
+  const roleOptions = page.getByRole('dialog', {name: 'Invită membru'}).locator('[data-role]');
+  await expect(roleOptions).toHaveCount(3);
+  await expect(roleOptions.nth(0)).toHaveCSS('color', adminColor);
+  await expect(roleOptions.nth(1)).toHaveCSS('color', reviewerColor);
+  await page.keyboard.press('Escape');
+
+  await page.getByRole('button', {name: 'Demo Company SRL', exact: true}).click();
+  await page.getByRole('dialog', {name: 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
+  await expect(roleCard.locator('[data-role="reviewer"]')).toHaveCSS('color', reviewerColor);
+  await page.getByRole('button', {name: 'Profil utilizator: Andrei Popescu'}).click();
+  await expect(page.getByRole('dialog', {name: 'Meniu profil'}).locator('[data-role="reviewer"]')).toHaveCSS('color', reviewerColor);
+});
+
+test('Create Company actions remain readable and reflow at constrained widths', async ({page}) => {
+  for (const width of [1448, 1024, 997, 853, 758, 600, 375, 320]) {
+    await page.setViewportSize({width, height: 900});
+    await page.goto('/profile/companies');
+    const cancel = page.getByRole('button', {name: 'Anulează'});
+    const create = page.getByRole('button', {name: 'Creează compania'});
+    await expect(cancel).toBeVisible();
+    await expect(create).toBeVisible();
+    const metrics = await create.evaluate((node) => ({clientWidth: node.clientWidth, scrollWidth: node.scrollWidth, text: node.textContent?.trim()}));
+    expect(metrics.text).toContain('Creează compania');
+    expect(metrics.scrollWidth, `${width}px CTA clips`).toBeLessThanOrEqual(metrics.clientWidth);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth), `${width}px page overflows`).toBeLessThanOrEqual(width);
+    const cancelBox = await cancel.boundingBox();
+    const createBox = await create.boundingBox();
+    expect(cancelBox).not.toBeNull();
+    expect(createBox).not.toBeNull();
+    expect(createBox!.x >= cancelBox!.x + cancelBox!.width || createBox!.y >= cancelBox!.y + cancelBox!.height, `${width}px actions overlap`).toBe(true);
+  }
+});

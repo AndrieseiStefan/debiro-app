@@ -11,6 +11,7 @@
 .companyCopy {display: grid; flex: 1 1 auto; gap: 3px; min-width: 0;}
 .companyCopy strong {font-size: 12px; line-height: 1.25; overflow-wrap: anywhere;}
 .companyCopy small {color: #6d84a7; font-size: 11px;}
+.role {font-size: 11px; justify-self: start; padding: 3px 6px;}
 .company > svg {color: #075de0; flex: 0 0 auto;}
 .empty {color: #697fa0; font-size: 12px; padding: 10px 15px 18px;}
 .footer {align-items: center; border-top: 1px solid #e8eef7; color: #1b467f; display: flex; font-size: 12px; gap: 10px; min-height: 45px; padding: 9px 16px; text-decoration: none;}

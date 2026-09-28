@@ -12,9 +12,6 @@
 .roleOption[data-selected='true'] {background: #eaf3ff; border-color: #b9d6ff;}
 .roleOption input {inset: 0; opacity: 0; position: absolute; width: 100%;}
 .roleOption:focus-within {outline: 3px solid var(--color-focus); outline-offset: 1px;}
-.roleIcon {align-items: center; background: #e7f1ff; border-radius: 50%; color: #075ceb; display: flex; height: 36px; justify-content: center; width: 36px;}
-.roleIcon[data-role='reviewer'] {background: #f0ebff; color: #7425ef;}
-.roleIcon[data-role='viewer'] {background: #edf3fa; color: #31599e;}
 .roleCopy {display: grid; gap: 3px; min-width: 0;}
 .roleCopy strong {color: #152650; font-size: 13px;}
 .roleCopy small {color: #5676aa; font-size: 12px; line-height: 1.3;}

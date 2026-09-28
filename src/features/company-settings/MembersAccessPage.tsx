@@ -2,7 +2,7 @@
 
 import {useCallback, useRef, useState} from 'react';
 import {useTranslations} from 'next-intl';
-import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
+import {AppIcon} from '@/components/layout/AppIcon';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
 import {AuthenticatedBreadcrumbs} from '@/components/layout/AuthenticatedBreadcrumbs';
 import {AuthenticatedPageHeader} from '@/components/layout/AuthenticatedPageHeader';
@@ -12,11 +12,11 @@ import {getActiveCompany, useCompanyState} from '@/features/companies/company-st
 import type {DrawerPhase} from '@/components/ui/Drawer';
 import {createLocalInvitation, useLocalInvitations} from './local-invitations';
 import {getCompanyMembershipSummary} from './membership-summary';
+import {RoleBadge, RoleIcon} from './RoleVisual';
 import {InviteMemberDrawer} from './InviteMemberDrawer';
 import {companyRoles, type CompanyMembership, type CompanyRole, type CompanySettingsViewModel} from './types';
 import styles from './MembersAccessPage.module.css';
 
-const roleIcons: Record<CompanyRole, AppIconName> = {administrator: 'crown', reviewer: 'shield', viewer: 'eye'};
 
 function initials(name: string) {
   return name.split(/\s+/).filter(Boolean).map((part) => part[0]).join('').slice(0, 2).toLocaleUpperCase();
@@ -45,9 +45,9 @@ export function MembersAccessPage({locale, view: initialView}: {locale: string; 
 
   function memberRow(member: CompanyMembership) {
     return <tr key={member.id} data-member-id={member.id}>
-      <td><span className={styles.memberIdentity}><span className={styles.avatar} data-role={member.role}>{initials(member.fullName)}</span><strong>{member.fullName}</strong>{member.isCurrentUser && <span className={styles.you}>{t('you')}</span>}</span></td>
+      <td><span className={styles.memberIdentity}><span className={styles.avatar}>{initials(member.fullName)}</span><strong>{member.fullName}</strong>{member.isCurrentUser && <span className={styles.you}>{t('you')}</span>}</span></td>
       <td>{member.email}</td>
-      <td><span className={styles.roleBadge} data-role={member.role}><AppIcon name={roleIcons[member.role]} size={17}/>{t(`roles.${member.role}`)}</span></td>
+      <td><RoleBadge role={member.role} label={t(`roles.${member.role}`)}/></td>
       <td><span className={styles.status} data-status={member.status}><AppIcon name={member.status === 'active' ? 'check' : 'clock'} size={17}/>{t(`statuses.${member.status}`)}</span></td>
       <td><button type="button" aria-disabled="true" aria-label={t('memberActions', {name: member.fullName})} className={styles.more}><AppIcon name="more" size={19}/></button></td>
     </tr>;
@@ -65,7 +65,7 @@ export function MembersAccessPage({locale, view: initialView}: {locale: string; 
 
       <section className={styles.summaryGrid} aria-label={t('summaryLabel')}>
         <Surface className={styles.summaryCard}><span className={styles.summaryIcon} data-tone="blue"><AppIcon name="users" size={25}/></span><div><h2>{t('activeMembers')}</h2><strong>{activeCount}/{view.company.subscription.seatLimit}</strong><p>{t('activeMembersNote', {active: activeCount, pending: pendingCount, limit: view.company.subscription.seatLimit})}</p></div></Surface>
-        <Surface className={styles.summaryCard}><span className={styles.summaryIcon} data-tone="green"><AppIcon name="shield" size={25}/></span><div><h2>{t('yourRole')}</h2><strong>{currentMembership ? t(`roles.${currentMembership.role}`) : '—'}</strong><p>{currentMembership ? t(`roleDescriptions.${currentMembership.role}`) : t('noMembership')}</p></div></Surface>
+        <Surface className={styles.summaryCard}>{currentMembership ? <RoleIcon role={currentMembership.role} size={25} diameter={50}/> : <span className={styles.summaryIcon} data-tone="blue"><AppIcon name="user" size={25}/></span>}<div><h2>{t('yourRole')}</h2><strong>{currentMembership ? t(`roles.${currentMembership.role}`) : '—'}</strong><p>{currentMembership ? t(`roleDescriptions.${currentMembership.role}`) : t('noMembership')}</p></div></Surface>
         <Surface className={styles.summaryCard}><span className={styles.summaryIcon} data-tone="blue"><AppIcon name="building" size={25}/></span><div><h2>{t('accessibleCompanies')}</h2><strong>{companyState.companies.length}</strong><p>{t('accessibleCompaniesNote', {count: companyState.companies.length})}</p></div></Surface>
       </section>
 
@@ -75,7 +75,7 @@ export function MembersAccessPage({locale, view: initialView}: {locale: string; 
         <p className={styles.tableFooter}>{t('membersCount', {count: members.length})}</p>
       </Surface>
 
-      <Surface className={styles.roleExplanation}><h2><AppIcon name="info" size={22}/>{t('roleSectionTitle')}</h2><div className={styles.roleGrid}>{companyRoles.map((role) => <div key={role} className={styles.roleInfo}><span className={styles.roleIcon} data-role={role}><AppIcon name={roleIcons[role]} size={23}/></span><div><h3>{t(`roles.${role}`)}</h3><p>{t(`roleDescriptions.${role}`)}</p></div></div>)}</div></Surface>
+      <Surface className={styles.roleExplanation}><h2><AppIcon name="info" size={22}/>{t('roleSectionTitle')}</h2><div className={styles.roleGrid}>{companyRoles.map((role) => <div key={role} className={styles.roleInfo}><RoleIcon role={role}/><div><h3>{t(`roles.${role}`)}</h3><p>{t(`roleDescriptions.${role}`)}</p></div></div>)}</div></Surface>
     </div>
     {drawerPhase && <InviteMemberDrawer phase={drawerPhase} onClose={closeDrawer} onExited={drawerExited} triggerRef={inviteTriggerRef} company={view.company} members={members} onInvite={invite}/>}
   </AuthenticatedAppShell>;

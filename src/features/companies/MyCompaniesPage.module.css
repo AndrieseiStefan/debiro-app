@@ -20,8 +20,7 @@
 .companyInfo h3 {color: #132044; font-size: 18px; letter-spacing: -.025em; overflow-wrap: anywhere;}
 .companyInfo p {color: #5b78aa; display: flex; flex-wrap: wrap; font-size: 12px; gap: 10px; line-height: 1.4; margin-top: 3px; overflow-wrap: anywhere;}
 .badges {display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;}
-.role, .plan, .active {align-items: center; border-radius: 999px; display: inline-flex; font-size: 12px; font-weight: 700; gap: 6px; padding: 6px 10px; white-space: nowrap;}
-.role {background: #efeaff; color: #6630d4;}
+.plan, .active {align-items: center; border-radius: 999px; display: inline-flex; font-size: 12px; font-weight: 700; gap: 6px; padding: 6px 10px; white-space: nowrap;}
 .plan {background: #e8f2ff; color: #075cde;}
 .active {background: #def8ed; color: #079769;}
 .active > span {background: currentColor; border-radius: 50%; height: 7px; width: 7px;}
@@ -47,8 +46,8 @@
 .error {color: #c92542; font-size: 12px; line-height: 1.4;}
 .createNotice {align-items: center; background: #eff7ff; border: 1px solid #d5e7fd; border-radius: 6px; color: #5f82bc; display: flex; font-size: 12px; gap: 8px; line-height: 1.35; padding: 8px 10px;}
 .createNotice svg {color: #075deb; flex: 0 0 auto;}
-.formActions {display: grid; gap: 10px; grid-template-columns: 1fr 1.25fr;}
-.formActions :global(button) {min-width: 0;}
+.formActions {display: flex; flex-wrap: wrap; gap: 10px;}
+.formActions :global(button) {flex: 1 0 max-content; white-space: nowrap;}
 .howPanel ol {display: grid; gap: 12px; list-style: none; margin: 12px 0 0; padding: 0;}
 .howPanel li {align-items: start; display: grid; gap: 12px; grid-template-columns: 42px minmax(0, 1fr);}
 .howPanel li > span {align-items: center; background: #e8f2ff; border-radius: 50%; color: #075deb; display: flex; font-size: 19px; font-weight: 800; height: 42px; justify-content: center;}
@@ -57,4 +56,4 @@
 @media (max-width: 1199px) {.columns {grid-template-columns: minmax(0, 1fr);}.sideColumn {grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);}}
 @media (max-width: 800px) {.sideColumn {grid-template-columns: minmax(0, 1fr);}}
 @media (max-width: 600px) {.companyCard {grid-template-columns: 44px minmax(0, 1fr); gap: 11px; padding: 13px;}.companyIcon {height: 44px; width: 44px;}.cardActions {align-items: start; flex-direction: row-reverse; grid-column: 2; gap: 8px;}.companyInfo h3 {font-size: 16px;}.listHeading h2, .createPanel h2, .howPanel h2 {font-size: 20px;}.listPanel, .createPanel, .howPanel {padding: 15px;}}
-@media (max-width: 375px) {.formActions {grid-template-columns: minmax(0, 1fr);}.createTile {grid-template-columns: 44px minmax(0, 1fr) 16px; gap: 10px; padding: 12px;}.createTile > span:first-child {height: 44px; width: 44px;}.notice {padding: 12px;}}
+@media (max-width: 375px) {.createTile {grid-template-columns: 44px minmax(0, 1fr) 16px; gap: 10px; padding: 12px;}.createTile > span:first-child {height: 44px; width: 44px;}.notice {padding: 12px;}}

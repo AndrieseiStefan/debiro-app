@@ -5,6 +5,7 @@ import {useTranslations} from 'next-intl';
 import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
 import {Link} from '@/i18n/navigation';
 import {currentUser, getActiveCompany, getCurrentMembership, useCompanyState} from '@/features/companies/company-state';
+import {RoleBadge} from '@/features/company-settings/RoleVisual';
 import styles from './ProfileDropdown.module.css';
 
 // Desktop and compact controls are both mounted. This keeps their panels exclusive.
@@ -96,7 +97,7 @@ export function ProfileDropdown({compact, triggerClassName}: {
           <span className={styles.email}>{currentUser.email}</span>
         </div>
         <div className={styles.membership}>
-          {membership && <span className={styles.role}>{members(`roles.${membership.role}`)}</span>}
+          {membership && <RoleBadge role={membership.role} label={members(`roles.${membership.role}`)} className={styles.role} iconSize={13}/>}
           {activeCompany && <span>{t('inCompany', {company: activeCompany.company.name})}</span>}
         </div>
       </div>

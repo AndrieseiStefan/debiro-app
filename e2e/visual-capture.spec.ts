@@ -37,6 +37,11 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
     } else if (action === 'company-switcher') {
       await page.getByRole('button', {name: 'Demo Company SRL'}).click();
       await expect(page.getByRole('dialog', {name: route.startsWith('/en') ? 'Switch company' : 'Schimbă compania'})).toBeVisible();
+    } else if (action === 'company-reviewer') {
+      if (route !== '/company/settings/members' && route !== '/en/company/settings/members') throw new Error('Reviewer capture requires the Members & Access route.');
+      await page.getByRole('button', {name: 'Demo Company SRL'}).click();
+      await page.getByRole('dialog', {name: route.startsWith('/en') ? 'Switch company' : 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
+      await expect(page.getByRole('heading', {name: 'Global Clean Services'})).toBeVisible();
     } else if (action === 'invite-vendor') {
       await page.getByRole('button', {name: 'Invită furnizor'}).click();
       await expect(page.getByRole('dialog', {name: 'Invită furnizorul să încarce documentele'})).toBeVisible();

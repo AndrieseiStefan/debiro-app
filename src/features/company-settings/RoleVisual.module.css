@@ -1,0 +1,5 @@
+.tone[data-role='administrator'] {background: #e8f2ff; color: #075ceb;}
+.tone[data-role='reviewer'] {background: #f0ebff; color: #6723e9;}
+.tone[data-role='viewer'] {background: #eef3fa; color: #31599e;}
+.badge {align-items: center; border-radius: 999px; display: inline-flex; font-size: 12px; font-weight: 650; gap: 7px; padding: 6px 9px; white-space: nowrap;}
+.icon {align-items: center; border-radius: 50%; display: inline-flex; flex: 0 0 auto; justify-content: center;}

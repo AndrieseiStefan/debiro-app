@@ -14,7 +14,6 @@
 .summaryCard > div {min-width: 0;}
 .summaryIcon {align-items: center; border-radius: 50%; display: flex; height: 50px; justify-content: center; width: 50px;}
 .summaryIcon[data-tone='blue'] {background: #e8f2ff; color: #075ceb;}
-.summaryIcon[data-tone='green'] {background: #def8ed; color: #0aa477;}
 .summaryCard h2 {color: #385e9d; font-size: 13px; font-weight: 650; line-height: 1.3;}
 .summaryCard strong {color: #132144; display: block; font-size: 25px; letter-spacing: -.04em; line-height: 1.18; margin-top: 2px; overflow-wrap: anywhere;}
 .summaryCard p {color: #5d79a7; font-size: 12px; line-height: 1.35; margin-top: 8px;}
@@ -30,13 +29,8 @@
 .memberIdentity {align-items: center; display: flex; gap: 10px;}
 .memberIdentity strong {font-size: 12px;}
 .avatar {align-items: center; background: #e6f1ff; border-radius: 50%; color: #075ceb; display: flex; flex: 0 0 40px; font-size: 13px; font-weight: 700; height: 40px; justify-content: center;}
-.avatar[data-role='reviewer'] {background: #ffe6ef; color: #ee315e;}
-.avatar[data-role='viewer'] {background: #dff8eb; color: #0a9d72;}
 .you {background: #e9f2ff; border-radius: 5px; color: #075ceb; font-size: 11px; font-weight: 650; padding: 3px 6px;}
-.roleBadge, .status {align-items: center; display: inline-flex; font-size: 12px; gap: 7px;}
-.roleBadge {background: #eaf3ff; border-radius: 99px; color: #075ceb; font-weight: 650; padding: 6px 9px;}
-.roleBadge[data-role='reviewer'] {background: #f0ebff; color: #6723e9;}
-.roleBadge[data-role='viewer'] {background: #eef3fa; color: #31599e;}
+.status {align-items: center; display: inline-flex; font-size: 12px; gap: 7px;}
 .status[data-status='active'] {color: #0a9c69;}
 .status[data-status='invited'] {color: #e08000;}
 .more {background: transparent; border: 0; color: #315a91; cursor: default; padding: 4px;}
@@ -46,9 +40,6 @@
 .roleGrid {display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 12px;}
 .roleInfo {align-items: start; display: grid; gap: 12px; grid-template-columns: 42px minmax(0, 1fr); min-width: 0; padding: 7px 16px;}
 .roleInfo:not(:last-child) {border-right: 1px solid #dfe9f8;}
-.roleIcon {align-items: center; background: #e8f2ff; border-radius: 50%; color: #075ceb; display: flex; height: 40px; justify-content: center; width: 40px;}
-.roleIcon[data-role='reviewer'] {background: #f0ebff; color: #6723e9;}
-.roleIcon[data-role='viewer'] {background: #eef3fa; color: #31599e;}
 .roleInfo h3 {color: #192a4e; font-size: 13px;}
 .roleInfo p {color: #607cac; font-size: 12px; line-height: 1.4; margin-top: 5px;}
 @media (max-width: 1199px) {.companySummary {flex-wrap: wrap;}.companyBadges {justify-content: flex-start;}.summaryGrid {gap: 10px;}.summaryCard {gap: 10px; padding: 14px;}.roleGrid {grid-template-columns: minmax(0, 1fr);}.roleInfo:not(:last-child) {border-bottom: 1px solid #dfe9f8; border-right: 0;}}
