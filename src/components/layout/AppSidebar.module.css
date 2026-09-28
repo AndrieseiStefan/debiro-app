@@ -83,8 +83,7 @@
   flex: 0 0 auto;
 }
 
-.navItem[aria-disabled='true'],
-.accountCard[aria-disabled='true'] {
+.navItem[aria-disabled='true'] {
   cursor: default;
 }
 
@@ -138,6 +137,7 @@
   border: 1px solid #365273;
   border-radius: 11px;
   color: #eef5ff;
+  cursor: pointer;
   display: flex;
   gap: 9px;
   height: 84px;
@@ -146,6 +146,8 @@
   text-align: left;
   width: 100%;
 }
+.accountCard:hover, .accountCard[aria-expanded='true'] {border-color: #5585c5; background: rgb(31 82 142 / 55%);}
+.accountCard:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 2px;}
 
 .companyIcon {
   align-items: center;

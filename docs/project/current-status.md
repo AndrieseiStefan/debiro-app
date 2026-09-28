@@ -10,11 +10,11 @@
 
 **Domain strategy:** Single domain
 
-**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and all twenty approved fixture/browser-local canonical mockup states are implemented; backend/auth integrations are not.
+**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and all twenty-two approved fixture/browser-local canonical mockup states are implemented; backend/auth integrations are not.
 
 ## Design state
 
-Twenty approved product mockups are tracked in `docs/design/mockups/`. They are canonical contracts requiring:
+Twenty-two approved product mockups are tracked in `docs/design/mockups/`. They are canonical contracts requiring:
 
 - UI fidelity as close to 1:1 as technically practical
 - Interaction fidelity as close to 1:1 as technically practical
@@ -50,6 +50,7 @@ The final logo is not yet designed and must not be invented.
 - E1-018 Company Settings > Members & Access at `/company/settings/members` and `/en/company/settings/members`, with company-scoped fixture memberships, an Invite Member drawer, and browser-local pending invitations; see [company members and access](../features/company-members-access.md)
 - E1-019 Company Settings > Plan & Billing at `/company/settings/billing` and `/en/company/settings/billing`, reusing the active company's E1-018 membership counts for seat usage and showing fixture billing, payment, plan, and invoices without real payment operations; see [company plan and billing](../features/company-plan-billing.md)
 - E1-020 global-user profile dropdown in the authenticated shell, reusing the current-user, active-company membership, and accessible-company fixture data without fake destinations or logout; see [profile dropdown](../features/profile-dropdown.md)
+- E1-021/022 My Companies at `/profile/companies` and `/en/profile/companies`, a shared browser-memory accessible-company and active-workspace source, local company creation, and a sidebar company switcher; see [My Companies](../features/my-companies.md)
 - Landing-page CTA alignment and visible brand casing standardized to `DEBIRO`; the three-mode responsive contract, shared centered 1350px page shell, shared 66px public header, stacked hero reflow, and boundary/safety viewport regression matrix are implemented in [UI foundation](../design/ui-foundation.md#page-shell-contract)
 
 ## Architecture decision
@@ -70,4 +71,4 @@ TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to
 
 ## Next
 
-All twenty tracked canonical mockup states have fixture/browser-local implementations; product-owner visual approval remains pending. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).
+All twenty-two tracked canonical mockup states have fixture/browser-local implementations; product-owner visual approval remains pending. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).

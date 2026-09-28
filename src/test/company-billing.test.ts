@@ -24,7 +24,7 @@ describe('company billing membership summary', () => {
     const {company} = companySettingsFixture;
     expect(company.subscription.seatLimit).toBe(5);
     expect(company.subscription.billingProfile.legalName).toBe(company.name);
-    expect(company.subscription.paymentMethod.lastFour).toBe('4242');
+    expect(company.subscription.paymentMethod?.lastFour).toBe('4242');
     expect(company.subscription.invoices).toHaveLength(2);
     expect(companySettingsFixture.currentUser).not.toHaveProperty('subscription');
   });

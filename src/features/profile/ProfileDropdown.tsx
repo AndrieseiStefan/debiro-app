@@ -3,7 +3,8 @@
 import {useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore} from 'react';
 import {useTranslations} from 'next-intl';
 import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
-import type {CompanySettingsViewModel} from '@/features/company-settings/types';
+import {Link} from '@/i18n/navigation';
+import {currentUser, getActiveCompany, getCurrentMembership, useCompanyState} from '@/features/companies/company-state';
 import styles from './ProfileDropdown.module.css';
 
 // Desktop and compact controls are both mounted. This keeps their panels exclusive.
@@ -18,14 +19,15 @@ function setOpenProfile(id: string | null) {
   listeners.forEach((listener) => listener());
 }
 
-export function ProfileDropdown({profile, compact, triggerClassName}: {
-  profile: CompanySettingsViewModel;
+export function ProfileDropdown({compact, triggerClassName}: {
   compact: boolean;
   triggerClassName: string;
 }) {
   const t = useTranslations('ProfileMenu');
   const app = useTranslations('AppShell');
   const members = useTranslations('CompanyMembers');
+  const companyState = useCompanyState();
+  const activeCompany = getActiveCompany(companyState);
   const id = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -33,7 +35,7 @@ export function ProfileDropdown({profile, compact, triggerClassName}: {
   const activeId = useSyncExternalStore(subscribe, () => openProfileId, () => null);
   const open = activeId === id;
   const [position, setPosition] = useState({left: 0, top: 0, width: 0, maxHeight: 0});
-  const membership = profile.members.find((item) => item.companyId === profile.company.id && item.isCurrentUser && item.status === 'active');
+  const membership = activeCompany ? getCurrentMembership(activeCompany) : null;
 
   useEffect(() => () => {
     if (openProfileId === id) setOpenProfile(null);
@@ -78,29 +80,31 @@ export function ProfileDropdown({profile, compact, triggerClassName}: {
 
   const rows: {key: 'myProfile' | 'myCompanies' | 'myInvitations'; icon: AppIconName; count?: number}[] = [
     {key: 'myProfile', icon: 'user'},
-    {key: 'myCompanies', icon: 'building', count: profile.currentUser.accessibleCompanyCount},
+    {key: 'myCompanies', icon: 'building', count: companyState.companies.length},
     {key: 'myInvitations', icon: 'mail'}
   ];
 
   return <div className={styles.anchor}>
-    <button ref={triggerRef} type="button" className={triggerClassName} aria-label={`${app('profileLabel')}: ${profile.currentUser.fullName}`} aria-haspopup="dialog" aria-expanded={open} aria-controls={open ? id : undefined} onClick={() => setOpenProfile(open ? null : id)}>
-      <span>{profile.currentUser.initials}</span><AppIcon name="chevronDown" size={16} />
+    <button ref={triggerRef} type="button" className={triggerClassName} aria-label={`${app('profileLabel')}: ${currentUser.fullName}`} aria-haspopup="dialog" aria-expanded={open} aria-controls={open ? id : undefined} onClick={() => setOpenProfile(open ? null : id)}>
+      <span>{currentUser.initials}</span><AppIcon name="chevronDown" size={16} />
     </button>
     {open && <div ref={panelRef} id={id} role="dialog" aria-label={t('title')} className={styles.panel} style={{left: position.left, top: position.top, width: position.width, maxHeight: position.maxHeight}}>
       <div className={styles.header}>
-        <span className={styles.avatar} aria-hidden="true">{profile.currentUser.initials}</span>
+        <span className={styles.avatar} aria-hidden="true">{currentUser.initials}</span>
         <div className={styles.identity}>
-          <strong>{profile.currentUser.fullName}</strong>
-          <span className={styles.email}>{profile.currentUser.email}</span>
+          <strong>{currentUser.fullName}</strong>
+          <span className={styles.email}>{currentUser.email}</span>
         </div>
         <div className={styles.membership}>
           {membership && <span className={styles.role}>{members(`roles.${membership.role}`)}</span>}
-          <span>{t('inCompany', {company: profile.company.name})}</span>
+          {activeCompany && <span>{t('inCompany', {company: activeCompany.company.name})}</span>}
         </div>
       </div>
       <div className={styles.actions}>
-        {rows.map(({key, icon, count}, index) => <button key={key} ref={index === 0 ? firstActionRef : undefined} type="button" aria-disabled="true" className={styles.row}>
-          <AppIcon name={icon} size={19} /><span>{t(key)}</span>{count !== undefined && <span className={styles.count}>{count}</span>}
+        {rows.map(({key, icon, count}, index) => key === 'myCompanies' ? <Link key={key} href="/profile/companies" onClick={() => setOpenProfile(null)} className={styles.row}>
+          <AppIcon name={icon} size={19} /><span>{t(key)}</span><span className={styles.count}>{count}</span>
+        </Link> : <button key={key} ref={index === 0 ? firstActionRef : undefined} type="button" aria-disabled="true" className={styles.row}>
+          <AppIcon name={icon} size={19} /><span>{t(key)}</span>
         </button>)}
         <button type="button" aria-disabled="true" className={`${styles.row} ${styles.groupStart}`}>
           <AppIcon name="info" size={19} /><span>{t('help')}</span><AppIcon name="external" size={16} />

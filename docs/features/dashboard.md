@@ -1,6 +1,6 @@
 # Dashboard overview (E1-003)
 
-The directly accessible `/dashboard` and `/en/dashboard` routes implement the authenticated-looking overview from [mockup 03](../design/mockups/03-dashboard-overview.png). This is a fixture-backed E1 screen, not a signed-in product flow.
+The directly accessible `/dashboard` and `/en/dashboard` routes implement the authenticated-looking overview from [mockup 03](../design/mockups/03-dashboard-overview.png) for the default Demo Company workspace. This is a fixture-backed E1 screen, not a signed-in product flow. When another company is active, this route keeps its URL but shows a localized empty demo state rather than Demo Company figures.
 
 `DashboardPage` receives a typed `DashboardViewModel` from `src/features/dashboard/fixtures.ts`. The fixture supplies the greeting, organization, navigation badge count, four KPI values, document rows, supplier-status values, and recent activity. Counts and percentages are presentation samples, not a persisted domain or compliance calculation. The Romanian mockup labels are retained with `ComplyHub` replaced by text-only `DEBIRO`; `/en/dashboard` has parallel English copy awaiting product-owner review.
 

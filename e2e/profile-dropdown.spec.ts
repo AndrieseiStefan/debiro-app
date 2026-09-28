@@ -12,18 +12,18 @@ test('shows global user context and only the approved profile actions', async ({
   await expect(menu).toContainText('andrei.popescu@demo.ro');
   await expect(menu).toContainText('Administrator');
   await expect(menu).toContainText('în Demo Company SRL');
-  await expect(menu.getByRole('button')).toHaveCount(5);
+  await expect(menu.getByRole('button')).toHaveCount(4);
   await expect(menu.getByRole('button', {name: 'Profilul meu'})).toBeFocused();
-  await expect(menu.getByRole('button', {name: 'Companiile mele 2'})).toBeVisible();
+  await expect(menu.getByRole('link', {name: 'Companiile mele 2'})).toBeVisible();
   await expect(menu.getByRole('button', {name: 'Invitațiile mele'})).toBeVisible();
   await expect(menu.getByRole('button', {name: 'Centrul de ajutor'})).toBeVisible();
   await expect(menu.getByRole('button', {name: 'Logout'})).toBeVisible();
   await expect(menu).not.toContainText('Membri companie');
   await expect(menu).not.toContainText('Invită utilizator');
   await expect(menu).not.toContainText('Administrare companie');
-  await menu.getByRole('button', {name: 'Companiile mele 2'}).dispatchEvent('click');
-  await expect(page).toHaveURL(/\/vendors$/);
-  await expect(menu).toBeVisible();
+  await menu.getByRole('link', {name: 'Companiile mele 2'}).click();
+  await expect(page).toHaveURL(/\/profile\/companies$/);
+  await expect(menu).not.toBeVisible();
 });
 
 test('toggles, closes on outside and Escape, and preserves focus', async ({page}) => {
@@ -34,7 +34,7 @@ test('toggles, closes on outside and Escape, and preserves focus', async ({page}
   await page.keyboard.press('Enter');
   await expect(menu).toBeVisible();
   await page.keyboard.press('Tab');
-  await expect(menu.getByRole('button', {name: 'Companiile mele 2'})).toBeFocused();
+  await expect(menu.getByRole('link', {name: 'Companiile mele 2'})).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(menu).not.toBeVisible();
   await expect(trigger).toBeFocused();
@@ -52,7 +52,7 @@ test('English copy, safe unresolved actions, and bell regression', async ({page}
   const menu = page.getByRole('dialog', {name: 'Profile menu'});
   await expect(menu).toContainText('at Demo Company SRL');
   await expect(menu.getByRole('button', {name: 'My profile'})).toBeVisible();
-  await expect(menu.getByRole('button', {name: 'My companies 2'})).toBeVisible();
+  await expect(menu.getByRole('link', {name: 'My companies 2'})).toBeVisible();
   await expect(menu.getByRole('button', {name: 'My invitations'})).toBeVisible();
   await expect(menu.getByRole('button', {name: 'Help center'})).toHaveAttribute('aria-disabled', 'true');
   await expect(menu.getByRole('button', {name: 'Log out'})).toHaveAttribute('aria-disabled', 'true');

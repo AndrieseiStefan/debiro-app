@@ -5,6 +5,7 @@ export const companySettingsFixture: CompanySettingsViewModel = {
     id: 'demo-company',
     name: 'Demo Company SRL',
     taxId: 'RO12345678',
+    country: 'RO',
     industry: {ro: 'Servicii profesionale', en: 'Professional services'},
     subscription: {
       plan: 'Professional',
@@ -27,7 +28,7 @@ export const companySettingsFixture: CompanySettingsViewModel = {
       ]
     }
   },
-  currentUser: {fullName: 'Andrei Popescu', initials: 'AP', email: 'andrei.popescu@demo.ro', accessibleCompanyCount: 2},
+  currentUser: {fullName: 'Andrei Popescu', initials: 'AP', email: 'andrei.popescu@demo.ro'},
   members: [
     {id: 'membership-andrei', companyId: 'demo-company', userId: 'andrei-popescu', fullName: 'Andrei Popescu', email: 'andrei.popescu@demo.ro', role: 'administrator', status: 'active', isCurrentUser: true},
     {id: 'membership-ioana', companyId: 'demo-company', userId: 'ioana-radu', fullName: 'Ioana Radu', email: 'ioana.radu@demo.ro', role: 'reviewer', status: 'active'},

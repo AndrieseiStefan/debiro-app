@@ -8,6 +8,7 @@ import {AuthenticatedBreadcrumbs} from '@/components/layout/AuthenticatedBreadcr
 import {AuthenticatedPageHeader} from '@/components/layout/AuthenticatedPageHeader';
 import {Button} from '@/components/ui/Button';
 import {Surface} from '@/components/ui/Surface';
+import {getActiveCompany, useCompanyState} from '@/features/companies/company-state';
 import type {DrawerPhase} from '@/components/ui/Drawer';
 import {createLocalInvitation, useLocalInvitations} from './local-invitations';
 import {getCompanyMembershipSummary} from './membership-summary';
@@ -21,9 +22,12 @@ function initials(name: string) {
   return name.split(/\s+/).filter(Boolean).map((part) => part[0]).join('').slice(0, 2).toLocaleUpperCase();
 }
 
-export function MembersAccessPage({locale, view}: {locale: string; view: CompanySettingsViewModel}) {
+export function MembersAccessPage({locale, view: initialView}: {locale: string; view: CompanySettingsViewModel}) {
   const t = useTranslations('CompanyMembers');
   const app = useTranslations('AppShell');
+  const companyState = useCompanyState();
+  const active = getActiveCompany(companyState);
+  const view = active ? {...initialView, company: active.company, members: active.members} : initialView;
   const localInvitations = useLocalInvitations(view.company.id);
   const {members, activeCount, pendingCount} = getCompanyMembershipSummary(view, localInvitations);
   const currentMembership = members.find((member) => member.isCurrentUser);
@@ -49,20 +53,20 @@ export function MembersAccessPage({locale, view}: {locale: string; view: Company
     </tr>;
   }
 
-  return <AuthenticatedAppShell locale={locale} currentPath="/company/settings/members" organizationName={view.company.name} userName={view.currentUser.fullName} userInitials={view.currentUser.initials}>
+  return <AuthenticatedAppShell locale={locale} currentPath="/company/settings/members" organizationName={view.company.name} userName={view.currentUser.fullName} userInitials={view.currentUser.initials} scope="company-aware">
     <div className={styles.page}>
       <AuthenticatedPageHeader context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: app('navigation.settings')}, {label: t('title')}]} />} title={t('title')} titleId="members-title" description={t('description')}/>
 
       <Surface className={styles.companySummary}>
         <span className={styles.companyIcon}><AppIcon name="building" size={32}/></span>
         <div className={styles.companyCopy}><h2>{view.company.name}</h2><p>{t('taxId')}: {view.company.taxId}<span aria-hidden="true">|</span>{view.company.industry[locale === 'en' ? 'en' : 'ro']}</p></div>
-        <div className={styles.companyBadges}><span className={styles.plan}><AppIcon name="crown" size={20}/>{view.company.subscription.plan}</span><span className={styles.trial}><AppIcon name="clock" size={20}/>{t('trialDays', {count: view.company.subscription.trialDaysRemaining})}</span></div>
+        <div className={styles.companyBadges}><span className={styles.plan}><AppIcon name="crown" size={20}/>{view.company.subscription.plan}</span>{view.company.subscription.trialDaysRemaining > 0 && <span className={styles.trial}><AppIcon name="clock" size={20}/>{t('trialDays', {count: view.company.subscription.trialDaysRemaining})}</span>}</div>
       </Surface>
 
       <section className={styles.summaryGrid} aria-label={t('summaryLabel')}>
         <Surface className={styles.summaryCard}><span className={styles.summaryIcon} data-tone="blue"><AppIcon name="users" size={25}/></span><div><h2>{t('activeMembers')}</h2><strong>{activeCount}/{view.company.subscription.seatLimit}</strong><p>{t('activeMembersNote', {active: activeCount, pending: pendingCount, limit: view.company.subscription.seatLimit})}</p></div></Surface>
         <Surface className={styles.summaryCard}><span className={styles.summaryIcon} data-tone="green"><AppIcon name="shield" size={25}/></span><div><h2>{t('yourRole')}</h2><strong>{currentMembership ? t(`roles.${currentMembership.role}`) : '—'}</strong><p>{currentMembership ? t(`roleDescriptions.${currentMembership.role}`) : t('noMembership')}</p></div></Surface>
-        <Surface className={styles.summaryCard}><span className={styles.summaryIcon} data-tone="blue"><AppIcon name="building" size={25}/></span><div><h2>{t('accessibleCompanies')}</h2><strong>{view.currentUser.accessibleCompanyCount}</strong><p>{t('accessibleCompaniesNote', {count: view.currentUser.accessibleCompanyCount})}</p></div></Surface>
+        <Surface className={styles.summaryCard}><span className={styles.summaryIcon} data-tone="blue"><AppIcon name="building" size={25}/></span><div><h2>{t('accessibleCompanies')}</h2><strong>{companyState.companies.length}</strong><p>{t('accessibleCompaniesNote', {count: companyState.companies.length})}</p></div></Surface>
       </section>
 
       <Surface className={styles.membersPanel}>

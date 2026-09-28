@@ -241,7 +241,10 @@
     "searchPlaceholder": "Search suppliers, documents or requirements...",
     "notificationLabel": "Notifications",
     "languageLabel": "Language",
-    "profileLabel": "User profile"
+    "profileLabel": "User profile",
+    "workspaceEmptyTitle": "No data for this company in the local demo.",
+    "workspaceEmptyDescription": "{company} does not inherit another company's suppliers, documents, requirements, or activity.",
+    "workspaceUnknown": "Active company"
   },
   "ProfileMenu": {
     "title": "Profile menu",
@@ -251,6 +254,46 @@
     "myInvitations": "My invitations",
     "help": "Help center",
     "logout": "Log out"
+  },
+  "Companies": {
+    "breadcrumbLabel": "Page navigation",
+    "profile": "Profile",
+    "title": "My companies",
+    "description": "Switch your active company, see your role in each workspace, and create new companies.",
+    "noticeTitle": "Each company has its own subscription, members, and documents.",
+    "noticeDescription": "You can belong to multiple companies, each with separate settings, members, and subscription.",
+    "accessible": "Accessible companies",
+    "count": "{count} companies",
+    "active": "Active company",
+    "switch": "Switch",
+    "switchTitle": "Switch company",
+    "viewAll": "View all companies",
+    "noCompanies": "No accessible companies.",
+    "taxId": "Tax ID",
+    "createTile": "Create new company",
+    "createTileDescription": "Add a company and manage it separately.",
+    "createTitle": "New company",
+    "createDescription": "The new company will have its own trial and subscription. It does not inherit the current company's plan.",
+    "name": "Company name",
+    "industry": "Industry",
+    "taxIdField": "Tax ID",
+    "country": "Country",
+    "administrator": "Initial administrator",
+    "required": "Complete all required fields.",
+    "duplicate": "You already have access to a company with this tax ID.",
+    "chooseIndustry": "Select an industry",
+    "chooseCountry": "Select a country",
+    "industries": {"professional": "Professional services", "construction": "Construction and installations", "cleaning": "Cleaning services", "other": "Other industry"},
+    "countries": {"RO": "Romania", "DE": "Germany", "FR": "France"},
+    "createNotice": "The new company becomes active when created.",
+    "cancel": "Cancel",
+    "create": "Create company",
+    "howTitle": "How does it work?",
+    "steps": {
+      "oneTitle": "A separate company is created", "oneDescription": "It will have its own trial and subscription.",
+      "twoTitle": "You become an administrator", "twoDescription": "You can manage settings, members, and subscription.",
+      "threeTitle": "It becomes the active company", "threeDescription": "After creation, you work in the new company."
+    }
   },
   "NotificationCenter": {
     "title": "Notifications",
@@ -332,6 +375,7 @@
     "billingTitle": "Billing",
     "monthlyPrice": "€{amount} / month",
     "nextPayment": "Next payment: {date}",
+    "notScheduled": "No payment scheduled",
     "accessibleCompanies": "Accessible companies",
     "separateSubscriptions": "separate subscriptions",
     "invoiceAmount": "€{amount}",
@@ -348,7 +392,8 @@
       "title": "Payment method",
       "masked": "•••• {lastFour}",
       "expires": "Expires {month}/{year}",
-      "change": "Change card"
+      "change": "Change card",
+      "empty": "No payment method yet."
     },
     "limits": {
       "title": "Plan limits",
@@ -371,7 +416,8 @@
       "actions": "ACTIONS",
       "paid": "Paid",
       "download": "Download",
-      "moreActions": "More actions for {number}"
+      "moreActions": "More actions for {number}",
+      "empty": "No invoices yet."
     }
   },
   "Dashboard": {

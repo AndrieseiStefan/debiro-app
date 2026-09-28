@@ -7,9 +7,9 @@ export type CompanySubscription = {
   seatLimit: number;
   trialDaysRemaining: number;
   monthlyPriceEur: number;
-  nextPaymentDate: string;
+  nextPaymentDate?: string;
   billingProfile: {legalName: string; taxId: string; email: string; address: string; contactName: string};
-  paymentMethod: {brand: string; lastFour: string; expiryMonth: number; expiryYear: number};
+  paymentMethod?: {brand: string; lastFour: string; expiryMonth: number; expiryYear: number};
   capabilities: {unlimitedDocuments: boolean; customRequirements: boolean; notificationsAudit: boolean};
   invoices: {id: string; number: string; date: string; amountEur: number; status: 'paid'}[];
 };
@@ -31,9 +31,10 @@ export type CompanySettingsViewModel = {
     id: string;
     name: string;
     taxId: string;
+    country: string;
     industry: {ro: string; en: string};
     subscription: CompanySubscription;
   };
-  currentUser: {fullName: string; initials: string; email: string; accessibleCompanyCount: number};
+  currentUser: {fullName: string; initials: string; email: string};
   members: CompanyMembership[];
 };

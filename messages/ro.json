@@ -241,7 +241,10 @@
     "searchPlaceholder": "Caută furnizori, documente sau cerințe...",
     "notificationLabel": "Notificări",
     "languageLabel": "Limbă",
-    "profileLabel": "Profil utilizator"
+    "profileLabel": "Profil utilizator",
+    "workspaceEmptyTitle": "Nu există date pentru această companie în demonstrația locală.",
+    "workspaceEmptyDescription": "{company} nu preia furnizorii, documentele, cerințele sau activitatea altei companii.",
+    "workspaceUnknown": "Compania activă"
   },
   "ProfileMenu": {
     "title": "Meniu profil",
@@ -251,6 +254,46 @@
     "myInvitations": "Invitațiile mele",
     "help": "Centrul de ajutor",
     "logout": "Logout"
+  },
+  "Companies": {
+    "breadcrumbLabel": "Navigare pe pagină",
+    "profile": "Profil",
+    "title": "Companiile mele",
+    "description": "Schimbă compania activă, vezi rolul tău în fiecare spațiu de lucru și creează companii noi.",
+    "noticeTitle": "Fiecare companie are propriul abonament, propriii membri și propriile documente.",
+    "noticeDescription": "Poți face parte din mai multe companii, fiecare cu setări, membri și abonament separat.",
+    "accessible": "Companii accesibile",
+    "count": "{count} companii",
+    "active": "Companie activă",
+    "switch": "Comută",
+    "switchTitle": "Schimbă compania",
+    "viewAll": "Vezi toate companiile",
+    "noCompanies": "Nu există companii accesibile.",
+    "taxId": "CUI",
+    "createTile": "Creează companie nouă",
+    "createTileDescription": "Adaugă o companie și începe să o gestionezi separat.",
+    "createTitle": "Companie nouă",
+    "createDescription": "Compania nouă va avea propriul trial și propriul abonament. Nu preia planul companiei curente.",
+    "name": "Numele companiei",
+    "industry": "Industrie",
+    "taxIdField": "CUI / Cod fiscal",
+    "country": "Țară",
+    "administrator": "Administrator inițial",
+    "required": "Completează toate câmpurile obligatorii.",
+    "duplicate": "Există deja o companie accesibilă cu acest CUI.",
+    "chooseIndustry": "Selectează industria",
+    "chooseCountry": "Selectează țara",
+    "industries": {"professional": "Servicii profesionale", "construction": "Construcții și instalații", "cleaning": "Servicii de curățenie", "other": "Altă industrie"},
+    "countries": {"RO": "România", "DE": "Germania", "FR": "Franța"},
+    "createNotice": "La creare, compania nouă devine compania activă.",
+    "cancel": "Anulează",
+    "create": "Creează compania",
+    "howTitle": "Cum funcționează?",
+    "steps": {
+      "oneTitle": "Se creează o companie separată", "oneDescription": "Compania va avea propriul trial și abonament.",
+      "twoTitle": "Ești adăugat ca administrator", "twoDescription": "Vei putea gestiona setările, membrii și abonamentul.",
+      "threeTitle": "Devine compania activă", "threeDescription": "După creare, vei fi redirecționat în noua companie."
+    }
   },
   "NotificationCenter": {
     "title": "Notificări",
@@ -332,6 +375,7 @@
     "billingTitle": "Facturare",
     "monthlyPrice": "{amount} € / lună",
     "nextPayment": "Următoarea plată: {date}",
+    "notScheduled": "Nicio plată programată",
     "accessibleCompanies": "Companii accesibile",
     "separateSubscriptions": "abonamente separate",
     "invoiceAmount": "{amount} €",
@@ -348,7 +392,8 @@
       "title": "Metodă de plată",
       "masked": "•••• {lastFour}",
       "expires": "Expiră {month}/{year}",
-      "change": "Schimbă cardul"
+      "change": "Schimbă cardul",
+      "empty": "Nu există încă o metodă de plată."
     },
     "limits": {
       "title": "Limite plan",
@@ -371,7 +416,8 @@
       "actions": "ACȚIUNI",
       "paid": "Plătită",
       "download": "Descarcă",
-      "moreActions": "Alte acțiuni pentru {number}"
+      "moreActions": "Alte acțiuni pentru {number}",
+      "empty": "Nu există încă facturi."
     }
   },
   "Dashboard": {

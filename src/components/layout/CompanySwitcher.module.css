@@ -1,0 +1,18 @@
+.anchor {min-width: 0;}
+.panel {background: #fff; border: 1px solid #dbe8fa; border-radius: 11px; box-shadow: 0 16px 36px rgb(10 31 64 / 22%); color: #15294d; overflow-x: hidden; overflow-y: auto; position: fixed; z-index: 220;}
+.panel h2 {font-size: 14px; font-weight: 750; padding: 13px 15px 9px;}
+.list {padding: 0 8px;}
+.company {align-items: center; background: #fff; border: 0; border-bottom: 1px solid #e8eef7; color: inherit; cursor: pointer; display: flex; gap: 10px; min-height: 52px; padding: 7px 8px; text-align: left; width: 100%;}
+.company:last-child {border-bottom: 0;}
+.company[aria-pressed='true'] {background: #eef5ff; border-radius: 7px;}
+.company:hover {background: #f5f9ff;}
+.company:focus-visible, .footer:focus-visible {outline: 3px solid var(--color-focus); outline-offset: -3px;}
+.companyAvatar {align-items: center; background: #e7f0ff; border-radius: 50%; color: #075de0; display: flex; flex: 0 0 32px; font-size: 11px; font-weight: 800; height: 32px; justify-content: center;}
+.companyCopy {display: grid; flex: 1 1 auto; gap: 3px; min-width: 0;}
+.companyCopy strong {font-size: 12px; line-height: 1.25; overflow-wrap: anywhere;}
+.companyCopy small {color: #6d84a7; font-size: 11px;}
+.company > svg {color: #075de0; flex: 0 0 auto;}
+.empty {color: #697fa0; font-size: 12px; padding: 10px 15px 18px;}
+.footer {align-items: center; border-top: 1px solid #e8eef7; color: #1b467f; display: flex; font-size: 12px; gap: 10px; min-height: 45px; padding: 9px 16px; text-decoration: none;}
+.footer:hover {background: #f5f9ff;}
+.footer span {flex: 1;}
