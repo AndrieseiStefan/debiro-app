@@ -57,6 +57,38 @@ test('company settings expansion persists while the active main section changes'
   await expect(settings).toHaveAttribute('aria-expanded', 'true');
 });
 
+test('company settings trigger keeps its full rounded geometry in each disclosure state', async ({page}) => {
+  for (const width of [1448, 758]) {
+    await page.setViewportSize({width, height: 1086});
+    await page.goto('/company/settings/members');
+    const navigation = page.getByRole('navigation', {name: 'Navigare în aplicație'});
+    const settings = navigation.getByRole('button', {name: 'Setări companie'});
+    const geometry = async () => settings.evaluate((trigger) => {
+      const group = trigger.parentElement!;
+      const submenu = group.querySelector('#company-settings-subnav');
+      return {
+        height: trigger.getBoundingClientRect().height,
+        radius: getComputedStyle(trigger).borderRadius,
+        groupOverflow: getComputedStyle(group).overflow,
+        submenuGap: submenu ? submenu.getBoundingClientRect().top - trigger.getBoundingClientRect().bottom : null
+      };
+    });
+
+    await expect(settings).toHaveAttribute('aria-expanded', 'true');
+    expect(await geometry()).toMatchObject({height: width > 800 ? 48 : 36, radius: '9px', groupOverflow: 'visible'});
+    if (width > 800) expect((await geometry()).submenuGap).toBeGreaterThanOrEqual(4);
+
+    await navigation.getByRole('link', {name: 'Documente'}).click();
+    await expect(navigation.getByRole('link', {name: 'Documente'})).toHaveAttribute('aria-current', 'page');
+    await expect(settings).toHaveAttribute('aria-expanded', 'true');
+    expect(await geometry()).toMatchObject({height: width > 800 ? 48 : 36, radius: '9px', groupOverflow: 'visible'});
+
+    await settings.click();
+    await expect(settings).toHaveAttribute('aria-expanded', 'false');
+    expect(await geometry()).toMatchObject({height: width > 800 ? 48 : 36, radius: '9px', groupOverflow: 'visible', submenuGap: null});
+  }
+});
+
 test('invitation validates fields, rejects same-company duplicates, and survives client navigation', async ({page}) => {
   await page.goto('/company/settings/members');
   await page.getByRole('button', {name: 'Invită membru'}).click();
