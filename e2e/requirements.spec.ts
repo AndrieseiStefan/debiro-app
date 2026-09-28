@@ -55,6 +55,16 @@ test('creates a company-scoped template with catalog and custom documents', asyn
   await expect(page.getByRole('heading', {name: 'Creare șablon'})).toBeVisible();
   await expect(page.getByRole('tab', {name: 'Documente necesare (0)'})).toBeVisible();
   await expect(page.getByText('Nu ai adăugat documente încă')).toBeVisible();
+  await expect(page.getByRole('button', {name: 'Adaugă document'})).toHaveCount(1);
+  const emptyState = page.getByText('Nu ai adăugat documente încă').locator('..');
+  expect((await emptyState.boundingBox())!.height).toBeLessThan(150);
+  for (const width of [375, 320]) {
+    await page.setViewportSize({width, height: 812});
+    await expect(page.getByRole('button', {name: 'Adaugă document'})).toHaveCount(1);
+    expect((await emptyState.boundingBox())!.height).toBeLessThan(190);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+  }
+  await page.setViewportSize({width: 1448, height: 1086});
   await expect(page.getByRole('button', {name: 'Salvează șablon'})).toBeDisabled();
   await page.getByRole('textbox', {name: /Nume șablon/}).fill('Șablon QA nou');
   await page.getByRole('combobox', {name: /Categorie \/ Aplicabilitate/}).selectOption('construction');

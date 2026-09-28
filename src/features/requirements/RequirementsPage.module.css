@@ -82,11 +82,10 @@
 .mandatory span[data-required='true'] {color: #078557;}
 .rulesTable select {background: #fff; border: 1px solid #d1e1f6; border-radius: 7px; color: #1e3760; font: inherit; height: 37px; padding: 0 8px; width: 100%;}
 .rowAction {background: transparent; border: 0; color: #3d639d; padding: 8px;}
-.documentEmpty {align-items: center; color: #607ba6; display: flex; flex-direction: column; gap: 8px; padding: 28px 14px 32px; text-align: center;}
+.documentEmpty {align-items: center; color: #607ba6; display: flex; flex-direction: column; gap: 6px; padding: 16px 14px 18px; text-align: center;}
 .documentEmpty > svg {color: #0b61dd;}
-.documentEmpty h4 {color: #1b2e50; font-size: 16px;}
+.documentEmpty h4 {color: #1b2e50; font-size: 16px; margin: 0;}
 .documentEmpty p {font-size: 13px; line-height: 1.4;}
-.documentEmpty :global(button) {margin-top: 6px;}
 .draftError {padding: 0 16px 13px;}
 .notice {align-items: center; background: #eaf4ff; border-radius: 8px; color: #0754bf; display: flex; font-size: 13px; gap: 16px; margin: 0 12px 17px; min-height: 65px; padding: 12px 18px;}
 .notice > span {align-items: center; background: #3b8ceb; border-radius: 50%; color: #fff; display: inline-flex; flex: 0 0 23px; height: 23px; justify-content: center;}
