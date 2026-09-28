@@ -5,7 +5,8 @@ export type AppIconName =
   | 'search' | 'chevronRight' | 'chevronDown' | 'plus' | 'target'
   | 'check' | 'clock' | 'close' | 'more' | 'calendar' | 'info'
   | 'building' | 'arrowRight' | 'userPlus' | 'fileX' | 'filter' | 'upload'
-  | 'crown' | 'eye' | 'mail' | 'send' | 'creditCard' | 'edit' | 'download' | 'sort';
+  | 'crown' | 'eye' | 'mail' | 'send' | 'creditCard' | 'edit' | 'download' | 'sort'
+  | 'user' | 'external' | 'logout';
 
 const paths: Record<AppIconName, ReactNode> = {
   home: <><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10Z" /><path d="M9 21v-7h6v7" /></>,
@@ -39,7 +40,10 @@ const paths: Record<AppIconName, ReactNode> = {
   creditCard: <><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></>,
   edit: <><path d="m4 16 11-11 4 4L8 20l-5 1 1-5Z"/><path d="m13 7 4 4"/></>,
   download: <><path d="M12 3v12m-4-4 4 4 4-4M4 17v4h16v-4"/></>,
-  sort: <><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></>
+  sort: <><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></>,
+  user: <><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></>,
+  external: <><path d="M13 4h7v7M20 4l-9 9"/><path d="M20 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h6"/></>,
+  logout: <><path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5M14 16l4-4-4-4M18 12H9"/></>
 };
 
 export function AppIcon({name, size = 20, className}: {name: AppIconName; size?: number; className?: string}) {

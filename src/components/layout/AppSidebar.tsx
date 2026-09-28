@@ -4,6 +4,7 @@ import {useLayoutEffect, useRef, useSyncExternalStore} from 'react';
 import {useTranslations} from 'next-intl';
 import {BrandWordmark} from '@/components/brand/BrandWordmark';
 import type {NotificationActivityItem} from '@/features/notifications/types';
+import type {CompanySettingsViewModel} from '@/features/company-settings/types';
 import {Link, usePathname} from '@/i18n/navigation';
 import {AppIcon, type AppIconName} from './AppIcon';
 import {AppUtilities} from './AppUtilities';
@@ -32,15 +33,15 @@ function setSettingsExpansion(expanded: boolean) {
   settingsExpansionListeners.forEach((listener) => listener());
 }
 
-export function AppSidebar({locale, currentPath, organizationName, userName, userInitials, notificationCount, notifications, notificationReferenceTime}: {
+export function AppSidebar({locale, currentPath, organizationName, userName, notificationCount, notifications, notificationReferenceTime, profile}: {
   locale: string;
   currentPath: string;
   organizationName: string;
   userName: string;
-  userInitials: string;
   notificationCount: number;
   notifications: NotificationActivityItem[];
   notificationReferenceTime: string;
+  profile: CompanySettingsViewModel;
 }) {
   const t = useTranslations('AppShell');
   const pathname = usePathname().replace(/^\/(?:en|ro)(?=\/|$)/, '').replace(/\/+$/, '') || '/';
@@ -84,7 +85,7 @@ export function AppSidebar({locale, currentPath, organizationName, userName, use
       </div>
 
       <div className={styles.reducedUtilities}>
-        <AppUtilities locale={locale} currentPath={currentPath} userInitials={userInitials} userName={userName} notifications={notifications} notificationReferenceTime={notificationReferenceTime} compact />
+        <AppUtilities locale={locale} currentPath={currentPath} notifications={notifications} notificationReferenceTime={notificationReferenceTime} profile={profile} compact />
       </div>
 
       <nav ref={navigationRef} className={styles.navigation} aria-label={t('navigationLabel')}>

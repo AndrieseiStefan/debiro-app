@@ -31,6 +31,9 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
     } else if (action === 'notification-bell') {
       await page.getByRole('button', {name: route.startsWith('/en') ? 'Notifications' : 'Notificări', exact: true}).click();
       await expect(page.getByRole('dialog', {name: route.startsWith('/en') ? 'Notifications' : 'Notificări'})).toBeVisible();
+    } else if (action === 'profile-dropdown') {
+      await page.getByRole('button', {name: new RegExp(route.startsWith('/en') ? '^User profile:' : '^Profil utilizator:')}).click();
+      await expect(page.getByRole('dialog', {name: route.startsWith('/en') ? 'Profile menu' : 'Meniu profil'})).toBeVisible();
     } else if (action === 'invite-vendor') {
       await page.getByRole('button', {name: 'Invită furnizor'}).click();
       await expect(page.getByRole('dialog', {name: 'Invită furnizorul să încarce documentele'})).toBeVisible();

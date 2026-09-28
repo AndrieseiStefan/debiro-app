@@ -243,6 +243,15 @@
     "languageLabel": "Language",
     "profileLabel": "User profile"
   },
+  "ProfileMenu": {
+    "title": "Profile menu",
+    "inCompany": "at {company}",
+    "myProfile": "My profile",
+    "myCompanies": "My companies",
+    "myInvitations": "My invitations",
+    "help": "Help center",
+    "logout": "Log out"
+  },
   "NotificationCenter": {
     "title": "Notifications",
     "markAllRead": "Mark all as read",

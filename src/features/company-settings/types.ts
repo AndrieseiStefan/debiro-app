@@ -34,6 +34,6 @@ export type CompanySettingsViewModel = {
     industry: {ro: string; en: string};
     subscription: CompanySubscription;
   };
-  currentUser: {fullName: string; initials: string; accessibleCompanyCount: number};
+  currentUser: {fullName: string; initials: string; email: string; accessibleCompanyCount: number};
   members: CompanyMembership[];
 };

@@ -243,6 +243,15 @@
     "languageLabel": "Limbă",
     "profileLabel": "Profil utilizator"
   },
+  "ProfileMenu": {
+    "title": "Meniu profil",
+    "inCompany": "în {company}",
+    "myProfile": "Profilul meu",
+    "myCompanies": "Companiile mele",
+    "myInvitations": "Invitațiile mele",
+    "help": "Centrul de ajutor",
+    "logout": "Logout"
+  },
   "NotificationCenter": {
     "title": "Notificări",
     "markAllRead": "Marchează toate ca citite",

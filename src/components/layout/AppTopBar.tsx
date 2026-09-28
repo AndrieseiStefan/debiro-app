@@ -1,16 +1,16 @@
 import {useTranslations} from 'next-intl';
 import type {NotificationActivityItem} from '@/features/notifications/types';
+import type {CompanySettingsViewModel} from '@/features/company-settings/types';
 import {AppIcon} from './AppIcon';
 import {AppUtilities} from './AppUtilities';
 import styles from './AppTopBar.module.css';
 
-export function AppTopBar({locale, currentPath, userInitials, userName, notifications, notificationReferenceTime}: {
+export function AppTopBar({locale, currentPath, notifications, notificationReferenceTime, profile}: {
   locale: string;
   currentPath: string;
-  userInitials: string;
-  userName: string;
   notifications: NotificationActivityItem[];
   notificationReferenceTime: string;
+  profile: CompanySettingsViewModel;
 }) {
   const t = useTranslations('AppShell');
 
@@ -23,7 +23,7 @@ export function AppTopBar({locale, currentPath, userInitials, userName, notifica
       </div>
 
       <div className={styles.desktopUtilities}>
-        <AppUtilities locale={locale} currentPath={currentPath} userInitials={userInitials} userName={userName} notifications={notifications} notificationReferenceTime={notificationReferenceTime} />
+        <AppUtilities locale={locale} currentPath={currentPath} notifications={notifications} notificationReferenceTime={notificationReferenceTime} profile={profile} />
       </div>
     </div>
   );
