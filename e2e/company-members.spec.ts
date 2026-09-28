@@ -22,9 +22,39 @@ test('company settings expands, highlights Members & Access, and keeps company c
   await expect(navigation.getByRole('link', {name: 'Membri și acces'})).toHaveAttribute('aria-current', 'page');
   await navigation.getByRole('link', {name: 'Dashboard'}).click();
   await expect(page).toHaveURL(/\/dashboard$/);
-  await navigation.getByRole('button', {name: 'Setări companie'}).click();
+  await expect(settings).toHaveAttribute('aria-expanded', 'true');
   await navigation.getByRole('link', {name: 'Membri și acces'}).click();
   await expect(page).toHaveURL(/\/company\/settings\/members$/);
+});
+
+test('company settings expansion persists while the active main section changes', async ({page}) => {
+  await page.goto('/dashboard');
+  const navigation = page.getByRole('navigation', {name: 'Navigare în aplicație'});
+  const settings = navigation.getByRole('button', {name: 'Setări companie'});
+  await expect(settings).toHaveAttribute('aria-expanded', 'false');
+  await settings.click();
+  await expect(settings).toHaveAttribute('aria-expanded', 'true');
+
+  for (const [label, path] of [
+    ['Furnizori', '/vendors'],
+    ['Documente', '/documents'],
+    ['Cerințe', '/requirements'],
+    ['Notificări', '/notifications'],
+    ['Dashboard', '/dashboard']
+  ]) {
+    await navigation.getByRole('link', {name: label}).click();
+    await expect(page).toHaveURL(new RegExp(`${path}$`));
+    await expect(navigation.getByRole('link', {name: label})).toHaveAttribute('aria-current', 'page');
+    await expect(settings).toHaveAttribute('aria-expanded', 'true');
+    await expect(navigation.getByRole('link', {name: 'Membri și acces'})).toBeVisible();
+  }
+
+  await expect(navigation.getByRole('button', {name: 'Rapoarte'})).toHaveAttribute('aria-disabled', 'true');
+  await settings.click();
+  await expect(settings).toHaveAttribute('aria-expanded', 'false');
+  await expect(navigation.getByRole('link', {name: 'Membri și acces'})).toHaveCount(0);
+  await settings.click();
+  await expect(settings).toHaveAttribute('aria-expanded', 'true');
 });
 
 test('invitation validates fields, rejects same-company duplicates, and survives client navigation', async ({page}) => {
@@ -55,7 +85,7 @@ test('invitation validates fields, rejects same-company duplicates, and survives
   await expect(page.getByText('2 utilizatori activi din 5 disponibili. 2 invitații în așteptare.')).toBeVisible();
   await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Furnizori'}).click();
   await expect(page).toHaveURL(/\/vendors$/);
-  await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('button', {name: 'Setări companie'}).click();
+  await expect(page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('button', {name: 'Setări companie'})).toHaveAttribute('aria-expanded', 'true');
   await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Membri și acces'}).click();
   await expect(page.getByRole('row', {name: /Radu Ionescu/})).toContainText('Invitație trimisă');
   await page.getByRole('button', {name: 'Invită membru'}).click();
