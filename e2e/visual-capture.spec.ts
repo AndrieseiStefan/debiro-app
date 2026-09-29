@@ -42,10 +42,19 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
       await page.getByRole('button', {name: 'Demo Company SRL'}).click();
       await page.getByRole('dialog', {name: route.startsWith('/en') ? 'Switch company' : 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
       await expect(page.getByRole('heading', {name: 'Global Clean Services'})).toBeVisible();
-    } else if (action === 'requirement-draft' || action === 'requirement-suggestions' || action === 'requirement-custom') {
+    } else if (action === 'requirement-draft' || action === 'requirement-suggestions' || action === 'requirement-custom' || action === 'requirement-edit') {
       if (route !== '/requirements' && route !== '/en/requirements') throw new Error('Requirement captures require the Requirements route.');
       const english = route.startsWith('/en');
       if (action === 'requirement-draft') await page.getByRole('button', {name: english ? 'New template' : 'Șablon nou', exact: true}).click();
+      else if (action === 'requirement-edit') {
+        await page.locator('#requirement-template-name').fill(english ? 'Updated construction template' : 'Șablon construcții actualizat');
+        await page.getByRole('button', {name: english ? 'Add document' : 'Adaugă document'}).click();
+        const drawer = page.getByRole('dialog', {name: english ? 'Add document' : 'Adaugă document'});
+        await drawer.getByRole('button', {name: english ? 'Custom document' : 'Document personalizat'}).click();
+        await drawer.getByRole('textbox', {name: english ? /Document name/ : /Nume document/}).fill(english ? 'Local permit' : 'Aviz local');
+        await drawer.getByRole('button', {name: english ? 'Add document' : 'Adaugă documentul', exact: true}).click();
+        await page.getByRole('button', {name: english ? 'Edit custom document Local permit' : 'Editează documentul personalizat Aviz local'}).click();
+      }
       else {
         await page.getByRole('button', {name: english ? 'Add document' : 'Adaugă document'}).click();
         if (action === 'requirement-custom') await page.getByRole('dialog', {name: english ? 'Add document' : 'Adaugă document'}).getByRole('button', {name: english ? 'Custom document' : 'Document personalizat'}).click();
@@ -93,5 +102,5 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
 
   const name = route === '/' ? 'root' : route.replace(/^\/+|\/+$/g, '').replace(/[^a-zA-Z0-9_-]+/g, '-');
   const output = path.join(process.cwd(), 'artifacts', 'visual', `${name}${action ? `-${action}` : ''}${viewportWidth ? `-${viewportWidth}x${viewportHeight}` : ''}.png`);
-  await page.screenshot({path: output, fullPage: !action, animations: 'disabled'});
+  await page.screenshot({path: output, fullPage: !action || action === 'requirement-edit', animations: 'disabled'});
 });

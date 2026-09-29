@@ -65,6 +65,16 @@ export type TemplateDraft = {
   isDirty: boolean;
 };
 
+export type TemplateEditDraft = {
+  templateId: string;
+  language: 'ro' | 'en';
+  name: string;
+  description: string;
+  categoryId: VendorCategory | '';
+  documents: RequirementTemplateDocument[];
+  isDirty: boolean;
+};
+
 export type CatalogCandidate = {
   normalizedName: string;
   displayName: string;

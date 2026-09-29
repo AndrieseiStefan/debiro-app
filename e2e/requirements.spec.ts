@@ -310,3 +310,136 @@ test('confirms before switching companies with an edited template draft', async 
   await expect(page.getByRole('heading', {name: 'Nu există șabloane pentru această companie'})).toBeVisible();
   await expect(page.getByRole('button', {name: 'Global Clean Services'})).toBeVisible();
 });
+
+test('stages existing template metadata and rules until Save or Cancel', async ({page}) => {
+  await page.goto(roPath);
+  const name = page.locator('#requirement-template-name');
+  const category = page.locator('#requirement-template-category');
+  const description = page.locator('textarea[placeholder="Adaugă detalii despre aplicabilitatea șablonului..."]');
+  const save = page.getByRole('button', {name: 'Salvează șablon'});
+  const registration = page.getByRole('row').filter({hasText: 'Certificat de înregistrare'});
+  await expect(save).toBeDisabled();
+  await name.fill('  subcontractor   construcții  ');
+  await expect(page.getByText('Există deja un șablon cu acest nume în compania activă.')).toHaveCount(0);
+  await name.fill('  FURNIZOR   MATERIALE  ');
+  await expect(save).toBeDisabled();
+  await name.fill('Șablon verificat');
+  await description.fill('Descriere verificată');
+  await category.selectOption('software');
+  await registration.locator('label').first().click();
+  await registration.getByRole('combobox', {name: /Alertă expirare/}).selectOption('60');
+  await expect(page.locator('[data-template-id="construction"]')).toContainText('Subcontractor construcții');
+  await page.getByRole('button', {name: 'Anulează'}).click();
+  await expect(name).toHaveValue('Subcontractor construcții');
+  await expect(description).toHaveValue('Lucrări de construcții și instalații în șantiere');
+  await expect(category).toHaveValue('construction');
+  await expect(registration.getByRole('checkbox')).toBeChecked();
+  await expect(registration.getByRole('combobox', {name: /Alertă expirare/})).toHaveValue('30');
+  await expect(save).toBeDisabled();
+
+  await name.fill('Șablon verificat');
+  await description.fill('Descriere verificată');
+  await category.selectOption('software');
+  await registration.locator('label').first().click();
+  await registration.getByRole('combobox', {name: /Alertă expirare/}).selectOption('60');
+  await save.click();
+  await expect(page.getByRole('heading', {name: 'Șablon verificat'})).toBeVisible();
+  await expect(page.locator('[data-template-id="construction"]')).toContainText('Șablon verificat');
+  await expect(category).toHaveValue('software');
+  await expect(save).toBeDisabled();
+  await page.getByRole('button', {name: /Furnizor materiale/}).click();
+  await page.getByRole('button', {name: /Șablon verificat/}).click();
+  await expect(registration.getByRole('checkbox')).not.toBeChecked();
+  await expect(registration.getByRole('combobox', {name: /Alertă expirare/})).toHaveValue('60');
+});
+
+test('adds and removes existing-template documents atomically', async ({page}) => {
+  await page.goto(roPath);
+  const count = page.getByRole('tab', {name: /^Documente necesare/});
+  const save = page.getByRole('button', {name: 'Salvează șablon'});
+  const addCatalog = async () => {
+    await page.getByRole('button', {name: 'Adaugă document'}).click();
+    const drawer = page.getByRole('dialog', {name: 'Adaugă document'});
+    await drawer.getByRole('button', {name: 'Adaugă documentul'}).click();
+    await expect(drawer).toHaveCount(0);
+  };
+  await expect(count).toHaveText('Documente necesare (5)');
+  await addCatalog();
+  await expect(count).toHaveText('Documente necesare (6)');
+  await expect(page.locator('[data-template-id="construction"]')).toContainText('5 documente');
+  await page.getByRole('button', {name: 'Anulează'}).click();
+  await expect(count).toHaveText('Documente necesare (5)');
+  await addCatalog();
+  await save.click();
+  await expect(page.locator('[data-template-id="construction"]')).toContainText('6 documente');
+  await page.getByRole('button', {name: 'Elimină documentul Certificat fiscal'}).click();
+  await expect(count).toHaveText('Documente necesare (5)');
+  await page.getByRole('button', {name: 'Anulează'}).click();
+  await expect(count).toHaveText('Documente necesare (6)');
+  await page.getByRole('button', {name: 'Elimină documentul Certificat fiscal'}).click();
+  await save.click();
+  await expect(count).toHaveText('Documente necesare (5)');
+  await expect(page.locator('[data-template-id="construction"]')).toContainText('5 documente');
+});
+
+test('edits custom metadata and protects dirty existing templates across navigation', async ({page}) => {
+  await page.goto(roPath);
+  const name = page.locator('#requirement-template-name');
+  await page.getByRole('button', {name: 'Adaugă document'}).click();
+  const drawer = page.getByRole('dialog', {name: 'Adaugă document'});
+  await drawer.getByRole('button', {name: 'Document personalizat'}).click();
+  await drawer.getByRole('textbox', {name: /Nume document/}).fill('Aviz local QA');
+  await drawer.getByRole('button', {name: 'Adaugă documentul'}).click();
+  await expect(page.getByRole('row').filter({hasText: 'Aviz local QA'})).toBeVisible();
+  await page.getByRole('button', {name: 'Anulează'}).click();
+  await expect(page.getByText('Aviz local QA')).toHaveCount(0);
+  await page.getByRole('button', {name: 'Adaugă document'}).click();
+  await drawer.getByRole('button', {name: 'Document personalizat'}).click();
+  await drawer.getByRole('textbox', {name: /Nume document/}).fill('Aviz local QA');
+  await drawer.getByRole('button', {name: 'Adaugă documentul'}).click();
+  await page.getByRole('button', {name: 'Salvează șablon'}).click();
+  await expect(page.getByRole('row').filter({hasText: 'Aviz local QA'})).toBeVisible();
+  await expect(page.getByRole('button', {name: 'Editează documentul personalizat Certificat de înregistrare'})).toHaveCount(0);
+  await page.getByRole('button', {name: 'Editează documentul personalizat Aviz local QA'}).click();
+  await page.locator('#requirement-custom-name').fill('Aviz local corectat');
+  await page.locator('#requirement-custom-issuer').fill('Primărie');
+  await page.getByRole('button', {name: /Furnizor materiale/}).click();
+  await expect(page.getByRole('alertdialog', {name: 'Renunți la modificările nesalvate?'})).toBeVisible();
+  await page.getByRole('button', {name: 'Continuă editarea'}).click();
+  await expect(page.locator('#requirement-custom-name')).toHaveValue('Aviz local corectat');
+  await page.getByRole('button', {name: 'Adaugă șablon nou'}).click();
+  await expect(page.getByRole('alertdialog')).toBeVisible();
+  await page.getByRole('button', {name: 'Continuă editarea'}).click();
+  await page.getByRole('button', {name: 'Demo Company SRL'}).click();
+  await page.getByRole('dialog', {name: 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
+  await expect(page.getByRole('alertdialog')).toBeVisible();
+  await page.getByRole('button', {name: 'Continuă editarea'}).click();
+  await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Furnizori'}).click();
+  await expect(page.getByRole('alertdialog')).toBeVisible();
+  await page.getByRole('button', {name: 'Renunță la modificări'}).click();
+  await expect(page).toHaveURL(/\/vendors$/);
+  await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Cerințe'}).click();
+  await expect(name).toHaveValue('Subcontractor construcții');
+  await expect(page.getByRole('row').filter({hasText: 'Aviz local QA'})).toBeVisible();
+  await expect(page.getByText('Aviz local corectat')).toHaveCount(0);
+});
+
+test('keeps English existing-template edits and narrow custom-editor geometry usable', async ({page}) => {
+  await page.goto('/en/requirements');
+  await page.locator('#requirement-template-name').fill('Updated construction template');
+  await page.getByRole('button', {name: 'Save template'}).click();
+  await expect(page.getByRole('heading', {name: 'Updated construction template'})).toBeVisible();
+  await page.getByRole('button', {name: 'Add document'}).click();
+  const drawer = page.getByRole('dialog', {name: 'Add document'});
+  await drawer.getByRole('button', {name: 'Custom document'}).click();
+  await drawer.getByRole('textbox', {name: /Document name/}).fill('Local EN permit');
+  await drawer.getByRole('button', {name: 'Add document', exact: true}).click();
+  await page.getByRole('button', {name: 'Edit custom document Local EN permit'}).click();
+  for (const width of [1448, 1024, 758, 600, 375, 320]) {
+    await page.setViewportSize({width, height: width === 1448 ? 1086 : 812});
+    await expect(page.locator('#requirement-custom-name')).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth), `overflow at ${width}px`).toBeLessThanOrEqual(width);
+  }
+  await page.getByRole('button', {name: 'Cancel'}).click();
+  await expect(page.getByText('Local EN permit')).toHaveCount(0);
+});
