@@ -448,7 +448,13 @@ test('stages template appearance and keeps the committed list unchanged until Sa
   await page.goto(roPath);
   const selected = page.locator('[data-template-id="construction"]');
   await expect(selected.locator('[data-color]')).toHaveAttribute('data-color', 'blue');
-  await page.getByRole('button', {name: 'Schimbă aspectul șablonului'}).click();
+  const templateIcon = page.getByRole('button', {name: 'Schimbă iconița și culoarea'});
+  await expect(templateIcon.locator('[data-appearance-edit-indicator]')).toBeVisible();
+  expect(await templateIcon.evaluate((element) => getComputedStyle(element).cursor)).toBe('pointer');
+  await expect(page.getByRole('button', {name: 'Acțiuni șablon'})).toHaveCount(0);
+  await expect(page.getByRole('button', {name: 'Duplică șablon'})).toHaveCount(1);
+  await expect(page.getByRole('button', {name: 'Șterge șablon'})).toHaveCount(1);
+  await templateIcon.click();
   const picker = page.getByRole('dialog', {name: 'Alege aspectul'});
   await expect(picker).toBeVisible();
   await picker.getByRole('button', {name: 'Scut'}).click();
@@ -456,10 +462,10 @@ test('stages template appearance and keeps the committed list unchanged until Sa
   await expect(selected.locator('[data-color]')).toHaveAttribute('data-color', 'blue');
   await page.keyboard.press('Escape');
   await expect(picker).toHaveCount(0);
-  await expect(page.getByRole('button', {name: 'Schimbă aspectul șablonului'})).toBeFocused();
+  await expect(templateIcon).toBeFocused();
   await page.getByRole('button', {name: 'Anulează'}).click();
   await expect(page.getByRole('button', {name: 'Salvează șablon'})).toBeDisabled();
-  await page.getByRole('button', {name: 'Schimbă aspectul șablonului'}).click();
+  await templateIcon.click();
   await picker.getByRole('button', {name: 'Violet'}).click();
   await page.keyboard.press('Escape');
   await page.getByRole('button', {name: 'Salvează șablon'}).click();
@@ -470,10 +476,25 @@ test('custom document appearance uses the shared picker and is editable after Sa
   await page.goto(roPath);
   await page.getByRole('button', {name: 'Adaugă document'}).click();
   const drawer = page.getByRole('dialog', {name: 'Adaugă document'});
+  await expect(drawer.locator('[data-editable-appearance]')).toHaveCount(0);
+  await expect(drawer.locator('[data-appearance-edit-indicator]')).toHaveCount(0);
   await drawer.getByRole('button', {name: 'Document personalizat'}).click();
+  const documentIcon = drawer.getByRole('button', {name: 'Schimbă iconița și culoarea documentului'});
+  await expect(documentIcon.locator('[data-color]')).toHaveAttribute('data-color', 'blue');
+  await expect(documentIcon.locator('[data-appearance-edit-indicator]')).toBeVisible();
+  await expect(drawer.getByText('Aspect document')).toHaveCount(0);
+  await expect(drawer.getByRole('button', {name: 'Schimbă', exact: true})).toHaveCount(0);
+  const iconBounds = await documentIcon.boundingBox();
+  const nameBounds = await drawer.getByRole('textbox', {name: /Nume document/}).boundingBox();
+  expect(iconBounds!.y + iconBounds!.height).toBeLessThan(nameBounds!.y);
   await drawer.getByRole('textbox', {name: /Nume document/}).fill('Aviz aspect QA');
-  await drawer.getByRole('button', {name: 'Aspect document'}).click();
+  await documentIcon.focus();
+  await page.keyboard.press('Enter');
   const picker = page.getByRole('dialog', {name: 'Alege aspectul'});
+  await expect(picker).toBeVisible();
+  await page.keyboard.press('Escape');
+  await documentIcon.focus();
+  await page.keyboard.press('Space');
   await picker.getByRole('button', {name: 'Transport'}).click();
   await picker.getByRole('button', {name: 'Turcoaz'}).click();
   await page.keyboard.press('Escape');
@@ -483,13 +504,13 @@ test('custom document appearance uses the shared picker and is editable after Sa
   await expect(row.locator('[data-color]')).toHaveAttribute('data-color', 'teal');
   await page.getByRole('button', {name: 'Salvează șablon'}).click();
   await row.getByRole('button', {name: 'Editează documentul personalizat Aviz aspect QA'}).click();
-  await page.getByRole('button', {name: 'Aspect document'}).click();
+  await page.getByRole('button', {name: 'Schimbă iconița și culoarea documentului'}).click();
   await picker.getByRole('button', {name: 'Portocaliu'}).click();
   await page.keyboard.press('Escape');
   await page.getByRole('button', {name: 'Anulează'}).click();
   await expect(row.locator('[data-color]')).toHaveAttribute('data-color', 'teal');
   await row.getByRole('button', {name: 'Editează documentul personalizat Aviz aspect QA'}).click();
-  await page.getByRole('button', {name: 'Aspect document'}).click();
+  await page.getByRole('button', {name: 'Schimbă iconița și culoarea documentului'}).click();
   await picker.getByRole('button', {name: 'Portocaliu'}).click();
   await page.keyboard.press('Escape');
   await page.getByRole('button', {name: 'Salvează șablon'}).click();
@@ -537,13 +558,14 @@ test('duplicates with dirty guard, unique names and independent copied appearanc
 
 test('appearance picker stays viewport-contained and keyboard-usable in both locales', async ({page}) => {
   for (const {route, label, title} of [
-    {route: '/requirements', label: 'Schimbă aspectul șablonului', title: 'Alege aspectul'},
-    {route: '/en/requirements', label: 'Change template appearance', title: 'Choose appearance'}
+    {route: '/requirements', label: 'Schimbă iconița și culoarea', title: 'Alege aspectul'},
+    {route: '/en/requirements', label: 'Change icon and color', title: 'Choose appearance'}
   ]) {
     await page.goto(route);
     for (const width of [1448, 1024, 758, 600, 375, 320]) {
       await page.setViewportSize({width, height: width === 1448 ? 1086 : 812});
-      await page.getByRole('button', {name: label}).click();
+      await page.getByRole('button', {name: label}).focus();
+      await page.keyboard.press(width === 320 ? 'Space' : 'Enter');
       const picker = page.getByRole('dialog', {name: title});
       await expect(picker).toBeVisible();
       const bounds = await picker.boundingBox();
@@ -554,6 +576,33 @@ test('appearance picker stays viewport-contained and keyboard-usable in both loc
       await expect(picker).toBeVisible();
       await page.keyboard.press('Escape');
       await expect(picker).toHaveCount(0);
+    }
+  }
+});
+
+test('custom-document editable icon and popover stay contained at reduced widths in both locales', async ({page}) => {
+  for (const {route, custom, label, title} of [
+    {route: '/requirements', custom: 'Document personalizat', label: 'Schimbă iconița și culoarea documentului', title: 'Alege aspectul'},
+    {route: '/en/requirements', custom: 'Custom document', label: 'Change document icon and color', title: 'Choose appearance'}
+  ]) {
+    await page.goto(route);
+    await page.getByRole('button', {name: route.startsWith('/en') ? 'Add document' : 'Adaugă document'}).click();
+    const drawer = page.getByRole('dialog', {name: route.startsWith('/en') ? 'Add document' : 'Adaugă document'});
+    await drawer.getByRole('button', {name: custom}).click();
+    for (const width of [1448, 758, 600, 375, 320]) {
+      await page.setViewportSize({width, height: width === 1448 ? 1086 : 812});
+      const icon = drawer.getByRole('button', {name: label});
+      await icon.focus();
+      await page.keyboard.press(width === 320 ? 'Space' : 'Enter');
+      const picker = page.getByRole('dialog', {name: title});
+      await expect(picker).toBeVisible();
+      const bounds = await picker.boundingBox();
+      expect(bounds!.x).toBeGreaterThanOrEqual(0);
+      expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width + 1);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      await page.keyboard.press('Escape');
+      await expect(picker).toHaveCount(0);
+      await expect(drawer).toBeVisible();
     }
   }
 });

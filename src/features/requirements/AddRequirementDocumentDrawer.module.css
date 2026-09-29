@@ -26,9 +26,7 @@
 .selectedCard {align-items: center; background: #f7faff; border: 1px solid #d1e4fd; border-radius: 8px; display: flex; gap: 14px; min-height: 68px; padding: 8px 10px;}
 .noResults {align-items: start; color: #607ba8; display: grid; font-size: 13px; gap: 10px; padding: 18px 0;}
 .customFields {display: grid; gap: 17px; margin: 18px 0 22px;}
-.appearanceField {display: grid; gap: 8px; margin: 0 0 2px;}
-.appearanceField h3 {color: #1b2b4e; font-size: 13px; font-weight: 700;}
-.appearanceField > span {justify-self: start;}
+.customFields > span:first-child {justify-self: start; margin-bottom: 2px;}
 .customFields label, .rulesGrid label {color: #1b2b4e; display: grid; font-size: 13px; font-weight: 700; gap: 7px; min-width: 0;}
 .optional {color: #56729e; font-weight: 400;}
 .customFields em {color: #df3750; font-style: normal;}

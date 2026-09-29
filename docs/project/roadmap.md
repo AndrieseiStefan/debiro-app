@@ -13,7 +13,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 - E1-003 canonical dashboard overview — implemented with a fixture-backed authenticated shell; product-owner visual approval remains pending
 - E1-004 canonical Vendors List — implemented with fixture-backed local list controls; product-owner visual approval remains pending
 - E1-005 canonical Vendor Details — implemented with a typed dynamic fixture route and local document search; product-owner visual approval remains pending
-- E1-006/E1-023/E1-025A/B Document Requirements — implemented with company-scoped browser-memory template creation/editing, Add Document drawer, appearance controls, and local duplicate/delete; product-owner visual approval remains pending
+- E1-006/E1-023/E1-025A/B/C Document Requirements — implemented with company-scoped browser-memory template creation/editing, Add Document drawer, appearance controls, and local duplicate/delete; product-owner visual approval remains pending
 - E1-007 canonical Invite Vendor drawer — implemented from Vendor Details with a local preview form; product-owner visual approval remains pending
 - E1-008 canonical Supplier Upload Portal — implemented as a separate external-supplier layout with a deterministic token fixture and browser-local file selection; product-owner visual approval remains pending
 - E1-009 canonical Document Review — implemented with a deterministic document fixture, local edits and human confirmation only; product-owner visual approval remains pending

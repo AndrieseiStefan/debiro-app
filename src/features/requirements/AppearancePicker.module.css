@@ -1,9 +1,8 @@
 .anchor {display: inline-flex; flex: 0 0 auto; min-width: 0;}
-.trigger {align-items: center; background: transparent; border: 1px solid #d1e2f8; border-radius: 8px; color: #075bd1; display: inline-flex; gap: 10px; min-height: 43px; padding: 4px 11px;}
-.trigger[data-variant='icon'] {border: 0; padding: 0;}
-.trigger:hover {background: #f2f7ff;}
+.trigger {align-items: center; background: transparent; border: 0; border-radius: 14px; color: #075bd1; cursor: pointer; display: inline-flex; padding: 0; position: relative;}
+.trigger:hover .preview {box-shadow: 0 0 0 2px #8dbafb; filter: brightness(.98);}
 .trigger:focus-visible, .panel button:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 2px;}
-.trigger > span:last-child:not(:first-child) {font-size: 13px; font-weight: 700;}
+.editBadge {align-items: center; background: #fff; border: 1px solid #bcd5f9; border-radius: 50%; bottom: -3px; box-shadow: 0 1px 4px rgb(20 44 83 / 15%); color: #075bd1; display: inline-flex; height: 21px; justify-content: center; position: absolute; right: -3px; width: 21px;}
 .preview {align-items: center; background: #e3efff; border-radius: 11px; color: #0864db; display: inline-flex; flex: 0 0 45px; height: 45px; justify-content: center; width: 45px;}
 .preview[data-size='small'] {flex-basis: 32px; height: 32px; width: 32px;}
 .preview[data-size='list'] {flex-basis: 54px; height: 54px; width: 54px;}

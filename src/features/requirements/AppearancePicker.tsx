@@ -13,11 +13,11 @@ export function AppearanceIcon({appearance, size = 'normal'}: {appearance: Appea
   </span>;
 }
 
-export function AppearancePicker({appearance, onChange, label, variant = 'field'}: {
+export function AppearancePicker({appearance, onChange, label, size = 'large'}: {
   appearance: Appearance;
   onChange: (next: Appearance) => void;
   label: string;
-  variant?: 'field' | 'icon';
+  size?: 'list' | 'large';
 }) {
   const t = useTranslations('Requirements.appearance');
   const id = useId();
@@ -65,9 +65,9 @@ export function AppearancePicker({appearance, onChange, label, variant = 'field'
   }
 
   return <span className={styles.anchor}>
-    <button ref={trigger} type="button" className={styles.trigger} data-variant={variant} aria-label={label} aria-haspopup="dialog" aria-expanded={open} aria-controls={open ? id : undefined} onClick={() => setOpen((value) => !value)}>
-      <AppearanceIcon appearance={appearance} size={variant === 'icon' ? 'large' : 'small'}/>
-      {variant === 'field' && <span>{t('change')}</span>}
+    <button ref={trigger} type="button" className={styles.trigger} data-editable-appearance="true" aria-label={label} aria-haspopup="dialog" aria-expanded={open} aria-controls={open ? id : undefined} onClick={() => setOpen((value) => !value)}>
+      <AppearanceIcon appearance={appearance} size={size}/>
+      <span className={styles.editBadge} data-appearance-edit-indicator="true" aria-hidden="true"><AppIcon name="edit" size={12}/></span>
     </button>
     {open && createPortal(<div ref={panel} id={id} role="dialog" aria-label={t('popoverTitle')} className={styles.panel} style={position} onKeyDown={onPanelKeyDown}>
       <div className={styles.section}><h3>{t('icon')}</h3><div className={styles.iconGrid}>

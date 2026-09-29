@@ -47,13 +47,13 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
       const english = route.startsWith('/en');
       if (action === 'requirement-draft') await page.getByRole('button', {name: english ? 'New template' : 'Șablon nou', exact: true}).click();
       else if (action === 'requirement-appearance') {
-        await page.getByRole('button', {name: english ? 'Change template appearance' : 'Schimbă aspectul șablonului'}).click();
+        await page.getByRole('button', {name: english ? 'Change icon and color' : 'Schimbă iconița și culoarea'}).click();
         await expect(page.getByRole('dialog', {name: english ? 'Choose appearance' : 'Alege aspectul'})).toBeVisible();
       } else if (action === 'requirement-document-appearance') {
         await page.getByRole('button', {name: english ? 'Add document' : 'Adaugă document'}).click();
         const drawer = page.getByRole('dialog', {name: english ? 'Add document' : 'Adaugă document'});
         await drawer.getByRole('button', {name: english ? 'Custom document' : 'Document personalizat'}).click();
-        await drawer.getByRole('button', {name: english ? 'Document appearance' : 'Aspect document'}).click();
+        await drawer.getByRole('button', {name: english ? 'Change document icon and color' : 'Schimbă iconița și culoarea documentului'}).click();
         await expect(page.getByRole('dialog', {name: english ? 'Choose appearance' : 'Alege aspectul'})).toBeVisible();
       } else if (action === 'requirement-duplicate') {
         await page.getByRole('button', {name: english ? 'Duplicate template' : 'Duplică șablon'}).click();

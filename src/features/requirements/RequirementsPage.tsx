@@ -103,8 +103,6 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
   const [query, setQuery] = useState('');
   const [validation, setValidation] = useState<ReturnType<typeof validateRequirementDraft>>(null);
   const [editingCustomId, setEditingCustomId] = useState<string | null>(null);
-  const [actionMenuOpen, setActionMenuOpen] = useState(false);
-  const actionMenuRef = useRef<HTMLSpanElement>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [drawerPhase, setDrawerPhase] = useState<DrawerPhase | null>(null);
   const addDocumentRef = useRef<HTMLButtonElement>(null);
@@ -134,8 +132,8 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
     action?.();
   }
   function startNew() {requestDiscard(() => {startRequirementDraft(companyId); setValidation(null);});}
-  function duplicateSelected() {setActionMenuOpen(false); requestDiscard(() => {duplicateRequirementTemplate(companyId, language); setValidation(null);});}
-  function requestDelete() {setActionMenuOpen(false); requestDiscard(() => setConfirmDelete(true));}
+  function duplicateSelected() {requestDiscard(() => {duplicateRequirementTemplate(companyId, language); setValidation(null);});}
+  function requestDelete() {requestDiscard(() => setConfirmDelete(true));}
   function confirmDeleteSelected() {deleteRequirementTemplate(companyId); setConfirmDelete(false); setValidation(null); setEditingCustomId(null);}
   function selectTemplate(id: string) {if (!draft && selected?.id === id) return; requestDiscard(() => {selectRequirementTemplate(companyId, id); setValidation(null);});}
   function saveNew() {
@@ -149,15 +147,6 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
     if (result === 'saved') {setValidation(null); setEditingCustomId(null);}
     else setValidation(result);
   }
-
-  useEffect(() => {
-    if (!actionMenuOpen) return;
-    function outside(event: PointerEvent) {if (event.target instanceof Node && !actionMenuRef.current?.contains(event.target)) setActionMenuOpen(false);}
-    function escape(event: KeyboardEvent) {if (event.key === 'Escape') setActionMenuOpen(false);}
-    document.addEventListener('pointerdown', outside);
-    document.addEventListener('keydown', escape);
-    return () => {document.removeEventListener('pointerdown', outside); document.removeEventListener('keydown', escape);};
-  }, [actionMenuOpen]);
 
   useEffect(() => {
     if (!isDirty) return;
@@ -214,8 +203,8 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
         </Surface>
 
         <Surface className={styles.editor}>
-          {draft ? <div className={styles.editorTop}><AppearancePicker appearance={draft} onChange={(next) => updateRequirementDraft(companyId, next)} label={t('appearance.templateLabel')} variant="icon"/><div className={styles.editorIdentity}><h2>{t('creation.title')}</h2><p>{t('creation.subtitle')}</p></div></div>
-            : selected ? <div className={styles.editorTop}><AppearancePicker appearance={appearance} onChange={(next) => updateExistingRequirementTemplate(companyId, language, next)} label={t('appearance.templateLabel')} variant="icon"/><div className={styles.editorIdentity}><h2>{selected.title[language]}</h2><p>{selected.subtitle[language] || vendors(('category.' + selected.categoryId) as 'category.construction')}</p></div><div className={styles.editorActions}><span ref={actionMenuRef} className={styles.actionMenuAnchor}><button type="button" className={styles.iconButton} aria-label={t('actionMenuLabel')} aria-expanded={actionMenuOpen} aria-haspopup="menu" onClick={() => setActionMenuOpen((open) => !open)}><AppIcon name="more" size={21}/></button>{actionMenuOpen && <span role="menu" className={styles.actionMenu}><button type="button" role="menuitem" onClick={duplicateSelected}><ActionGlyph kind="copy"/>{t('duplicateTemplate')}</button><button type="button" role="menuitem" onClick={requestDelete}><ActionGlyph kind="trash"/>{t('deleteTemplate')}</button></span>}</span><Button variant="secondary" onClick={duplicateSelected}><ActionGlyph kind="copy"/>{t('duplicateTemplate')}</Button></div></div>
+          {draft ? <div className={styles.editorTop}><AppearancePicker appearance={draft} onChange={(next) => updateRequirementDraft(companyId, next)} label={t('appearance.templateLabel')}/><div className={styles.editorIdentity}><h2>{t('creation.title')}</h2><p>{t('creation.subtitle')}</p></div></div>
+            : selected ? <div className={styles.editorTop}><AppearancePicker appearance={appearance} onChange={(next) => updateExistingRequirementTemplate(companyId, language, next)} label={t('appearance.templateLabel')}/><div className={styles.editorIdentity}><h2>{selected.title[language]}</h2><p>{selected.subtitle[language] || vendors(('category.' + selected.categoryId) as 'category.construction')}</p></div><div className={styles.editorActions}><Button variant="secondary" onClick={duplicateSelected}><ActionGlyph kind="copy"/>{t('duplicateTemplate')}</Button></div></div>
             : <div className={styles.editorTop}><span className={styles.addIcon}><AppIcon name="file" size={29}/></span><div className={styles.editorIdentity}><h2>{t('creation.emptyCompanyTitle')}</h2><p>{t('creation.emptyCompanyDescription')}</p></div></div>}
 
           {(draft || selected) && <>
@@ -237,11 +226,11 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
               {customDocument && <div className={styles.customEditor}>
                 <div className={styles.customEditorHeading}><h4>{t('editCustomDocumentTitle')}</h4><button type="button" onClick={() => setEditingCustomId(null)} aria-label={t('closeCustomEditor')}><AppIcon name="close" size={18}/></button></div>
                 <div className={styles.customEditorFields}>
+                  <div className={styles.customAppearance}><AppearancePicker appearance={{iconKey: validIconKey(customDocument.iconKey), iconColorKey: validColorKey(customDocument.iconColorKey)}} onChange={(next) => updateCustomRequirementDocument(companyId, customDocument.id, next, language)} label={t('appearance.documentLabel')} size="list"/></div>
                   <Field id="requirement-custom-name" label={t('drawer.documentName')} required value={customDocument.customName ?? ''} controlSize="compact" onChange={(event) => {updateCustomRequirementDocument(companyId, customDocument.id, {customName: event.target.value}, language); setValidation(null);}}
                     error={editValidation === 'duplicateDocument' ? t('drawer.duplicate') : editValidation === 'invalidDocument' ? t('drawer.nameRequired') : undefined}/>
                   <Field id="requirement-custom-issuer" label={t('drawer.issuer')} value={customDocument.issuer ?? ''} controlSize="compact" onChange={(event) => updateCustomRequirementDocument(companyId, customDocument.id, {issuer: event.target.value}, language)}/>
                   <label className={styles.draftDescription}>{t('drawer.description')}<textarea value={customDocument.customDescription ?? ''} maxLength={200} onChange={(event) => updateCustomRequirementDocument(companyId, customDocument.id, {customDescription: event.target.value}, language)}/></label>
-                  <div className={styles.customAppearance}><strong>{t('appearance.documentLabel')}</strong><AppearancePicker appearance={{iconKey: validIconKey(customDocument.iconKey), iconColorKey: validColorKey(customDocument.iconColorKey)}} onChange={(next) => updateCustomRequirementDocument(companyId, customDocument.id, next, language)} label={t('appearance.documentLabel')}/></div>
                 </div>
               </div>}
               {(validation === 'documents' || activeValidation === 'documents') && <p className={styles.draftError} role="alert">{t('creation.documentsRequired')}</p>}

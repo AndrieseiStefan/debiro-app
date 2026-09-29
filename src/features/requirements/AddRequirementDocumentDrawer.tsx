@@ -72,11 +72,10 @@ export function AddRequirementDocumentDrawer({phase, onClose, onExited, triggerR
         </button>)}</div> : <div className={styles.noResults}><p>{t('noResults')}</p><Button type="button" variant="secondary" onClick={() => changeMode('custom')}>{t('createCustom')}</Button></div>}
         {selected && <div className={styles.selected}><h3>{t('selectedDocument')}</h3><div className={styles.selectedCard}><AppearanceIcon appearance={selected}/><span><strong>{selected.canonicalName[language]}</strong><small>{selected.description[language]}</small></span></div></div>}
       </div> : <div className={styles.customFields}>
+        <AppearancePicker appearance={appearance} onChange={setAppearance} label={common('appearance.documentLabel')} size="list"/>
         <label><span>{t('documentName')} <em>*</em></span><input value={name} onChange={(event) => {setName(event.target.value); setError(null);}} placeholder={t('namePlaceholder')} aria-invalid={error === 'nameRequired' || error === 'duplicate'} aria-describedby={error ? 'requirement-document-error' : undefined}/></label>
         <label><span>{t('description')} <span className={styles.optional}>{t('optional')}</span></span><textarea value={description} onChange={(event) => setDescription(event.target.value)} maxLength={200} placeholder={t('descriptionPlaceholder')}/><small className={styles.counter}>{description.length}/200</small></label>
       </div>}
-
-      {mode === 'custom' && <div className={styles.appearanceField}><h3>{common('appearance.documentLabel')}</h3><AppearancePicker appearance={appearance} onChange={setAppearance} label={common('appearance.documentLabel')}/></div>}
 
       <fieldset className={styles.rules}><legend>{t('rulesTitle')}</legend><div className={styles.rulesGrid}>
         <label className={styles.requiredField}><span>{common('mandatory')}</span><span className={styles.requiredControl}><input type="checkbox" checked={required} onChange={(event) => setRequired(event.target.checked)}/><span className={styles.toggle} aria-hidden="true"/><span>{required ? common('mandatory') : common('optional')}</span></span></label>

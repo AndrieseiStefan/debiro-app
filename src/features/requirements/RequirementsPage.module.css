@@ -35,12 +35,6 @@
 .editorActions {align-items: center; display: flex; flex: 0 0 auto; gap: 10px;}
 .editorActions :global(button) {min-height: 39px;}
 .editorActions :global(button:last-child) {color: #075bd1; font-size: 14px; padding-inline: 15px;}
-.iconButton {align-items: center; background: #fff; border: 1px solid #d1e2f8; border-radius: 8px; color: #2c5b9e; display: inline-flex; justify-content: center; width: 38px;}
-.actionMenuAnchor {display: inline-flex; position: relative;}
-.actionMenu {background: #fff; border: 1px solid #cbdcf4; border-radius: 8px; box-shadow: 0 10px 28px rgb(20 44 83 / 18%); display: grid; min-width: 180px; padding: 5px; position: absolute; right: 0; top: calc(100% + 6px); z-index: 20;}
-.actionMenu button {align-items: center; background: transparent; border: 0; border-radius: 5px; color: #1d3760; display: flex; font-size: 13px; gap: 8px; min-height: 37px; padding: 7px 9px; text-align: left; white-space: nowrap;}
-.actionMenu button:hover {background: #eaf3ff;}
-.actionMenu button:last-child {color: #c92343;}
 .tabs {border-bottom: 1px solid #dce8f9; display: flex; gap: 0; overflow-x: auto; padding-inline: 12px; scrollbar-width: thin;}
 .tabs button {background: transparent; border: 0; border-bottom: 3px solid transparent; color: #455d81; flex: 0 0 auto; font-size: 14px; min-height: 47px; padding: 8px 17px; white-space: nowrap;}
 .tabs button[aria-selected='true'] {border-bottom-color: #0960df; color: #075bcc; font-weight: 700;}
@@ -80,8 +74,7 @@
 .customEditorHeading h4 {color: #172748; font-size: 15px;}
 .customEditorHeading button {align-items: center; background: transparent; border: 0; border-radius: 5px; color: #3d639d; display: inline-flex; padding: 5px;}
 .customEditorFields {display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr));}
-.customAppearance {display: grid; gap: 8px; grid-column: 1 / -1; justify-items: start;}
-.customAppearance strong {color: #203558; font-size: 13px;}
+.customAppearance {grid-column: 1 / -1; justify-self: start; margin-bottom: 2px;}
 .documentEmpty {align-items: center; color: #607ba6; display: flex; flex-direction: column; gap: 6px; padding: 16px 14px 18px; text-align: center;}
 .documentEmpty > svg {color: #0b61dd;}
 .documentEmpty h4 {color: #1b2e50; font-size: 16px; margin: 0;}
@@ -101,7 +94,7 @@
 .confirmDialog p {color: #58749e; font-size: 14px; line-height: 1.45; margin-top: 8px;}
 .confirmDialog > div {display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 23px;}
 .confirmDialog :global(button) {flex: 1 0 max-content;}
-.draftDescription textarea:focus-visible, .addTemplate:focus-visible, .templateItem:focus-visible, .iconButton:focus-visible, .actionMenu button:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 2px;}
+.draftDescription textarea:focus-visible, .addTemplate:focus-visible, .templateItem:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 2px;}
 
 @media (max-width: 1199px) {
   .workspace {grid-template-columns: minmax(0, 1fr);}

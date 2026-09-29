@@ -1,6 +1,6 @@
 # E1 Interaction & Missing Flow Audit
 
-Audit date: 2026-09-29. Initial baseline: `main` at `4c898fa8d76e431466fa24e4499230ec096c1d25`; updated after E1-024 and E1-025A/B to reflect resolved account-entry links and the local template lifecycle. This is a discovery record, not approval to implement the backlog. The current product is a fixture/browser-memory demonstration without authentication, persistence, file storage, or external services. The 24 approved images in `docs/design/mockups/` were inspected; later documented product decisions take precedence over older images (notably the reduced profile menu, two requirement tabs, single vendor category, and immutable catalog names).
+Audit date: 2026-09-29. Initial baseline: `main` at `4c898fa8d76e431466fa24e4499230ec096c1d25`; updated after E1-024 and E1-025A/B/C to reflect resolved account-entry links and the local template lifecycle. This is a discovery record, not approval to implement the backlog. The current product is a fixture/browser-memory demonstration without authentication, persistence, file storage, or external services. The 24 approved images in `docs/design/mockups/` were inspected; later documented product decisions take precedence over older images (notably the reduced profile menu, two requirement tabs, single vendor category, and immutable catalog names).
 
 Method: inspected all product route files, screen components, state stores, feature contracts, and targeted E2E coverage; opened every current RO and EN route in Chromium; exercised representative forms, drawers, popovers, navigation, local mutations, and 320px overlays. Direct route checks returned HTTP 200 for all 14 implemented product route families in both languages. Unknown fixture vendor/document IDs returned 404; lost `local-*` IDs have recovery UI. The missing routes listed below returned 404 in both languages. The development-only design-system preview is not a product route and is excluded from the counts. No production code was changed during the initial audit.
 
@@ -102,7 +102,7 @@ The table accounts for all visible control **families**, including repeated rows
 | 48 | Requirements | Remove or edit an added document's name/issuer/details | Draft-only removal and custom metadata correction work; catalog names remain read-only. | Same E1 local contract. | IMPLEMENTED | — |
 | 49 | Requirements | Add Document to an existing template, then `Anulează` | Add stages in the working copy; Cancel restores the committed count (`5 → 6 → 5`); Save commits the complete draft and deferred custom-candidate learning. | Same E1 local contract. | IMPLEMENTED | — |
 | 50 | Requirements | `Previzualizare` tab | Visible but unavailable on existing and new templates. | Approve/use a read-only template preview; not the removed Settings/applicability tab. | MISSING | P1 — COMPLETE BEFORE BACKEND IF PRACTICAL |
-| 51 | Requirements | Template `...`, Duplicate, Delete | Duplicate opens a copied, independent create draft; confirmed Delete removes only the active company's template and selects a neighbor/empty state. | Same E1 local behavior; define assigned-template deletion policy when assignment exists. | IMPLEMENTED | — |
+| 51 | Requirements | Template Duplicate and Delete | Header Duplicate opens a copied, independent create draft; footer Delete confirms before removing only the active company's template and selects a neighbor/empty state. | Same E1 local behavior; define assigned-template deletion policy when assignment exists. | IMPLEMENTED | — |
 | 52 | Requirements/Vendors | Category matching and assignment | Same `VendorCategory` IDs exist, but no vendor-template assignment or applicable-rule projection. New matching-category vendor still says no requirements. | Approve manual assignment/override UX; do not add automatic assignment (explicitly deferred). | DESIGN_REQUIRED | DESIGN_REQUIRED |
 | 53 | Requirements | Custom candidate catalog publishing | Candidate record is pending, not shown as published suggestion. | Deduplication/approval/publishing needs future catalog governance. | INTENTIONALLY_DEFERRED | BACKEND_DEFERRED |
 | 54 | Notifications | Category tabs, range, summary/section `Vezi toate`, filtered reset, audit CSV | Local filters, expand/scroll, reset, and newest-first CSV download work. | Same E1 snapshot behavior. | IMPLEMENTED | — |
@@ -148,7 +148,7 @@ Items that merely display data—contact cards, static KPI copy, notification ro
 | --- | --- | --- | --- | --- |
 | Vendor requirement assignment | Matching category gives eligibility but a vendor cannot receive a template or see applicable rules. | Yes: manual assignment, multiplicity/override, and category-change behavior. Automatic assignment remains deferred. | Completed E1-025A edit lifecycle, vendor category identity. | E1-027 design gate. |
 | Vendor edit/invite continuation | New local vendor has no invite link, edit form, or category correction; core creation stops at a setup-needed Details page. | Yes for edit/management affordance; local invitation may reuse an approved preview pattern. | Local vendor identity and requirement assignment. | E1-026. |
-| Existing template lifecycle | Atomic metadata/document/rule/appearance Save/Cancel, independent Duplicate, and confirmed Delete are implemented; Preview remains unavailable. | Yes for Preview content and future assigned-template deletion behavior. | Existing Requirements state/drawer. | E1-025A/B complete; later design gate. |
+| Existing template lifecycle | Atomic metadata/document/rule/appearance Save/Cancel, independent Duplicate, and confirmed Delete are implemented; Preview remains unavailable. | Yes for Preview content and future assigned-template deletion behavior. | Existing Requirements state/drawer. | E1-025A/B/C complete; later design gate. |
 | Document management and renewal | Most Documents and Vendor rows cannot open; no replacement/history path. | Yes: non-review Details, file access, renewal/versions, destructive actions. | Shared review outcome, storage later. | E1-029 design gate. |
 | Company Profile | Sidebar advertises it; no route to correct legal/contact/company information. | Yes; no canonical screen. | Global-user versus active-company ownership/permissions. | E1-030. |
 | First-run alternate-company workspace | Create/switch works, but operational shell is a generic no-data screen with no vendor creation entry. | Yes for empty workspace entry and data ownership; do not leak Demo fixtures. | Company-scoped vendor/document state. | E1-031. |
@@ -161,7 +161,7 @@ Inventory rows **04–06, 09, 11, 16, 19–20, 22–24, 27–28, 30, 33, 35–37
 
 - Landing account-entry links are functional; remaining public marketing actions lack approved destinations or content.
 - Dashboard panel links, most row ellipses, Vendor missing-upload/requirements actions, and most Documents ellipses do not provide a usable path (P0/P1 as inventoried).
-- Requirements `Previzualizare` remains unavailable; template Duplicate/Delete and its action menu work locally, while unrelated row ellipses remain deferred. The removed `Setări și aplicabilitate` tab must **not** be restored.
+- Requirements `Previzualizare` remains unavailable; template Duplicate/Delete work as separate header/footer actions, while unrelated row ellipses remain deferred. The removed `Setări și aplicabilitate` tab must **not** be restored.
 - Reports and Company Profile are unavailable sidebar controls; My Profile/My Invitations/Help/Logout are unavailable profile rows.
 - My Companies company-card ellipses, Members row ellipses, Supplier Portal uploaded-row ellipses, Landing marketing controls, Login forgot-password, and Billing mutations are also unavailable for the reasons classified above.
 
@@ -216,7 +216,7 @@ At 320px, the Add Vendor, Add Document, Add Requirement Document, Invite Member,
 
 ## 11. Recommended Remaining E1 Backlog
 
-Order reflects dependencies. E1-024 and E1-025A/B are complete and no longer appear in the remaining backlog. `DESIGN_REQUIRED first` is a gate, not permission to invent behavior. Sizes are estimates for the proposed scope, not detailed tickets.
+Order reflects dependencies. E1-024 and E1-025A/B/C are complete and no longer appear in the remaining backlog. `DESIGN_REQUIRED first` is a gate, not permission to invent behavior. Sizes are estimates for the proposed scope, not detailed tickets.
 
 | Order / proposed ID | Title | Priority | Size | Dependencies | DESIGN_REQUIRED first? | One-sentence scope |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -233,7 +233,7 @@ The sequence intentionally does **not** include real auth, storage, email, OCR, 
 
 ## Decision Output
 
-**READY BEFORE E2:** implemented route shells, locale navigation, and Landing account-entry links (E1-024); Login/Onboarding local validation; accessible shared drawers/popovers; Add Vendor, Add Document, Create Template, atomic existing-template editing, appearance, duplicate, and delete (E1-025A/B), Invite Member, Create/Switch Company local happy paths; Documents/Vendors/Notifications filters; bell mark-all-read; audit CSV.
+**READY BEFORE E2:** implemented route shells, locale navigation, and Landing account-entry links (E1-024); Login/Onboarding local validation; accessible shared drawers/popovers; Add Vendor, Add Document, Create Template, atomic existing-template editing, appearance, duplicate, and delete (E1-025A/B/C), Invite Member, Create/Switch Company local happy paths; Documents/Vendors/Notifications filters; bell mark-all-read; audit CSV.
 
 **IMPLEMENT BEFORE E2:** usable vendor Details/local invite (E1-026); approved vendor requirement assignment (E1-027); shared Review outcomes (E1-028); document management/renewal path (E1-029); Company Profile and usable new-company workspace (E1-030/031). The design-gated parts require approval first.
 
