@@ -443,3 +443,117 @@ test('keeps English existing-template edits and narrow custom-editor geometry us
   await page.getByRole('button', {name: 'Cancel'}).click();
   await expect(page.getByText('Local EN permit')).toHaveCount(0);
 });
+
+test('stages template appearance and keeps the committed list unchanged until Save', async ({page}) => {
+  await page.goto(roPath);
+  const selected = page.locator('[data-template-id="construction"]');
+  await expect(selected.locator('[data-color]')).toHaveAttribute('data-color', 'blue');
+  await page.getByRole('button', {name: 'Schimbă aspectul șablonului'}).click();
+  const picker = page.getByRole('dialog', {name: 'Alege aspectul'});
+  await expect(picker).toBeVisible();
+  await picker.getByRole('button', {name: 'Scut'}).click();
+  await picker.getByRole('button', {name: 'Violet'}).click();
+  await expect(selected.locator('[data-color]')).toHaveAttribute('data-color', 'blue');
+  await page.keyboard.press('Escape');
+  await expect(picker).toHaveCount(0);
+  await expect(page.getByRole('button', {name: 'Schimbă aspectul șablonului'})).toBeFocused();
+  await page.getByRole('button', {name: 'Anulează'}).click();
+  await expect(page.getByRole('button', {name: 'Salvează șablon'})).toBeDisabled();
+  await page.getByRole('button', {name: 'Schimbă aspectul șablonului'}).click();
+  await picker.getByRole('button', {name: 'Violet'}).click();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', {name: 'Salvează șablon'}).click();
+  await expect(selected.locator('[data-color]')).toHaveAttribute('data-color', 'violet');
+});
+
+test('custom document appearance uses the shared picker and is editable after Save', async ({page}) => {
+  await page.goto(roPath);
+  await page.getByRole('button', {name: 'Adaugă document'}).click();
+  const drawer = page.getByRole('dialog', {name: 'Adaugă document'});
+  await drawer.getByRole('button', {name: 'Document personalizat'}).click();
+  await drawer.getByRole('textbox', {name: /Nume document/}).fill('Aviz aspect QA');
+  await drawer.getByRole('button', {name: 'Aspect document'}).click();
+  const picker = page.getByRole('dialog', {name: 'Alege aspectul'});
+  await picker.getByRole('button', {name: 'Transport'}).click();
+  await picker.getByRole('button', {name: 'Turcoaz'}).click();
+  await page.keyboard.press('Escape');
+  await expect(drawer).toBeVisible();
+  await drawer.getByRole('button', {name: 'Adaugă documentul'}).click();
+  const row = page.getByRole('row').filter({hasText: 'Aviz aspect QA'});
+  await expect(row.locator('[data-color]')).toHaveAttribute('data-color', 'teal');
+  await page.getByRole('button', {name: 'Salvează șablon'}).click();
+  await row.getByRole('button', {name: 'Editează documentul personalizat Aviz aspect QA'}).click();
+  await page.getByRole('button', {name: 'Aspect document'}).click();
+  await picker.getByRole('button', {name: 'Portocaliu'}).click();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', {name: 'Anulează'}).click();
+  await expect(row.locator('[data-color]')).toHaveAttribute('data-color', 'teal');
+  await row.getByRole('button', {name: 'Editează documentul personalizat Aviz aspect QA'}).click();
+  await page.getByRole('button', {name: 'Aspect document'}).click();
+  await picker.getByRole('button', {name: 'Portocaliu'}).click();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', {name: 'Salvează șablon'}).click();
+  await expect(row.locator('[data-color]')).toHaveAttribute('data-color', 'orange');
+  const catalogRow = page.getByRole('row').filter({hasText: 'Certificat de înregistrare'});
+  await expect(catalogRow.getByRole('button', {name: /Editează documentul personalizat/})).toHaveCount(0);
+});
+
+test('duplicates with dirty guard, unique names and independent copied appearance, then confirms delete', async ({page}) => {
+  await page.goto(roPath);
+  await page.locator('#requirement-template-name').fill('Unsaved name');
+  await page.getByRole('button', {name: 'Șterge șablon'}).click();
+  await expect(page.getByRole('alertdialog', {name: 'Renunți la modificările nesalvate?'})).toBeVisible();
+  await page.getByRole('button', {name: 'Continuă editarea'}).click();
+  await expect(page.locator('#requirement-template-name')).toHaveValue('Unsaved name');
+  await page.getByRole('button', {name: 'Duplică șablon'}).click();
+  await expect(page.getByRole('alertdialog', {name: 'Renunți la modificările nesalvate?'})).toBeVisible();
+  await page.getByRole('button', {name: 'Continuă editarea'}).click();
+  await expect(page.locator('#requirement-template-name')).toHaveValue('Unsaved name');
+  await page.getByRole('button', {name: 'Duplică șablon'}).click();
+  await page.getByRole('button', {name: 'Renunță la modificări'}).click();
+  await expect(page.locator('#requirement-template-name')).toHaveValue('Subcontractor construcții — copie');
+  await expect(page.getByRole('tab', {name: 'Documente necesare (5)'})).toBeVisible();
+  await page.getByRole('button', {name: 'Anulează'}).click();
+  await page.getByRole('button', {name: 'Renunță la modificări'}).click();
+  await expect(page.getByRole('button', {name: /Subcontractor construcții — copie/})).toHaveCount(0);
+  await page.getByRole('button', {name: 'Duplică șablon'}).click();
+  await page.getByRole('button', {name: 'Salvează șablon'}).click();
+  await expect(page.getByRole('heading', {name: 'Subcontractor construcții — copie'})).toBeVisible();
+  await page.locator('[data-template-id="construction"]').click();
+  await page.getByRole('button', {name: 'Duplică șablon'}).click();
+  await expect(page.locator('#requirement-template-name')).toHaveValue('Subcontractor construcții — copie 2');
+  await page.getByRole('button', {name: 'Anulează'}).click();
+  await page.getByRole('button', {name: 'Renunță la modificări'}).click();
+  await page.getByRole('button', {name: 'Șterge șablon'}).click();
+  const confirmation = page.getByRole('alertdialog', {name: /Ștergi șablonul/});
+  await expect(confirmation).toBeVisible();
+  await confirmation.getByRole('button', {name: 'Anulează'}).click();
+  await expect(page.getByRole('heading', {name: 'Subcontractor construcții'})).toBeVisible();
+  await page.getByRole('button', {name: 'Șterge șablon'}).click();
+  await confirmation.getByRole('button', {name: 'Șterge șablonul'}).click();
+  await expect(page.locator('[data-template-id="construction"]')).toHaveCount(0);
+  await expect(page.getByRole('heading', {name: 'Furnizor materiale'})).toBeVisible();
+});
+
+test('appearance picker stays viewport-contained and keyboard-usable in both locales', async ({page}) => {
+  for (const {route, label, title} of [
+    {route: '/requirements', label: 'Schimbă aspectul șablonului', title: 'Alege aspectul'},
+    {route: '/en/requirements', label: 'Change template appearance', title: 'Choose appearance'}
+  ]) {
+    await page.goto(route);
+    for (const width of [1448, 1024, 758, 600, 375, 320]) {
+      await page.setViewportSize({width, height: width === 1448 ? 1086 : 812});
+      await page.getByRole('button', {name: label}).click();
+      const picker = page.getByRole('dialog', {name: title});
+      await expect(picker).toBeVisible();
+      const bounds = await picker.boundingBox();
+      expect(bounds!.x).toBeGreaterThanOrEqual(0);
+      expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width + 1);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      await page.keyboard.press('Tab');
+      await expect(picker).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(picker).toHaveCount(0);
+    }
+  }
+});

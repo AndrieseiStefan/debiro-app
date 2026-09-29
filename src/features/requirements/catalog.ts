@@ -1,22 +1,24 @@
-import type {LocalizedText, RequirementRuleView} from './types';
+import type {LocalizedText} from './types';
+import type {AppearanceColorKey, AppearanceIconKey} from './appearance';
 
 export type CatalogDocumentType = {
   id: string;
   canonicalName: LocalizedText;
   description: LocalizedText;
   aliases: string[];
-  tone: RequirementRuleView['tone'];
+  iconKey: AppearanceIconKey;
+  iconColorKey: AppearanceColorKey;
   status: 'active';
 };
 
 export const catalogDocuments: CatalogDocumentType[] = [
-  {id: 'registration', canonicalName: {ro: 'Certificat de înregistrare', en: 'Registration certificate'}, description: {ro: 'Certificat ONRC', en: 'Trade Register certificate'}, aliases: ['certificat registrul comerțului', 'company registration'], tone: 'blue', status: 'active'},
-  {id: 'tax', canonicalName: {ro: 'Certificat fiscal', en: 'Tax certificate'}, description: {ro: 'Certificat ANAF privind obligațiile fiscale', en: 'ANAF tax obligations certificate'}, aliases: ['anaf', 'fiscal clearance'], tone: 'red', status: 'active'},
-  {id: 'liability', canonicalName: {ro: 'Asigurare Răspundere Civilă', en: 'Liability insurance'}, description: {ro: 'Poliță RCA profesională', en: 'Professional liability policy'}, aliases: ['asigurare rc', 'insurance'], tone: 'green', status: 'active'},
-  {id: 'fire', canonicalName: {ro: 'Autorizație ISU', en: 'Fire safety permit'}, description: {ro: 'Autorizație pentru securitate la incendiu', en: 'Fire safety authorization'}, aliases: ['isu', 'fire permit'], tone: 'red', status: 'active'},
-  {id: 'iso', canonicalName: {ro: 'Certificare ISO 9001', en: 'ISO 9001 certification'}, description: {ro: 'Sistem de management al calității', en: 'Quality management system'}, aliases: ['iso', 'quality certification'], tone: 'amber', status: 'active'},
-  {id: 'permit', canonicalName: {ro: 'Autorizație de lucru', en: 'Work permit'}, description: {ro: 'Autorizație ISC / avize specifice', en: 'ISC permit / specific approvals'}, aliases: ['aviz de lucru', 'isc'], tone: 'red', status: 'active'},
-  {id: 'safety', canonicalName: {ro: 'Declarație SSM', en: 'Occupational safety declaration'}, description: {ro: 'Declarație privind securitatea muncii', en: 'Workplace safety declaration'}, aliases: ['ssm', 'workplace safety'], tone: 'purple', status: 'active'}
+  {id: 'registration', canonicalName: {ro: 'Certificat de înregistrare', en: 'Registration certificate'}, description: {ro: 'Certificat ONRC', en: 'Trade Register certificate'}, aliases: ['certificat registrul comerțului', 'company registration'], iconKey: 'file', iconColorKey: 'blue', status: 'active'},
+  {id: 'tax', canonicalName: {ro: 'Certificat fiscal', en: 'Tax certificate'}, description: {ro: 'Certificat ANAF privind obligațiile fiscale', en: 'ANAF tax obligations certificate'}, aliases: ['anaf', 'fiscal clearance'], iconKey: 'file', iconColorKey: 'rose', status: 'active'},
+  {id: 'liability', canonicalName: {ro: 'Asigurare Răspundere Civilă', en: 'Liability insurance'}, description: {ro: 'Poliță RCA profesională', en: 'Professional liability policy'}, aliases: ['asigurare rc', 'insurance'], iconKey: 'shield', iconColorKey: 'green', status: 'active'},
+  {id: 'fire', canonicalName: {ro: 'Autorizație ISU', en: 'Fire safety permit'}, description: {ro: 'Autorizație pentru securitate la incendiu', en: 'Fire safety authorization'}, aliases: ['isu', 'fire permit'], iconKey: 'file', iconColorKey: 'rose', status: 'active'},
+  {id: 'iso', canonicalName: {ro: 'Certificare ISO 9001', en: 'ISO 9001 certification'}, description: {ro: 'Sistem de management al calității', en: 'Quality management system'}, aliases: ['iso', 'quality certification'], iconKey: 'target', iconColorKey: 'orange', status: 'active'},
+  {id: 'permit', canonicalName: {ro: 'Autorizație de lucru', en: 'Work permit'}, description: {ro: 'Autorizație ISC / avize specifice', en: 'ISC permit / specific approvals'}, aliases: ['aviz de lucru', 'isc'], iconKey: 'file', iconColorKey: 'rose', status: 'active'},
+  {id: 'safety', canonicalName: {ro: 'Declarație SSM', en: 'Occupational safety declaration'}, description: {ro: 'Declarație privind securitatea muncii', en: 'Workplace safety declaration'}, aliases: ['ssm', 'workplace safety'], iconKey: 'file', iconColorKey: 'violet', status: 'active'}
 ];
 
 export function normalizeDocumentName(value: string) {

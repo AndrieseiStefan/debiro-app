@@ -2,20 +2,24 @@
 
 import {useSyncExternalStore} from 'react';
 import {vendorCategories, type VendorCategory} from '@/features/vendors/types';
+import {defaultAppearance, starterAppearance, validColorKey, validIconKey, type Appearance} from './appearance';
 import {catalogDocument, normalizeDocumentName} from './catalog';
 import {requirementsFixture} from './fixtures';
-import type {CatalogCandidate, RequirementTemplate, RequirementTemplateDocument, TemplateDraft, TemplateEditDraft} from './types';
+import type {CatalogCandidate, RequirementDocumentInput, RequirementTemplate, RequirementTemplateDocument, TemplateDraft, TemplateEditDraft} from './types';
 
 type RuleChange = Partial<Pick<RequirementTemplateDocument, 'required' | 'expiryWarningDays' | 'validityMonths'>>;
-type CustomChange = {customName?: string; customDescription?: string; issuer?: string};
-type EditChange = Partial<Pick<TemplateEditDraft, 'name' | 'description' | 'categoryId' | 'documents'>>;
+type CustomChange = {customName?: string; customDescription?: string; issuer?: string} & Partial<Appearance>;
+type EditChange = Partial<Pick<TemplateEditDraft, 'name' | 'description' | 'categoryId' | 'iconKey' | 'iconColorKey' | 'documents'>>;
 type ValidationError = 'missing' | 'name' | 'duplicateName' | 'category' | 'documents' | 'invalidDocument' | 'duplicateDocument';
 export type RequirementsWorkspace = {templates: RequirementTemplate[]; selectedId: string | null; draft: TemplateDraft | null; editDraft: TemplateEditDraft | null};
 type RequirementsState = {byCompany: Record<string, RequirementsWorkspace>; candidates: CatalogCandidate[]};
-type NewDocument = Omit<RequirementTemplateDocument, 'id' | 'templateId'>;
+type NewDocument = RequirementDocumentInput;
 
 const seededTemplates: RequirementTemplate[] = requirementsFixture.templates.map((template) => ({
-  id: template.id, title: template.title, subtitle: template.subtitle, icon: template.icon, categoryId: template.categoryId,
+  id: template.id, companyId: 'demo-company', title: template.title, subtitle: template.subtitle,
+  ...starterAppearance(template.icon), categoryId: template.categoryId,
+  starterTemplateId: `starter-${template.id}`, starterTemplateVersion: 1,
+  createdAt: '2025-01-15T12:00:00.000Z', updatedAt: '2025-01-15T12:00:00.000Z',
   documents: template.rules.map((rule) => ({
     id: `${template.id}:${rule.id}`, templateId: template.id, catalogDocumentTypeId: rule.id,
     required: rule.mandatory, expiryWarningDays: rule.alertDays, validityMonths: rule.validityMonths
@@ -45,10 +49,10 @@ export function selectRequirementTemplate(companyId: string, selectedId: string)
 }
 
 export function startRequirementDraft(companyId: string) {
-  updateWorkspace(companyId, (workspace) => ({...workspace, editDraft: null, draft: {id: `draft-${crypto.randomUUID()}`, name: '', description: '', categoryId: '', documents: [], isNew: true, isDirty: false}}));
+  updateWorkspace(companyId, (workspace) => ({...workspace, editDraft: null, draft: {id: `draft-${crypto.randomUUID()}`, name: '', description: '', categoryId: '', ...defaultAppearance, documents: [], isNew: true, isDirty: false}}));
 }
 
-export function updateRequirementDraft(companyId: string, change: Partial<Pick<TemplateDraft, 'name' | 'description' | 'categoryId'>>) {
+export function updateRequirementDraft(companyId: string, change: Partial<Pick<TemplateDraft, 'name' | 'description' | 'categoryId' | 'iconKey' | 'iconColorKey'>>) {
   updateWorkspace(companyId, (workspace) => workspace.draft ? {...workspace, draft: {...workspace.draft, ...change, isDirty: true}} : workspace);
 }
 
@@ -61,12 +65,14 @@ function selectedTemplate(workspace: RequirementsWorkspace) {
 }
 
 function beginExistingEdit(template: RequirementTemplate, language: 'ro' | 'en'): TemplateEditDraft {
-  return {templateId: template.id, language, name: template.title[language], description: template.subtitle[language], categoryId: template.categoryId, documents: template.documents.map((document) => ({...document})), isDirty: false};
+  return {templateId: template.id, language, name: template.title[language], description: template.subtitle[language], categoryId: template.categoryId,
+    iconKey: template.iconKey, iconColorKey: template.iconColorKey, documents: template.documents.map((document) => ({...document})), isDirty: false};
 }
 
 function editIsDirty(template: RequirementTemplate, edit: TemplateEditDraft) {
   return edit.name !== template.title[edit.language] || edit.description !== template.subtitle[edit.language] ||
-    edit.categoryId !== template.categoryId || JSON.stringify(edit.documents) !== JSON.stringify(template.documents);
+    edit.categoryId !== template.categoryId || edit.iconKey !== template.iconKey || edit.iconColorKey !== template.iconColorKey ||
+    JSON.stringify(edit.documents) !== JSON.stringify(template.documents);
 }
 
 function stageExisting(companyId: string, language: 'ro' | 'en', change: (edit: TemplateEditDraft) => EditChange) {
@@ -79,7 +85,7 @@ function stageExisting(companyId: string, language: 'ro' | 'en', change: (edit: 
   });
 }
 
-export function updateExistingRequirementTemplate(companyId: string, language: 'ro' | 'en', change: Partial<Pick<TemplateEditDraft, 'name' | 'description' | 'categoryId'>>) {
+export function updateExistingRequirementTemplate(companyId: string, language: 'ro' | 'en', change: Partial<Pick<TemplateEditDraft, 'name' | 'description' | 'categoryId' | 'iconKey' | 'iconColorKey'>>) {
   stageExisting(companyId, language, () => change);
 }
 
@@ -106,7 +112,8 @@ export function addRequirementDocument(companyId: string, input: NewDocument, la
   const target = workspace.draft ?? workspace.editDraft ?? selected;
   if (!target || Boolean(input.catalogDocumentTypeId) === Boolean(input.customName?.trim()) || (input.catalogDocumentTypeId && !catalogDocument(input.catalogDocumentTypeId)) || (input.customDescription?.length ?? 0) > 200) return 'invalid';
   if (isDuplicateDocument(target.documents, input)) return 'duplicate';
-  const document = {...input, id: `rule-${crypto.randomUUID()}`, templateId: workspace.draft?.id ?? selected!.id} as RequirementTemplateDocument;
+  const document = {...input, ...(input.customName !== undefined ? {iconKey: validIconKey(input.iconKey), iconColorKey: validColorKey(input.iconColorKey)} : {}),
+    id: `rule-${crypto.randomUUID()}`, templateId: workspace.draft?.id ?? selected!.id} as RequirementTemplateDocument;
   if (workspace.draft) updateWorkspace(companyId, (current) => ({...current, draft: {...current.draft!, documents: [...current.draft!.documents, document], isDirty: true}}));
   else stageExisting(companyId, language, (edit) => ({documents: [...edit.documents, {...document, templateId: edit.templateId}]}));
   return 'added';
@@ -119,11 +126,15 @@ export function updateRequirementDocument(companyId: string, documentId: string,
 }
 
 export function removeRequirementDocument(companyId: string, documentId: string, language: 'ro' | 'en' = 'ro') {
-  stageExisting(companyId, language, (edit) => ({documents: edit.documents.filter((item) => item.id !== documentId)}));
+  const workspace = getRequirementsWorkspace(state, companyId);
+  if (workspace.draft) updateWorkspace(companyId, (current) => ({...current, draft: {...current.draft!, documents: current.draft!.documents.filter((item) => item.id !== documentId), isDirty: true}}));
+  else stageExisting(companyId, language, (edit) => ({documents: edit.documents.filter((item) => item.id !== documentId)}));
 }
 
 export function updateCustomRequirementDocument(companyId: string, documentId: string, change: CustomChange, language: 'ro' | 'en' = 'ro') {
-  stageExisting(companyId, language, (edit) => ({documents: edit.documents.map((item) => item.id === documentId && item.customName !== undefined ? {...item, ...change} : item)}));
+  const workspace = getRequirementsWorkspace(state, companyId);
+  if (workspace.draft) updateWorkspace(companyId, (current) => ({...current, draft: {...current.draft!, documents: current.draft!.documents.map((item) => item.id === documentId && item.customName !== undefined ? {...item, ...change} : item), isDirty: true}}));
+  else stageExisting(companyId, language, (edit) => ({documents: edit.documents.map((item) => item.id === documentId && item.customName !== undefined ? {...item, ...change} : item)}));
 }
 
 function validateTemplateFields(workspace: RequirementsWorkspace, draft: Pick<TemplateDraft, 'name' | 'categoryId' | 'documents'>, ownId?: string): ValidationError | null {
@@ -144,11 +155,6 @@ export function validateExistingRequirementEdit(workspace: RequirementsWorkspace
   return workspace.editDraft ? validateTemplateFields(workspace, workspace.editDraft, workspace.editDraft.templateId) : 'missing' as const;
 }
 
-function iconForCategory(category: VendorCategory): RequirementTemplate['icon'] {
-  if (category === 'construction' || category === 'materials' || category === 'software' || category === 'logistics') return category;
-  return 'consulting';
-}
-
 export function learnCandidates(existing: CatalogCandidate[], documents: RequirementTemplateDocument[], now = new Date().toISOString()): CatalogCandidate[] {
   return documents.reduce<CatalogCandidate[]>((candidates, document) => {
     if (!document.customName) return candidates;
@@ -167,14 +173,16 @@ export function saveRequirementDraft(companyId: string): ReturnType<typeof valid
   const id = `local-template-${crypto.randomUUID()}`;
   const name = draft.name.trim().replace(/\s+/g, ' ');
   const description = draft.description.trim();
+  const now = new Date().toISOString();
   const template: RequirementTemplate = {
-    id, title: {ro: name, en: name}, subtitle: {ro: description, en: description},
-    icon: iconForCategory(draft.categoryId as VendorCategory), categoryId: draft.categoryId as VendorCategory,
+    id, companyId, title: {ro: name, en: name}, subtitle: {ro: description, en: description},
+    iconKey: validIconKey(draft.iconKey), iconColorKey: validColorKey(draft.iconColorKey), categoryId: draft.categoryId as VendorCategory,
+    duplicatedFromTemplateId: draft.duplicatedFromTemplateId, createdAt: now, updatedAt: now,
     documents: draft.documents.map((document) => ({...document, templateId: id}))
   };
   publish({
     byCompany: {...state.byCompany, [companyId]: {...workspace, templates: [...workspace.templates, template], selectedId: id, draft: null, editDraft: null}},
-    candidates: learnCandidates(state.candidates, template.documents)
+    candidates: draft.duplicatedFromTemplateId ? state.candidates : learnCandidates(state.candidates, template.documents)
   });
   return 'saved';
 }
@@ -196,8 +204,41 @@ export function saveExistingRequirementEdit(companyId: string): ValidationError 
   const learned = documents.filter((document) => document.customName && !original.documents.some((previous) => previous.id === document.id && normalizeDocumentName(previous.customName ?? '') === normalizeDocumentName(document.customName ?? '')));
   const committed: RequirementTemplate = {...original, title: renamed ? {ro: name, en: name} : original.title,
     subtitle: reworded ? {ro: description, en: description} : original.subtitle,
-    categoryId: edit.categoryId as VendorCategory, icon: iconForCategory(edit.categoryId as VendorCategory), documents};
+    categoryId: edit.categoryId as VendorCategory, iconKey: validIconKey(edit.iconKey), iconColorKey: validColorKey(edit.iconColorKey),
+    documents, updatedAt: new Date().toISOString()};
   publish({byCompany: {...state.byCompany, [companyId]: {...workspace, templates: workspace.templates.map((template) => template.id === original.id ? committed : template), editDraft: null}},
     candidates: learnCandidates(state.candidates, learned)});
   return 'saved';
+}
+
+export function duplicateRequirementTemplate(companyId: string, language: 'ro' | 'en'): boolean {
+  const workspace = getRequirementsWorkspace(state, companyId);
+  const source = selectedTemplate(workspace);
+  if (!source || source.companyId !== companyId) return false;
+  const base = `${source.title[language]} — ${language === 'ro' ? 'copie' : 'copy'}`;
+  let name = base;
+  let number = 2;
+  while (workspace.templates.some((template) => Object.values(template.title).some((value) => normalizeDocumentName(value) === normalizeDocumentName(name)))) {
+    name = `${base} ${number++}`;
+  }
+  const id = `draft-${crypto.randomUUID()}`;
+  updateWorkspace(companyId, (current) => ({...current, editDraft: null, draft: {
+    id, name, description: source.subtitle[language], categoryId: source.categoryId,
+    iconKey: source.iconKey, iconColorKey: source.iconColorKey, duplicatedFromTemplateId: source.id,
+    documents: source.documents.map((document) => ({...document, id: `rule-${crypto.randomUUID()}`, templateId: id})),
+    isNew: true, isDirty: true
+  }}));
+  return true;
+}
+
+export function deleteRequirementTemplate(companyId: string): boolean {
+  const workspace = getRequirementsWorkspace(state, companyId);
+  const selected = selectedTemplate(workspace);
+  if (!selected || selected.companyId !== companyId) return false;
+  const index = workspace.templates.findIndex((template) => template.id === selected.id);
+  updateWorkspace(companyId, (current) => {
+    const templates = current.templates.filter((template) => template.id !== selected.id);
+    return {...current, templates, selectedId: templates[Math.min(index, templates.length - 1)]?.id ?? null, draft: null, editDraft: null};
+  });
+  return true;
 }

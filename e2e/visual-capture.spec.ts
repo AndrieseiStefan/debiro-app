@@ -42,10 +42,26 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
       await page.getByRole('button', {name: 'Demo Company SRL'}).click();
       await page.getByRole('dialog', {name: route.startsWith('/en') ? 'Switch company' : 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
       await expect(page.getByRole('heading', {name: 'Global Clean Services'})).toBeVisible();
-    } else if (action === 'requirement-draft' || action === 'requirement-suggestions' || action === 'requirement-custom' || action === 'requirement-edit') {
+    } else if (action === 'requirement-draft' || action === 'requirement-suggestions' || action === 'requirement-custom' || action === 'requirement-edit' || action === 'requirement-appearance' || action === 'requirement-document-appearance' || action === 'requirement-duplicate' || action === 'requirement-delete-confirm') {
       if (route !== '/requirements' && route !== '/en/requirements') throw new Error('Requirement captures require the Requirements route.');
       const english = route.startsWith('/en');
       if (action === 'requirement-draft') await page.getByRole('button', {name: english ? 'New template' : 'Șablon nou', exact: true}).click();
+      else if (action === 'requirement-appearance') {
+        await page.getByRole('button', {name: english ? 'Change template appearance' : 'Schimbă aspectul șablonului'}).click();
+        await expect(page.getByRole('dialog', {name: english ? 'Choose appearance' : 'Alege aspectul'})).toBeVisible();
+      } else if (action === 'requirement-document-appearance') {
+        await page.getByRole('button', {name: english ? 'Add document' : 'Adaugă document'}).click();
+        const drawer = page.getByRole('dialog', {name: english ? 'Add document' : 'Adaugă document'});
+        await drawer.getByRole('button', {name: english ? 'Custom document' : 'Document personalizat'}).click();
+        await drawer.getByRole('button', {name: english ? 'Document appearance' : 'Aspect document'}).click();
+        await expect(page.getByRole('dialog', {name: english ? 'Choose appearance' : 'Alege aspectul'})).toBeVisible();
+      } else if (action === 'requirement-duplicate') {
+        await page.getByRole('button', {name: english ? 'Duplicate template' : 'Duplică șablon'}).click();
+        await expect(page.locator('#requirement-template-name')).toHaveValue(/copy|copie/);
+      } else if (action === 'requirement-delete-confirm') {
+        await page.getByRole('button', {name: english ? 'Delete template' : 'Șterge șablon'}).click();
+        await expect(page.getByRole('alertdialog')).toBeVisible();
+      }
       else if (action === 'requirement-edit') {
         await page.locator('#requirement-template-name').fill(english ? 'Updated construction template' : 'Șablon construcții actualizat');
         await page.getByRole('button', {name: english ? 'Add document' : 'Adaugă document'}).click();

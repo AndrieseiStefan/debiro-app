@@ -1,4 +1,5 @@
 import type {VendorCategory} from '@/features/vendors/types';
+import type {AppearanceColorKey, AppearanceIconKey} from './appearance';
 
 export type LocalizedText = {ro: string; en: string};
 
@@ -42,17 +43,29 @@ type DocumentRules = {
 };
 
 export type RequirementTemplateDocument = DocumentRules & (
-  | {catalogDocumentTypeId: string; customName?: never; customDescription?: never}
-  | {catalogDocumentTypeId?: never; customName: string; customDescription?: string}
+  | {catalogDocumentTypeId: string; customName?: never; customDescription?: never; iconKey?: never; iconColorKey?: never}
+  | {catalogDocumentTypeId?: never; customName: string; customDescription?: string; iconKey?: AppearanceIconKey; iconColorKey?: AppearanceColorKey}
+);
+
+export type RequirementDocumentInput = Omit<DocumentRules, 'id' | 'templateId'> & (
+  | {catalogDocumentTypeId: string; customName?: never; customDescription?: never; iconKey?: never; iconColorKey?: never}
+  | {catalogDocumentTypeId?: never; customName: string; customDescription?: string; iconKey?: AppearanceIconKey; iconColorKey?: AppearanceColorKey}
 );
 
 export type RequirementTemplate = {
   id: string;
+  companyId: string;
   title: LocalizedText;
   subtitle: LocalizedText;
-  icon: RequirementTemplateView['icon'];
+  iconKey: AppearanceIconKey;
+  iconColorKey: AppearanceColorKey;
   categoryId: VendorCategory;
   documents: RequirementTemplateDocument[];
+  starterTemplateId?: string;
+  starterTemplateVersion?: number;
+  duplicatedFromTemplateId?: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type TemplateDraft = {
@@ -60,7 +73,10 @@ export type TemplateDraft = {
   name: string;
   description: string;
   categoryId: VendorCategory | '';
+  iconKey: AppearanceIconKey;
+  iconColorKey: AppearanceColorKey;
   documents: RequirementTemplateDocument[];
+  duplicatedFromTemplateId?: string;
   isNew: true;
   isDirty: boolean;
 };
@@ -71,6 +87,8 @@ export type TemplateEditDraft = {
   name: string;
   description: string;
   categoryId: VendorCategory | '';
+  iconKey: AppearanceIconKey;
+  iconColorKey: AppearanceColorKey;
   documents: RequirementTemplateDocument[];
   isDirty: boolean;
 };

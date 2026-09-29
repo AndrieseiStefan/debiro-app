@@ -5,11 +5,13 @@ import {useTranslations} from 'next-intl';
 import {AppIcon} from '@/components/layout/AppIcon';
 import {Button} from '@/components/ui/Button';
 import {Drawer, type DrawerPhase} from '@/components/ui/Drawer';
+import {AppearanceIcon, AppearancePicker} from './AppearancePicker';
+import {defaultAppearance, type Appearance} from './appearance';
 import {searchCatalog} from './catalog';
-import type {ExpiryWarningDays, RequirementTemplateDocument, ValidityMonths} from './types';
+import type {ExpiryWarningDays, RequirementDocumentInput, ValidityMonths} from './types';
 import styles from './AddRequirementDocumentDrawer.module.css';
 
-type NewDocument = Omit<RequirementTemplateDocument, 'id' | 'templateId'>;
+type NewDocument = RequirementDocumentInput;
 const alertOptions: ExpiryWarningDays[] = [7, 15, 30, 60, 90];
 const validityOptions: ValidityMonths[] = [1, 3, 6, 12, 24, 36];
 
@@ -30,6 +32,7 @@ export function AddRequirementDocumentDrawer({phase, onClose, onExited, triggerR
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [issuer, setIssuer] = useState('');
+  const [appearance, setAppearance] = useState<Appearance>(defaultAppearance);
   const [required, setRequired] = useState(true);
   const [alertDays, setAlertDays] = useState<ExpiryWarningDays>(30);
   const [validityMonths, setValidityMonths] = useState<ValidityMonths>(12);
@@ -44,7 +47,7 @@ export function AddRequirementDocumentDrawer({phase, onClose, onExited, triggerR
     if (mode === 'suggestions' && !selected) {setError('selectSuggestion'); return;}
     const document: NewDocument = mode === 'suggestions'
       ? {catalogDocumentTypeId: selectedId, required, expiryWarningDays: alertDays, validityMonths}
-      : {customName: name.trim().replace(/\s+/g, ' '), customDescription: description.trim() || undefined, issuer: issuer.trim() || undefined, required, expiryWarningDays: alertDays, validityMonths};
+      : {customName: name.trim().replace(/\s+/g, ' '), customDescription: description.trim() || undefined, issuer: issuer.trim() || undefined, ...appearance, required, expiryWarningDays: alertDays, validityMonths};
     const result = onAdd(document);
     if (result === 'added') onClose();
     else setError(result);
@@ -63,15 +66,17 @@ export function AddRequirementDocumentDrawer({phase, onClose, onExited, triggerR
       {mode === 'suggestions' ? <div className={styles.suggestionArea}>
         <label className={styles.search}><AppIcon name="search" size={20}/><span className={styles.srOnly}>{t('searchLabel')}</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('searchPlaceholder')}/></label>
         {suggestions.length ? <div className={styles.suggestions}>{suggestions.map((document) => <button type="button" key={document.id} className={styles.suggestion} aria-pressed={selectedId === document.id} onClick={() => {setSelectedId(document.id); setError(null);}}>
-          <span className={styles.documentIcon} data-tone={document.tone}><AppIcon name={document.tone === 'green' ? 'shield' : 'file'} size={21}/></span>
+          <AppearanceIcon appearance={document}/>
           <span><strong>{document.canonicalName[language]}</strong><small>{document.description[language]}</small></span>
           <span className={styles.radio} aria-hidden="true"/>
         </button>)}</div> : <div className={styles.noResults}><p>{t('noResults')}</p><Button type="button" variant="secondary" onClick={() => changeMode('custom')}>{t('createCustom')}</Button></div>}
-        {selected && <div className={styles.selected}><h3>{t('selectedDocument')}</h3><div className={styles.selectedCard}><span className={styles.documentIcon} data-tone={selected.tone}><AppIcon name="file" size={22}/></span><span><strong>{selected.canonicalName[language]}</strong><small>{selected.description[language]}</small></span></div></div>}
+        {selected && <div className={styles.selected}><h3>{t('selectedDocument')}</h3><div className={styles.selectedCard}><AppearanceIcon appearance={selected}/><span><strong>{selected.canonicalName[language]}</strong><small>{selected.description[language]}</small></span></div></div>}
       </div> : <div className={styles.customFields}>
         <label><span>{t('documentName')} <em>*</em></span><input value={name} onChange={(event) => {setName(event.target.value); setError(null);}} placeholder={t('namePlaceholder')} aria-invalid={error === 'nameRequired' || error === 'duplicate'} aria-describedby={error ? 'requirement-document-error' : undefined}/></label>
         <label><span>{t('description')} <span className={styles.optional}>{t('optional')}</span></span><textarea value={description} onChange={(event) => setDescription(event.target.value)} maxLength={200} placeholder={t('descriptionPlaceholder')}/><small className={styles.counter}>{description.length}/200</small></label>
       </div>}
+
+      {mode === 'custom' && <div className={styles.appearanceField}><h3>{common('appearance.documentLabel')}</h3><AppearancePicker appearance={appearance} onChange={setAppearance} label={common('appearance.documentLabel')}/></div>}
 
       <fieldset className={styles.rules}><legend>{t('rulesTitle')}</legend><div className={styles.rulesGrid}>
         <label className={styles.requiredField}><span>{common('mandatory')}</span><span className={styles.requiredControl}><input type="checkbox" checked={required} onChange={(event) => setRequired(event.target.checked)}/><span className={styles.toggle} aria-hidden="true"/><span>{required ? common('mandatory') : common('optional')}</span></span></label>

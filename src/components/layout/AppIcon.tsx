@@ -6,7 +6,8 @@ export type AppIconName =
   | 'check' | 'clock' | 'close' | 'more' | 'calendar' | 'info'
   | 'building' | 'arrowRight' | 'userPlus' | 'fileX' | 'filter' | 'upload'
   | 'crown' | 'eye' | 'mail' | 'send' | 'creditCard' | 'edit' | 'download' | 'sort'
-  | 'user' | 'external' | 'logout';
+  | 'user' | 'external' | 'logout'
+  | 'box' | 'construction' | 'tools' | 'safety' | 'truck' | 'computer' | 'briefcase';
 
 const paths: Record<AppIconName, ReactNode> = {
   home: <><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10Z" /><path d="M9 21v-7h6v7" /></>,
@@ -43,7 +44,14 @@ const paths: Record<AppIconName, ReactNode> = {
   sort: <><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></>,
   user: <><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></>,
   external: <><path d="M13 4h7v7M20 4l-9 9"/><path d="M20 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h6"/></>,
-  logout: <><path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5M14 16l4-4-4-4M18 12H9"/></>
+  logout: <><path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5M14 16l4-4-4-4M18 12H9"/></>,
+  box: <><path d="m12 2 9 5-9 5-9-5 9-5ZM3 7v10l9 5 9-5V7M12 12v10" /></>,
+  construction: <><path d="M3 18h18v2H3zM5 17v-5a7 7 0 0 1 5-6.7V4h4v1.3A7 7 0 0 1 19 12v5M12 5v12M5 14h14" /></>,
+  tools: <><path d="m4 20 9-9M11 6l7 7M3 18l3 3M14 3l2 3 4-1 1 4-3 2" /></>,
+  safety: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="M12 7v6m0 4h.01"/></>,
+  truck: <><path d="M2 6h12v11H2zM14 10h4l4 4v3h-8M5 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm14 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" /></>,
+  computer: <><rect x="3" y="4" width="18" height="14" rx="1" /><path d="M8 22h8m-4-4v4" /></>,
+  briefcase: <><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M8 7V4h8v3M2 13h20M10 13v2h4v-2"/></>
 };
 
 export function AppIcon({name, size = 20, className}: {name: AppIconName; size?: number; className?: string}) {

@@ -17,10 +17,6 @@
 .templateCopy strong {color: #152447; font-size: 14px; font-weight: 700;}
 .templateCopy span {color: #496288; font-size: 12px;}
 .templateCopy small {color: #395477; font-size: 12px; margin-top: 2px;}
-.templateIcon {align-items: center; background: #e3efff; border-radius: 14px; color: #0864db; display: inline-flex; flex: 0 0 54px; height: 54px; justify-content: center; line-height: 1;}
-.templateIcon[data-tone='maintenance'] {background: #dcf7ed; color: #119970;}
-.templateIcon[data-tone='materials'] {background: #e8f1ff;}
-.templateIcon svg {flex: 0 0 auto;}
 .addTemplate {align-items: center; background: #fff; border: 1px dashed #b2d0fd; border-radius: 9px; color: #075bcf; display: flex; gap: 16px; margin: 12px 2px 0; min-height: 93px; padding: 12px 16px; text-align: left; width: calc(100% - 4px);}
 .addTemplate > span:last-child {display: grid; gap: 4px; min-width: 0;}
 .addTemplate strong {font-size: 16px;}
@@ -29,7 +25,6 @@
 .noResults {color: #5c7193; font-size: 14px; padding: 24px 12px;}
 .editor {overflow: hidden;}
 .editorTop {align-items: center; display: flex; gap: 20px; min-height: 99px; padding: 14px 16px;}
-.editorTop > .templateIcon {flex-basis: 69px; height: 69px; font-size: 34px;}
 .editorIdentity {flex: 1 1 auto; min-width: 0;}
 .editorIdentity h2 {color: #142448; font-size: 21px; font-weight: 750; letter-spacing: -.03em; line-height: 1.15;}
 .editorIdentity p {color: #526b91; font-size: 15px; line-height: 1.35; margin-top: 5px;}
@@ -41,6 +36,11 @@
 .editorActions :global(button) {min-height: 39px;}
 .editorActions :global(button:last-child) {color: #075bd1; font-size: 14px; padding-inline: 15px;}
 .iconButton {align-items: center; background: #fff; border: 1px solid #d1e2f8; border-radius: 8px; color: #2c5b9e; display: inline-flex; justify-content: center; width: 38px;}
+.actionMenuAnchor {display: inline-flex; position: relative;}
+.actionMenu {background: #fff; border: 1px solid #cbdcf4; border-radius: 8px; box-shadow: 0 10px 28px rgb(20 44 83 / 18%); display: grid; min-width: 180px; padding: 5px; position: absolute; right: 0; top: calc(100% + 6px); z-index: 20;}
+.actionMenu button {align-items: center; background: transparent; border: 0; border-radius: 5px; color: #1d3760; display: flex; font-size: 13px; gap: 8px; min-height: 37px; padding: 7px 9px; text-align: left; white-space: nowrap;}
+.actionMenu button:hover {background: #eaf3ff;}
+.actionMenu button:last-child {color: #c92343;}
 .tabs {border-bottom: 1px solid #dce8f9; display: flex; gap: 0; overflow-x: auto; padding-inline: 12px; scrollbar-width: thin;}
 .tabs button {background: transparent; border: 0; border-bottom: 3px solid transparent; color: #455d81; flex: 0 0 auto; font-size: 14px; min-height: 47px; padding: 8px 17px; white-space: nowrap;}
 .tabs button[aria-selected='true'] {border-bottom-color: #0960df; color: #075bcc; font-weight: 700;}
@@ -62,11 +62,6 @@
 .ruleIdentity > span:last-child {display: grid; gap: 3px; min-width: 0;}
 .ruleIdentity strong {color: #172748; font-size: 12px; font-weight: 670;}
 .ruleIdentity small {color: #597292; font-size: 11px; line-height: 1.2;}
-.ruleIcon {align-items: center; background: #e3efff; border-radius: 11px; color: #1466d5; display: inline-flex; flex: 0 0 45px; height: 45px; justify-content: center;}
-.ruleIcon[data-tone='green'] {background: #dcf7ec; color: #06926a;}
-.ruleIcon[data-tone='amber'] {background: #fff0d3; color: #df9000;}
-.ruleIcon[data-tone='red'] {background: #ffe4eb; color: #eb3650;}
-.ruleIcon[data-tone='purple'] {background: #f0e4ff; color: #9243cc;}
 .mandatory {align-items: center; color: #526a90; display: flex; gap: 7px; white-space: nowrap;}
 .mandatory input {height: 1px; opacity: 0; position: absolute; width: 1px;}
 .toggle {background: #a8b8cf; border-radius: 999px; flex: 0 0 38px; height: 21px; position: relative;}
@@ -85,6 +80,8 @@
 .customEditorHeading h4 {color: #172748; font-size: 15px;}
 .customEditorHeading button {align-items: center; background: transparent; border: 0; border-radius: 5px; color: #3d639d; display: inline-flex; padding: 5px;}
 .customEditorFields {display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr));}
+.customAppearance {display: grid; gap: 8px; grid-column: 1 / -1; justify-items: start;}
+.customAppearance strong {color: #203558; font-size: 13px;}
 .documentEmpty {align-items: center; color: #607ba6; display: flex; flex-direction: column; gap: 6px; padding: 16px 14px 18px; text-align: center;}
 .documentEmpty > svg {color: #0b61dd;}
 .documentEmpty h4 {color: #1b2e50; font-size: 16px; margin: 0;}
@@ -104,7 +101,7 @@
 .confirmDialog p {color: #58749e; font-size: 14px; line-height: 1.45; margin-top: 8px;}
 .confirmDialog > div {display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 23px;}
 .confirmDialog :global(button) {flex: 1 0 max-content;}
-.draftDescription textarea:focus-visible, .addTemplate:focus-visible, .templateItem:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 2px;}
+.draftDescription textarea:focus-visible, .addTemplate:focus-visible, .templateItem:focus-visible, .iconButton:focus-visible, .actionMenu button:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 2px;}
 
 @media (max-width: 1199px) {
   .workspace {grid-template-columns: minmax(0, 1fr);}
