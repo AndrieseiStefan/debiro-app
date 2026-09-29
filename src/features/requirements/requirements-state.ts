@@ -12,7 +12,7 @@ type RequirementsState = {byCompany: Record<string, RequirementsWorkspace>; cand
 type NewDocument = Omit<RequirementTemplateDocument, 'id' | 'templateId'>;
 
 const seededTemplates: RequirementTemplate[] = requirementsFixture.templates.map((template) => ({
-  id: template.id, title: template.title, subtitle: template.subtitle, icon: template.icon,
+  id: template.id, title: template.title, subtitle: template.subtitle, icon: template.icon, categoryId: template.categoryId,
   documents: template.rules.map((rule) => ({
     id: `${template.id}:${rule.id}`, templateId: template.id, catalogDocumentTypeId: rule.id,
     required: rule.mandatory, expiryWarningDays: rule.alertDays, validityMonths: rule.validityMonths

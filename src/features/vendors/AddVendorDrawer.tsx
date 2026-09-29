@@ -6,6 +6,7 @@ import {AppIcon} from '@/components/layout/AppIcon';
 import {Button} from '@/components/ui/Button';
 import {Drawer, type DrawerPhase} from '@/components/ui/Drawer';
 import {Field} from '@/components/ui/Field';
+import {SelectField} from '@/components/ui/SelectField';
 import type {CreatedVendor} from './created-vendors';
 import {vendorCategories, type VendorCategory} from './types';
 import styles from './AddVendorDrawer.module.css';
@@ -86,22 +87,22 @@ export function AddVendorDrawer({phase, onClose, onExited, triggerRef, onCreate}
     <h2 id="add-vendor-title">{t('title')}</h2>
     <p id="add-vendor-description" className={styles.intro}>{t('description')}</p>
     <form id="add-vendor-form" noValidate onSubmit={submit} className={styles.form}>
-      <Field id="add-vendor-name" label={t('name')} placeholder={t('namePlaceholder')} required value={values.name} onChange={(event) => update('name', event.target.value)} error={errors.name} className={styles.field}/>
+      <Field id="add-vendor-name" label={t('name')} placeholder={t('namePlaceholder')} required value={values.name} onChange={(event) => update('name', event.target.value)} error={errors.name} controlSize="compact" className={styles.field}/>
       <div className={styles.row}>
-        <Field id="add-vendor-cui" label={t('cui')} placeholder={t('cuiPlaceholder')} required value={values.cui} onChange={(event) => update('cui', event.target.value)} error={errors.cui} className={styles.field}/>
-        <Field id="add-vendor-registrationCode" label={t('registrationCode')} placeholder={t('registrationPlaceholder')} value={values.registrationCode} onChange={(event) => update('registrationCode', event.target.value)} className={styles.field}/>
+        <Field id="add-vendor-cui" label={t('cui')} placeholder={t('cuiPlaceholder')} required value={values.cui} onChange={(event) => update('cui', event.target.value)} error={errors.cui} controlSize="compact" className={styles.field}/>
+        <Field id="add-vendor-registrationCode" label={t('registrationCode')} placeholder={t('registrationPlaceholder')} value={values.registrationCode} onChange={(event) => update('registrationCode', event.target.value)} controlSize="compact" className={styles.field}/>
       </div>
       <div className={styles.row}>
-        <Field id="add-vendor-email" label={t('email')} placeholder={t('emailPlaceholder')} type="email" required value={values.email} onChange={(event) => update('email', event.target.value)} error={errors.email} className={styles.field}/>
-        <Field id="add-vendor-phone" label={t('phone')} placeholder={t('phonePlaceholder')} type="tel" value={values.phone} onChange={(event) => update('phone', event.target.value)} className={styles.field}/>
+        <Field id="add-vendor-email" label={t('email')} placeholder={t('emailPlaceholder')} type="email" required value={values.email} onChange={(event) => update('email', event.target.value)} error={errors.email} controlSize="compact" className={styles.field}/>
+        <Field id="add-vendor-phone" label={t('phone')} placeholder={t('phonePlaceholder')} type="tel" value={values.phone} onChange={(event) => update('phone', event.target.value)} controlSize="compact" className={styles.field}/>
       </div>
-      <Field id="add-vendor-contactName" label={t('contactName')} placeholder={t('contactPlaceholder')} value={values.contactName} onChange={(event) => update('contactName', event.target.value)} className={styles.field}/>
+      <Field id="add-vendor-contactName" label={t('contactName')} placeholder={t('contactPlaceholder')} value={values.contactName} onChange={(event) => update('contactName', event.target.value)} controlSize="compact" className={styles.field}/>
       <div className={styles.row}>
-        <div className={styles.selectField}><label htmlFor="add-vendor-category">{t('category')} <span>*</span></label><div className={styles.selectWrap}><select id="add-vendor-category" required value={values.category} onChange={(event) => update('category', event.target.value as VendorCategory | '')} aria-invalid={Boolean(errors.category)} aria-describedby={errors.category ? 'add-vendor-category-error' : undefined}><option value="">{t('categoryPlaceholder')}</option>{vendorCategories.map((category) => <option key={category} value={category}>{vendorsT(`category.${category}`)}</option>)}</select><AppIcon name="chevronDown" size={17}/></div>{errors.category && <p id="add-vendor-category-error" className={styles.error} role="alert">{errors.category}</p>}</div>
-        <Field id="add-vendor-industry" label={t('industry')} placeholder={t('industryPlaceholder')} value={values.industry} onChange={(event) => update('industry', event.target.value)} className={styles.field}/>
+        <SelectField id="add-vendor-category" label={t('category')} placeholder={t('categoryPlaceholder')} required value={values.category} onChange={(event) => update('category', event.target.value as VendorCategory | '')} error={errors.category} controlSize="compact" className={styles.field}>{vendorCategories.map((category) => <option key={category} value={category}>{vendorsT(`category.${category}`)}</option>)}</SelectField>
+        <Field id="add-vendor-industry" label={t('industry')} placeholder={t('industryPlaceholder')} value={values.industry} onChange={(event) => update('industry', event.target.value)} controlSize="compact" className={styles.field}/>
       </div>
       <div className={styles.textareaField}><label htmlFor="add-vendor-address">{t('address')}</label><textarea id="add-vendor-address" placeholder={t('addressPlaceholder')} value={values.address} onChange={(event) => update('address', event.target.value)}/></div>
-      <Field id="add-vendor-website" label={t('website')} placeholder={t('websitePlaceholder')} type="url" value={values.website} onChange={(event) => update('website', event.target.value)} error={errors.website} className={styles.field}/>
+      <Field id="add-vendor-website" label={t('website')} placeholder={t('websitePlaceholder')} type="url" value={values.website} onChange={(event) => update('website', event.target.value)} error={errors.website} controlSize="compact" className={styles.field}/>
       <div className={styles.textareaField}><label htmlFor="add-vendor-notes">{t('notes')}</label><textarea id="add-vendor-notes" placeholder={t('notesPlaceholder')} value={values.notes} onChange={(event) => update('notes', event.target.value)}/></div>
       <div className={styles.notice} data-add-vendor-notice><AppIcon name="info" size={22}/><p><strong>{t('noticeTitle')}</strong><span>{t('noticeDescription')}</span></p></div>
       <div className={styles.actions} data-add-vendor-actions><Button variant="secondary" onClick={onClose}>{t('cancel')}</Button><Button type="submit">{t('submit')}</Button></div>

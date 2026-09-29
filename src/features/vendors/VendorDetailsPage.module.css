@@ -41,7 +41,6 @@
 .documentSearch {align-items: center; background: #f3f7fd; border: 1px solid #dbe7f5; border-radius: 10px; color: #607dae; display: flex; gap: 10px; height: 44px; padding: 0 12px; width: 286px;}
 .documentSearch:focus-within {outline: 3px solid var(--color-focus); outline-offset: 2px;}
 .documentSearch input {background: transparent; border: 0; color: #18315a; font-size: 14px; min-width: 0; outline: 0; width: 100%;}
-.documentSearch input::placeholder {color: #7890b1;}
 .filterButton {color: #123669; font-size: 14px; min-height: 44px; padding: 0 14px;}
 .filterButton > span {font-size: 21px;}
 .tableScroll {max-width: 100%; overflow-x: auto; scrollbar-width: thin;}

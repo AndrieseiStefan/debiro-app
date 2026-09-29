@@ -35,6 +35,23 @@ button:disabled {
   cursor: not-allowed;
 }
 
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-control-placeholder);
+  font-size: var(--text-control-placeholder);
+  font-weight: 400;
+  line-height: normal;
+  opacity: 1;
+}
+
+:is(select, [role='combobox'])[data-empty='true'] {
+  color: var(--color-control-placeholder);
+  font-size: var(--text-control-placeholder);
+  font-weight: 400;
+  line-height: normal;
+  opacity: 1;
+}
+
 :focus-visible {
   outline: 3px solid var(--color-focus);
   outline-offset: 3px;

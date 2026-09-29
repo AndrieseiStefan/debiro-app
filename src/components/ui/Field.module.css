@@ -27,8 +27,31 @@
   width: 100%;
 }
 
-.input::placeholder {
-  color: var(--color-text-muted);
+.input[data-size='compact'] {
+  font-size: var(--text-body-small);
+  font-weight: 400;
+}
+
+.input[data-size='compact']:not([data-empty='true']) {
+  color: #23395f;
+}
+
+.selectWrap {
+  align-items: center;
+  display: flex;
+  position: relative;
+}
+
+.select {
+  appearance: none;
+  padding-right: 32px;
+}
+
+.selectIcon {
+  color: #38608c;
+  pointer-events: none;
+  position: absolute;
+  right: 10px;
 }
 
 .input:hover:not(:disabled) {

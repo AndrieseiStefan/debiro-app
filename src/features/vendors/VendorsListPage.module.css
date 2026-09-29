@@ -16,7 +16,6 @@
 .vendorSearch {align-items: center; color: #6780ab; display: flex; gap: 12px; padding: 10px 12px;}
 .vendorSearch > svg {flex: 0 0 auto; margin-left: 12px;}
 .vendorSearch input {background: #f0f5fc; border: 0; border-radius: 8px; color: #12264b; flex: 1 1 auto; font-size: 14px; height: 42px; min-width: 0; outline: 0; padding: 0 12px;}
-.vendorSearch input::placeholder {color: #60789e; opacity: 1;}
 .vendorSearch:focus-within, .selectField:focus-within {outline: 3px solid var(--color-focus); outline-offset: 2px;}
 .selectField {color: #294365; display: flex; flex-direction: column; font-size: 12px; font-weight: 550; justify-content: center; padding: 7px 8px 7px 16px; position: relative;}
 .selectField select {appearance: none; background: #fff; border: 1px solid #cbdcf3; border-radius: 7px; color: #18315a; font-size: 14px; height: 30px; margin-top: 3px; outline: 0; padding: 0 27px 0 9px; width: 100%;}

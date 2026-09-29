@@ -6,8 +6,14 @@ import {
   updateRequirementDraft, validateRequirementDraft
 } from '@/features/requirements/requirements-state';
 import type {RequirementTemplateDocument} from '@/features/requirements/types';
+import {vendorCategories} from '@/features/vendors/types';
+import {requirementsFixture} from '@/features/requirements/fixtures';
 
 describe('requirements catalog and draft transaction', () => {
+  it('keeps every fixture template in the operational vendor-category taxonomy', () => {
+    expect(requirementsFixture.templates.every((template) => vendorCategories.includes(template.categoryId))).toBe(true);
+    expect(getRequirementsWorkspace(readRequirementsState(), 'demo-company').templates.map((template) => template.categoryId)).toEqual(requirementsFixture.templates.map((template) => template.categoryId));
+  });
   it('normalizes names and searches names, descriptions, and aliases', () => {
     expect(normalizeDocumentName('  Declarație   SSM ')).toBe('declaratie ssm');
     expect(searchCatalog('  ANAF ')).toEqual(expect.arrayContaining([expect.objectContaining({id: 'tax'})]));
@@ -46,6 +52,7 @@ describe('requirements catalog and draft transaction', () => {
     workspace = getRequirementsWorkspace(readRequirementsState(), companyId);
     expect(workspace.draft).toBeNull();
     expect(workspace.templates[0].title.ro).toBe('Test Template');
+    expect(workspace.templates[0].categoryId).toBe('construction');
     expect(workspace.templates[0].documents[0]).toMatchObject({customName: 'Aviz special', required: false, expiryWarningDays: 15, validityMonths: 24, templateId: workspace.templates[0].id});
     expect(getCatalogCandidates(readRequirementsState())).toEqual([expect.objectContaining({normalizedName: 'aviz special', usageCount: 1, status: 'pending'})]);
     expect(getRequirementsWorkspace(readRequirementsState(), 'another-company').templates).toHaveLength(0);

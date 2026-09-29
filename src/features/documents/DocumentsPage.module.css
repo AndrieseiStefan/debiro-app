@@ -28,7 +28,6 @@
 .toolbar {align-items: center; display: flex; gap: 14px; justify-content: space-between; min-height: 67px; padding: 12px 14px;}
 .search {align-items: center; background: #eff5fd; border-radius: 8px; color: #5977a6; display: flex; flex: 1 1 auto; gap: 10px; height: 37px; min-width: 0; padding: 0 12px;}
 .search input {background: transparent; border: 0; color: #17315a; flex: 1 1 auto; font: inherit; font-size: 13px; min-width: 0; outline: 0;}
-.search input::placeholder {color: #667fa4; opacity: 1;}
 .search:focus-within {outline: 3px solid var(--color-focus); outline-offset: 2px;}
 .toolbarActions {display: flex; flex: 0 0 auto; gap: 10px;}
 .toolbarButton {align-items: center; background: #fff; border: 1px solid #cbdcf8; border-radius: 8px; color: #15325e; display: inline-flex; font-size: 13px; font-weight: 650; gap: 8px; height: 37px; justify-content: center; padding: 0 11px; white-space: nowrap;}

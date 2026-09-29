@@ -9,7 +9,6 @@
 .search {align-items: center; background: #eff5fc; border-radius: 8px; color: #5876a4; display: flex; gap: 10px; height: 40px; margin: 0 8px 10px; padding: 0 12px;}
 .search:focus-within {outline: 3px solid var(--color-focus); outline-offset: 2px;}
 .search input {background: none; border: 0; color: #1c3153; font: inherit; font-size: 14px; min-width: 0; outline: 0; width: 100%;}
-.search input::placeholder {color: #687e9f; opacity: 1;}
 .templateList {min-width: 0;}
 .templateItem {align-items: center; background: transparent; border: 1px solid transparent; border-bottom-color: #dfeafa; color: #1c3459; display: flex; gap: 13px; min-height: 94px; padding: 10px 7px; text-align: left; width: 100%;}
 .templateItem[data-selected='true'] {background: #eaf3ff; border: 1px solid #bcd8ff; border-left: 3px solid #1262dd; border-radius: 8px;}
@@ -35,13 +34,9 @@
 .editorIdentity h2 {color: #142448; font-size: 21px; font-weight: 750; letter-spacing: -.03em; line-height: 1.15;}
 .editorIdentity p {color: #526b91; font-size: 15px; line-height: 1.35; margin-top: 5px;}
 .draftFields {border-top: 1px solid #e0eafa; display: grid; gap: 14px 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 16px 18px 20px;}
-.draftFields label {color: #203558; display: grid; font-size: 13px; font-weight: 700; gap: 7px; min-width: 0;}
-.draftFields em {color: #d72d4b; font-style: normal;}
-.draftFields input, .draftFields select, .draftFields textarea {background: #fff; border: 1px solid #cbdcf4; border-radius: 7px; color: #1b3153; font: inherit; font-size: 14px; min-height: 40px; min-width: 0; padding: 9px 11px; width: 100%;}
-.draftFields textarea {min-height: 72px; resize: vertical;}
-.draftFields [aria-invalid='true'] {border-color: #d52b4a;}
-.draftFields small, .draftError {color: #c42342; font-size: 12px; font-weight: 500; line-height: 1.35;}
-.draftDescription {grid-column: 1 / -1;}
+.draftDescription {color: #203558; display: grid; font-size: 13px; font-weight: 700; gap: 7px; grid-column: 1 / -1; min-width: 0;}
+.draftDescription textarea {background: #fff; border: 1px solid #cbdcf4; border-radius: 7px; color: #1b3153; font-size: 14px; font-weight: 400; min-height: 72px; min-width: 0; padding: 9px 11px; resize: vertical; width: 100%;}
+.draftError {color: #c42342; font-size: 12px; font-weight: 500; line-height: 1.35;}
 .editorActions {align-items: center; display: flex; flex: 0 0 auto; gap: 10px;}
 .editorActions :global(button) {min-height: 39px;}
 .editorActions :global(button:last-child) {color: #075bd1; font-size: 14px; padding-inline: 15px;}
@@ -101,7 +96,7 @@
 .confirmDialog p {color: #58749e; font-size: 14px; line-height: 1.45; margin-top: 8px;}
 .confirmDialog > div {display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 23px;}
 .confirmDialog :global(button) {flex: 1 0 max-content;}
-.draftFields input:focus-visible, .draftFields select:focus-visible, .draftFields textarea:focus-visible, .addTemplate:focus-visible, .templateItem:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 2px;}
+.draftDescription textarea:focus-visible, .addTemplate:focus-visible, .templateItem:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 2px;}
 
 @media (max-width: 1199px) {
   .workspace {grid-template-columns: minmax(0, 1fr);}

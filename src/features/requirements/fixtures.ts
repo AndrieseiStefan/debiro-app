@@ -15,11 +15,11 @@ export const requirementsFixture: RequirementsViewModel = {
   organization: {name: 'Demo Company SRL'},
   notificationCount: 3,
   templates: [
-    {id: 'construction', title: {ro: 'Subcontractor construcții', en: 'Construction subcontractor'}, subtitle: {ro: 'Lucrări de construcții și instalații în șantiere', en: 'Construction and installation work on site'}, icon: 'construction', rules: constructionRules},
-    {id: 'materials', title: {ro: 'Furnizor materiale', en: 'Materials supplier'}, subtitle: {ro: 'Materiale de construcții, echipamente', en: 'Construction materials and equipment'}, icon: 'materials', rules: commonRules},
-    {id: 'maintenance', title: {ro: 'Servicii de mentenanță', en: 'Maintenance services'}, subtitle: {ro: 'Întreținere și service echipamente', en: 'Equipment upkeep and servicing'}, icon: 'maintenance', rules: constructionRules},
-    {id: 'software', title: {ro: 'Servicii IT', en: 'IT services'}, subtitle: {ro: 'Servicii software și hardware', en: 'Software and hardware services'}, icon: 'software', rules: commonRules},
-    {id: 'consulting', title: {ro: 'Consultanță și proiectare', en: 'Consulting and design'}, subtitle: {ro: 'Proiectare, consultanță tehnică', en: 'Design and technical consulting'}, icon: 'consulting', rules: commonRules},
-    {id: 'logistics', title: {ro: 'Transport și logistică', en: 'Transport and logistics'}, subtitle: {ro: 'Transport marfă și servicii logistice', en: 'Freight transport and logistics services'}, icon: 'logistics', rules: commonRules}
+    {id: 'construction', title: {ro: 'Subcontractor construcții', en: 'Construction subcontractor'}, subtitle: {ro: 'Lucrări de construcții și instalații în șantiere', en: 'Construction and installation work on site'}, icon: 'construction', categoryId: 'construction', rules: constructionRules},
+    {id: 'materials', title: {ro: 'Furnizor materiale', en: 'Materials supplier'}, subtitle: {ro: 'Materiale de construcții, echipamente', en: 'Construction materials and equipment'}, icon: 'materials', categoryId: 'materials', rules: commonRules},
+    {id: 'maintenance', title: {ro: 'Servicii de mentenanță', en: 'Maintenance services'}, subtitle: {ro: 'Întreținere și service echipamente', en: 'Equipment upkeep and servicing'}, icon: 'maintenance', categoryId: 'construction', rules: constructionRules},
+    {id: 'software', title: {ro: 'Servicii IT', en: 'IT services'}, subtitle: {ro: 'Servicii software și hardware', en: 'Software and hardware services'}, icon: 'software', categoryId: 'software', rules: commonRules},
+    {id: 'consulting', title: {ro: 'Consultanță și proiectare', en: 'Consulting and design'}, subtitle: {ro: 'Proiectare, consultanță tehnică', en: 'Design and technical consulting'}, icon: 'consulting', categoryId: 'construction', rules: commonRules},
+    {id: 'logistics', title: {ro: 'Transport și logistică', en: 'Transport and logistics'}, subtitle: {ro: 'Transport marfă și servicii logistice', en: 'Freight transport and logistics services'}, icon: 'logistics', categoryId: 'logistics', rules: commonRules}
   ]
 };

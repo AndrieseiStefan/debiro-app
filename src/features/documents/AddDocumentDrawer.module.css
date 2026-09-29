@@ -32,7 +32,6 @@
 .field label, .selectField label {color: #29477e; font-size: 13px; font-weight: 600;}
 .field input {border-color: #d2e1fa; border-radius: 6px; height: 40px; min-width: 0;}
 .field input[readonly] {background: #f1f6fc;}
-.field input::placeholder {color: #8299be;}
 .selectField {display: grid; gap: 7px;}
 .selectField label span, .error {color: #dc2440;}
 .selectWrap {align-items: center; border: 1px solid #d2e1fa; border-radius: 6px; color: #0a60d4; display: flex; gap: 10px; height: 40px; padding: 0 12px;}

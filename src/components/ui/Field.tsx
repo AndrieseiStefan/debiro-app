@@ -6,6 +6,7 @@ export type FieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'id'> & {
   label: string;
   helperText?: string;
   error?: string;
+  controlSize?: 'compact';
 };
 
 export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field({
@@ -13,6 +14,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field({
   label,
   helperText,
   error,
+  controlSize,
   required,
   className,
   'aria-describedby': describedBy,
@@ -33,6 +35,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field({
         ref={ref}
         id={id}
         className={styles.input}
+        data-size={controlSize}
         required={required}
         aria-invalid={error ? true : undefined}
         aria-describedby={descriptionIds}

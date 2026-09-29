@@ -18,6 +18,7 @@ export type RequirementTemplateView = {
   title: LocalizedText;
   subtitle: LocalizedText;
   icon: 'construction' | 'materials' | 'maintenance' | 'software' | 'consulting' | 'logistics';
+  categoryId: VendorCategory;
   rules: RequirementRuleView[];
 };
 
@@ -50,7 +51,7 @@ export type RequirementTemplate = {
   title: LocalizedText;
   subtitle: LocalizedText;
   icon: RequirementTemplateView['icon'];
-  categoryId?: VendorCategory;
+  categoryId: VendorCategory;
   documents: RequirementTemplateDocument[];
 };
 
