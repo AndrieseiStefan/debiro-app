@@ -16,7 +16,12 @@ describe('landing page', () => {
     render(<NextIntlClientProvider locale="ro" messages={ro}><LandingPage locale="ro" preview={landingPreview} /></NextIntlClientProvider>);
     expect(screen.getByRole('heading', {level: 1})).toHaveTextContent('Toate documentele furnizorilor tăi, într-un singur loc.');
     expect(within(screen.getByRole('navigation', {name: 'Navigare principală'})).getByText('Prețuri')).toBeVisible();
-    expect(screen.getAllByRole('button', {name: /Încearcă gratuit/}).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', {name: /Încearcă gratuit/})).toHaveLength(2);
+    expect(screen.getByRole('link', {name: 'Autentificare'})).toHaveAttribute('href', '/login');
+    for (const trial of screen.getAllByRole('link', {name: 'Încearcă gratuit'})) {
+      expect(trial).toHaveAttribute('href', '/onboarding');
+      expect(trial).not.toHaveAttribute('aria-disabled');
+    }
     const brand = screen.getByRole('link', {name: 'DEBIRO'});
     expect(brand).toHaveTextContent(/^DEBIRO$/);
     expect(brand.querySelector('img,svg')).toBeNull();

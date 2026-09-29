@@ -6,7 +6,7 @@ test('renders canonical Romanian copy, navigation and textual branding', async (
   expect(response?.status()).toBe(200);
   await expect(page.getByRole('heading', {level: 1})).toHaveText(/Toate documentele furnizorilor tăi, într-un singur loc\./);
   await expect(page.getByRole('navigation', {name: 'Navigare principală'})).toBeVisible();
-  await expect(page.getByRole('button', {name: /Încearcă gratuit/}).first()).toBeVisible();
+  await expect(page.getByRole('link', {name: /Încearcă gratuit/}).first()).toBeVisible();
   const brand = page.getByRole('link', {name: 'DEBIRO'});
   await expect(brand).toHaveText('DEBIRO');
   await expect(brand.locator('img, svg')).toHaveCount(0);
@@ -26,6 +26,45 @@ test('renders English copy and switches locale', async ({page}) => {
   await expect(page.locator('html')).toHaveAttribute('lang', 'ro');
 });
 
+test('account entry links preserve locale and support keyboard and browser Back', async ({page}) => {
+  test.setTimeout(90_000);
+  for (const {landing, login, onboarding, loginLabel, trialLabel} of [
+    {landing: '/', login: '/login', onboarding: '/onboarding', loginLabel: 'Autentificare', trialLabel: 'Încearcă gratuit'},
+    {landing: '/en', login: '/en/login', onboarding: '/en/onboarding', loginLabel: 'Log in', trialLabel: 'Try for free'}
+  ]) {
+    for (const width of [1448, 375]) {
+      await test.step(`${landing} at ${width}px`, async () => {
+        await page.setViewportSize({width, height: 812});
+        expect((await page.goto(login))?.status()).toBe(200);
+        expect((await page.goto(onboarding))?.status()).toBe(200);
+        await page.goto(landing);
+
+        const loginLink = page.getByRole('link', {name: loginLabel, exact: true});
+        const trialLinks = page.getByRole('link', {name: trialLabel, exact: true});
+        await expect(loginLink).not.toHaveAttribute('aria-disabled');
+        await expect(trialLinks).toHaveCount(2);
+        for (const link of await trialLinks.all()) await expect(link).not.toHaveAttribute('aria-disabled');
+
+        await loginLink.click();
+        await expect(page).toHaveURL(login);
+        await page.goBack();
+        await expect(page).toHaveURL(landing);
+
+        await trialLinks.first().focus();
+        await page.keyboard.press('Enter');
+        await expect(page).toHaveURL(onboarding);
+        await page.goBack();
+        await expect(page).toHaveURL(landing);
+
+        await trialLinks.last().click();
+        await expect(page).toHaveURL(onboarding);
+        await page.goBack();
+        await expect(page).toHaveURL(landing);
+      });
+    }
+  }
+});
+
 test('keeps the landing page stable across the responsive viewport matrix', async ({page}) => {
   await page.goto('/');
   const matrix = [
@@ -43,7 +82,7 @@ test('keeps the landing page stable across the responsive viewport matrix', asyn
       await expect(page.getByRole('heading', {name: 'Simplu. Automat. Fără bătăi de cap.'})).toBeVisible();
       await expect(page.getByRole('heading', {name: 'Planuri flexibile pentru orice dimensiune de companie.'})).toBeVisible();
       await expect(page.getByRole('link', {name: 'DEBIRO'})).toBeVisible();
-      await expect(page.getByRole('button', {name: 'Autentificare'})).toBeVisible();
+      await expect(page.getByRole('link', {name: 'Autentificare'})).toBeVisible();
       await expect(page.getByRole('link', {name: 'RO', exact: true})).toBeVisible();
       await expect(page.getByRole('link', {name: 'EN', exact: true})).toBeVisible();
       if (width < 864) {
@@ -68,7 +107,7 @@ test('keeps the landing page stable across the responsive viewport matrix', asyn
         const heroCopy = heroInner.children[0];
         const heroVisual = heroInner.children[1];
         const preview = heroVisual.firstElementChild!;
-        const controls = Array.from(heroCopy.querySelectorAll('button'));
+        const controls = Array.from(heroCopy.querySelectorAll('a, button'));
         const trustItems = Array.from(heroCopy.querySelector('ul')!.children);
         const cards = Array.from(sections[1].querySelectorAll('article'));
         const pricingInner = sections[3].children[1];
@@ -172,7 +211,7 @@ test('keeps the landing page stable across the responsive viewport matrix', asyn
       expect(geometry.decorationOutsideViewport).toBe(false);
       expect(geometry.headerCollision).toBe(false);
 
-      for (const cta of await page.getByRole('button', {name: 'Încearcă gratuit'}).all()) {
+      for (const cta of await page.getByRole('link', {name: 'Încearcă gratuit'}).all()) {
         const bounds = await cta.boundingBox();
         expect(bounds).not.toBeNull();
         expect(bounds!.x).toBeGreaterThanOrEqual(0);
@@ -247,7 +286,7 @@ test('keeps English copy and the preview within responsive gutters', async ({pag
   for (const {width, gutter} of [{width: 950, gutter: 24}, {width: 480, gutter: 16}, {width: 320, gutter: 16}]) {
     await page.setViewportSize({width, height: 900});
     await expect(page.getByRole('heading', {level: 1})).toBeVisible();
-    await expect(page.getByRole('button', {name: 'Try for free'}).first()).toBeVisible();
+    await expect(page.getByRole('link', {name: 'Try for free'}).first()).toBeVisible();
     const geometry = await page.evaluate(() => {
       const preview = document.querySelector('main > section')!.children[1].children[1].firstElementChild!;
       const bounds = preview.getBoundingClientRect();
@@ -295,10 +334,10 @@ test('uses one desktop content grid and centers both CTA labels and arrows', asy
   expect(heroSpacing.previewWidth).toBeGreaterThanOrEqual(698);
   expect(heroSpacing.previewWidth).toBeLessThanOrEqual(700);
 
-  const buttons = await page.getByRole('button', {name: 'Încearcă gratuit'}).all();
-  expect(buttons).toHaveLength(2);
-  for (const [index, button] of buttons.entries()) {
-    const alignment = await button.evaluate((element) => {
+  const links = await page.getByRole('link', {name: 'Încearcă gratuit'}).all();
+  expect(links).toHaveLength(2);
+  for (const [index, link] of links.entries()) {
+    const alignment = await link.evaluate((element) => {
       const content = element.querySelector('span')!;
       const icon = content.querySelector('svg')!;
       const label = content.firstChild!;

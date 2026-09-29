@@ -1,7 +1,7 @@
 import {useTranslations} from 'next-intl';
 import {BrandWordmark} from '@/components/brand/BrandWordmark';
 import {PublicContainer} from '@/components/layout/PublicContainer';
-import {Button} from '@/components/ui/Button';
+import {ButtonLink} from '@/components/ui/Button';
 import {Link} from '@/i18n/navigation';
 import styles from './PublicHeader.module.css';
 
@@ -62,8 +62,8 @@ export function PublicHeader({
             <Link href={localePath} locale="en" aria-current={locale === 'en' ? 'page' : undefined} className={locale === 'en' ? styles.activeLocale : undefined}>EN</Link>
           </nav>
           {hasAccountActions && <div className={styles.headerAccountActions}>
-            {showLogin && <button type="button" aria-disabled="true" className={styles.login}>{t('login')}</button>}
-            {showPrimaryCta && <Button aria-disabled="true" className={styles.headerCta}>{t('tryFree')} <HeaderIcon name="arrow" size={17} /></Button>}
+            {showLogin && <Link href="/login" className={styles.login}>{t('login')}</Link>}
+            {showPrimaryCta && <ButtonLink href="/onboarding" className={styles.headerCta}>{t('tryFree')} <HeaderIcon name="arrow" size={17} /></ButtonLink>}
           </div>}
         </div>
       </PublicContainer>

@@ -11,6 +11,7 @@
   min-height: 48px;
   padding: 0 var(--space-5);
   text-align: center;
+  text-decoration: none;
   transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
   white-space: nowrap;
 }

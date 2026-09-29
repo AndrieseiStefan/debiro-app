@@ -1,4 +1,5 @@
-import {forwardRef, type ButtonHTMLAttributes, type ReactNode} from 'react';
+import {forwardRef, type ButtonHTMLAttributes, type ComponentProps, type ReactNode} from 'react';
+import {Link} from '@/i18n/navigation';
 import styles from './Button.module.css';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
@@ -35,3 +36,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     </button>
   );
 });
+
+export function ButtonLink({children, variant = 'primary', className, ...props}: ComponentProps<typeof Link> & {variant?: ButtonVariant}) {
+  return (
+    <Link {...props} className={[styles.button, styles[variant], className].filter(Boolean).join(' ')}>
+      <span className={styles.content}>{children}</span>
+    </Link>
+  );
+}

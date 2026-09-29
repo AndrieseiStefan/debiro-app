@@ -48,7 +48,6 @@
 }
 
 .navItem[aria-disabled='true'],
-.login[aria-disabled='true'],
 .help[aria-disabled='true'] {
   cursor: default;
 }

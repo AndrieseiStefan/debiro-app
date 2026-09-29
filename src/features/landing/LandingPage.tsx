@@ -1,7 +1,7 @@
 import {useTranslations} from 'next-intl';
 import {PublicContainer} from '@/components/layout/PublicContainer';
 import {PublicHeader} from '@/components/layout/PublicHeader';
-import {Button} from '@/components/ui/Button';
+import {ButtonLink} from '@/components/ui/Button';
 import {DashboardPreview} from './DashboardPreview';
 import {LandingIcon} from './LandingIcon';
 import type {LandingPreview} from './types';
@@ -39,7 +39,7 @@ export function LandingPage({locale, preview}: {locale: string; preview: Landing
               </h1>
               <p className={styles.heroDescription}>{t('heroDescription')}</p>
               <div className={styles.heroActions}>
-                <Button aria-disabled="true" className={styles.heroCta}>{t('tryFree')} <LandingIcon name="arrow" size={22} /></Button>
+                <ButtonLink href="/onboarding" className={styles.heroCta}>{t('tryFree')} <LandingIcon name="arrow" size={22} /></ButtonLink>
                 <button type="button" aria-disabled="true" className={styles.videoButton}>
                   <span className={styles.playDisc}><LandingIcon name="play" size={20} /></span>
                   <span><strong>{t('watchHow')}</strong><small>{t('videoDuration')}</small></span>

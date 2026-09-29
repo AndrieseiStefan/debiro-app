@@ -33,6 +33,7 @@ The final logo is not yet designed and must not be invented.
 - Romanian-default and English `next-intl` routing, foundation and implemented-screen catalogs, typed view-data convention
 - Reusable low-level UI/layout primitives, accessibility baseline, Vitest/RTL and Playwright test tooling, deterministic visual capture, development-only design-system preview
 - E1-001 canonical landing page at `/` (Romanian) and `/en` (English), using a typed static dashboard preview and no provider data; see [landing page](../features/landing-page.md)
+- E1-024 public account entry links from Landing to existing locale-matched Login and Onboarding routes, without authentication or persistence
 - E1-002/E1-012 canonical three-step onboarding at `/onboarding` (Romanian) and `/en/onboarding` (English), using typed fixtures and browser-local interactions only; Steps 2 and 3 are optional and no data is persisted or sent; see [onboarding](../features/onboarding.md)
 - E1-014 canonical existing-user login at `/login` and `/en/login`, using local form validation and fixture-backed Dashboard navigation without a real session or social sign-in; see [login](../features/login.md)
 - E1-003 canonical dashboard overview at `/dashboard` (Romanian) and `/en/dashboard` (English), using an independent authenticated app shell and deterministic view fixture; see [dashboard](../features/dashboard.md)

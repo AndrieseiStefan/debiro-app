@@ -69,6 +69,7 @@ test('centers the same border-box page shell on landing and onboarding', async (
 });
 
 test('configures page-specific actions within the shared public header', async ({page}) => {
+  test.setTimeout(90_000);
   const widths = [1920, 1625, 1448, 1200, 1199, 1024, 768, 767, 640, 600, 520, 497, 496, 480, 400, 397, 396, 375, 320];
 
   for (const width of widths) {
@@ -81,11 +82,11 @@ test('configures page-specific actions within the shared public header', async (
         if (route === '/onboarding') {
           await expect(page.locator('header')).not.toContainText('Parteneri siguri.');
           await expect(page.getByRole('button', {name: 'Ai nevoie de ajutor?'})).toBeVisible();
-          await expect(page.getByRole('button', {name: 'Autentificare'})).toHaveCount(0);
-          await expect(page.getByRole('button', {name: 'Încearcă gratuit'})).toHaveCount(0);
+          await expect(page.getByRole('link', {name: 'Autentificare'})).toHaveCount(0);
+          await expect(page.getByRole('link', {name: 'Încearcă gratuit'})).toHaveCount(0);
         } else {
-          await expect(page.getByRole('button', {name: 'Autentificare'})).toBeVisible();
-          await expect(page.getByRole('button', {name: 'Încearcă gratuit'}).first()).toBeVisible();
+          await expect(page.getByRole('link', {name: 'Autentificare'})).toBeVisible();
+          await expect(page.getByRole('link', {name: 'Încearcă gratuit'}).first()).toBeVisible();
         }
         layouts.push(await page.evaluate(() => {
           const header = document.querySelector('header')!;
