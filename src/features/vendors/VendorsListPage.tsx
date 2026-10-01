@@ -13,6 +13,7 @@ import {vendorCategories, type VendorCategory, type VendorListItem, type VendorS
 import {AddVendorDrawer} from './AddVendorDrawer';
 import {createLocalVendor, useVendorState, vendorListItems, vendorSummary, type NewVendorInput} from './created-vendors';
 import {VendorRowActions} from './VendorRowActions';
+import {sortVendors, type VendorSort, type VendorSortColumn} from './sorting';
 import styles from './VendorsListPage.module.css';
 
 const statuses: VendorStatus[] = ['compliant', 'attention', 'noncompliant'];
@@ -55,7 +56,7 @@ function VendorRow({vendor, locale, menuOpen, onMenuChange}: {vendor: VendorList
     <td><span className={styles.category}><CategoryIcon category={vendor.category} />{t(`category.${vendor.category}`)}</span></td>
     <td><VendorStatusBadge status={vendor.status} /></td>
     <td><span className={styles.documents}><span className={styles.progressTrack}><span className={styles.progressFill} data-status={vendor.status} style={{width: `${documentPercent}%`}} /></span><span>{vendor.documentCount}/{vendor.documentTarget}</span></span></td>
-    <td><time className={styles.expiry} data-tone={vendor.nextExpiry.tone}>{locale === 'en' ? vendor.nextExpiry.en : vendor.nextExpiry.ro}</time></td>
+    <td><time className={styles.expiry} dateTime={vendor.nextExpiry.date ?? undefined} data-tone={vendor.nextExpiry.tone}>{locale === 'en' ? vendor.nextExpiry.en : vendor.nextExpiry.ro}</time></td>
     <td className={styles.actionsCell}><VendorRowActions vendor={vendor} open={menuOpen} onOpenChange={onMenuChange}/></td>
   </tr>;
 }
@@ -74,6 +75,7 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
   const [status, setStatus] = useState<VendorStatus | 'all'>('all');
   const [pageSize, setPageSize] = useState(8);
   const [page, setPage] = useState(1);
+  const [sort, setSort] = useState<VendorSort | null>(null);
   const [menuVendorId, setMenuVendorId] = useState<string | null>(null);
   const counts = vendorSummary(allVendors);
   const filtered = allVendors.filter((vendor) => {
@@ -82,9 +84,15 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
   });
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, pageCount);
-  const visible = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const sorted = sortVendors(filtered, sort, locale, (item) => t(`category.${item}`));
+  const visible = sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const start = filtered.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const end = Math.min(currentPage * pageSize, filtered.length);
+
+  function changeSort(column: VendorSortColumn) {
+    setSort((current) => ({column, direction: current?.column === column && current.direction === 'ascending' ? 'descending' : 'ascending'}));
+    setPage(1);
+  }
 
   function createVendor(input: NewVendorInput) {
     const vendor = createLocalVendor(input);
@@ -133,11 +141,9 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
         <div className={styles.tableScroll} role="region" aria-label={t('tableRegion')} tabIndex={0}>
           <table className={styles.vendorTable}>
             <thead><tr>
-              <th scope="col">{t('table.vendor')} <span aria-hidden="true">↕</span></th>
-              <th scope="col">{t('table.category')} <span aria-hidden="true">↕</span></th>
-              <th scope="col">{t('table.generalStatus')} <span aria-hidden="true">↕</span></th>
-              <th scope="col">{t('table.documents')} <span aria-hidden="true">↕</span></th>
-              <th scope="col">{t('table.nextExpiry')} <span aria-hidden="true">↕</span></th>
+              {(['vendor', 'category', 'generalStatus', 'documents', 'nextExpiry'] as const).map((column) => <th key={column} scope="col" aria-sort={sort?.column === column ? sort.direction : undefined}>
+                <button type="button" className={styles.sortHeader} data-active={sort?.column === column || undefined} onClick={() => changeSort(column)}>{t(`table.${column}`)}<span aria-hidden="true">{sort?.column === column ? sort.direction === 'ascending' ? '↑' : '↓' : '↕'}</span></button>
+              </th>)}
               <th scope="col">{t('table.actions')}</th>
             </tr></thead>
             <tbody>{visible.map((vendor) => <VendorRow key={vendor.id} vendor={vendor} locale={locale} menuOpen={menuVendorId === vendor.id} onMenuChange={(open) => setMenuVendorId(open ? vendor.id : null)} />)}

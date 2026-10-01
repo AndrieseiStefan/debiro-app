@@ -95,4 +95,32 @@ describe('vendors list', () => {
     expect(within(row).queryByText('Inactiv')).not.toBeInTheDocument();
     expect(within(summary).getByText('16')).toBeVisible();
   });
+
+  it('uses accessible headers, resets pagination and sorts before slicing filtered results', () => {
+    renderVendors('ro');
+    const table = screen.getByRole('table');
+    const firstName = () => within(table).getAllByRole('link')[0].textContent;
+    const nameHeader = within(table).getByRole('columnheader', {name: 'FURNIZOR'});
+    expect(within(table).getAllByRole('button', {name: /^(FURNIZOR|CATEGORIE|STATUS GENERAL|DOCUMENTE|URMĂTOAREA EXPIRARE)$/})).toHaveLength(5);
+    expect(within(within(table).getByRole('columnheader', {name: 'ACȚIUNI'})).queryByRole('button')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', {name: '3'}));
+    fireEvent.click(within(nameHeader).getByRole('button'));
+    expect(nameHeader).toHaveAttribute('aria-sort', 'ascending');
+    expect(screen.getByRole('button', {name: '1'})).toHaveAttribute('aria-current', 'page');
+    expect(firstName()).toBe('Alpha Construction SRL');
+    fireEvent.click(within(nameHeader).getByRole('button'));
+    expect(nameHeader).toHaveAttribute('aria-sort', 'descending');
+    expect(firstName()).toBe('Urban Logistics SRL');
+    fireEvent.change(screen.getByRole('combobox', {name: 'Categorie'}), {target: {value: 'construction'}});
+    expect(within(table).getAllByRole('link').map((link) => link.textContent)).toEqual(['Delta Construct SRL', 'Construct Pro SRL', 'Alpha Construction SRL']);
+    fireEvent.change(screen.getByRole('searchbox', {name: 'Caută furnizori după nume, CUI sau persoană de contact'}), {target: {value: 'Construct Pro'}});
+    expect(firstName()).toBe('Construct Pro SRL');
+    fireEvent.change(screen.getByRole('combobox', {name: 'Status'}), {target: {value: 'attention'}});
+    expect(within(table).getByText('Niciun furnizor nu corespunde filtrelor.')).toBeVisible();
+    const documentsHeader = within(table).getByRole('columnheader', {name: 'DOCUMENTE'});
+    fireEvent.click(within(documentsHeader).getByRole('button'));
+    expect(documentsHeader).toHaveAttribute('aria-sort', 'ascending');
+    expect(nameHeader).not.toHaveAttribute('aria-sort');
+    expect(table.querySelectorAll('[aria-sort]')).toHaveLength(1);
+  });
 });

@@ -1,6 +1,6 @@
 # E1 Interaction & Missing Flow Audit
 
-Audit date: 2026-09-29. Initial baseline: `main` at `4c898fa8d76e431466fa24e4499230ec096c1d25`; updated after E1-024, E1-025A/B/C/D and E1-026A to reflect resolved account-entry links, the local template lifecycle and actionable vendor identities/lifecycle. This is a discovery record, not approval to implement the backlog. The current product is a fixture/browser-memory demonstration without authentication, persistence, file storage, or external services. The original 24 approved images in `docs/design/mockups/` were inspected during the audit; E1-025D adds two approved section-specific Preview/Portal references; later documented product decisions take precedence over older images (notably the reduced profile menu, two requirement tabs, single vendor category, immutable catalog names and removal of unsupported vendor bulk selection).
+Audit date: 2026-09-29. Initial baseline: `main` at `4c898fa8d76e431466fa24e4499230ec096c1d25`; updated after E1-024, E1-025A/B/C/D and E1-026A/A1 to reflect resolved account-entry links, the local template lifecycle and actionable vendor identities/lifecycle and semantic list sorting. This is a discovery record, not approval to implement the backlog. The current product is a fixture/browser-memory demonstration without authentication, persistence, file storage, or external services. The original 24 approved images in `docs/design/mockups/` were inspected during the audit; E1-025D adds two approved section-specific Preview/Portal references; later documented product decisions take precedence over older images (notably the reduced profile menu, two requirement tabs, single vendor category, immutable catalog names and removal of unsupported vendor bulk selection).
 
 Method: inspected all product route files, screen components, state stores, feature contracts, and targeted E2E coverage; opened every current RO and EN route in Chromium; exercised representative forms, drawers, popovers, navigation, local mutations, and 320px overlays. Direct route checks returned HTTP 200 for all 14 implemented product route families in both languages. Unknown fixture vendor/document IDs returned 404; lost `local-*` IDs have recovery UI. The missing routes listed below returned 404 in both languages. The development-only design-system preview is not a product route and is excluded from the counts. No production code was changed during the initial audit.
 
@@ -14,7 +14,7 @@ Inventory counts (unique control/interaction families in §3, not individual ren
 
 | IMPLEMENTED | PARTIAL | MISSING | DESIGN_REQUIRED | INTENTIONALLY_DEFERRED | BUG / INCONSISTENT |
 | ---: | ---: | ---: | ---: | ---: | ---: |
-| 33 | 12 | 5 | 13 | 8 | 2 |
+| 33 | 13 | 5 | 12 | 8 | 2 |
 
 The six status counts total 73 inventory families. Separately, 14 non-implemented families carry the `BACKEND_DEFERRED` **priority/disposition** (including six `PARTIAL` families); this is not a seventh mutually exclusive status.
 
@@ -31,7 +31,7 @@ Route coverage: 14 implemented product route families × 2 locales; four named p
 | `{ro,en}/onboarding` | Three-step account setup UI; Login sign-up link/direct URL | PARTIAL | Local selections are discarded on Dashboard entry; only one fixture option per Step-1 select; help/legal URLs absent. |
 | `{ro,en}/upload/demo-construct-pro` | Supplier-facing invitation preview; Invite Vendor preview link | PARTIAL | File selection is not upload; progress stays fixture-based; uploaded-file actions unavailable. Unknown tokens 404. |
 | `{ro,en}/dashboard` | Authenticated-looking overview; Login/Onboarding/sidebar | PARTIAL | Panel CTAs and document actions unavailable; snapshot KPIs do not derive from local mutations. |
-| `{ro,en}/vendors` | Supplier list; sidebar/breadcrumb | PARTIAL | All names open Details; Open/Active/Inactive menus and local filters work. Bulk selection removed; sort/more filters remain unavailable. |
+| `{ro,en}/vendors` | Supplier list; sidebar/breadcrumb | PARTIAL | All names open Details; Open/Active/Inactive menus, local filters and five-column sorting work. Bulk selection removed; more filters remain unavailable. |
 | `{ro,en}/vendors/[vendorId]` | Vendor Details; vendor-name/context-menu navigation | PARTIAL | All listed fixture/local identities work; missing optional data is not fabricated. Construct Pro invite is preview only; other vendors cannot invite or acquire requirements; editing, tabs, filter, document-row actions absent. Unknown fixture IDs 404; lost local IDs show recovery. |
 | `{ro,en}/documents` | Global document list; sidebar/review return | PARTIAL | One initial fixture review route and matching local simulated routes work; most rows cannot be opened or managed. |
 | `{ro,en}/documents/construct-pro-tax-2024/review` and `/documents/local-document-*/review` | Human review UI; supported document row/bell link | BUG / INCONSISTENT | Reject/draft/confirm only change component state; returning to Documents restores unchanged status. Unknown fixture IDs 404; lost local IDs show recovery. |
@@ -79,7 +79,7 @@ The table accounts for all visible control **families**, including repeated rows
 | 25 | Vendors | `Adaugă furnizor`, drawer Cancel/X/Escape, valid submit | Shared accessible drawer, validation, local record, Details navigation work. | Same E1 local path. | IMPLEMENTED | — |
 | 26 | Vendors | Search, category/status filters, pagination/page size | Mutate current list locally; filtered empty text is shown. | Same. | IMPLEMENTED | — |
 | 27 | Vendors | Unsupported bulk-selection affordance | Header/row checkboxes and selection state removed in E1-026A. | Keep removed until a bulk action is approved. | IMPLEMENTED | — |
-| 28 | Vendors | Sort-looking table headers; `Filtre suplimentare` | Header arrows are static glyphs; filter button unavailable. | Implement approved sort/advanced-filter contract or de-emphasize affordance. | DESIGN_REQUIRED | DESIGN_REQUIRED |
+| 28 | Vendors | Sortable table headers; `Filtre suplimentare` | E1-026A1 implements keyboard-accessible ascending/descending semantic sorting; additional-filter button remains unavailable. | Approve the advanced-filter contract or de-emphasize that remaining affordance. | PARTIAL | DESIGN_REQUIRED |
 | 29 | Vendors | Names and row `...` for Construct Pro and locally created rows | Names open Details; menus offer Open and Mark Inactive/Active. Lifecycle persists across client navigation/locales without changing compliance/data. | Same E1 local contract. | IMPLEMENTED | — |
 | 30 | Vendors | Names and row `...` for other 23 fixture suppliers | All resolve identity-driven Details with safe absent data and the same Open/Active/Inactive menu. | Same E1 local contract. | IMPLEMENTED | — |
 | 31 | Vendor Details | Breadcrumb; contact mail/tel/site; document search | Routes and OS/external links work; search filters rows. | Same. | IMPLEMENTED | — |

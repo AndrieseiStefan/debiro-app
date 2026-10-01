@@ -24,7 +24,7 @@ export type VendorListItem = {
   lifecycleStatus: VendorLifecycleStatus;
   documentCount: number;
   documentTarget: number;
-  nextExpiry: {ro: string; en: string; tone: 'danger' | 'warning' | 'neutral'};
+  nextExpiry: {date: string | null; ro: string; en: string; tone: 'danger' | 'warning' | 'neutral'};
 };
 
 export type VendorsListViewModel = {

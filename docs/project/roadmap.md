@@ -11,7 +11,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 - E1-001 canonical landing page — implemented; product-owner visual approval remains pending
 - E1-002/E1-012 canonical three-step onboarding — implemented with optional fixture-backed Steps 2 and 3 (E1-013 absorbed); product-owner visual approval remains pending
 - E1-003 canonical dashboard overview — implemented with a fixture-backed authenticated shell; product-owner visual approval remains pending
-- E1-004/E1-026A Vendors List — implemented with fixture/local name navigation, Open/Active/Inactive menus, separate lifecycle/compliance summaries and existing local filters/pagination; unsupported bulk selection is removed; product-owner visual approval remains pending
+- E1-004/E1-026A/A1 Vendors List — implemented with fixture/local name navigation, Open/Active/Inactive menus, separate lifecycle/compliance summaries, semantic column sorting and existing local filters/pagination; unsupported bulk selection is removed; product-owner visual approval remains pending
 - E1-005/E1-026A Vendor Details — implemented with identity-driven coverage for all listed vendors, safe absent-data states, inactive indicators and local document search; product-owner visual approval remains pending
 - E1-006/E1-023/E1-025A/B/C/D Document Requirements — implemented with company-scoped browser-memory template creation/editing, Add Document drawer, appearance controls, local duplicate/delete, and read-only supplier Preview; product-owner visual approval remains pending
 - E1-007 canonical Invite Vendor drawer — implemented from Vendor Details with a local preview form; product-owner visual approval remains pending

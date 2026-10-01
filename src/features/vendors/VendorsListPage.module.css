@@ -35,7 +35,11 @@
 .vendorTable th:nth-child(6) {width: 78px;}
 .vendorTable th:first-child, .vendorTable td:first-child {padding-left: 18px;}
 .vendorTable th {color: #557099; font-size: 11px; font-weight: 600; height: 41px; letter-spacing: .025em; white-space: nowrap;}
-.vendorTable th > span {color: #2e64b2; font-size: 16px; margin-left: 4px;}
+.sortHeader {align-items: center; background: none; border: 0; border-radius: 4px; color: inherit; display: inline-flex; font: inherit; gap: 4px; letter-spacing: inherit; min-height: 40px; padding: 0; white-space: nowrap;}
+.sortHeader > span {color: #2e64b2; font-size: 16px; width: 12px;}
+.sortHeader[data-active='true'] {color: var(--color-action-primary); font-weight: 750;}
+.sortHeader:hover {color: var(--color-action-primary);}
+.sortHeader:focus-visible {outline: 3px solid var(--color-focus); outline-offset: -3px;}
 .vendorTable th, .vendorTable td {border-bottom: 1px solid #dfeafa; padding-inline: 8px;}
 .vendorTable td {height: 57px; white-space: nowrap;}
 .vendorIdentity {align-items: center; display: flex; gap: 12px; min-width: 0;}

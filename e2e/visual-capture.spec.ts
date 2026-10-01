@@ -24,7 +24,15 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   await page.waitForLoadState('networkidle');
   await page.evaluate(async () => { await document.fonts.ready; });
   if (action) {
-    if (action === 'vendor-inactive' || action === 'vendor-menu' || action === 'vendor-inactive-details') {
+    if (action === 'vendor-sort-name-asc' || action === 'vendor-sort-expiry-desc') {
+      if (route !== '/vendors' && route !== '/en/vendors') throw new Error('Vendor sort capture requires the Vendors route.');
+      const english = route.startsWith('/en');
+      const header = page.getByRole('columnheader', {name: action === 'vendor-sort-name-asc' ? english ? 'SUPPLIER' : 'FURNIZOR' : english ? 'NEXT EXPIRY' : 'URMĂTOAREA EXPIRARE', exact: true});
+      await header.getByRole('button').click();
+      if (action === 'vendor-sort-expiry-desc') await header.getByRole('button').click();
+      await expect(header).toHaveAttribute('aria-sort', action === 'vendor-sort-name-asc' ? 'ascending' : 'descending');
+      await page.evaluate(() => window.scrollTo(0, 0));
+    } else if (action === 'vendor-inactive' || action === 'vendor-menu' || action === 'vendor-inactive-details') {
       if (route !== '/vendors' && route !== '/en/vendors') throw new Error('Vendor lifecycle capture requires the Vendors route.');
       const english = route.startsWith('/en');
       const row = page.locator('[data-vendor-id="construct-pro"]');

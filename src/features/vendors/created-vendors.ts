@@ -78,7 +78,7 @@ export function toVendorListItem(vendor: CreatedVendor): VendorListItem {
     lifecycleStatus: vendor.lifecycleStatus,
     documentCount: 0,
     documentTarget: 0,
-    nextExpiry: {ro: '—', en: '—', tone: 'neutral'}
+    nextExpiry: {date: null, ro: '—', en: '—', tone: 'neutral'}
   };
 }
 
