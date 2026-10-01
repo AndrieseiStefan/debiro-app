@@ -1,19 +1,22 @@
 'use client';
 
 import {useRef, useState, type ChangeEvent, type DragEvent, type FormEvent, type RefObject} from 'react';
-import {useTranslations} from 'next-intl';
+import {useLocale, useTranslations} from 'next-intl';
 import {AppIcon} from '@/components/layout/AppIcon';
 import {Button} from '@/components/ui/Button';
 import {Drawer, type DrawerPhase} from '@/components/ui/Drawer';
 import {Field} from '@/components/ui/Field';
 import {getSimulatedExtraction, type CreatedDocument} from './created-documents';
 import type {DocumentType} from './types';
+import {availableDocumentTypes, uploadTypeValue, type DocumentTypeSnapshot} from '@/features/requirements/document-types';
+import {getCompanyDocumentTypes, useRequirementsState} from '@/features/requirements/requirements-state';
+import {useCompanyState} from '@/features/companies/company-state';
 import styles from './AddDocumentDrawer.module.css';
 
 const maxBytes = 10 * 1024 * 1024;
 const fileTypes: Record<string, string> = {pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png'};
-const documentTypes: DocumentType[] = ['tax', 'registration', 'fire', 'insurance', 'inspector', 'financial', 'environment', 'safety'];
-const documentNames: Record<DocumentType, {ro: string; en: string}> = {
+const legacyTypes = ['inspector', 'financial', 'environment'] as const;
+const documentNames = {
   tax: {ro: 'Certificat fiscal', en: 'Tax certificate'}, registration: {ro: 'Certificat de înregistrare', en: 'Registration certificate'},
   fire: {ro: 'Autorizație ISU', en: 'Fire safety authorization'}, insurance: {ro: 'Asigurare', en: 'Insurance'},
   inspector: {ro: 'Certificat constatator', en: 'Company status certificate'}, financial: {ro: 'Situații financiare', en: 'Financial statements'},
@@ -30,27 +33,32 @@ function toIso(value: string) {
   return date.getUTCFullYear() === Number(year) && date.getUTCMonth() === Number(month) - 1 && date.getUTCDate() === Number(day) ? `${year}-${month}-${day}` : null;
 }
 
-export function AddDocumentDrawer({phase, onClose, onExited, triggerRef, vendor, uploadedBy, onCreate}: {
+export function AddDocumentDrawer({phase, onClose, onExited, triggerRef, vendor, uploadedBy, onCreate, requiredType}: {
   phase: DrawerPhase;
   onClose: () => void;
   onExited: () => void;
   triggerRef: RefObject<HTMLButtonElement | null>;
   vendor: {id: string; name: string; registrationNumber: string; registrationCode: string};
   uploadedBy: string;
+  requiredType?: DocumentTypeSnapshot;
   onCreate: (document: Omit<CreatedDocument, 'id' | 'status' | 'reviewRoute' | 'extractionState'> & {reviewRequired: boolean}) => void;
 }) {
   const t = useTranslations('AddDocument');
   const documentsT = useTranslations('Documents');
+  const language = useLocale() === 'en' ? 'en' : 'ro';
+  const companyId = useCompanyState().activeCompanyId ?? '';
+  const options = availableDocumentTypes(companyId, getCompanyDocumentTypes(useRequirementsState(), companyId));
   const inputRef = useRef<HTMLInputElement>(null);
   const autoFilled = useRef<Partial<Details>>({});
   const [file, setFile] = useState<{name: string; type: string; size: number} | null>(null);
   const [fileError, setFileError] = useState('');
-  const [type, setType] = useState<DocumentType | ''>('');
+  const [type, setType] = useState(requiredType ? uploadTypeValue(requiredType) : '');
+  const selectedType = requiredType ?? options.find((option) => uploadTypeValue(option) === type);
   const [details, setDetails] = useState<Details>({number: '', issuedAt: '', expiresAt: '', issuer: ''});
   const [extract, setExtract] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
-  const sample = extract && file && type ? getSimulatedExtraction(vendor.id, file.name, type) : null;
+  const sample = extract && file && type ? getSimulatedExtraction(vendor.id, file.name, type as DocumentType) : null;
 
   function clearAutoFill() {
     const previous = autoFilled.current;
@@ -85,7 +93,7 @@ export function AddDocumentDrawer({phase, onClose, onExited, triggerRef, vendor,
     setFileError(error);
     setErrors((current) => ({...current, file: error || undefined}));
     setFile(error ? null : {name: selected.name, type: selected.type || expectedMime, size: selected.size});
-    if (!error && extract) prefillSample(selected.name, type);
+    if (!error && extract) prefillSample(selected.name, type as DocumentType);
   }
 
   function chooseFile(event: ChangeEvent<HTMLInputElement>) {
@@ -127,14 +135,16 @@ export function AddDocumentDrawer({phase, onClose, onExited, triggerRef, vendor,
     const now = new Date().toISOString();
     onCreate({
       vendorId: vendor.id,
+      companyId,
+      typeSnapshot: selectedType,
       vendorName: vendor.name,
       vendorRegistrationNumber: vendor.registrationNumber,
       vendorRegistrationCode: vendor.registrationCode,
-      documentName: documentNames[type],
+      documentName: selectedType?.name ?? documentNames[type as keyof typeof documentNames],
       filename: file.name,
       fileType: file.type,
       fileSize: file.size,
-      documentType: type,
+      documentType: selectedType?.documentTypeSource === 'company' ? 'custom' : type as DocumentType,
       documentNumber: details.number.trim() || undefined,
       issuedAt: details.issuedAt.trim() ? toIso(details.issuedAt)! : undefined,
       expiresAt: details.expiresAt.trim() ? toIso(details.expiresAt)! : null,
@@ -160,9 +170,9 @@ export function AddDocumentDrawer({phase, onClose, onExited, triggerRef, vendor,
         <small>{file ? t('selectedSize', {size: file.size < 1024 ? `${file.size} B` : `${(file.size / 1024).toFixed(1)} KB`}) : t('fileHint')}</small>
       </div>
       {errors.file && <p id="add-document-file-error" className={styles.error} role="alert">{errors.file}</p>}
-      <div className={styles.extractionNotice}><div className={styles.noticeCopy}><AppIcon name="info" size={21}/><p>{t('extractionDescription')}</p></div><label className={styles.toggleRow}><input type="checkbox" checked={extract} onChange={(event) => {setExtract(event.target.checked); if (event.target.checked && file) prefillSample(file.name, type); else clearAutoFill();}}/><span className={styles.switch} aria-hidden="true"/>{t('extractionToggle')}</label>{extract && <p className={styles.extractionStatus} role="status">{sample ? t('sampleAvailable') : t('sampleUnavailable')}</p>}</div>
+      <div className={styles.extractionNotice}><div className={styles.noticeCopy}><AppIcon name="info" size={21}/><p>{t('extractionDescription')}</p></div><label className={styles.toggleRow}><input type="checkbox" checked={extract} onChange={(event) => {setExtract(event.target.checked); if (event.target.checked && file) prefillSample(file.name, type as DocumentType); else clearAutoFill();}}/><span className={styles.switch} aria-hidden="true"/>{t('extractionToggle')}</label>{extract && <p className={styles.extractionStatus} role="status">{sample ? t('sampleAvailable') : t('sampleUnavailable')}</p>}</div>
       <h3>{t('detailsTitle')}</h3>
-      <div className={styles.selectField}><label htmlFor="add-document-type">{t('type')} <span>*</span></label><div className={styles.selectWrap}><AppIcon name="file" size={18}/><select id="add-document-type" value={type} data-empty={type === ''} required aria-invalid={Boolean(errors.type)} aria-describedby={errors.type ? 'add-document-type-error' : undefined} onBlur={() => {if (!type) setErrors((current) => ({...current, type: t('typeRequired')}));}} onChange={(event) => {const selectedType = event.target.value as DocumentType | ''; clearAutoFill(); setType(selectedType); setErrors((current) => ({...current, type: undefined})); if (extract && file) prefillSample(file.name, selectedType);}}><option value="">{t('typePlaceholder')}</option>{documentTypes.map((item) => <option key={item} value={item}>{documentsT(`documentType.${item}`)}</option>)}</select><AppIcon name="chevronDown" size={17}/></div>{errors.type && <p id="add-document-type-error" className={styles.error} role="alert">{errors.type}</p>}</div>
+      <div className={styles.selectField}><label htmlFor="add-document-type">{t('type')} <span>*</span></label><div className={styles.selectWrap}><AppIcon name="file" size={18}/><select id="add-document-type" value={type} data-empty={type === ''} required disabled={Boolean(requiredType)} aria-invalid={Boolean(errors.type)} aria-describedby={errors.type ? 'add-document-type-error' : undefined} onBlur={() => {if (!type) setErrors((current) => ({...current, type: t('typeRequired')}));}} onChange={(event) => {const selectedType = event.target.value; clearAutoFill(); setType(selectedType); setErrors((current) => ({...current, type: undefined})); if (extract && file) prefillSample(file.name, selectedType as DocumentType);}}><option value="">{t('typePlaceholder')}</option>{requiredType ? <option value={uploadTypeValue(requiredType)}>{requiredType.name[language]}</option> : <>{options.map((option) => <option key={uploadTypeValue(option)} value={uploadTypeValue(option)}>{option.name[language]}</option>)}{legacyTypes.map((item) => <option key={item} value={item}>{documentsT(`documentType.${item}`)}</option>)}</>}</select><AppIcon name="chevronDown" size={17}/></div>{errors.type && <p id="add-document-type-error" className={styles.error} role="alert">{errors.type}</p>}</div>
       <Field id="add-document-company" label={t('company')} value={vendor.name} readOnly helperText={t('companyHelper')} className={styles.field}/>
       <div className={styles.metadataGrid} data-add-document-metadata>
         <Field id="add-document-number" label={t('number')} placeholder={t('numberPlaceholder')} value={details.number} onChange={(event) => updateDetails('number', event.target.value)} helperText={t('optionalExtractionHelper')} className={styles.field}/>

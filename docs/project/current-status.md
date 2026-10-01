@@ -10,11 +10,11 @@
 
 **Domain strategy:** Single domain
 
-**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and all twenty-six approved fixture/browser-local canonical mockup states are implemented; backend/auth integrations are not.
+**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and all twenty-seven approved fixture/browser-local canonical mockup states are implemented; backend/auth integrations are not.
 
 ## Design state
 
-Twenty-six approved product mockups are tracked in `docs/design/mockups/`. They are canonical contracts requiring:
+Twenty-seven approved product mockups are tracked in `docs/design/mockups/`. They are canonical contracts requiring:
 
 - UI fidelity as close to 1:1 as technically practical
 - Interaction fidelity as close to 1:1 as technically practical
@@ -38,8 +38,9 @@ The final logo is not yet designed and must not be invented.
 - E1-014 canonical existing-user login at `/login` and `/en/login`, using local form validation and fixture-backed Dashboard navigation without a real session or social sign-in; see [login](../features/login.md)
 - E1-003 canonical dashboard overview at `/dashboard` (Romanian) and `/en/dashboard` (English), using an independent authenticated app shell and deterministic view fixture; see [dashboard](../features/dashboard.md)
 - E1-004/E1-026A/A1 Vendors List at `/vendors` and `/en/vendors`, with local search/category/compliance filters, five-column semantic sorting, pagination/page size, name-to-Details links for every vendor, contextual Open/Active/Inactive actions and active-only compliance summaries; unsupported bulk selection is removed; see [vendors](../features/vendors.md)
-- E1-005/E1-026A/B Vendor Details at `/vendors/[vendorId]` and `/en/vendors/[vendorId]`, with identity-driven coverage for all listed vendors, safe absent-data states, inactive indicators, shared-form atomic metadata editing and local document search; see [vendor details](../features/vendor-details.md)
+- E1-005/E1-026A/B/E1-027 Vendor Details at `/vendors/[vendorId]` and `/en/vendors/[vendorId]`, with identity-driven coverage for all listed vendors, safe absent-data states, inactive indicators, shared-form atomic metadata editing, local document search and snapshot-based template application/upload/removal; see [vendor details](../features/vendor-details.md)
 - E1-006/E1-023/E1-025A/B/C/D Document Requirements at `/requirements` and `/en/requirements`, with company-scoped browser-memory templates, atomic template/document/rule and appearance editing, catalog/custom Add Document drawer, local template duplicate/delete, read-only supplier Preview reflecting current drafts, and Save-only custom-candidate learning; see [requirements](../features/requirements.md)
+- E1-027 vendor requirement template application — multi-select/confirmation, identity-based deduplication, independent snapshots/provenance, company custom document types, missing-row upload, explicit requirement/document removal and category-change relevance warning; browser-memory only; see [vendor requirements](../features/vendor-requirements.md)
 - E1-007 canonical Invite Vendor drawer from Vendor Details, with local form validation and a deterministic demo link but no email delivery; see [invite vendor](../features/invite-vendor.md)
 - E1-008 canonical Supplier Upload Portal at `/upload/demo-construct-pro` and `/en/upload/demo-construct-pro`, with an external-supplier layout, typed token fixture, shared Preview/Portal requirement presentation, and browser-local file selection only; see [supplier upload portal](../features/supplier-upload-portal.md)
 - E1-009 canonical Document Review at `/documents/construct-pro-tax-2024/review` and `/en/documents/construct-pro-tax-2024/review`, with typed document/extraction fixtures and browser-local human review only; see [document review](../features/document-review.md)
@@ -72,4 +73,4 @@ TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to
 
 ## Next
 
-All twenty-six tracked canonical mockup states have fixture/browser-local implementations; product-owner visual approval remains pending. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).
+All twenty-seven tracked canonical mockup states have fixture/browser-local implementations; product-owner visual approval remains pending. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).

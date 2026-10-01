@@ -6,6 +6,8 @@ import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
 import {AuthenticatedBreadcrumbs} from '@/components/layout/AuthenticatedBreadcrumbs';
 import {Button} from '@/components/ui/Button';
+import {EmptyState} from '@/components/ui/EmptyState';
+import {useDeletedDocumentIds} from '@/features/documents/created-documents';
 import {Link} from '@/i18n/navigation';
 import type {DocumentReviewViewModel, ReviewValues} from './types';
 import styles from './DocumentReviewPage.module.css';
@@ -100,6 +102,7 @@ export function DocumentReviewPage({locale, view}: {locale: string; view: Docume
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [reviewState, setReviewState] = useState<ReviewState>('extracted');
   const documentPath = `/documents/${view.id}/review`;
+  const deleted = useDeletedDocumentIds().includes(view.id);
 
   function update(field: FieldName, value: string) {
     setValues((current) => ({...current, [field]: value}));
@@ -131,6 +134,7 @@ export function DocumentReviewPage({locale, view}: {locale: string; view: Docume
     </ReviewField>;
   };
 
+  if (deleted) return <AuthenticatedAppShell locale={locale} currentPath={documentPath} organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={view.notificationCount}><EmptyState title={t('localDocumentUnavailable')} action={<Link href="/documents">{t('backToDocuments')}</Link>}/></AuthenticatedAppShell>;
   return <AuthenticatedAppShell locale={locale} currentPath={documentPath} organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={view.notificationCount}>
     <div className={styles.page}>
       <div className={styles.contextRow}>

@@ -11,12 +11,13 @@ import {EmptyState} from '@/components/ui/EmptyState';
 import {StatusBadge, type StatusTone} from '@/components/ui/StatusBadge';
 import {Surface} from '@/components/ui/Surface';
 import type {DocumentStatus, DocumentSummary, DocumentType, DocumentsViewModel} from './types';
-import {useCreatedDocuments} from './created-documents';
+import {useCreatedDocuments, useDeletedDocumentIds} from './created-documents';
+import {useCompanyState} from '@/features/companies/company-state';
 import styles from './DocumentsPage.module.css';
 
 const pageSize = 8;
 const statuses: DocumentStatus[] = ['uploaded', 'review', 'valid', 'expiring', 'expired'];
-const types: DocumentType[] = ['tax', 'registration', 'fire', 'insurance', 'inspector', 'financial', 'environment', 'safety'];
+const types: DocumentType[] = ['tax', 'registration', 'fire', 'insurance', 'inspector', 'financial', 'environment', 'safety', 'iso', 'permit', 'custom'];
 const tones: Record<DocumentStatus, StatusTone> = {uploaded: 'neutral', review: 'danger', valid: 'success', expiring: 'warning', expired: 'danger'};
 const icons: Record<DocumentStatus, AppIconName> = {uploaded: 'file', review: 'info', valid: 'check', expiring: 'clock', expired: 'info'};
 
@@ -52,7 +53,9 @@ function DocumentRow({document, locale}: {document: DocumentSummary; locale: str
 
 export function DocumentsPage({locale, view}: {locale: string; view: DocumentsViewModel}) {
   const t = useTranslations('Documents');
-  const documents = [...useCreatedDocuments(), ...view.documents];
+  const companyId = useCompanyState().activeCompanyId;
+  const deletedIds = useDeletedDocumentIds();
+  const documents = [...useCreatedDocuments().filter((item) => (item.companyId ?? 'demo-company') === companyId), ...view.documents.filter((item) => companyId === 'demo-company' && !deletedIds.includes(item.id))];
   const [tab, setTab] = useState<'all' | 'review'>('all');
   const [query, setQuery] = useState('');
   const [vendor, setVendor] = useState('all');

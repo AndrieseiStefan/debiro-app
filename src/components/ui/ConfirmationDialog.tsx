@@ -3,10 +3,11 @@
 import {useEffect, useId, useRef} from 'react';
 import {createPortal} from 'react-dom';
 import {Button} from './Button';
+import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
 import styles from './ConfirmationDialog.module.css';
 
-export function ConfirmationDialog({onCancel, onConfirm, title, description, cancelLabel, confirmLabel, backgroundSelector}: {
-  onCancel: () => void; onConfirm: () => void; title: string; description: string; cancelLabel: string; confirmLabel: string; backgroundSelector?: string;
+export function ConfirmationDialog({onCancel, onConfirm, title, description, cancelLabel, confirmLabel, backgroundSelector, icon}: {
+  onCancel: () => void; onConfirm: () => void; title: string; description: string; cancelLabel: string; confirmLabel: string; backgroundSelector?: string; icon?: AppIconName;
 }) {
   const id = useId();
   const continueRef = useRef<HTMLButtonElement>(null);
@@ -45,7 +46,7 @@ export function ConfirmationDialog({onCancel, onConfirm, title, description, can
   }, [onCancel, backgroundSelector]);
   return createPortal(<div className={styles.backdrop}>
     <div role="alertdialog" aria-modal="true" aria-labelledby={`${id}-title`} aria-describedby={`${id}-description`} className={styles.dialog}>
-      <h2 id={`${id}-title`}>{title}</h2><p id={`${id}-description`}>{description}</p>
+      {icon && <span className={styles.icon} aria-hidden="true"><AppIcon name={icon} size={24}/></span>}<h2 id={`${id}-title`}>{title}</h2><p id={`${id}-description`}>{description}</p>
       <div><Button ref={continueRef} variant="secondary" onClick={onCancel}>{cancelLabel}</Button><Button variant="destructive" onClick={onConfirm}>{confirmLabel}</Button></div>
     </div>
   </div>, document.body);

@@ -5,15 +5,16 @@ This roadmap records direction only. Detailed requirements are created by the ta
 ## Phase 0 — Product & Repository Foundation
 
 - Repository memory — complete
-- Canonical mockup contract and twenty-six approved images — complete
+- Canonical mockup contract and twenty-seven approved images — complete
 - Architecture and stack decision — complete (TASK-002)
 - UI foundation and canonical design system tooling — complete (TASK-003); no product screens approved
 - E1-001 canonical landing page — implemented; product-owner visual approval remains pending
 - E1-002/E1-012 canonical three-step onboarding — implemented with optional fixture-backed Steps 2 and 3 (E1-013 absorbed); product-owner visual approval remains pending
 - E1-003 canonical dashboard overview — implemented with a fixture-backed authenticated shell; product-owner visual approval remains pending
 - E1-004/E1-026A/A1 Vendors List — implemented with fixture/local name navigation, Open/Active/Inactive menus, separate lifecycle/compliance summaries, semantic column sorting and existing local filters/pagination; unsupported bulk selection is removed; product-owner visual approval remains pending
-- E1-005/E1-026A/B Vendor Details — implemented with identity-driven coverage for all listed vendors, safe absent-data states, inactive indicators, shared-form atomic metadata editing and local document search; product-owner visual approval remains pending
+- E1-005/E1-026A/B/E1-027 Vendor Details — implemented with identity-driven coverage for all listed vendors, safe absent-data states, inactive indicators, shared-form atomic metadata editing, local document search and snapshot-based template application/upload/removal; product-owner visual approval remains pending
 - E1-006/E1-023/E1-025A/B/C/D Document Requirements — implemented with company-scoped browser-memory template creation/editing, Add Document drawer, appearance controls, local duplicate/delete, and read-only supplier Preview; product-owner visual approval remains pending
+- E1-027 vendor requirement template application — multi-select/confirmation, identity-based deduplication, independent snapshots/provenance, company custom document types, missing-row upload, explicit requirement/document removal and category-change relevance warning; browser-memory only; see [vendor requirements](../features/vendor-requirements.md)
 - E1-007 canonical Invite Vendor drawer — implemented from Vendor Details with a local preview form; product-owner visual approval remains pending
 - E1-008 canonical Supplier Upload Portal — implemented as a separate external-supplier layout with a deterministic token fixture, shared Preview/Portal requirement presentation, and browser-local file selection; product-owner visual approval remains pending
 - E1-009 canonical Document Review — implemented with a deterministic document fixture, local edits and human confirmation only; product-owner visual approval remains pending
@@ -28,7 +29,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 ## Agreed delivery sequence
 
 1. E1-001 landing page — implemented under an explicit task brief. The earlier complete-MVP epic planning checkpoint remains open.
-2. Implement approved mockup experiences using typed fixture/browser-local data — complete for all twenty-six tracked canonical mockup states.
+2. Implement approved mockup experiences using typed fixture/browser-local data — complete for all twenty-seven tracked canonical mockup states.
 3. Visually and interactively compare them with the canonical mockups; obtain product-owner visual approval.
 4. Before expanding beyond the supplied E1 tasks, finalize the complete Epic sequence through MVP.
 5. Define data model and API contracts, then build backend/persistence and replace fixtures with real data.
@@ -50,4 +51,4 @@ These are roadmap directions, not detailed feature specifications or a finalized
 
 ## Next task
 
-All twenty-six tracked mockups have fixture/browser-local implementations. Product-owner visual approval and the broader MVP epic planning checkpoint remain open; backend and auth are not implemented.
+All twenty-seven tracked mockups have fixture/browser-local implementations. Product-owner visual approval and the broader MVP epic planning checkpoint remain open; backend and auth are not implemented.

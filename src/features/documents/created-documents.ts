@@ -4,8 +4,11 @@ import {useSyncExternalStore} from 'react';
 import {getDocumentReviewFixture} from '@/features/document-review/fixtures';
 import type {DocumentSummary, DocumentType} from './types';
 import type {VendorDocumentRow} from '@/features/vendors/types';
+import type {DocumentTypeSnapshot} from '@/features/requirements/document-types';
 
 export type CreatedDocument = DocumentSummary & {
+  companyId?: string;
+  typeSnapshot?: DocumentTypeSnapshot;
   fileType: string;
   fileSize: number;
   documentNumber?: string;
@@ -23,6 +26,8 @@ type NewDocument = Omit<CreatedDocument, 'id' | 'status' | 'reviewRoute' | 'extr
 const emptyDocuments: CreatedDocument[] = [];
 let documents: CreatedDocument[] = emptyDocuments;
 const listeners = new Set<() => void>();
+const emptyDeletedIds: string[] = [];
+let deletedIds = emptyDeletedIds;
 
 function subscribe(listener: () => void) {
   listeners.add(listener);
@@ -31,6 +36,17 @@ function subscribe(listener: () => void) {
 
 export function useCreatedDocuments() {
   return useSyncExternalStore(subscribe, () => documents, () => emptyDocuments);
+}
+export function readCreatedDocuments() {return documents;}
+export function useDeletedDocumentIds() {return useSyncExternalStore(subscribe, () => deletedIds, () => emptyDeletedIds);}
+export function deleteLocalDocument(companyId: string, id: string) {
+  const found = documents.find((document) => document.id === id);
+  if (found && (found.companyId ?? 'demo-company') !== companyId) return false;
+  if (!found && companyId !== 'demo-company') return false;
+  documents = documents.filter((document) => document.id !== id);
+  deletedIds = [...new Set([...deletedIds, id])];
+  listeners.forEach((listener) => listener());
+  return true;
 }
 
 export function createLocalDocument(input: NewDocument): CreatedDocument {

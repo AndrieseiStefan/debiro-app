@@ -156,7 +156,8 @@ test('edits local inactive vendors without losing local documents, and preserves
   await expect(page.locator('h1')).toHaveText('Local edited');
   await expect(page).toHaveURL(new RegExp(`/vendors/${id}$`));
   await expect(page.locator('[data-vendor-lifecycle]')).toHaveText('Inactiv');
-  await expect(page.getByText('Necesită configurare', {exact: true})).toBeVisible();
+  await expect(page.locator('[data-vendor-status]')).toContainText('0 din 1 documente valide');
+  await expect(page.locator('[data-requirement-id]')).toHaveCount(1);
   expect(await page.locator('tbody').innerText()).toBe(documents);
   await page.reload();
   await expect(page.getByText('Furnizorul local nu mai este disponibil.')).toBeVisible();

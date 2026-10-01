@@ -46,7 +46,7 @@ describe('vendor details', () => {
     expect(screen.getByRole('button', {name: 'Add document'})).toBeVisible();
     fireEvent.change(screen.getByRole('searchbox', {name: 'Search documents'}), {target: {value: 'ISO'}});
     expect(screen.getByRole('table').getElementsByTagName('tbody')[0].rows).toHaveLength(1);
-    expect(screen.getByText('Certificat ISO 9001')).toBeVisible();
+    expect(screen.getByText('ISO 9001 certification')).toBeVisible();
   });
 
   it('returns no fixture for unknown IDs', () => {

@@ -7,9 +7,11 @@ export type AppIconName =
   | 'building' | 'arrowRight' | 'userPlus' | 'fileX' | 'filter' | 'upload'
   | 'crown' | 'eye' | 'mail' | 'send' | 'creditCard' | 'edit' | 'download' | 'sort'
   | 'user' | 'external' | 'logout'
-  | 'box' | 'construction' | 'tools' | 'safety' | 'truck' | 'computer' | 'briefcase';
+  | 'box' | 'construction' | 'tools' | 'safety' | 'truck' | 'computer' | 'briefcase' | 'layers' | 'warning';
 
 const paths: Record<AppIconName, ReactNode> = {
+  layers: <><path d="m12 2 10 5-10 5L2 7l10-5ZM2 12l10 5 10-5M2 17l10 5 10-5"/></>,
+  warning: <><path d="m12 3 10 18H2L12 3Z"/><path d="M12 9v5M12 17h.01"/></>,
   home: <><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10Z" /><path d="M9 21v-7h6v7" /></>,
   users: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>,
   file: <><path d="M6 2h8l5 5v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Z" /><path d="M14 2v6h5M8 13h8M8 17h8" /></>,

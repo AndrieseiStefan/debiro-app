@@ -101,13 +101,39 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
         await page.getByRole('button', {name: english ? 'Add document' : 'Adaugă document'}).click();
         if (action === 'requirement-custom') await page.getByRole('dialog', {name: english ? 'Add document' : 'Adaugă document'}).getByRole('button', {name: english ? 'Custom document' : 'Document personalizat'}).click();
       }
-    } else if (action === 'edit-vendor' || action === 'edit-vendor-end' || action === 'edit-vendor-dirty') {
+    } else if (action === 'template-selector' || action === 'template-summary' || action === 'template-applied' || action === 'template-remove-association' || action === 'template-remove-uploaded') {
+      if (route !== '/vendors/construct-pro' && route !== '/en/vendors/construct-pro') throw new Error('Template assignment capture requires the canonical vendor route.');
+      const english = route.startsWith('/en');
+      await page.getByRole('button', {name: english ? 'Set up documents from templates' : 'Setează documente din șablon', exact: true}).click();
+      const selector = page.getByRole('dialog', {name: english ? 'Set up documents from templates' : 'Setează documente din șablon', exact: true});
+      await selector.getByRole('checkbox', {name: english ? /^Construction subcontractor/ : /^Subcontractor construcții/}).check();
+      await selector.getByRole('checkbox', {name: english ? /^Maintenance services/ : /^Servicii de mentenanță/}).check();
+      if (action !== 'template-selector') {
+        await selector.getByRole('button', {name: english ? 'Apply 2 templates' : 'Aplică 2 șabloane'}).click();
+        const summary = page.getByRole('dialog', {name: english ? 'Apply templates' : 'Aplică șabloane', exact: true});
+        if (action !== 'template-summary') {
+          await summary.getByRole('button', {name: english ? 'Apply templates' : 'Aplică șabloanele'}).click();
+          await expect(summary).not.toBeVisible();
+          await page.locator('#vendor-documents').scrollIntoViewIfNeeded();
+          if (action === 'template-remove-association') {
+            await page.getByRole('button', {name: english ? 'Remove association with Construction subcontractor' : 'Elimină asocierea cu Subcontractor construcții'}).click();
+            await expect(page.getByRole('alertdialog')).toBeVisible();
+          } else if (action === 'template-remove-uploaded') {
+            const row = page.getByRole('row').filter({hasText: english ? 'Tax certificate' : 'Certificat fiscal'});
+            await row.getByRole('button', {name: english ? 'Actions for Tax certificate' : 'Acțiuni pentru Certificat fiscal'}).click();
+            await page.getByRole('menuitem', {name: english ? 'Remove requirement' : 'Elimină cerința'}).click();
+            await expect(page.getByRole('alertdialog')).toBeVisible();
+          }
+        }
+      }
+    } else if (action === 'edit-vendor' || action === 'edit-vendor-end' || action === 'edit-vendor-dirty' || action === 'edit-vendor-category-warning') {
       if (route !== '/vendors/construct-pro' && route !== '/en/vendors/construct-pro') throw new Error('Edit Vendor capture requires the canonical vendor route.');
       const english = route.startsWith('/en');
       await page.getByRole('button', {name: english ? 'Edit vendor' : 'Editează furnizor'}).click();
       const dialog = page.getByRole('dialog', {name: english ? 'Edit vendor' : 'Editează furnizor'});
       await expect(dialog).toBeVisible();
       if (action === 'edit-vendor-end') await dialog.evaluate((element) => {element.scrollTop = element.scrollHeight;});
+      if (action === 'edit-vendor-category-warning') {await dialog.locator('#edit-vendor-category').selectOption('software'); await dialog.locator('[data-category-warning]').scrollIntoViewIfNeeded();}
       if (action === 'edit-vendor-dirty') {
         await dialog.locator('#edit-vendor-name').fill('Construct Pro Updated SRL');
         await page.keyboard.press('Escape');

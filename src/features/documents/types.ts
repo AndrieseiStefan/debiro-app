@@ -1,6 +1,6 @@
 /** Fixture-backed presentation data, not a persistence or authorization model. */
 export type DocumentStatus = 'uploaded' | 'review' | 'valid' | 'expiring' | 'expired';
-export type DocumentType = 'tax' | 'registration' | 'fire' | 'insurance' | 'inspector' | 'financial' | 'environment' | 'safety';
+export type DocumentType = 'tax' | 'registration' | 'fire' | 'insurance' | 'inspector' | 'financial' | 'environment' | 'safety' | 'iso' | 'permit' | 'custom';
 
 export type DocumentSummary = {
   id: string;

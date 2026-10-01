@@ -43,8 +43,8 @@ type DocumentRules = {
 };
 
 export type RequirementTemplateDocument = DocumentRules & (
-  | {catalogDocumentTypeId: string; customName?: never; customDescription?: never; iconKey?: never; iconColorKey?: never}
-  | {catalogDocumentTypeId?: never; customName: string; customDescription?: string; iconKey?: AppearanceIconKey; iconColorKey?: AppearanceColorKey}
+  | {catalogDocumentTypeId: string; companyDocumentTypeId?: never; customName?: never; customDescription?: never; iconKey?: never; iconColorKey?: never}
+  | {catalogDocumentTypeId?: never; companyDocumentTypeId?: string; customName: string; customDescription?: string; iconKey?: AppearanceIconKey; iconColorKey?: AppearanceColorKey}
 );
 
 export type RequirementDocumentInput = Omit<DocumentRules, 'id' | 'templateId'> & (

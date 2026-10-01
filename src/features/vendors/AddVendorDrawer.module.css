@@ -15,3 +15,4 @@
 .actions {display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;}
 .actions :global(button) {font-size: 14px; min-height: 46px; min-width: 0;}
 @media (max-width: 375px) {.content h2 {font-size: 25px;}.row {gap: 16px; grid-template-columns: minmax(0, 1fr);}.actions {display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);}.actions[data-edit-vendor-actions] {grid-template-columns: minmax(0, 1fr);}.actions :global(button) {padding-inline: 8px;}}
+.categoryWarning {background: #fff8e9; border: 1px solid #f3dca4; color: #855600;}

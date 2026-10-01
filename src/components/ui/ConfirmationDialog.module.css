@@ -4,3 +4,4 @@
 .dialog p {color: #58749e; font-size: 14px; line-height: 1.45; margin-top: 8px;}
 .dialog > div {display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 23px;}
 .dialog :global(button) {flex: 1 0 max-content;}
+.icon {align-items: center; background: #fff3dc; border-radius: 50%; color: #ed9000; display: inline-flex; height: 42px; justify-content: center; margin-bottom: 14px; width: 42px;}

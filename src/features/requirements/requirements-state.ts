@@ -5,6 +5,7 @@ import {vendorCategories, type VendorCategory} from '@/features/vendors/types';
 import {defaultAppearance, starterAppearance, validColorKey, validIconKey, type Appearance} from './appearance';
 import {catalogDocument, normalizeDocumentName} from './catalog';
 import {requirementsFixture} from './fixtures';
+import {resolveCompanyDocumentTypes, type CompanyDocumentType} from './document-types';
 import type {CatalogCandidate, RequirementDocumentInput, RequirementTemplate, RequirementTemplateDocument, TemplateDraft, TemplateEditDraft} from './types';
 
 type RuleChange = Partial<Pick<RequirementTemplateDocument, 'required' | 'expiryWarningDays' | 'validityMonths'>>;
@@ -12,7 +13,7 @@ type CustomChange = {customName?: string; customDescription?: string; issuer?: s
 type EditChange = Partial<Pick<TemplateEditDraft, 'name' | 'description' | 'categoryId' | 'iconKey' | 'iconColorKey' | 'documents'>>;
 type ValidationError = 'missing' | 'name' | 'duplicateName' | 'category' | 'documents' | 'invalidDocument' | 'duplicateDocument';
 export type RequirementsWorkspace = {templates: RequirementTemplate[]; selectedId: string | null; draft: TemplateDraft | null; editDraft: TemplateEditDraft | null};
-type RequirementsState = {byCompany: Record<string, RequirementsWorkspace>; candidates: CatalogCandidate[]};
+type RequirementsState = {byCompany: Record<string, RequirementsWorkspace>; candidates: CatalogCandidate[]; companyDocumentTypes: CompanyDocumentType[]};
 type NewDocument = RequirementDocumentInput;
 
 const seededTemplates: RequirementTemplate[] = requirementsFixture.templates.map((template) => ({
@@ -28,7 +29,7 @@ const seededTemplates: RequirementTemplate[] = requirementsFixture.templates.map
 const emptyWorkspace: RequirementsWorkspace = {templates: [], selectedId: null, draft: null, editDraft: null};
 const initialState: RequirementsState = {
   byCompany: {'demo-company': {templates: seededTemplates, selectedId: seededTemplates[0]?.id ?? null, draft: null, editDraft: null}},
-  candidates: []
+  candidates: [], companyDocumentTypes: []
 };
 let state = initialState;
 const listeners = new Set<() => void>();
@@ -38,6 +39,7 @@ export function useRequirementsState() {return useSyncExternalStore(subscribe, (
 export function readRequirementsState() {return state;}
 export function getRequirementsWorkspace(snapshot: RequirementsState, companyId: string) {return snapshot.byCompany[companyId] ?? emptyWorkspace;}
 export function getCatalogCandidates(snapshot: RequirementsState) {return snapshot.candidates;}
+export function getCompanyDocumentTypes(snapshot: RequirementsState, companyId: string) {return snapshot.companyDocumentTypes.filter((type) => type.companyId === companyId);}
 
 function updateWorkspace(companyId: string, update: (workspace: RequirementsWorkspace) => RequirementsWorkspace) {
   const workspace = getRequirementsWorkspace(state, companyId);
@@ -174,13 +176,15 @@ export function saveRequirementDraft(companyId: string): ReturnType<typeof valid
   const name = draft.name.trim().replace(/\s+/g, ' ');
   const description = draft.description.trim();
   const now = new Date().toISOString();
+  const resolved = resolveCompanyDocumentTypes(companyId, draft.documents, state.companyDocumentTypes, now);
   const template: RequirementTemplate = {
     id, companyId, title: {ro: name, en: name}, subtitle: {ro: description, en: description},
     iconKey: validIconKey(draft.iconKey), iconColorKey: validColorKey(draft.iconColorKey), categoryId: draft.categoryId as VendorCategory,
     duplicatedFromTemplateId: draft.duplicatedFromTemplateId, createdAt: now, updatedAt: now,
-    documents: draft.documents.map((document) => ({...document, templateId: id}))
+    documents: resolved.documents.map((document) => ({...document, templateId: id}))
   };
   publish({
+    companyDocumentTypes: resolved.types,
     byCompany: {...state.byCompany, [companyId]: {...workspace, templates: [...workspace.templates, template], selectedId: id, draft: null, editDraft: null}},
     candidates: draft.duplicatedFromTemplateId ? state.candidates : learnCandidates(state.candidates, template.documents)
   });
@@ -202,12 +206,13 @@ export function saveExistingRequirementEdit(companyId: string): ValidationError 
     customName: document.customName.trim().replace(/\s+/g, ' '), customDescription: document.customDescription?.trim() || undefined, issuer: document.issuer?.trim() || undefined
   });
   const learned = documents.filter((document) => document.customName && !original.documents.some((previous) => previous.id === document.id && normalizeDocumentName(previous.customName ?? '') === normalizeDocumentName(document.customName ?? '')));
+  const resolved = resolveCompanyDocumentTypes(companyId, documents, state.companyDocumentTypes, new Date().toISOString());
   const committed: RequirementTemplate = {...original, title: renamed ? {ro: name, en: name} : original.title,
     subtitle: reworded ? {ro: description, en: description} : original.subtitle,
     categoryId: edit.categoryId as VendorCategory, iconKey: validIconKey(edit.iconKey), iconColorKey: validColorKey(edit.iconColorKey),
-    documents, updatedAt: new Date().toISOString()};
+    documents: resolved.documents, updatedAt: new Date().toISOString()};
   publish({byCompany: {...state.byCompany, [companyId]: {...workspace, templates: workspace.templates.map((template) => template.id === original.id ? committed : template), editDraft: null}},
-    candidates: learnCandidates(state.candidates, learned)});
+    companyDocumentTypes: resolved.types, candidates: learnCandidates(state.candidates, learned)});
   return 'saved';
 }
 
