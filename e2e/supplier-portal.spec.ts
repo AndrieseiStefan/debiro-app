@@ -9,7 +9,7 @@ test('renders the Romanian supplier portal without authenticated navigation', as
   await expect(page.getByRole('heading', {name: 'Încărcare securizată'})).toBeVisible();
   await expect(page.getByRole('heading', {name: 'Ai nevoie de ajutor?'})).toBeVisible();
   await expect(page.locator('[data-document-id]')).toHaveCount(4);
-  await expect(page.getByRole('progressbar', {name: 'Progresul documentelor'})).toHaveAttribute('aria-valuenow', '2');
+  await expect(page.getByRole('progressbar', {name: 'Progresul documentelor'})).toHaveAttribute('aria-valuenow', '50');
   await expect(page.getByRole('navigation', {name: 'Navigare în aplicație'})).toHaveCount(0);
   await expect(page.getByRole('searchbox')).toHaveCount(0);
   await expect(page.getByText('DEBIRO').first()).toBeVisible();
@@ -35,9 +35,9 @@ test('validates and selects files only in the browser', async ({page}) => {
   await expect(page.locator('[data-document-id="tax"]')).toContainText('Selectat local');
   await expect(page.locator('[data-document-id="tax"]')).toContainText('tax.pdf');
   await expect(page.getByText('Fișierul este selectat doar în acest browser. Nu a fost încărcat sau trimis.')).toBeVisible();
-  await expect(page.getByRole('progressbar', {name: 'Progresul documentelor'})).toHaveAttribute('aria-valuenow', '2');
+  await expect(page.getByRole('progressbar', {name: 'Progresul documentelor'})).toHaveAttribute('aria-valuenow', '50');
   await page.reload();
-  await expect(page.locator('[data-document-id="tax"]')).toContainText('În așteptare');
+  await expect(page.locator('[data-document-id="tax"]')).toContainText('În review');
 });
 
 test('centers its own portal containers and contains document rows at required widths', async ({page}) => {

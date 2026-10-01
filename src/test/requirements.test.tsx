@@ -25,7 +25,7 @@ describe('document requirements', () => {
     expect(screen.getByRole('heading', {name: 'Șabloane de cerințe'})).toBeVisible();
     expect(screen.getByRole('tab', {name: 'Documente necesare (5)'})).toHaveAttribute('aria-selected', 'true');
     expect(screen.getAllByRole('tab')).toHaveLength(2);
-    expect(screen.getByRole('tab', {name: 'Previzualizare'})).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('tab', {name: 'Previzualizare'})).not.toHaveAttribute('aria-disabled');
     const table = screen.getByRole('table');
     expect(within(table).getAllByRole('row')).toHaveLength(6);
     for (const name of ['Certificat de înregistrare', 'Asigurare Răspundere Civilă', 'Certificare ISO 9001', 'Autorizație de lucru', 'Declarație SSM']) expect(within(table).getByText(name)).toBeVisible();

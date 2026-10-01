@@ -26,9 +26,12 @@ describe('supplier upload portal', () => {
     expect(screen.getByRole('region', {name: 'Detaliile solicitării'})).toHaveTextContent('Construct Pro SRL');
     expect(screen.getByRole('heading', {name: 'Documente solicitate (4)'})).toBeVisible();
     expect(screen.getByText('2 din 4 finalizate')).toBeVisible();
-    expect(screen.getByRole('progressbar', {name: 'Progresul documentelor'})).toHaveAttribute('aria-valuenow', '2');
+    expect(screen.getByRole('progressbar', {name: 'Progresul documentelor'})).toHaveAttribute('aria-valuenow', '50');
     expect(screen.getAllByText('Încărcat')).toHaveLength(2);
-    expect(screen.getByText('În așteptare')).toBeVisible();
+    expect(screen.getByText('În review')).toBeVisible();
+    expect(screen.getByText('certificat_fiscal.pdf')).toBeVisible();
+    expect(screen.getAllByText('Obligatoriu')).toHaveLength(3);
+    expect(screen.getByText('Opțional')).toBeVisible();
     expect(screen.getByText('Lipsește')).toBeVisible();
     expect(screen.getByRole('heading', {name: 'Încărcare securizată'})).toBeVisible();
     expect(screen.getByRole('heading', {name: 'Ai nevoie de ajutor?'})).toBeVisible();
@@ -59,6 +62,16 @@ describe('supplier upload portal', () => {
     expect(screen.getByText('tax.pdf')).toBeVisible();
     expect(screen.getByText('Selectat local')).toBeVisible();
     expect(screen.getByText('Fișierul este selectat doar în acest browser. Nu a fost încărcat sau trimis.')).toBeVisible();
-    expect(screen.getByRole('progressbar', {name: 'Progresul documentelor'})).toHaveAttribute('aria-valuenow', '2');
+    expect(screen.getByRole('progressbar', {name: 'Progresul documentelor'})).toHaveAttribute('aria-valuenow', '50');
+    expect(screen.getByText('În review')).toBeVisible();
+  });
+
+  it('safely renders a no-request state without fabricated rows or invalid progress', () => {
+    const view = getSupplierPortalFixture('demo-construct-pro')!;
+    render(<NextIntlClientProvider locale="ro" messages={ro}><SupplierUploadPortalPage locale="ro" view={{...view, documents: []}}/></NextIntlClientProvider>);
+    expect(screen.getByRole('heading', {name: 'Nu sunt solicitate documente'})).toBeVisible();
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0');
+    expect(document.querySelectorAll('[data-document-id]')).toHaveLength(0);
+    expect(document.querySelectorAll('input[type="file"]')).toHaveLength(0);
   });
 });

@@ -16,7 +16,9 @@ import {vendorCategories, type VendorCategory} from '@/features/vendors/types';
 import {AddRequirementDocumentDrawer} from './AddRequirementDocumentDrawer';
 import {AppearanceIcon, AppearancePicker} from './AppearancePicker';
 import {defaultAppearance, validColorKey, validIconKey} from './appearance';
-import {catalogDocument} from './catalog';
+import {documentDisplay} from './document-presentation';
+import {previewSupplier, supplierPreviewDocuments} from './supplier-preview';
+import {SupplierRequirementContext, SupplierRequirementList} from '@/features/supplier-requirements/SupplierRequirements';
 import {
   addRequirementDocument, deleteRequirementTemplate, discardExistingRequirementEdit, discardRequirementDraft, duplicateRequirementTemplate, getRequirementsWorkspace,
   removeRequirementDocument, saveExistingRequirementEdit, saveRequirementDraft, selectRequirementTemplate, startRequirementDraft,
@@ -37,12 +39,6 @@ function ActionGlyph({kind}: {kind: 'copy' | 'trash' | 'save'}) {
     save: <><path d="M4 3h14l3 3v15H4V3ZM7 3v7h10V3M7 21v-8h11v8" /></>
   };
   return <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{paths[kind]}</svg>;
-}
-
-function documentDisplay(document: RequirementTemplateDocument, language: 'ro' | 'en') {
-  const catalog = document.catalogDocumentTypeId ? catalogDocument(document.catalogDocumentTypeId) : null;
-  return {name: catalog?.canonicalName[language] ?? document.customName ?? '', detail: catalog?.description[language] ?? document.customDescription ?? document.issuer ?? '',
-    appearance: catalog ? {iconKey: catalog.iconKey, iconColorKey: catalog.iconColorKey} : {iconKey: validIconKey(document.iconKey), iconColorKey: validColorKey(document.iconColorKey)}};
 }
 
 function ConfirmationDialog({onCancel, onConfirm, title, description, cancelLabel, confirmLabel}: {
@@ -101,6 +97,7 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
   const editDraft = workspace.editDraft?.templateId === selected?.id ? workspace.editDraft : null;
   const documents = draft?.documents ?? editDraft?.documents ?? selected?.documents ?? [];
   const [query, setQuery] = useState('');
+  const [tab, setTab] = useState<'documents' | 'preview'>('documents');
   const [validation, setValidation] = useState<ReturnType<typeof validateRequirementDraft>>(null);
   const [editingCustomId, setEditingCustomId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -131,8 +128,8 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
     pendingAction.current = null;
     action?.();
   }
-  function startNew() {requestDiscard(() => {startRequirementDraft(companyId); setValidation(null);});}
-  function duplicateSelected() {requestDiscard(() => {duplicateRequirementTemplate(companyId, language); setValidation(null);});}
+  function startNew() {requestDiscard(() => {startRequirementDraft(companyId); setValidation(null); setTab('documents');});}
+  function duplicateSelected() {requestDiscard(() => {duplicateRequirementTemplate(companyId, language); setValidation(null); setTab('documents');});}
   function requestDelete() {requestDiscard(() => setConfirmDelete(true));}
   function confirmDeleteSelected() {deleteRequirementTemplate(companyId); setConfirmDelete(false); setValidation(null); setEditingCustomId(null);}
   function selectTemplate(id: string) {if (!draft && selected?.id === id) return; requestDiscard(() => {selectRequirementTemplate(companyId, id); setValidation(null);});}
@@ -218,8 +215,17 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
               <label className={styles.draftDescription}>{t('creation.description')}<textarea value={draft?.description ?? editDraft?.description ?? selected!.subtitle[language]}
                 onChange={(event) => {if (draft) updateRequirementDraft(companyId, {description: event.target.value}); else updateExistingRequirementTemplate(companyId, language, {description: event.target.value}); setValidation(null);}} placeholder={t('creation.descriptionPlaceholder')}/></label>
             </div>
-            <div className={styles.tabs} role="tablist" aria-label={t('tabsLabel')}><button type="button" role="tab" aria-selected="true" id="documents-tab" aria-controls="documents-panel">{t('requiredDocuments', {count: documents.length})}</button><button type="button" role="tab" aria-selected="false" aria-disabled="true">{t('previewTab')}</button></div>
-            <div id="documents-panel" role="tabpanel" aria-labelledby="documents-tab" className={styles.documentsPanel}>
+            <div className={styles.tabs} role="tablist" aria-label={t('tabsLabel')} onKeyDown={(event) => {
+              if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+              event.preventDefault();
+              const next = event.key === 'Home' ? 'documents' : event.key === 'End' ? 'preview' : tab === 'documents' ? 'preview' : 'documents';
+              setTab(next);
+              event.currentTarget.querySelector<HTMLButtonElement>(`#${next}-tab`)?.focus();
+            }}>
+              <button type="button" role="tab" aria-selected={tab === 'documents'} tabIndex={tab === 'documents' ? 0 : -1} id="documents-tab" aria-controls="documents-panel" onClick={() => setTab('documents')}>{t('requiredDocuments', {count: documents.length})}</button>
+              <button type="button" role="tab" aria-selected={tab === 'preview'} tabIndex={tab === 'preview' ? 0 : -1} id="preview-tab" aria-controls="preview-panel" onClick={() => setTab('preview')}>{t('previewTab')}</button>
+            </div>
+            <div id="documents-panel" role="tabpanel" aria-labelledby="documents-tab" className={styles.documentsPanel} hidden={tab !== 'documents'}>
               <div className={styles.sectionHeading}><h3>{t('documentsAndRules')}</h3><Button ref={addDocumentRef} onClick={() => setDrawerPhase('open')}><AppIcon name="plus" size={20}/>{t('addDocument')}</Button></div>
               {documents.length === 0 ? <div className={styles.documentEmpty}><AppIcon name="file" size={27}/><h4>{t('creation.emptyTitle')}</h4><p>{t('creation.emptyDescription')}</p></div>
                 : <div className={styles.tableScroll} role="region" aria-label={t('tableRegion')} tabIndex={0}><table className={styles.rulesTable}><thead><tr><th scope="col">{t('table.document')}</th><th scope="col">{t('table.mandatory')}</th><th scope="col">{t('table.expiryAlert')}</th><th scope="col">{t('table.validity')}</th><th scope="col">{t('table.actions')}</th></tr></thead><tbody>{documents.map(renderRow)}</tbody></table></div>}
@@ -236,6 +242,13 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
               {(validation === 'documents' || activeValidation === 'documents') && <p className={styles.draftError} role="alert">{t('creation.documentsRequired')}</p>}
               {(validation === 'invalidDocument' || activeValidation === 'invalidDocument') && <p className={styles.draftError} role="alert">{t('creation.invalidDocument')}</p>}
               {(validation === 'duplicateDocument' || activeValidation === 'duplicateDocument') && <p className={styles.draftError} role="alert">{t('drawer.duplicate')}</p>}
+            </div>
+            <div id="preview-panel" role="tabpanel" aria-labelledby="preview-tab" className={styles.previewPanel} hidden={tab !== 'preview'} tabIndex={0}>
+              {tab === 'preview' && <>
+                <aside className={styles.previewNotice}><span><AppIcon name="info" size={20}/></span><div><h3>{t('preview.title')}</h3><p>{t('preview.description')}</p></div></aside>
+                <SupplierRequirementContext locale={locale} requester={{name: company?.company.name ?? view.organization.name, registrationNumber: company?.company.taxId}} supplier={previewSupplier}/>
+                <SupplierRequirementList locale={locale} documents={supplierPreviewDocuments(documents)}/>
+              </>}
             </div>
             <div className={styles.notice}><span><AppIcon name="info" size={20}/></span><p>{draft ? t('creation.draftNotice') : t('availability', {name: vendors(('category.' + (editDraft?.categoryId || selected!.categoryId)) as 'category.construction')})}</p></div>
             <div className={styles.footer}>{!draft && <Button variant="destructive" onClick={requestDelete}><ActionGlyph kind="trash"/>{t('deleteTemplate')}</Button>}<span className={styles.footerRight}><Button variant="secondary" onClick={() => {if (draft) requestDiscard(() => {}); else {discardExistingRequirementEdit(companyId); setEditingCustomId(null); setValidation(null);}}}>{t('cancel')}</Button><Button aria-disabled={draft ? Boolean(draftValidation) : !editDraft?.isDirty || Boolean(editValidation)} onClick={() => draft ? saveNew() : saveExisting()}><ActionGlyph kind="save"/>{t('saveTemplate')}</Button></span></div>

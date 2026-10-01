@@ -36,7 +36,7 @@ test('contains the page across the required authenticated widths', async ({page}
 test('keeps direct and client-navigated Requirements geometry equivalent', async ({page}) => {
   const measure = () => page.evaluate(() => {
     const rect = (selector: string) => {const {x, y, width} = document.querySelector(selector)!.getBoundingClientRect(); return [x, y, width];};
-    return {title: rect('#requirements-title'), workspace: rect('[role="tabpanel"]')};
+    return {title: rect('#requirements-title'), workspace: rect('#documents-panel')};
   });
   for (const width of [1448, 1024, 799, 375]) {
     await page.setViewportSize({width, height: width === 1448 ? 1086 : 812});
@@ -45,11 +45,11 @@ test('keeps direct and client-navigated Requirements geometry equivalent', async
     await page.goto('/dashboard');
     await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Cerințe'}).click();
     await expect(page).toHaveURL(/\/requirements$/);
-    await expect(page.locator('[role="tabpanel"]')).toBeVisible();
+    await expect(page.getByRole('tabpanel', {name: /^Documente necesare/})).toBeVisible();
     expect(await measure()).toEqual(direct);
     await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Furnizori'}).click();
     await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Cerințe'}).click();
-    await expect(page.locator('[role="tabpanel"]')).toBeVisible();
+    await expect(page.getByRole('tabpanel', {name: /^Documente necesare/})).toBeVisible();
     expect(await measure()).toEqual(direct);
   }
 });

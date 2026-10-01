@@ -5,6 +5,7 @@ export type CatalogDocumentType = {
   id: string;
   canonicalName: LocalizedText;
   description: LocalizedText;
+  supplierDescription?: LocalizedText;
   aliases: string[];
   iconKey: AppearanceIconKey;
   iconColorKey: AppearanceColorKey;
@@ -12,10 +13,10 @@ export type CatalogDocumentType = {
 };
 
 export const catalogDocuments: CatalogDocumentType[] = [
-  {id: 'registration', canonicalName: {ro: 'Certificat de înregistrare', en: 'Registration certificate'}, description: {ro: 'Certificat ONRC', en: 'Trade Register certificate'}, aliases: ['certificat registrul comerțului', 'company registration'], iconKey: 'file', iconColorKey: 'blue', status: 'active'},
-  {id: 'tax', canonicalName: {ro: 'Certificat fiscal', en: 'Tax certificate'}, description: {ro: 'Certificat ANAF privind obligațiile fiscale', en: 'ANAF tax obligations certificate'}, aliases: ['anaf', 'fiscal clearance'], iconKey: 'file', iconColorKey: 'rose', status: 'active'},
-  {id: 'liability', canonicalName: {ro: 'Asigurare Răspundere Civilă', en: 'Liability insurance'}, description: {ro: 'Poliță RCA profesională', en: 'Professional liability policy'}, aliases: ['asigurare rc', 'insurance'], iconKey: 'shield', iconColorKey: 'green', status: 'active'},
-  {id: 'fire', canonicalName: {ro: 'Autorizație ISU', en: 'Fire safety permit'}, description: {ro: 'Autorizație pentru securitate la incendiu', en: 'Fire safety authorization'}, aliases: ['isu', 'fire permit'], iconKey: 'file', iconColorKey: 'rose', status: 'active'},
+  {id: 'registration', canonicalName: {ro: 'Certificat de înregistrare', en: 'Registration certificate'}, description: {ro: 'Certificat ONRC', en: 'Trade Register certificate'}, supplierDescription: {ro: 'Certificatul de înregistrare al companiei (ONRC)', en: 'Company registration certificate (ONRC)'}, aliases: ['certificat registrul comerțului', 'company registration'], iconKey: 'file', iconColorKey: 'blue', status: 'active'},
+  {id: 'tax', canonicalName: {ro: 'Certificat fiscal', en: 'Tax certificate'}, description: {ro: 'Certificat ANAF privind obligațiile fiscale', en: 'ANAF tax obligations certificate'}, supplierDescription: {ro: 'Certificat fiscal emis de ANAF.', en: 'Tax certificate issued by ANAF.'}, aliases: ['anaf', 'fiscal clearance'], iconKey: 'file', iconColorKey: 'rose', status: 'active'},
+  {id: 'liability', canonicalName: {ro: 'Asigurare Răspundere Civilă', en: 'Liability insurance'}, description: {ro: 'Poliță RCA profesională', en: 'Professional liability policy'}, supplierDescription: {ro: 'Poliță RCA profesională în vigoare.', en: 'Current professional liability policy.'}, aliases: ['asigurare rc', 'insurance'], iconKey: 'shield', iconColorKey: 'green', status: 'active'},
+  {id: 'fire', canonicalName: {ro: 'Autorizație ISU', en: 'Fire safety permit'}, description: {ro: 'Autorizație pentru securitate la incendiu', en: 'Fire safety authorization'}, supplierDescription: {ro: 'Autorizație de securitate la incendiu.', en: 'Fire safety authorization.'}, aliases: ['isu', 'fire permit'], iconKey: 'file', iconColorKey: 'rose', status: 'active'},
   {id: 'iso', canonicalName: {ro: 'Certificare ISO 9001', en: 'ISO 9001 certification'}, description: {ro: 'Sistem de management al calității', en: 'Quality management system'}, aliases: ['iso', 'quality certification'], iconKey: 'target', iconColorKey: 'orange', status: 'active'},
   {id: 'permit', canonicalName: {ro: 'Autorizație de lucru', en: 'Work permit'}, description: {ro: 'Autorizație ISC / avize specifice', en: 'ISC permit / specific approvals'}, aliases: ['aviz de lucru', 'isc'], iconKey: 'file', iconColorKey: 'rose', status: 'active'},
   {id: 'safety', canonicalName: {ro: 'Declarație SSM', en: 'Occupational safety declaration'}, description: {ro: 'Declarație privind securitatea muncii', en: 'Workplace safety declaration'}, aliases: ['ssm', 'workplace safety'], iconKey: 'file', iconColorKey: 'violet', status: 'active'}

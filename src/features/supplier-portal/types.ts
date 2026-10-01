@@ -1,13 +1,8 @@
+import type {SupplierRequirementDocument} from '@/features/supplier-requirements/types';
+
 export type LocalizedText = {ro: string; en: string};
 
-export type SupplierDocument = {
-  id: string;
-  title: LocalizedText;
-  description: LocalizedText;
-  status: 'uploaded' | 'pending' | 'missing';
-  uploadedFile?: string;
-  uploadedAt?: LocalizedText;
-};
+export type SupplierDocument = SupplierRequirementDocument;
 
 /** E1 presentation data, not an invitation or upload authorization contract. */
 export type SupplierPortalViewModel = {

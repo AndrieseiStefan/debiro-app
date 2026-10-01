@@ -14,47 +14,20 @@
 .eyebrow {color: #4a6590; font-size: 14px; font-weight: 700; letter-spacing: .015em;}
 .intro h1 {color: #131c37; font-size: clamp(35px, 3.4vw, 47px); font-weight: 760; letter-spacing: -.045em; line-height: 1.1; margin-top: 11px;}
 .intro > p:last-child {color: #49628c; font-size: 20px; line-height: 1.35; margin-top: 12px;}
-.identityCard, .documentsCard, .securityCard, .helpCard {background: #fff; border: 1px solid #d7e5fa; border-radius: 13px; box-shadow: 0 7px 22px rgb(38 91 174 / 3%);}
-.identityCard {display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); min-height: 120px; padding: 22px 27px;}
-.identityItem {align-items: center; display: flex; gap: 26px; min-width: 0; padding-right: 22px;}
-.identityItem + .identityItem {border-left: 1px solid #cddcf2; padding-left: 40px;}
-.identityIcon, .documentIcon, .infoIcon, .securityHero, .sideHeading li span {align-items: center; background: #e7f1ff; border-radius: 50%; color: #0d60df; display: inline-flex; flex: 0 0 auto; justify-content: center;}
-.identityIcon {height: 66px; width: 66px;}
-.identityItem > div {display: grid; min-width: 0;}
-.identityItem p {color: #52688c; font-size: 14px;}
-.identityItem strong {color: #152446; font-size: 17px; line-height: 1.3; margin-top: 2px; overflow-wrap: anywhere;}
-.identityItem small {color: #667c9c; font-size: 14px; line-height: 1.35; overflow-wrap: anywhere;}
-.documentsCard {margin-top: 22px; padding: 15px 15px 17px;}
-.documentsHeader {align-items: center; display: flex; gap: 20px; justify-content: space-between; min-height: 55px; padding: 0 13px 10px;}
-.documentsTitle {align-items: center; color: #2356a3; display: flex; gap: 17px; min-width: 0;}
-.documentsTitle h2 {color: #142758; font-size: 23px; font-weight: 750; letter-spacing: -.02em; line-height: 1.2;}
-.progressText {align-items: center; color: #2252a7; display: flex; flex: 0 0 auto; font-size: 14px; gap: 14px; white-space: nowrap;}
-.progressTrack {background: #e8eef9; border-radius: 99px; height: 8px; overflow: hidden; width: 168px;}
-.progressTrack span {background: #0860e3; border-radius: inherit; display: block; height: 100%;}
-.documentList {display: grid; gap: 9px;}
-.documentRow {align-items: center; border: 1px solid #d7e5fa; border-radius: 12px; display: grid; gap: 20px; grid-template-columns: 57px minmax(0, 1.23fr) minmax(0, .53fr) minmax(0, 1.34fr); min-height: 96px; padding: 14px 15px;}
-.documentIcon {height: 54px; width: 54px;}
-.documentCopy {min-width: 0;}
-.documentCopy h3 {color: #152751; font-size: 16px; font-weight: 700; line-height: 1.27; overflow-wrap: anywhere;}
-.documentCopy p {color: #55709a; font-size: 14px; line-height: 1.3; margin-top: 3px; overflow-wrap: anywhere;}
-.status {align-items: center; border-radius: 99px; display: inline-flex; font-size: 14px; gap: 7px; justify-self: start; line-height: 1.2; padding: 7px 11px; white-space: nowrap;}
-.status[data-status='uploaded'] {background: #dff7ec; color: #07825d;}
-.status[data-status='pending'] {background: #fff3d4; color: #bb7500;}
-.status[data-status='missing'] {background: #ffe6eb; color: #c8243c;}
-.status[data-status='selected'] {background: #e9f2ff; color: #0a5bc9;}
-.fileDetails {align-items: center; color: #4169a9; display: flex; gap: 10px; min-width: 0;}
-.fileDetails > div {display: grid; flex: 1; min-width: 0;}
-.fileDetails strong {font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
-.fileDetails small {color: #6d83a3; font-size: 12px; line-height: 1.3;}
+.securityCard, .helpCard {background: #fff; border: 1px solid #d7e5fa; border-radius: 13px; box-shadow: 0 7px 22px rgb(38 91 174 / 3%);}
+.infoIcon, .securityHero, .sideHeading li span {align-items: center; background: #e7f1ff; border-radius: 50%; color: #0d60df; display: inline-flex; flex: 0 0 auto; justify-content: center;}
 .moreAction {align-items: center; background: transparent; border: 0; color: #155ac7; display: inline-flex; flex: 0 0 auto; justify-content: center; min-height: 36px; min-width: 30px;}
 .uploadArea {display: grid; gap: 3px; justify-items: end; min-width: 0;}
-.uploadButton {align-items: center; background: #075ee9; border-radius: 8px; box-shadow: 0 4px 12px rgb(7 94 233 / 13%); color: #fff; cursor: pointer; display: inline-flex; font-size: 14px; font-weight: 650; gap: 11px; justify-content: center; min-height: 43px; padding: 0 16px; position: relative; white-space: nowrap;}
+.uploadButton {cursor: pointer; position: relative;}
+.fileAction {flex: 0 0 auto; position: relative;}
+.replaceButton {align-items: center; border-radius: 5px; color: #155ac7; cursor: pointer; display: inline-flex; justify-content: center; min-height: 36px; position: relative; width: 30px;}
+.replaceButton input {cursor: pointer; height: 100%; inset: 0; opacity: 0; position: absolute; width: 100%;}
+.replaceButton:focus-within {outline: 3px solid var(--color-focus); outline-offset: 2px;}
+.srOnly {clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px;}
 .uploadButton:hover {background: #064fc6;}
 .uploadButton:focus-within {outline: 3px solid var(--color-focus); outline-offset: 3px;}
 .uploadButton input {cursor: pointer; height: 100%; inset: 0; opacity: 0; position: absolute; width: 100%;}
 .uploadArea > small {color: #55729b; font-size: 12px; text-align: right;}
-.selectedFile {align-items: center; color: #175ba9; display: flex; font-size: 12px; gap: 4px; max-width: 100%; min-width: 0;}
-.selectedFile span {overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
 .fileError {color: #b51c32; font-size: 12px; line-height: 1.25; text-align: right;}
 .afterUpload {align-items: center; background: #eaf4ff; border: 1px solid #e1efff; border-radius: 12px; display: grid; gap: 20px; grid-template-columns: 40px minmax(0, 1fr) 210px; margin-top: 10px; min-height: 83px; padding: 13px 24px;}
 .infoIcon {background: #2987ed; color: #fff; height: 31px; width: 31px;}
@@ -93,13 +66,9 @@
 .footerLinks button {background: transparent; border: 0; color: inherit; font-size: inherit; padding: 0;}
 @media (max-width: 1199px) {
   .mainInner {gap: 24px; grid-template-columns: minmax(0, 1fr) 330px;}
-  .documentRow {gap: 12px; grid-template-columns: 46px minmax(0, 1fr) auto;}
-  .documentIcon {height: 45px; width: 45px;}
-  .documentRow > :last-child {grid-column: 2 / -1; justify-self: stretch;}
   .uploadArea {justify-items: start;}
   .afterUpload {grid-template-columns: 35px minmax(0, 1fr);}
   .afterUpload > div {border-left: 0; grid-column: 2; padding-left: 0;}
-  .progressTrack {width: 90px;}
 }
 @media (max-width: 900px) {
   .mainInner {grid-template-columns: minmax(0, 1fr);}
@@ -120,19 +89,6 @@
   .intro {margin: 0 0 20px;}
   .intro h1 {font-size: clamp(30px, 7.5vw, 42px);}
   .intro > p:last-child {font-size: 16px;}
-  .identityCard {gap: 17px; grid-template-columns: minmax(0, 1fr); padding: 18px;}
-  .identityItem {gap: 15px; padding-right: 0;}
-  .identityItem + .identityItem {border-left: 0; border-top: 1px solid #dbe7f7; padding: 17px 0 0;}
-  .identityIcon {height: 48px; width: 48px;}
-  .identityIcon svg {height: 25px; width: 25px;}
-  .documentsHeader {align-items: flex-start; flex-direction: column; gap: 9px;}
-  .progressText {justify-content: space-between; width: 100%;}
-  .progressTrack {flex: 1; min-width: 30px;}
-  .documentRow {grid-template-columns: 42px minmax(0, 1fr); padding: 13px;}
-  .documentIcon {height: 42px; width: 42px;}
-  .status {grid-column: 2;}
-  .documentRow > :last-child {grid-column: 1 / -1;}
-  .fileDetails {max-width: 100%;}
   .uploadButton {width: 100%;}
   .uploadArea {justify-items: stretch; width: 100%;}
   .sideColumn {grid-template-columns: minmax(0, 1fr);}
@@ -142,12 +98,6 @@
 }
 @media (max-width: 420px) {
   .headerBrand > span:last-child {display: none;}
-  .documentsCard {padding-inline: 9px;}
-  .documentsHeader {padding-inline: 4px;}
-  .documentsTitle {gap: 9px;}
-  .documentsTitle h2 {font-size: 20px;}
-  .progressText {font-size: 12px; gap: 7px;}
-  .documentRow {gap: 10px;}
   .afterUpload {gap: 10px; padding-inline: 14px;}
   .mountainArt span {right: 20px;}
 }

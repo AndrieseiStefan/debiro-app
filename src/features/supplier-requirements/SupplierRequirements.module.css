@@ -1,0 +1,76 @@
+.context, .card {background: #fff; border: 1px solid #d7e5fa; border-radius: 13px; min-width: 0;}
+.context {container-type: inline-size; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); min-height: 120px; padding: 22px 27px;}
+.identity {align-items: center; display: flex; gap: 26px; min-width: 0; padding-right: 22px;}
+.identity + .identity {border-left: 1px solid #cddcf2; padding-left: 40px;}
+.identityIcon {align-items: center; background: #e7f1ff; border-radius: 50%; color: #0d60df; display: inline-flex; flex: 0 0 66px; height: 66px; justify-content: center;}
+.identity > div {display: grid; min-width: 0;}
+.identity p {color: #52688c; font-size: 14px;}
+.identity strong {color: #152446; font-size: 17px; line-height: 1.3; margin-top: 2px; overflow-wrap: anywhere;}
+.identity small {color: #667c9c; font-size: 14px; line-height: 1.35; overflow-wrap: anywhere;}
+.card {container-type: inline-size; margin-top: 18px; padding: 15px 15px 17px;}
+.header {align-items: center; display: flex; flex-wrap: wrap; gap: 12px 20px; justify-content: space-between; min-height: 55px; padding: 0 13px 12px;}
+.title {align-items: center; color: #2356a3; display: flex; gap: 17px; min-width: 0;}
+.title svg {flex: 0 0 auto;}
+.title h2 {color: #142758; font-size: 23px; font-weight: 750; letter-spacing: -.02em; line-height: 1.2;}
+.progress {align-items: center; color: #2252a7; display: flex; font-size: 14px; gap: 14px; min-width: 0;}
+.progress > span {white-space: nowrap;}
+.track {background: #e8eef9; border-radius: 99px; flex: 1 1 100px; height: 8px; min-width: 35px; overflow: hidden; width: 130px;}
+.track span {background: #0860e3; border-radius: inherit; display: block; height: 100%;}
+.list {display: grid; gap: 9px;}
+.row {align-items: center; border: 1px solid #d7e5fa; border-radius: 12px; display: grid; gap: 18px; grid-template-columns: minmax(0, 1.3fr) auto minmax(0, 1fr); min-height: 96px; padding: 14px 15px;}
+.documentIdentity {align-items: center; display: flex; gap: 17px; min-width: 0;}
+.documentIdentity > span {border-radius: 50%;}
+.copy {min-width: 0;}
+.copy h3 {color: #152751; font-size: 16px; font-weight: 700; line-height: 1.27; overflow-wrap: anywhere;}
+.copy p {color: #55709a; font-size: 14px; line-height: 1.3; margin-top: 3px; overflow-wrap: anywhere;}
+.requirement {background: #e5f0ff; border-radius: 99px; color: #075bcc; display: inline-flex; font-size: 12px; line-height: 1.2; margin-top: 5px; padding: 3px 10px;}
+.requirement[data-required='true'] {background: #ffe6eb; color: #c8243c;}
+.status {align-items: center; border-radius: 99px; display: inline-flex; font-size: 14px; gap: 7px; justify-self: start; line-height: 1.2; padding: 7px 11px; white-space: nowrap;}
+.status[data-status='uploaded'] {background: #dff7ec; color: #07825d;}
+.status[data-status='pending'] {background: #fff3d4; color: #bb7500;}
+.status[data-status='missing'] {background: #ffe6eb; color: #c8243c;}
+.file {align-items: center; color: #4169a9; display: flex; gap: 10px; min-width: 0;}
+.file > svg {flex: 0 0 auto;}
+.fileCopy {display: grid; flex: 1; min-width: 0;}
+.file strong {font-size: 13px; font-weight: 500; overflow-wrap: anywhere;}
+.file small {color: #6d83a3; font-size: 12px; line-height: 1.3;}
+.upload {display: grid; gap: 3px; justify-items: end; min-width: 0;}
+.upload > small {color: #55729b; font-size: 12px; text-align: right;}
+.upload > .file {justify-self: stretch; width: 100%;}
+.feedback {grid-column: 1 / -1; min-width: 0;}
+.uploadButton {align-items: center; background: #075ee9; border: 0; border-radius: 8px; box-shadow: 0 4px 12px rgb(7 94 233 / 13%); color: #fff; display: inline-flex; font-size: 14px; font-weight: 650; gap: 11px; justify-content: center; min-height: 43px; padding: 0 16px; white-space: nowrap;}
+.uploadButton:disabled {cursor: default;}
+.empty {align-items: center; color: #55709a; display: flex; flex-direction: column; gap: 6px; padding: 16px 12px; text-align: center;}
+.empty h3 {color: #152751; font-size: 16px;}
+.empty p {font-size: 13px; line-height: 1.4;}
+@container (max-width: 620px) {
+  .row {gap: 12px; grid-template-columns: minmax(0, 1fr) auto;}
+  .file, .upload {grid-column: 1 / -1; justify-self: stretch;}
+  .upload {justify-items: start;}
+  .header {padding-inline: 0;}
+  .title {gap: 10px;}
+  .title h2 {font-size: 19px;}
+  .progress {flex: 1 1 100%; justify-content: space-between;}
+  .track {width: auto;}
+  .identity {gap: 15px; padding-right: 15px;}
+  .identity + .identity {padding-left: 15px;}
+  .identityIcon {flex-basis: 48px; height: 48px;}
+  .identityIcon svg {height: 25px; width: 25px;}
+}
+@container (max-width: 480px) {
+  .row {grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 13px;}
+  .file, .upload {grid-column: auto;}
+  .documentIdentity {gap: 12px;}
+  .upload {justify-items: stretch;}
+  .uploadButton {width: 100%;}
+  .progress {font-size: 12px; gap: 7px;}
+}
+@container (max-width: 540px) {
+  .identity + .identity {border-left: 0; border-top: 1px solid #dbe7f7; margin-top: 17px; padding: 17px 0 0;}
+  .identity {padding-right: 0;}
+}
+@media (max-width: 767px) {
+  .context {gap: 17px; grid-template-columns: minmax(0, 1fr); padding: 18px;}
+  .identity + .identity {border-left: 0; border-top: 1px solid #dbe7f7; margin-top: 0; padding: 17px 0 0;}
+}
+@media (max-width: 420px) {.card {padding-inline: 9px;}}

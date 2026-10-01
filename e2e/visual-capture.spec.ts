@@ -42,10 +42,13 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
       await page.getByRole('button', {name: 'Demo Company SRL'}).click();
       await page.getByRole('dialog', {name: route.startsWith('/en') ? 'Switch company' : 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
       await expect(page.getByRole('heading', {name: 'Global Clean Services'})).toBeVisible();
-    } else if (action === 'requirement-draft' || action === 'requirement-suggestions' || action === 'requirement-custom' || action === 'requirement-edit' || action === 'requirement-appearance' || action === 'requirement-document-appearance' || action === 'requirement-duplicate' || action === 'requirement-delete-confirm') {
+    } else if (action === 'requirement-preview' || action === 'requirement-draft' || action === 'requirement-suggestions' || action === 'requirement-custom' || action === 'requirement-edit' || action === 'requirement-appearance' || action === 'requirement-document-appearance' || action === 'requirement-duplicate' || action === 'requirement-delete-confirm') {
       if (route !== '/requirements' && route !== '/en/requirements') throw new Error('Requirement captures require the Requirements route.');
       const english = route.startsWith('/en');
-      if (action === 'requirement-draft') await page.getByRole('button', {name: english ? 'New template' : 'Șablon nou', exact: true}).click();
+      if (action === 'requirement-preview') {
+        await page.getByRole('tab', {name: english ? 'Preview' : 'Previzualizare'}).click();
+        await expect(page.locator('#preview-panel')).toBeVisible();
+      } else if (action === 'requirement-draft') await page.getByRole('button', {name: english ? 'New template' : 'Șablon nou', exact: true}).click();
       else if (action === 'requirement-appearance') {
         await page.getByRole('button', {name: english ? 'Change icon and color' : 'Schimbă iconița și culoarea'}).click();
         await expect(page.getByRole('dialog', {name: english ? 'Choose appearance' : 'Alege aspectul'})).toBeVisible();
@@ -118,5 +121,7 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
 
   const name = route === '/' ? 'root' : route.replace(/^\/+|\/+$/g, '').replace(/[^a-zA-Z0-9_-]+/g, '-');
   const output = path.join(process.cwd(), 'artifacts', 'visual', `${name}${action ? `-${action}` : ''}${viewportWidth ? `-${viewportWidth}x${viewportHeight}` : ''}.png`);
-  await page.screenshot({path: output, fullPage: !action || action === 'requirement-edit', animations: 'disabled'});
+  await page.screenshot({path: output, fullPage: !action || action === 'requirement-edit' || action === 'requirement-preview', animations: 'disabled'});
+  if (action === 'requirement-preview') await page.locator('#preview-panel').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});
+  if (/^\/(en\/)?upload\//.test(route)) await page.locator('[data-supplier-requirements]').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});
 });

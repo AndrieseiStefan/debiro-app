@@ -1,6 +1,6 @@
 # Approved Mockups
 
-This repository tracks twenty-four approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
+This repository tracks twenty-six approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
 
 ## Expected initial mapping
 
@@ -30,6 +30,8 @@ This repository tracks twenty-four approved product mockup images listed below. 
 | `22-change-company-popup.png` | Authenticated active-company switcher |
 | `23A-Add-suggested-document-to-template.png` | Add catalog suggestion to a requirement template |
 | `23B-Add-personalized-document-to-template.png` | Add custom document to a requirement template |
+| `previzualizare-cerinte.png` | E1-025D supplier-facing Requirements Preview section; includes the task-approved additional info banner |
+| `supplier-upload-portal-new.png` | E1-025D supplier context and requested-document section only; the existing Portal shell remains canonical |
 
 ## Contract
 
