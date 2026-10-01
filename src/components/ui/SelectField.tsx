@@ -5,7 +5,7 @@ import styles from './Field.module.css';
 export type SelectFieldProps = Omit<SelectHTMLAttributes<HTMLSelectElement>, 'id'> & {
   id: string;
   label: string;
-  placeholder: string;
+  placeholder?: string;
   value: string;
   children: ReactNode;
   error?: string;
@@ -20,7 +20,7 @@ export function SelectField({id, label, placeholder, value, children, error, req
     <label className={styles.label} htmlFor={id}>{label}{required && <span aria-hidden="true" className={styles.required}> *</span>}</label>
     <span className={styles.selectWrap}>
       <select {...selectProps} id={id} className={[styles.input, styles.select].join(' ')} value={value} required={required} data-empty={value === ''} data-size={controlSize} aria-invalid={error ? true : undefined} aria-describedby={descriptionIds} data-invalid={error ? 'true' : undefined}>
-        <option value="">{placeholder}</option>
+        {placeholder !== undefined && <option value="">{placeholder}</option>}
         {children}
       </select>
       <AppIcon name="chevronDown" size={17} className={styles.selectIcon}/>

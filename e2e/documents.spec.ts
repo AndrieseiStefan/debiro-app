@@ -1,4 +1,5 @@
 import {expect, test} from '@playwright/test';
+import {openFilters} from './support/filters';
 
 const reviewRoute = '/documents/construct-pro-tax-2024/review';
 
@@ -42,6 +43,7 @@ test('tabs, search, filters, sort, empty recovery and pagination stay local', as
   await expect(page.getByRole('button', {name: 'Pagina precedentă'})).toBeDisabled();
   await search.fill('');
 
+  await openFilters(page);
   await page.getByRole('combobox', {name: 'Furnizor'}).selectOption('construct-pro');
   await page.getByRole('combobox', {name: 'Tip document'}).selectOption('tax');
   await expect(table.locator('tbody tr')).toHaveCount(1);
@@ -49,9 +51,10 @@ test('tabs, search, filters, sort, empty recovery and pagination stay local', as
   await expect(page.getByText('Niciun document nu corespunde căutării sau filtrelor.')).toBeVisible();
   await page.getByRole('button', {name: 'Resetează căutarea și filtrele'}).click();
   await expect(table.locator('tbody tr')).toHaveCount(8);
+  await openFilters(page);
   await page.getByRole('combobox', {name: 'Perioadă încărcare'}).selectOption('2023');
   await expect(page.getByText('Se afișează 1-8 din 9 documente')).toBeVisible();
-  await page.getByRole('button', {name: 'Curăță filtrele'}).click();
+  await page.getByRole('button', {name: 'Resetează', exact: true}).click();
   await expect(page.getByText('Se afișează 1-8 din 24 documente')).toBeVisible();
   await page.getByRole('button', {name: 'Filtrează'}).click();
   await expect(page.getByRole('button', {name: 'Filtrează'})).toHaveAttribute('aria-expanded', 'false');
@@ -80,13 +83,11 @@ test('Documents reflows inside the shell at every requested width and client nav
       const main = document.querySelector('main')!.getBoundingClientRect();
       const region = document.querySelector('[role="region"][aria-label="Tabel documente"]')!;
       const table = region.querySelector('table')!;
-      const filter = document.querySelector('#document-filters')!.getBoundingClientRect();
-      const list = region.closest('section')!.getBoundingClientRect();
-      return {documentWidth: document.documentElement.scrollWidth, mainRight: main.right, regionRight: region.getBoundingClientRect().right, tableScrollWidth: region.scrollWidth, regionWidth: region.clientWidth, filterOverlap: filter.left < list.right - 1 && filter.right > list.left + 1 && filter.top < list.bottom - 1 && filter.bottom > list.top + 1, tableWidth: table.getBoundingClientRect().width};
+      return {documentWidth: document.documentElement.scrollWidth, mainRight: main.right, regionRight: region.getBoundingClientRect().right, tableScrollWidth: region.scrollWidth, regionWidth: region.clientWidth, tableWidth: table.getBoundingClientRect().width};
     });
     expect(geometry.documentWidth, `${width}px document overflow`).toBeLessThanOrEqual(width);
     expect(geometry.regionRight, `${width}px table containment`).toBeLessThanOrEqual(geometry.mainRight + 1);
-    expect(geometry.filterOverlap, `${width}px filter collision`).toBe(false);
+    await expect(page.getByRole('dialog', {name: 'Filtre', exact: true})).toHaveCount(0);
     if (width <= 1024) expect(geometry.tableScrollWidth, `${width}px internal table scroll`).toBeGreaterThan(geometry.regionWidth);
     await page.goto('/dashboard');
     await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Documente'}).click();

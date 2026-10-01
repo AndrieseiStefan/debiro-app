@@ -1,4 +1,5 @@
 import {expect, test, type Page} from '@playwright/test';
+import {openFilters} from './support/filters';
 import en from '../messages/en.json' with {type: 'json'};
 import ro from '../messages/ro.json' with {type: 'json'};
 import {vendorsListFixture} from '../src/features/vendors/fixtures';
@@ -59,6 +60,7 @@ for (const locale of ['ro', 'en'] as const) {
     await page.getByRole('combobox', {name: t.pageSizeLabel}).selectOption('16');
     expect(await ids(page)).toEqual(expected('vendor', false).slice(0, 16));
 
+    await openFilters(page);
     await page.getByRole('combobox', {name: t.categoryLabel}).selectOption('construction');
     expect(await ids(page)).toEqual(['alpha-construction', 'construct-pro', 'delta-construct']);
     await table.getByRole('columnheader', {name: t.table.documents}).getByRole('button').click();
@@ -68,17 +70,21 @@ for (const locale of ['ro', 'en'] as const) {
     await page.getByRole('menuitem', {name: t.markInactive}).click();
     await expect(row).toHaveAttribute('data-lifecycle', 'inactive');
     expect(await ids(page)).toEqual(['construct-pro', 'alpha-construction', 'delta-construct']);
-    await page.getByRole('combobox', {name: t.statusLabel}).selectOption('compliant');
+    await openFilters(page);
+    await page.getByRole('combobox', {name: locale === 'ro' ? ro.DataFilters.complianceStatus : en.DataFilters.complianceStatus}).selectOption('compliant');
     expect(await ids(page)).toEqual(['construct-pro', 'alpha-construction', 'delta-construct']);
     await page.getByRole('searchbox', {name: t.searchLabel}).fill('Construct');
     expect(await ids(page)).toEqual(['construct-pro', 'alpha-construction', 'delta-construct']);
     await page.getByRole('searchbox', {name: t.searchLabel}).fill('RO12345678');
     expect(await ids(page)).toEqual(['construct-pro']);
-    await page.getByRole('combobox', {name: t.statusLabel}).selectOption('attention');
+    await openFilters(page);
+    await page.getByRole('combobox', {name: locale === 'ro' ? ro.DataFilters.complianceStatus : en.DataFilters.complianceStatus}).selectOption('attention');
     await expect(table.getByText(t.noResults)).toBeVisible();
     await table.getByRole('columnheader', {name: t.table.generalStatus}).getByRole('button').click();
     await expect(table.getByText(t.noResults)).toBeVisible();
-    await page.getByRole('combobox', {name: t.statusLabel}).selectOption('compliant');
+    await openFilters(page);
+    await page.getByRole('combobox', {name: locale === 'ro' ? ro.DataFilters.complianceStatus : en.DataFilters.complianceStatus}).selectOption('compliant');
+    await page.keyboard.press('Escape');
     await row.getByRole('button', {name: t.rowAction.replace('{name}', 'Construct Pro SRL')}).click();
     await page.getByRole('menuitem', {name: t.markActive}).click();
     await expect(row).toHaveAttribute('data-lifecycle', 'active');

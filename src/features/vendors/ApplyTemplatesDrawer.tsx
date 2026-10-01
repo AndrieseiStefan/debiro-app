@@ -5,6 +5,7 @@ import {useTranslations} from 'next-intl';
 import {Link} from '@/i18n/navigation';
 import {AppIcon} from '@/components/layout/AppIcon';
 import {Button} from '@/components/ui/Button';
+import {SearchInput} from '@/components/ui/SearchInput';
 import {Drawer, type DrawerPhase} from '@/components/ui/Drawer';
 import {AppearanceIcon} from '@/features/requirements/AppearancePicker';
 import {templateDocumentType} from '@/features/requirements/document-types';
@@ -32,7 +33,7 @@ export function ApplyTemplatesDrawer({phase, onClose, onExited, triggerRef, temp
     <header className={styles.heading}><span className={styles.heroIcon}><AppIcon name="layers" size={25}/></span><h2 id="apply-template-title">{t(confirming ? 'confirmTitle' : 'title')}</h2></header>
     <p id="apply-template-description" className={styles.description}>{t(confirming ? 'confirmDescription' : 'description')}</p>
     {!confirming ? <>
-      <label className={styles.search}><AppIcon name="search" size={18}/><input type="search" aria-label={t('search')} placeholder={t('search')} value={query} onChange={(event) => setQuery(event.target.value)}/></label>
+      <SearchInput label={t('search')} placeholder={t('search')} value={query} onChange={(event) => setQuery(event.target.value)}/>
       {!compatible && <div className={styles.empty}><p>{t('noCompatible')}</p><Link href="/requirements">{t('openRequirements')}</Link></div>}
       <div className={styles.list}>{visible.map((template) => {
         const eligible = template.categoryId === category;

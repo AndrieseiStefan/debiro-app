@@ -1,4 +1,13 @@
 {
+  "DataFilters": {
+    "trigger": "Filtrează",
+    "title": "Filtre",
+    "reset": "Resetează",
+    "close": "Închide filtrele",
+    "description": "Filtrele se aplică imediat. Resetează păstrează căutarea.",
+    "complianceStatus": "Status conformitate",
+    "allStatuses": "Toate statusurile"
+  },
   "Landing": {
     "navigationLabel": "Navigare principală",
     "navProduct": "Product",

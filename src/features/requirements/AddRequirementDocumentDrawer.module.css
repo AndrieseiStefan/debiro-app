@@ -11,8 +11,6 @@
 .source:last-child {border-radius: 0 7px 7px 0;}
 .source[aria-pressed='true'] {background: #e9f3ff; border-color: #81b0ff; color: #075deb; font-weight: 700; position: relative; z-index: 1;}
 .suggestionArea {min-width: 0;}
-.search {align-items: center; background: #eef4fb; border-radius: 7px; color: #6c83a8; display: flex; gap: 9px; min-height: 40px; padding: 0 12px;}
-.search input {background: none; border: 0; color: #182d51; flex: 1; font: inherit; font-size: 13px; min-width: 0; outline: 0;}
 .suggestions {display: grid; gap: 4px; margin-top: 11px; max-height: 292px; overflow-y: auto; scrollbar-width: thin;}
 .suggestion {align-items: center; background: #fff; border: 1px solid #dce7f6; border-radius: 8px; color: #19294e; cursor: pointer; display: grid; gap: 11px; grid-template-columns: 45px minmax(0, 1fr) 22px; min-height: 52px; padding: 5px 8px; text-align: left; width: 100%;}
 .suggestion[aria-pressed='true'] {background: #f1f7ff; border-color: #75a8ff;}
@@ -47,7 +45,7 @@
 .error {color: #c72343; font-size: 12px; margin-top: 9px;}
 .actions {display: flex; gap: 10px; justify-content: flex-end; margin-top: auto; padding-top: 24px;}
 .actions :global(button) {min-height: 43px; white-space: nowrap;}
-.source:focus-visible, .suggestion:focus-visible, .search:focus-within, .customFields input:focus-visible, .customFields textarea:focus-visible, .rulesGrid select:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 2px;}
+.source:focus-visible, .suggestion:focus-visible, .customFields input:focus-visible, .customFields textarea:focus-visible, .rulesGrid select:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 2px;}
 .srOnly {clip: rect(0 0 0 0); clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px;}
 @media (max-width: 600px) {.content {padding: 18px 18px 20px;}.content h2 {font-size: 23px;}}
 @media (max-width: 375px) {.source {font-size: 11px; gap: 5px;}.rulesGrid {grid-template-columns: minmax(0, 1fr);}.actions {flex-direction: column-reverse;}.actions :global(button) {width: 100%;}}

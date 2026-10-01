@@ -130,8 +130,9 @@ test('uses one placeholder treatment across forms and searches without muting re
 
     await page.goto(`${path}/documents`);
     for (const search of await page.locator('input[type="search"][placeholder]').all()) expect(await placeholderStyle(search)).toEqual(approved);
-    for (const select of await page.locator('#document-filters select').all()) {
-      expect(await select.getAttribute('data-empty')).toBeNull();
+    await page.getByRole('button', {name: locale === 'ro' ? 'Filtrează' : 'Filter', exact: true}).click();
+    for (const select of await page.getByRole('dialog', {name: locale === 'ro' ? 'Filtre' : 'Filters', exact: true}).getByRole('combobox').all()) {
+      expect(await select.getAttribute('data-empty')).toBe('false');
       expect(await select.evaluate((element) => getComputedStyle(element).color)).not.toBe(approved.color);
     }
 

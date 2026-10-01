@@ -1,0 +1,12 @@
+.wrapper {display: inline-flex; flex: 0 0 auto; min-width: 0;}
+.trigger {font-size: 13px; height: 45px; min-height: 45px; padding-inline: 14px;}
+.trigger svg {color: #3464a7;}
+.popover {background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 11px; box-shadow: 0 12px 32px rgb(20 39 72 / 16%); overflow-y: auto; overscroll-behavior: contain; position: fixed; z-index: 100;}
+.popover:focus {outline: none;}
+.header {align-items: center; display: flex; gap: 16px; justify-content: space-between; min-height: 56px; padding: 12px 18px;}
+.header h2 {color: var(--color-text-primary); font-size: 16px; font-weight: 750;}
+.header button {background: transparent; border: 0; color: var(--color-action-primary); font-size: 13px; font-weight: 650; min-height: 32px; padding: 4px 0;}
+.fields {display: grid; gap: 18px; min-width: 0; padding: 0 18px 20px;}
+.drawerContent .header {padding: 0 44px 16px 0;}
+.drawerContent .fields {padding: 0;}
+.srOnly {clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px;}

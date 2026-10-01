@@ -1,4 +1,5 @@
 import {expect, test, type Page} from '@playwright/test';
+import {openFilters} from './support/filters';
 
 const copy = {
   ro: {prefix: '', title: 'Furnizori', action: 'Acțiuni pentru', open: 'Deschide furnizorul', inactive: 'Marchează ca inactiv', active: 'Marchează ca activ', badge: 'Inactiv',
@@ -143,14 +144,16 @@ test('inactive vendors remain searchable/filterable, and pagination is determini
   await page.getByRole('searchbox', {name: copy.ro.search}).fill('RO21436587');
   await expect(page.locator('tbody tr')).toHaveCount(1);
   await expect(page.locator('tbody tr')).toHaveAttribute('data-lifecycle', 'inactive');
+  await openFilters(page);
   await page.getByRole('combobox', {name: 'Categorie'}).selectOption('construction');
-  await page.getByRole('combobox', {name: 'Status', exact: true}).selectOption('compliant');
+  await page.getByRole('combobox', {name: 'Status conformitate', exact: true}).selectOption('compliant');
   await expect(page.locator('tbody tr')).toHaveCount(1);
   await page.getByRole('searchbox', {name: copy.ro.search}).fill('');
   await expect(page.locator('tbody tr')).toHaveCount(3);
   await expect(page.locator('[data-vendor-id="alpha-construction"]')).toHaveAttribute('data-lifecycle', 'inactive');
+  await openFilters(page);
   await page.getByRole('combobox', {name: 'Categorie'}).selectOption('all');
-  await page.getByRole('combobox', {name: 'Status', exact: true}).selectOption('all');
+  await page.getByRole('combobox', {name: 'Status conformitate', exact: true}).selectOption('all');
   await page.getByRole('combobox', {name: copy.ro.pageSize}).selectOption('24');
   await expect(page.locator('tbody tr')).toHaveCount(24);
   await page.getByRole('button', {name: 'Acțiuni pentru Alpha Construction SRL'}).click();

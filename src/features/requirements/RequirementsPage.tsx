@@ -10,6 +10,7 @@ import {Button} from '@/components/ui/Button';
 import {ConfirmationDialog} from '@/components/ui/ConfirmationDialog';
 import {Field} from '@/components/ui/Field';
 import {SelectField} from '@/components/ui/SelectField';
+import {SearchInput} from '@/components/ui/SearchInput';
 import {Surface} from '@/components/ui/Surface';
 import {getActiveCompany, switchActiveCompany, useCompanyState} from '@/features/companies/company-state';
 import {vendorCategories, type VendorCategory} from '@/features/vendors/types';
@@ -144,7 +145,7 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
       <div className={styles.workspace}>
         <Surface className={styles.templatePanel}>
           <h2>{t('templatesTitle')}</h2>
-          <label className={styles.search}><AppIcon name="search" size={22}/><span className={styles.srOnly}>{t('searchLabel')}</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('searchPlaceholder')}/></label>
+          <SearchInput className={styles.search} label={t('searchLabel')} value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('searchPlaceholder')}/>
           <div className={styles.templateList}>
             {draft && <div className={styles.templateItem} data-selected="true" data-template-id={draft.id}><AppearanceIcon appearance={draft} size="list"/><span className={styles.templateCopy}><strong>{t('creation.draftListTitle')}</strong><span>{t('creation.draftListDescription')}</span><small>{t('documentCount', {count: draft.documents.length})}</small></span><AppIcon name="chevronRight" size={18}/></div>}
             {visible.map((template) => <button type="button" key={template.id} className={styles.templateItem} data-template-id={template.id} data-selected={!draft && selected?.id === template.id} aria-current={!draft && selected?.id === template.id ? 'true' : undefined} onClick={() => selectTemplate(template.id)}>

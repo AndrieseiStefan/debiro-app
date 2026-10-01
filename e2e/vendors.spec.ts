@@ -1,4 +1,5 @@
 import {expect, test} from '@playwright/test';
+import {openFilters} from './support/filters';
 
 test('renders the Romanian vendors list inside the shared authenticated shell', async ({page}) => {
   const response = await page.goto('/vendors');
@@ -81,6 +82,7 @@ test('filters and paginates fixture vendors locally', async ({page}) => {
   await expect(page.getByText('Alpha Construction SRL')).toBeVisible();
   await page.getByRole('searchbox', {name: 'Caută furnizori după nume, CUI sau persoană de contact'}).fill('Tech Solutions');
   await expect(page.getByText('Afișez 1 – 1 din 1 furnizori')).toBeVisible();
-  await page.getByRole('combobox', {name: 'Status'}).selectOption('attention');
+  await openFilters(page);
+  await page.getByRole('combobox', {name: 'Status conformitate'}).selectOption('attention');
   await expect(page.getByText('Niciun furnizor nu corespunde filtrelor.')).toBeVisible();
 });

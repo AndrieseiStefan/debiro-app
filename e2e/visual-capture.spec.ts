@@ -1,5 +1,6 @@
 import path from 'node:path';
 import {expect, test} from '@playwright/test';
+import {openFilters} from './support/filters';
 
 const route = process.env.VISUAL_ROUTE ?? '/__dev/design-system';
 const action = process.env.VISUAL_ACTION;
@@ -24,7 +25,10 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   await page.waitForLoadState('networkidle');
   await page.evaluate(async () => { await document.fonts.ready; });
   if (action) {
-    if (action === 'vendor-sort-name-asc' || action === 'vendor-sort-expiry-desc') {
+    if (action === 'filters') {
+      if (!/^\/(en\/)?(vendors(\/construct-pro)?|documents)$/.test(route)) throw new Error('Filter capture requires an implemented data-view route.');
+      await openFilters(page);
+    } else if (action === 'vendor-sort-name-asc' || action === 'vendor-sort-expiry-desc') {
       if (route !== '/vendors' && route !== '/en/vendors') throw new Error('Vendor sort capture requires the Vendors route.');
       const english = route.startsWith('/en');
       const header = page.getByRole('columnheader', {name: action === 'vendor-sort-name-asc' ? english ? 'SUPPLIER' : 'FURNIZOR' : english ? 'NEXT EXPIRY' : 'URMĂTOAREA EXPIRARE', exact: true});

@@ -22,14 +22,11 @@
 .tabs button span {background: #e8f1ff; border-radius: 10px; color: #0756c6; font-size: 12px; min-width: 24px; padding: 2px 7px; text-align: center;}
 .tabs button:last-child span {background: #ffe8ec; color: #d52140;}
 
-.workspace {display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) 244px; min-width: 0;}
-.workspace[data-filters-open='false'] {grid-template-columns: minmax(0, 1fr);}
-.listSurface, .filterPanel {background: #fff; border: 1px solid #cbdcf8; border-radius: 11px; box-shadow: var(--shadow-card); min-width: 0; overflow: hidden;}
+.workspace {min-width: 0;}
+.listSurface {background: #fff; border: 1px solid #cbdcf8; border-radius: 11px; box-shadow: var(--shadow-card); min-width: 0; overflow: hidden;}
 .toolbar {align-items: center; display: flex; gap: 14px; justify-content: space-between; min-height: 67px; padding: 12px 14px;}
-.search {align-items: center; background: #eff5fd; border-radius: 8px; color: #5977a6; display: flex; flex: 1 1 auto; gap: 10px; height: 37px; min-width: 0; padding: 0 12px;}
-.search input {background: transparent; border: 0; color: #17315a; flex: 1 1 auto; font: inherit; font-size: 13px; min-width: 0; outline: 0;}
-.search:focus-within {outline: 3px solid var(--color-focus); outline-offset: 2px;}
-.toolbarActions {display: flex; flex: 0 0 auto; gap: 10px;}
+.search {flex: 1 1 auto;}
+.toolbarActions {align-items: center; display: flex; flex: 0 0 auto; gap: 10px;}
 .toolbarButton {align-items: center; background: #fff; border: 1px solid #cbdcf8; border-radius: 8px; color: #15325e; display: inline-flex; font-size: 13px; font-weight: 650; gap: 8px; height: 37px; justify-content: center; padding: 0 11px; white-space: nowrap;}
 .toolbarButton > svg {color: #3464a7;}
 .sortControl {padding-right: 8px;}
@@ -73,15 +70,6 @@
 .previousIcon {transform: rotate(180deg);}
 .emptyReset {background: #fff; border: 1px solid #bdd3f5; border-radius: 8px; color: #0754c6; font-weight: 700; min-height: 38px; padding: 7px 12px;}
 
-.filterPanel {align-self: stretch; display: flex; flex-direction: column;}
-.filterPanel[hidden] {display: none;}
-.filterHeading {align-items: center; display: flex; justify-content: space-between; padding: 19px 16px 13px;}
-.filterHeading h2 {color: #142544; font-size: 16px; font-weight: 750;}
-.filterHeading button {background: transparent; border: 0; color: #0759d1; font-size: 12px; font-weight: 650;}
-.filterFields {display: grid; gap: 17px; padding: 0 16px 14px;}
-.filterSelect {color: #243959; display: grid; font-size: 12px; font-weight: 700; gap: 7px; position: relative;}
-.filterSelect select {appearance: none; background: #fff; border: 1px solid #cbdcf8; border-radius: 7px; color: #30496e; font: inherit; font-size: 12px; font-weight: 400; height: 36px; min-width: 0; padding: 0 28px 0 11px; width: 100%;}
-.filterSelect svg {bottom: 10px; color: #295698; pointer-events: none; position: absolute; right: 10px;}
 .statusFilters {border: 0; display: grid; gap: 8px; margin: 0; min-width: 0; padding: 0;}
 .statusFilters legend {color: #243959; font-size: 12px; font-weight: 700; margin-bottom: 7px;}
 .statusFilters label {align-items: center; color: #334b6e; display: grid; font-size: 12px; gap: 6px; grid-template-columns: 16px 20px minmax(0, 1fr) auto; min-width: 0;}
@@ -90,16 +78,8 @@
 .filterStatusIcon[data-status='valid'] {background: #e0f6eb; color: #07986b;}
 .filterStatusIcon[data-status='expiring'] {background: #fff0d6; color: #d78800;}
 .statusFilters label small {background: #eaf2ff; border-radius: 6px; color: #3b598a; font-size: 11px; padding: 2px 6px;}
-.filterFooter {border-top: 1px solid #e0eafa; margin-top: auto; padding: 12px 16px;}
-.filterFooter button {background: #fff; border: 1px solid #cbdcf8; border-radius: 7px; color: #233f6c; font-size: 12px; font-weight: 700; min-height: 37px; width: 100%;}
 .srOnly {clip: rect(0 0 0 0); clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px;}
 
-@media (max-width: 1399px) {
-  .workspace {grid-template-columns: minmax(0, 1fr);}
-  .filterPanel {grid-row: 1;}
-  .filterFields {grid-template-columns: repeat(2, minmax(0, 1fr));}
-  .filterFooter {margin-top: 0;}
-}
 @media (max-width: 1199px) {
   .summaryGrid {grid-template-columns: repeat(2, minmax(0, 1fr));}
 }
@@ -115,9 +95,8 @@
   .summaryChevron {display: none;}
   .tabs {gap: 20px; padding: 0 4px;}
   .toolbar {align-items: stretch; flex-direction: column;}
-  .search {flex-basis: 38px; flex-grow: 0;}
-  .toolbarActions {justify-content: flex-end;}
-  .filterFields {grid-template-columns: minmax(0, 1fr);}
+  .search {flex: 0 0 auto;}
+  .toolbarActions {flex-wrap: wrap; justify-content: flex-end;}
   .tableFooter {align-items: flex-start; flex-direction: column;}
 }
 @media (max-width: 380px) {

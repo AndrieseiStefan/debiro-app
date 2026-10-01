@@ -1,4 +1,5 @@
 import {expect, test, type Page} from '@playwright/test';
+import {openFilters} from './support/filters';
 
 async function openEdit(page: Page, english = false) {
   await page.getByRole('button', {name: english ? 'Edit vendor' : 'Editează furnizor', exact: true}).click();
@@ -70,6 +71,7 @@ for (const english of [false, true]) {
     await expect(row).toContainText('Aardvark Updated SRL');
     await expect(row).toContainText('RO90010002');
     await expect(row).toContainText('4/5');
+    await openFilters(page);
     await page.getByRole('combobox', {name: english ? 'Category' : 'Categorie', exact: true}).selectOption('construction');
     await expect(row).toHaveCount(0);
     await page.getByRole('combobox', {name: english ? 'Category' : 'Categorie', exact: true}).selectOption('software');

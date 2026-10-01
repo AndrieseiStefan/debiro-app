@@ -6,9 +6,7 @@
 .templatePanel, .editor {padding: 0;}
 .templatePanel {align-self: start; padding: 16px 10px 12px;}
 .templatePanel h2 {color: #122447; font-size: 19px; font-weight: 720; letter-spacing: -.025em; margin: 0 8px 14px;}
-.search {align-items: center; background: #eff5fc; border-radius: 8px; color: #5876a4; display: flex; gap: 10px; height: 40px; margin: 0 8px 10px; padding: 0 12px;}
-.search:focus-within {outline: 3px solid var(--color-focus); outline-offset: 2px;}
-.search input {background: none; border: 0; color: #1c3153; font: inherit; font-size: 14px; min-width: 0; outline: 0; width: 100%;}
+.search {margin: 0 8px 10px;}
 .templateList {min-width: 0;}
 .templateItem {align-items: center; background: transparent; border: 1px solid transparent; border-bottom-color: #dfeafa; color: #1c3459; display: flex; gap: 13px; min-height: 94px; padding: 10px 7px; text-align: left; width: 100%;}
 .templateItem[data-selected='true'] {background: #eaf3ff; border: 1px solid #bcd8ff; border-left: 3px solid #1262dd; border-radius: 8px;}

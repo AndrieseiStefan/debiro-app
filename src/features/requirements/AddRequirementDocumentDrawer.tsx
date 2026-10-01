@@ -4,6 +4,7 @@ import {useState, type FormEvent, type RefObject} from 'react';
 import {useTranslations} from 'next-intl';
 import {AppIcon} from '@/components/layout/AppIcon';
 import {Button} from '@/components/ui/Button';
+import {SearchInput} from '@/components/ui/SearchInput';
 import {Drawer, type DrawerPhase} from '@/components/ui/Drawer';
 import {AppearanceIcon, AppearancePicker} from './AppearancePicker';
 import {defaultAppearance, type Appearance} from './appearance';
@@ -64,7 +65,7 @@ export function AddRequirementDocumentDrawer({phase, onClose, onExited, triggerR
       </div></fieldset>
 
       {mode === 'suggestions' ? <div className={styles.suggestionArea}>
-        <label className={styles.search}><AppIcon name="search" size={20}/><span className={styles.srOnly}>{t('searchLabel')}</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('searchPlaceholder')}/></label>
+        <SearchInput label={t('searchLabel')} value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('searchPlaceholder')}/>
         {suggestions.length ? <div className={styles.suggestions}>{suggestions.map((document) => <button type="button" key={document.id} className={styles.suggestion} aria-pressed={selectedId === document.id} onClick={() => {setSelectedId(document.id); setError(null);}}>
           <AppearanceIcon appearance={document}/>
           <span><strong>{document.canonicalName[language]}</strong><small>{document.description[language]}</small></span>

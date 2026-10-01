@@ -10,6 +10,9 @@ import {AuthenticatedPageHeader} from '@/components/layout/AuthenticatedPageHead
 import {EmptyState} from '@/components/ui/EmptyState';
 import {StatusBadge, type StatusTone} from '@/components/ui/StatusBadge';
 import {Surface} from '@/components/ui/Surface';
+import {SearchInput} from '@/components/ui/SearchInput';
+import {FilterPanel} from '@/components/ui/FilterPanel';
+import {SelectField} from '@/components/ui/SelectField';
 import type {DocumentStatus, DocumentSummary, DocumentType, DocumentsViewModel} from './types';
 import {useCreatedDocuments, useDeletedDocumentIds} from './created-documents';
 import {useCompanyState} from '@/features/companies/company-state';
@@ -64,7 +67,7 @@ export function DocumentsPage({locale, view}: {locale: string; view: DocumentsVi
   const [uploadYear, setUploadYear] = useState('any');
   const [sort, setSort] = useState<'newest' | 'oldest'>('newest');
   const [page, setPage] = useState(1);
-  const [filtersOpen, setFiltersOpen] = useState(true);
+  const activeCount = Number(vendor !== 'all') + Number(type !== 'all') + selectedStatuses.length + Number(uploadYear !== 'any');
 
   const counts = Object.fromEntries(statuses.map((status) => [status, documents.filter((document) => document.status === status).length])) as Record<DocumentStatus, number>;
   const vendorOptions = [...new Map(documents.map((document) => [document.vendorId, document.vendorName])).entries()].sort((a, b) => a[1].localeCompare(b[1]));
@@ -127,12 +130,23 @@ export function DocumentsPage({locale, view}: {locale: string; view: DocumentsVi
         <button type="button" aria-current={tab === 'review' ? 'page' : undefined} onClick={() => {setTab('review'); setPage(1);}}>{t('tabs.review')} <span>{counts.review}</span></button>
       </nav>
 
-      <div className={styles.workspace} data-filters-open={filtersOpen}>
+      <div className={styles.workspace}>
         <section className={styles.listSurface} aria-label={t('tableRegion')}>
           <div className={styles.toolbar}>
-            <label className={styles.search}><AppIcon name="search" size={20} /><span className={styles.srOnly}>{t('searchLabel')}</span><input type="search" value={query} onChange={(event) => {setQuery(event.target.value); setPage(1);}} placeholder={t('searchPlaceholder')} /></label>
+            <SearchInput className={styles.search} label={t('searchLabel')} value={query} onChange={(event) => {setQuery(event.target.value); setPage(1);}} placeholder={t('searchPlaceholder')}/>
             <div className={styles.toolbarActions}>
-              <button type="button" className={styles.toolbarButton} aria-controls="document-filters" aria-expanded={filtersOpen} onClick={() => setFiltersOpen((open) => !open)}><AppIcon name="filter" size={17} />{t('filterToggle')}</button>
+              <FilterPanel activeCount={activeCount} onReset={resetFilters}>
+                <SelectField id="document-vendor-filter" label={t('vendor')} value={vendor} onChange={(event) => {setVendor(event.target.value || 'all'); setPage(1);}}>
+                  <option value="all">{t('allVendors')}</option>{vendorOptions.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+                </SelectField>
+                <SelectField id="document-type-filter" label={t('type')} value={type} onChange={(event) => {setType((event.target.value || 'all') as DocumentType | 'all'); setPage(1);}}>
+                  <option value="all">{t('allTypes')}</option>{types.map((item) => <option key={item} value={item}>{t(`documentType.${item}`)}</option>)}
+                </SelectField>
+                <fieldset className={styles.statusFilters}><legend>{t('statusLabel')}</legend>{statuses.filter((status) => status !== 'uploaded' || counts.uploaded > 0).map((status) => <label key={status}><input type="checkbox" checked={selectedStatuses.includes(status)} onChange={() => toggleStatus(status)}/><span className={styles.filterStatusIcon} data-status={status}><AppIcon name={icons[status]} size={14}/></span><span>{t(`status.${status}`)}</span><small>{counts[status]}</small></label>)}</fieldset>
+                <SelectField id="document-upload-period-filter" label={t('uploadPeriod')} value={uploadYear} onChange={(event) => {setUploadYear(event.target.value || 'any'); setPage(1);}}>
+                  <option value="any">{t('anytime')}</option>{uploadYears.map((year) => <option key={year} value={year}>{t('year', {year})}</option>)}
+                </SelectField>
+              </FilterPanel>
               <label className={`${styles.toolbarButton} ${styles.sortControl}`}><span className={styles.srOnly}>{t('sortLabel')}</span><span aria-hidden="true">↕</span><select value={sort} onChange={(event) => {setSort(event.target.value as 'newest' | 'oldest'); setPage(1);}} aria-label={t('sortLabel')}><option value="newest">{t('sortVisible')} ↓</option><option value="oldest">{t('sortVisible')} ↑</option></select><AppIcon name="chevronDown" size={16} /></label>
             </div>
           </div>
@@ -148,15 +162,6 @@ export function DocumentsPage({locale, view}: {locale: string; view: DocumentsVi
             </nav></div>
           </>}
         </section>
-
-        <aside id="document-filters" className={styles.filterPanel} aria-labelledby="document-filters-title" hidden={!filtersOpen}><div className={styles.filterHeading}><h2 id="document-filters-title">{t('filtersTitle')}</h2><button type="button" onClick={resetFilters}>{t('reset')}</button></div>
-          <div className={styles.filterFields}>
-            <label className={styles.filterSelect}>{t('vendor')}<select value={vendor} onChange={(event) => {setVendor(event.target.value); setPage(1);}}><option value="all">{t('allVendors')}</option>{vendorOptions.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select><AppIcon name="chevronDown" size={16} /></label>
-            <label className={styles.filterSelect}>{t('type')}<select value={type} onChange={(event) => {setType(event.target.value as DocumentType | 'all'); setPage(1);}}><option value="all">{t('allTypes')}</option>{types.map((item) => <option key={item} value={item}>{t(`documentType.${item}`)}</option>)}</select><AppIcon name="chevronDown" size={16} /></label>
-            <fieldset className={styles.statusFilters}><legend>{t('statusLabel')}</legend>{statuses.filter((status) => status !== 'uploaded' || counts.uploaded > 0).map((status) => <label key={status}><input type="checkbox" checked={selectedStatuses.includes(status)} onChange={() => toggleStatus(status)} /><span className={styles.filterStatusIcon} data-status={status}><AppIcon name={icons[status]} size={14} /></span><span>{t(`status.${status}`)}</span><small>{counts[status]}</small></label>)}</fieldset>
-            <label className={styles.filterSelect}>{t('uploadPeriod')}<select value={uploadYear} onChange={(event) => {setUploadYear(event.target.value); setPage(1);}}><option value="any">{t('anytime')}</option>{uploadYears.map((year) => <option key={year} value={year}>{t('year', {year})}</option>)}</select><AppIcon name="chevronDown" size={16} /></label>
-          </div><div className={styles.filterFooter}><button type="button" onClick={resetFilters}>{t('clearFilters')}</button></div>
-        </aside>
       </div>
     </div>
   </AuthenticatedAppShell>;

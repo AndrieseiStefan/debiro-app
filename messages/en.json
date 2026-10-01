@@ -1,4 +1,13 @@
 {
+  "DataFilters": {
+    "trigger": "Filter",
+    "title": "Filters",
+    "reset": "Reset",
+    "close": "Close filters",
+    "description": "Filters apply immediately. Reset preserves the search query.",
+    "complianceStatus": "Compliance status",
+    "allStatuses": "All statuses"
+  },
   "Landing": {
     "navigationLabel": "Main navigation",
     "navProduct": "Product",

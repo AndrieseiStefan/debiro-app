@@ -1,0 +1,6 @@
+.search {align-items: center; background: #f2f6fb; border-radius: 11px; color: #5e7392; display: flex; gap: 13px; height: 45px; min-width: 0; padding: 0 14px;}
+.search > svg {flex: 0 0 auto;}
+.search input {background: transparent; border: 0; color: #142748; flex: 1; font-size: 13px; font-weight: 400; min-width: 0; outline: 0; width: 100%;}
+.search:focus-within {outline: 3px solid var(--color-focus); outline-offset: 2px;}
+.search[data-disabled] {opacity: .54;}
+.search kbd {background: #fff; border-radius: 5px; color: #637794; flex: 0 0 auto; font-family: inherit; font-size: 12px; line-height: 23px; padding-inline: 7px;}

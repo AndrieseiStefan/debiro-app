@@ -5,9 +5,6 @@
 .heroIcon {align-items: center; background: #e7f0ff; color: #0860db; display: inline-flex; flex: 0 0 42px; height: 42px; justify-content: center;}
 .heroIcon {border-radius: 50%;}
 .description {color: #526e95; font-size: 14px; line-height: 1.5; margin: 18px 0;}
-.search {align-items: center; background: #f5f8fe; border: 1px solid #d9e5f7; border-radius: 8px; color: #6780a6; display: flex; gap: 9px; min-height: 42px; padding: 0 12px;}
-.search:focus-within {outline: 3px solid var(--color-focus); outline-offset: 2px;}
-.search input {background: none; border: 0; min-width: 0; outline: 0; width: 100%;}
 .list {display: grid; gap: 10px; margin: 18px 0 24px;}
 .template, .summary {border: 1px solid #dce6f6; border-radius: 10px; padding: 14px;}
 .template[data-selected='true'] {background: #f1f7ff; border-color: #aacbff;}

@@ -14,7 +14,7 @@ Inventory counts (unique control/interaction families in §3, not individual ren
 
 | IMPLEMENTED | PARTIAL | MISSING | DESIGN_REQUIRED | INTENTIONALLY_DEFERRED | BUG / INCONSISTENT |
 | ---: | ---: | ---: | ---: | ---: | ---: |
-| 34 | 15 | 4 | 10 | 8 | 2 |
+| 35 | 14 | 4 | 10 | 8 | 2 |
 
 The six status counts total 73 inventory families. Separately, 14 non-implemented families carry the `BACKEND_DEFERRED` **priority/disposition** (including six `PARTIAL` families); this is not a seventh mutually exclusive status.
 
@@ -31,8 +31,8 @@ Route coverage: 14 implemented product route families × 2 locales; four named p
 | `{ro,en}/onboarding` | Three-step account setup UI; Login sign-up link/direct URL | PARTIAL | Local selections are discarded on Dashboard entry; only one fixture option per Step-1 select; help/legal URLs absent. |
 | `{ro,en}/upload/demo-construct-pro` | Supplier-facing invitation preview; Invite Vendor preview link | PARTIAL | File selection is not upload; progress stays fixture-based; uploaded-file actions unavailable. Unknown tokens 404. |
 | `{ro,en}/dashboard` | Authenticated-looking overview; Login/Onboarding/sidebar | PARTIAL | Panel CTAs and document actions unavailable; snapshot KPIs do not derive from local mutations. |
-| `{ro,en}/vendors` | Supplier list; sidebar/breadcrumb | PARTIAL | All names open Details; Open/Active/Inactive menus, local filters and five-column sorting work. Bulk selection removed; more filters remain unavailable. |
-| `{ro,en}/vendors/[vendorId]` | Vendor Details; vendor-name/context-menu navigation | PARTIAL | All listed fixture/local identities work; missing optional data is not fabricated. Construct Pro invite is preview only; other vendors cannot invite; matching templates can explicitly configure any known vendor; shared-form metadata editing works; Contacts/Activity tabs, filter and requirements notice link remain unavailable; missing-row upload and requirement removal work. Unknown fixture IDs 404; lost local IDs show recovery. |
+| `{ro,en}/vendors` | Supplier list; sidebar/breadcrumb | IMPLEMENTED | All names open Details; Open/Active/Inactive menus, shared local search/category/compliance filters and five-column sorting work. Unsupported bulk selection and unavailable extra-filter control are removed. |
+| `{ro,en}/vendors/[vendorId]` | Vendor Details; vendor-name/context-menu navigation | PARTIAL | All listed fixture/local identities work; missing optional data is not fabricated. Construct Pro invite is preview only; other vendors cannot invite; matching templates can explicitly configure any known vendor; shared-form metadata editing and shared document search/status filters work; Contacts/Activity tabs and requirements notice link remain unavailable; missing-row upload and requirement removal work. Unknown fixture IDs 404; lost local IDs show recovery. |
 | `{ro,en}/documents` | Global document list; sidebar/review return | PARTIAL | One initial fixture review route and matching local simulated routes work; most rows cannot be opened or managed. |
 | `{ro,en}/documents/construct-pro-tax-2024/review` and `/documents/local-document-*/review` | Human review UI; supported document row/bell link | BUG / INCONSISTENT | Reject/draft/confirm only change component state; returning to Documents restores unchanged status. Unknown fixture IDs 404; lost local IDs show recovery. |
 | `{ro,en}/requirements` | Company-scoped template list/editor; sidebar | PARTIAL | New and existing-template drafts use atomic Save/Cancel; appearance and duplicate/delete work locally. Read-only supplier Preview reflects staged rules; company-scoped multi-template snapshot assignment is implemented in E1-027. |
@@ -79,7 +79,7 @@ The table accounts for all visible control **families**, including repeated rows
 | 25 | Vendors | `Adaugă furnizor`, drawer Cancel/X/Escape, valid submit | Shared accessible drawer, validation, local record, Details navigation work. | Same E1 local path. | IMPLEMENTED | — |
 | 26 | Vendors | Search, category/status filters, pagination/page size | Mutate current list locally; filtered empty text is shown. | Same. | IMPLEMENTED | — |
 | 27 | Vendors | Unsupported bulk-selection affordance | Header/row checkboxes and selection state removed in E1-026A. | Keep removed until a bulk action is approved. | IMPLEMENTED | — |
-| 28 | Vendors | Sortable table headers; `Filtre suplimentare` | E1-026A1 implements keyboard-accessible ascending/descending semantic sorting; additional-filter button remains unavailable. | Approve the advanced-filter contract or de-emphasize that remaining affordance. | PARTIAL | DESIGN_REQUIRED |
+| 28 | Vendors | Sortable table headers; shared search/filter controls | E1-026A1 semantic sorting composes with E1-027A shared immediate Category/Compliance filters, counted trigger and query-preserving Reset; unavailable extra-filter button removed. | Same E1 local contract; no advanced/lifecycle filters. | IMPLEMENTED | — |
 | 29 | Vendors | Names and row `...` for Construct Pro and locally created rows | Names open Details; menus offer Open and Mark Inactive/Active. Lifecycle persists across client navigation/locales without changing compliance/data. | Same E1 local contract. | IMPLEMENTED | — |
 | 30 | Vendors | Names and row `...` for other 23 fixture suppliers | All resolve identity-driven Details with safe absent data and the same Open/Active/Inactive menu. | Same E1 local contract. | IMPLEMENTED | — |
 | 31 | Vendor Details | Breadcrumb; contact mail/tel/site; document search | Routes and OS/external links work; search filters rows. | Same. | IMPLEMENTED | — |
@@ -87,7 +87,7 @@ The table accounts for all visible control **families**, including repeated rows
 | 33 | Vendor Details | `Invită furnizor` on a newly created vendor | Unavailable because no invitation preview/token fixture is generated. | New local vendor must have a coherent local invitation preview path or an approved alternative. | MISSING | P0 — REQUIRED BEFORE E2 |
 | 34 | Vendor Details | `Adaugă document`; file/dropzone, metadata, extraction toggle, Cancel/submit | Validates and creates browser-memory metadata; exact fixture match may open local Review; bytes not stored. | Same E1 simulation; real private upload/extraction later. | PARTIAL | BACKEND_DEFERRED |
 | 35 | Vendor Details | Documents/Contacts/Activity/Notes tabs | Documents works; Notes reflects saved vendor notes, including edited fixtures; Contacts/Activity unavailable. | Decide remaining tab content/actions before enabling. | PARTIAL | DESIGN_REQUIRED |
-| 36 | Vendor Details | `Filtrează`, missing-row `Încarcă`, document-row `...`, `Vezi cerințele aplicabile` | E1-027 enables preselected requirement upload, confirmed requirement/upload removal and existing local Review; filter and notice link remain unavailable. | Decide the remaining filter/notice interactions; keep the local lifecycle. | PARTIAL | DESIGN_REQUIRED |
+| 36 | Vendor Details | `Filtrează`, missing-row `Încarcă`, document-row `...`, `Vezi cerințele aplicabile` | E1-027 enables preselected requirement upload, confirmed requirement/upload removal and existing local Review; E1-027A enables the existing document-status filter through shared search/filter primitives; notice link remains unavailable. | Decide the remaining notice interaction; keep the local lifecycle and shared filters. | PARTIAL | DESIGN_REQUIRED |
 | 37 | Vendor Details | Edit/archive vendor; change category/contact data | E1-026B reuses Add Vendor form for atomic metadata Save/Cancel, including category, seeded/local and inactive vendors. | Keep stable identity/history; E1-027 category edits warn but preserve configuration; archive remains unapproved. | PARTIAL | DESIGN_REQUIRED (archive only) |
 | 38 | Documents | All/Needs Review tabs; review KPI; search; filters/reset; upload-date sort; pages | Work on fixture plus locally created rows; filtered/no-data states exist. | Same. | IMPLEMENTED | — |
 | 39 | Documents | Name/row `...` for reviewable fixture/local simulated records | Both link to their own Review route. | Same. | IMPLEMENTED | — |
@@ -158,7 +158,7 @@ Items that merely display data—contact cards, static KPI copy, notification ro
 
 ## 6. Inert / Dead UI
 
-Inventory rows **04–06, 09, 11, 16, 19–20, 22–24, 28, 33, 35–37, 40, 52–53, 57, 60, 62–63, 65–66, 68, 70** cover visually actionable controls that are inactive, incomplete, or lead to an incomplete flow. Not all are E1 coding tasks: provider-backed controls (for example Logout, invoice download, real upload) have a concrete service dependency; undefined menus/screens require design. In particular:
+Inventory rows **04–06, 09, 11, 16, 19–20, 22–24, 33, 35–37, 40, 52–53, 57, 60, 62–63, 65–66, 68, 70** cover visually actionable controls that are inactive, incomplete, or lead to an incomplete flow. Not all are E1 coding tasks: provider-backed controls (for example Logout, invoice download, real upload) have a concrete service dependency; undefined menus/screens require design. In particular:
 
 - Landing account-entry links are functional; remaining public marketing actions lack approved destinations or content.
 - Dashboard panel links, most row ellipses, Vendor missing-upload/requirements actions, and most Documents ellipses do not provide a usable path (P0/P1 as inventoried).

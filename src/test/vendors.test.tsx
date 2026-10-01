@@ -63,9 +63,10 @@ describe('vendors list', () => {
     fireEvent.change(screen.getByRole('searchbox', {name: 'Search suppliers by name, registration number or contact person'}), {target: {value: 'Tech Solutions'}});
     expect(screen.getByText('Tech Solutions SRL')).toBeVisible();
     expect(screen.getByText('Showing 1–1 of 1 suppliers')).toBeVisible();
-    fireEvent.change(screen.getByRole('combobox', {name: 'Status'}), {target: {value: 'attention'}});
+    fireEvent.click(screen.getByRole('button', {name: 'Filter'}));
+    fireEvent.change(screen.getByRole('combobox', {name: 'Compliance status'}), {target: {value: 'attention'}});
     expect(screen.getByText('No suppliers match the filters.')).toBeVisible();
-    fireEvent.change(screen.getByRole('combobox', {name: 'Status'}), {target: {value: 'all'}});
+    fireEvent.change(screen.getByRole('combobox', {name: 'Compliance status'}), {target: {value: 'all'}});
     fireEvent.change(screen.getByRole('searchbox', {name: 'Search suppliers by name, registration number or contact person'}), {target: {value: 'Radu Popa'}});
     expect(screen.getByText('Tech Solutions SRL')).toBeVisible();
   });
@@ -111,11 +112,12 @@ describe('vendors list', () => {
     fireEvent.click(within(nameHeader).getByRole('button'));
     expect(nameHeader).toHaveAttribute('aria-sort', 'descending');
     expect(firstName()).toBe('Urban Logistics SRL');
+    fireEvent.click(screen.getByRole('button', {name: 'Filtrează'}));
     fireEvent.change(screen.getByRole('combobox', {name: 'Categorie'}), {target: {value: 'construction'}});
     expect(within(table).getAllByRole('link').map((link) => link.textContent)).toEqual(['Delta Construct SRL', 'Construct Pro SRL', 'Alpha Construction SRL']);
     fireEvent.change(screen.getByRole('searchbox', {name: 'Caută furnizori după nume, CUI sau persoană de contact'}), {target: {value: 'Construct Pro'}});
     expect(firstName()).toBe('Construct Pro SRL');
-    fireEvent.change(screen.getByRole('combobox', {name: 'Status'}), {target: {value: 'attention'}});
+    fireEvent.change(screen.getByRole('combobox', {name: 'Status conformitate'}), {target: {value: 'attention'}});
     expect(within(table).getByText('Niciun furnizor nu corespunde filtrelor.')).toBeVisible();
     const documentsHeader = within(table).getByRole('columnheader', {name: 'DOCUMENTE'});
     fireEvent.click(within(documentsHeader).getByRole('button'));

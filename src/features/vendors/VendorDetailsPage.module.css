@@ -56,11 +56,7 @@
 .manualSource {background: #eef2f7; color: #647a98;}
 .templateSuccess {align-items: center; background: #edf9f3; color: #0c7854; display: flex; font-size: 13px; gap: 12px; margin: 0 18px 16px; padding: 14px;}
 .templateSuccess > span {display: grid; gap: 4px;}
-.documentSearch {align-items: center; background: #f3f7fd; border: 1px solid #dbe7f5; border-radius: 10px; color: #607dae; display: flex; flex: 1 1 180px; gap: 10px; height: 44px; padding: 0 12px; width: 244px;}
-.documentSearch:focus-within {outline: 3px solid var(--color-focus); outline-offset: 2px;}
-.documentSearch input {background: transparent; border: 0; color: #18315a; font-size: 14px; min-width: 0; outline: 0; width: 100%;}
-.filterButton {color: #123669; font-size: 14px; min-height: 44px; padding: 0 14px;}
-.filterButton > span {font-size: 14px;}
+.documentSearch {flex: 1 1 180px; width: 244px;}
 .tableScroll {max-width: 100%; overflow-x: auto; scrollbar-width: thin;}
 .documentsTable {border-collapse: collapse; color: #193258; font-size: 13px; min-width: 1100px; table-layout: fixed; text-align: left; width: 100%;}
 .documentsTable th {background: #f0f6ff; color: #55719c; font-size: 11px; font-weight: 600; height: 39px; letter-spacing: .015em; white-space: nowrap;}
@@ -84,6 +80,7 @@
 .notice > span {flex: 1 1 auto;}
 .notice button {align-items: center; background: none; border: 0; color: #0755c5; display: inline-flex; flex: 0 0 auto; font-size: 13px; font-weight: 650; gap: 8px; white-space: nowrap;}
 .noResults {color: #5d7090; padding: 24px; text-align: center;}
+.noResults button {background: none; border: 0; color: var(--color-action-primary); margin-left: 12px; min-height: 40px;}
 .notesPanel {margin-top: 16px; min-height: 150px; padding: 24px;}
 .notesPanel h2 {color: #142649; font-size: 18px;}
 .notesPanel p {color: #385575; font-size: 14px; line-height: 1.5; margin-top: 12px; white-space: pre-wrap;}
@@ -101,4 +98,4 @@
 @media (max-width: 1000px) {.vendorHeader {grid-template-columns: minmax(0, 1fr);}.identityBlock, .complianceSummary, .pageActions {grid-column: 1;}.complianceSummary {width: 100%;}}
 @media (max-width: 800px) {.pageActions, .pageActions > * {width: 100%;}.pageActions {flex-direction: column;}.titleLine {align-items: flex-start;}.vendorIcon {flex-basis: 58px; height: 58px;}.identityMeta {margin-left: 74px;}}
 @media (max-width: 767px) {.contactItem {flex-basis: 100%;}.tabs {gap: 0;}.tabs button {font-size: 14px; padding: 0 14px;}.notice {align-items: flex-start; flex-wrap: wrap;}.notice > span {flex-basis: calc(100% - 40px);}.notice button {margin-left: 32px;}.banner {height: 140px; padding: 18px;}.banner::before {bottom: -121px; opacity: .55; right: -135px; width: 560px;}.bannerHandwriting {display: none;}}
-@media (max-width: 480px) {.titleLine {gap: 12px;}.identityMeta {margin-left: 70px;}.documentControls {flex-wrap: wrap;}.documentSearch, .filterButton {width: 100%;}.panelHeading p {font-size: 13px;}}
+@media (max-width: 480px) {.titleLine {gap: 12px;}.identityMeta {margin-left: 70px;}.documentControls {flex-wrap: wrap;}.documentSearch {flex-basis: 100%; width: 100%;}.panelHeading p {font-size: 13px;}}

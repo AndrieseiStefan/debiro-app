@@ -9,6 +9,9 @@ import {AuthenticatedBreadcrumbs} from '@/components/layout/AuthenticatedBreadcr
 import {AuthenticatedPageHeader, AuthenticatedPagePrimaryAction} from '@/components/layout/AuthenticatedPageHeader';
 import {StatusBadge, type StatusTone} from '@/components/ui/StatusBadge';
 import {Surface} from '@/components/ui/Surface';
+import {SearchInput} from '@/components/ui/SearchInput';
+import {FilterPanel} from '@/components/ui/FilterPanel';
+import {SelectField} from '@/components/ui/SelectField';
 import {vendorCategories, type VendorCategory, type VendorListItem, type VendorStatus, type VendorsListViewModel} from './types';
 import {AddVendorDrawer} from './AddVendorDrawer';
 import {createLocalVendor, useVendorState, vendorListItems, vendorSummary, type NewVendorInput} from './created-vendors';
@@ -64,6 +67,7 @@ function VendorRow({vendor, locale, menuOpen, onMenuChange}: {vendor: VendorList
 export function VendorsListPage({locale, view}: {locale: string; view: VendorsListViewModel}) {
   const t = useTranslations('Vendors');
   const router = useRouter();
+  const filtersT = useTranslations('DataFilters');
   const vendorState = useVendorState();
   const allVendors = vendorListItems(vendorState, view.vendors);
   const [addPhase, setAddPhase] = useState<'closed' | 'open' | 'closing'>('closed');
@@ -88,6 +92,13 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
   const visible = sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const start = filtered.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const end = Math.min(currentPage * pageSize, filtered.length);
+  const activeCount = Number(category !== 'all') + Number(status !== 'all');
+
+  function resetFilters() {
+    setCategory('all');
+    setStatus('all');
+    setPage(1);
+  }
 
   function changeSort(column: VendorSortColumn) {
     setSort((current) => ({column, direction: current?.column === column && current.direction === 'ascending' ? 'descending' : 'ascending'}));
@@ -121,20 +132,15 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
       </section>
 
       <section className={styles.filterGrid} aria-label={t('filtersLabel')}>
-        <label className={styles.vendorSearch}>
-          <AppIcon name="search" size={22} />
-          <span className={styles.visuallyHidden}>{t('searchLabel')}</span>
-          <input type="search" value={query} onChange={(event) => {setQuery(event.target.value); setPage(1);}} placeholder={t('searchPlaceholder')} />
-        </label>
-        <label className={styles.selectField}><span>{t('categoryLabel')}</span><select value={category} onChange={(event) => {setCategory(event.target.value as VendorCategory | 'all'); setPage(1);}}>
-          <option value="all">{t('allCategories')}</option>
-          {vendorCategories.map((item) => <option key={item} value={item}>{t(`category.${item}`)}</option>)}
-        </select><AppIcon name="chevronDown" size={17} /></label>
-        <label className={styles.selectField}><span>{t('statusLabel')}</span><select value={status} onChange={(event) => {setStatus(event.target.value as VendorStatus | 'all'); setPage(1);}}>
-          <option value="all">{t('allStatuses')}</option>
-          {statuses.map((item) => <option key={item} value={item}>{t(`status.${item}`)}</option>)}
-        </select><AppIcon name="chevronDown" size={17} /></label>
-        <button type="button" aria-disabled="true" className={styles.moreFilters}><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16" /><circle cx="9" cy="6" r="2" fill="#fff" /><circle cx="16" cy="12" r="2" fill="#fff" /><circle cx="11" cy="18" r="2" fill="#fff" /></svg>{t('moreFilters')}</button>
+        <SearchInput className={styles.vendorSearch} label={t('searchLabel')} value={query} onChange={(event) => {setQuery(event.target.value); setPage(1);}} placeholder={t('searchPlaceholder')}/>
+        <FilterPanel activeCount={activeCount} onReset={resetFilters}>
+          <SelectField id="vendor-category-filter" label={t('categoryLabel')} value={category} onChange={(event) => {setCategory((event.target.value || 'all') as VendorCategory | 'all'); setPage(1);}}>
+            <option value="all">{t('allCategories')}</option>{vendorCategories.map((item) => <option key={item} value={item}>{t(`category.${item}`)}</option>)}
+          </SelectField>
+          <SelectField id="vendor-status-filter" label={filtersT('complianceStatus')} value={status} onChange={(event) => {setStatus((event.target.value || 'all') as VendorStatus | 'all'); setPage(1);}}>
+            <option value="all">{t('allStatuses')}</option>{statuses.map((item) => <option key={item} value={item}>{t(`status.${item}`)}</option>)}
+          </SelectField>
+        </FilterPanel>
       </section>
 
       <Surface className={styles.listSurface}>
@@ -147,7 +153,7 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
               <th scope="col">{t('table.actions')}</th>
             </tr></thead>
             <tbody>{visible.map((vendor) => <VendorRow key={vendor.id} vendor={vendor} locale={locale} menuOpen={menuVendorId === vendor.id} onMenuChange={(open) => setMenuVendorId(open ? vendor.id : null)} />)}
-              {visible.length === 0 && <tr><td colSpan={6} className={styles.noResults}>{t('noResults')}</td></tr>}
+              {visible.length === 0 && <tr><td colSpan={6} className={styles.noResults}>{t('noResults')}{activeCount > 0 && <button type="button" onClick={resetFilters}>{filtersT('reset')}</button>}</td></tr>}
             </tbody>
           </table>
         </div>
