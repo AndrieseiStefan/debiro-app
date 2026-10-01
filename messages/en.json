@@ -751,10 +751,25 @@
     "submit": "Add supplier",
     "nameRequired": "Enter the supplier name.",
     "cuiRequired": "Enter the CUI or tax ID.",
+    "cuiDuplicate": "Another supplier in this company already uses this tax ID.",
     "emailRequired": "Enter the contact email.",
     "emailInvalid": "Enter a valid email address.",
     "categoryRequired": "Select the supplier category.",
     "websiteInvalid": "Enter a valid website URL."
+  },
+  "EditVendor": {
+    "title": "Edit vendor",
+    "description": "Update the supplier's company details and contact information.",
+    "close": "Close edit vendor",
+    "submit": "Save changes",
+    "success": "Vendor updated",
+    "noticeTitle": "Changes take effect only after saving.",
+    "noticeDescription": "The supplier's identity, documents and status are preserved. Category does not automatically assign requirements.",
+    "discardTitle": "Discard unsaved changes?",
+    "discardDescription": "Your supplier changes have not been saved.",
+    "continueEditing": "Continue editing",
+    "discardChanges": "Discard changes",
+    "saveFailure": "The supplier could not be updated. Check the details and try again."
   },
   "AddDocument": {
     "close": "Close add document",

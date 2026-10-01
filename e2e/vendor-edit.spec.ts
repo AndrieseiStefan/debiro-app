@@ -1,0 +1,197 @@
+import {expect, test, type Page} from '@playwright/test';
+
+async function openEdit(page: Page, english = false) {
+  await page.getByRole('button', {name: english ? 'Edit vendor' : 'Editează furnizor', exact: true}).click();
+  const dialog = page.getByRole('dialog', {name: english ? 'Edit vendor' : 'Editează furnizor', exact: true});
+  await expect(dialog).toBeVisible();
+  await dialog.evaluate((element) => Promise.all(element.getAnimations().map((animation) => animation.finished)));
+  return dialog;
+}
+
+for (const english of [false, true]) {
+  const prefix = english ? '/en' : '';
+  test(`atomic metadata editing updates Details, List, filtering and sorting (${english ? 'EN' : 'RO'})`, async ({page}) => {
+    await page.goto(`${prefix}/vendors/construct-pro`);
+    const documents = await page.locator('tbody').innerText();
+    const status = await page.locator('[data-vendor-status]').innerText();
+    let dialog = await openEdit(page, english);
+    const values = {name: 'Construct Pro SRL', cui: 'RO12345678', registrationCode: 'J40/1234/2018', email: 'ion.popescu@scconstruct.ro', phone: '+40 722 345 678', contactName: 'Ion Popescu', category: 'construction', industry: '', address: 'Str. Constructorilor nr. 12\nBucurești, Sector 2', website: 'www.constructpro.ro', notes: ''};
+    for (const [field, value] of Object.entries(values)) await expect(dialog.locator(`#edit-vendor-${field}`)).toHaveValue(value);
+    const save = () => dialog.getByRole('button', {name: english ? 'Save changes' : 'Salvează modificările'});
+    await expect(save()).toBeDisabled();
+    await dialog.locator('#edit-vendor-name').fill('Cancelled rename');
+    await dialog.locator('#edit-vendor-category').selectOption('software');
+    await expect(page.locator('h1')).toHaveText('Construct Pro SRL');
+    await dialog.getByRole('button', {name: english ? 'Cancel' : 'Anulează'}).click();
+    const confirm = page.getByRole('alertdialog');
+    await expect(confirm).toBeVisible();
+    await confirm.getByRole('button', {name: english ? 'Discard changes' : 'Renunță la modificări'}).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(page.locator('h1')).toHaveText('Construct Pro SRL');
+    dialog = await openEdit(page, english);
+    await expect(dialog.locator('#edit-vendor-category')).toHaveValue('construction');
+    await dialog.locator('#edit-vendor-name').fill('  Aardvark Updated SRL  ');
+    await dialog.locator('#edit-vendor-cui').fill(' ro 87654321 ');
+    await expect(dialog.getByText(english ? 'Another supplier in this company already uses this tax ID.' : 'Un alt furnizor din această companie folosește deja acest CUI.')).toBeVisible();
+    await expect(save()).toBeDisabled();
+    await dialog.locator('#edit-vendor-cui').fill('RO12345678');
+    await expect(save()).toBeEnabled();
+    await dialog.locator('#edit-vendor-email').fill('invalid');
+    await expect(save()).toBeDisabled();
+    await expect(dialog.getByText(english ? 'Enter a valid email address.' : 'Introdu o adresă de email validă.')).toBeVisible();
+    await dialog.locator('#edit-vendor-website').fill('bad url');
+    await expect(save()).toBeDisabled();
+    const changed = {cui: '  RO90010002  ', registrationCode: 'J40/99/2026', email: 'updated@example.test', phone: '+40 700 100 200', contactName: 'Mara Test', industry: 'Independent industry', address: 'New business address', website: 'https://updated.example', notes: 'Updated notes'};
+    for (const [field, value] of Object.entries(changed)) await dialog.locator(`#edit-vendor-${field}`).fill(value);
+    await dialog.locator('#edit-vendor-category').selectOption('software');
+    await save().click();
+    await expect(dialog).toHaveCount(0);
+    await expect(page).toHaveURL(new RegExp(`${prefix}/vendors/construct-pro$`));
+    await expect(page.locator('h1')).toHaveText('Aardvark Updated SRL');
+    await expect(page.getByText(english ? 'Vendor updated' : 'Furnizor actualizat', {exact: true})).toBeVisible();
+    await expect(page.getByText('CUI RO90010002')).toBeVisible();
+    await expect(page.getByText('J40/99/2026')).toBeVisible();
+    await expect(page.locator('[data-vendor-category]')).toHaveText('IT & Software');
+    for (const value of ['updated@example.test', '+40 700 100 200', 'Mara Test', 'New business address']) await expect(page.getByText(value, {exact: true})).toBeVisible();
+    await expect(page.getByRole('link', {name: 'https://updated.example'})).toHaveAttribute('href', 'https://updated.example');
+    expect(await page.locator('tbody').innerText()).toBe(documents);
+    expect(await page.locator('[data-vendor-status]').innerText()).toBe(status);
+    await page.getByRole('tab', {name: english ? 'Notes' : 'Note', exact: true}).click();
+    await expect(page.getByRole('tabpanel')).toContainText('Updated notes');
+    await page.getByRole('button', {name: english ? 'Invite supplier' : 'Invită furnizor', exact: true}).click();
+    const invite = page.getByRole('dialog');
+    await expect(invite.locator('input').first()).toHaveValue('Aardvark Updated SRL');
+    await expect(invite.getByRole('textbox', {name: english ? /Contact email/ : /Email de contact/})).toHaveValue('updated@example.test');
+    await expect(invite.getByRole('textbox', {name: english ? /Secure upload link/ : /Link de încărcare securizat/})).toHaveValue('https://debiro.ro/upload/demo-construct-pro');
+    await page.keyboard.press('Escape');
+    await expect(invite).toHaveCount(0);
+    await page.getByRole('navigation', {name: english ? 'Breadcrumb' : 'Navigare pe pagină'}).getByRole('link', {name: english ? 'Suppliers' : 'Furnizori'}).click();
+    const row = page.locator('[data-vendor-id="construct-pro"]');
+    await expect(row).toContainText('Aardvark Updated SRL');
+    await expect(row).toContainText('RO90010002');
+    await expect(row).toContainText('4/5');
+    await page.getByRole('combobox', {name: english ? 'Category' : 'Categorie', exact: true}).selectOption('construction');
+    await expect(row).toHaveCount(0);
+    await page.getByRole('combobox', {name: english ? 'Category' : 'Categorie', exact: true}).selectOption('software');
+    await expect(row).toBeVisible();
+    await page.getByRole('columnheader', {name: english ? 'SUPPLIER' : 'FURNIZOR', exact: true}).getByRole('button').click();
+    await expect(page.locator('tbody tr').first()).toHaveAttribute('data-vendor-id', 'construct-pro');
+    const search = page.getByRole('searchbox', {name: english ? 'Search suppliers by name, registration number or contact person' : 'Caută furnizori după nume, CUI sau persoană de contact'});
+    for (const query of ['Mara Test', 'RO90010002', 'Aardvark']) {await search.fill(query); await expect(row).toBeVisible();}
+    await row.getByRole('link').click();
+    dialog = await openEdit(page, english);
+    await expect(dialog.locator('#edit-vendor-notes')).toHaveValue('Updated notes');
+    await dialog.locator('#edit-vendor-notes').fill('');
+    await save().click();
+    await expect(page.getByRole('tab', {name: english ? 'Notes' : 'Note', exact: true})).toHaveAttribute('aria-disabled', 'true');
+  });
+}
+
+test('protects every dirty close, owns keyboard focus, and restores clean drafts', async ({page}) => {
+  await page.goto('/vendors/construct-pro');
+  for (const close of ['escape', 'cancel', 'x', 'backdrop']) {
+    let dialog = await openEdit(page);
+    await dialog.locator('#edit-vendor-name').fill('Unsaved name');
+    await expect(dialog.locator('#edit-vendor-name')).toBeFocused();
+    if (close === 'escape') await page.keyboard.press('Escape');
+    else if (close === 'cancel') await dialog.getByRole('button', {name: 'Anulează'}).click();
+    else if (close === 'x') await dialog.getByRole('button', {name: 'Închide editarea furnizorului'}).click();
+    else await page.mouse.click(10, 200);
+    const confirmation = page.getByRole('alertdialog');
+    await expect(confirmation).toHaveAccessibleName('Renunți la modificările nesalvate?');
+    await expect(confirmation.getByRole('button', {name: 'Continuă editarea'})).toBeFocused();
+    expect(await page.locator('#edit-vendor-form').evaluate((element) => element.closest('aside')!.inert)).toBe(true);
+    await page.keyboard.press('Shift+Tab');
+    await expect(confirmation.getByRole('button', {name: 'Renunță la modificări'})).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(confirmation.getByRole('button', {name: 'Continuă editarea'})).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(confirmation).toHaveCount(0);
+    dialog = page.getByRole('dialog');
+    await expect(dialog.locator('#edit-vendor-name')).toHaveValue('Unsaved name');
+    expect(await dialog.evaluate((element) => (element as HTMLElement).inert)).toBe(false);
+    await page.keyboard.press('Escape');
+    await confirmation.getByRole('button', {name: 'Continuă editarea'}).click();
+    await expect(dialog.locator('#edit-vendor-name')).toHaveValue('Unsaved name');
+    await page.keyboard.press('Escape');
+    await confirmation.getByRole('button', {name: 'Renunță la modificări'}).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(page.getByRole('button', {name: 'Editează furnizor'})).toBeFocused();
+    await expect(page.locator('h1')).toHaveText('Construct Pro SRL');
+  }
+  const dialog = await openEdit(page);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+});
+
+test('edits local inactive vendors without losing local documents, and preserves missing-vendor recovery', async ({page}) => {
+  await page.goto('/vendors');
+  await page.getByRole('button', {name: 'Adaugă furnizor'}).click();
+  const create = page.getByRole('dialog');
+  for (const [field, value] of Object.entries({name: 'Local editable', cui: 'RO99002600', email: 'local@example.test', notes: 'Old notes'})) await create.locator(`#add-vendor-${field}`).fill(value);
+  await create.locator('#add-vendor-category').selectOption('construction');
+  await create.getByRole('button', {name: 'Adaugă furnizor'}).click();
+  await expect(page.locator('h1')).toHaveText('Local editable');
+  const id = new URL(page.url()).pathname.split('/').at(-1)!;
+  await page.getByRole('button', {name: 'Adaugă document'}).click();
+  const upload = page.getByRole('dialog');
+  await upload.locator('input[type=file]').setInputFiles({name: 'Local.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\nlocal')});
+  await upload.getByRole('combobox', {name: /Tip document/}).selectOption('tax');
+  await upload.getByRole('button', {name: 'Încarcă și continuă'}).click();
+  await expect(upload).toHaveCount(0);
+  const documents = await page.locator('tbody').innerText();
+  await page.getByRole('navigation', {name: 'Navigare pe pagină'}).getByRole('link', {name: 'Furnizori'}).click();
+  const row = page.locator(`[data-vendor-id="${id}"]`);
+  await row.getByRole('button').click();
+  await page.getByRole('menuitem', {name: 'Marchează ca inactiv'}).click();
+  await row.getByRole('link').click();
+  const edit = await openEdit(page);
+  await expect(edit.locator('#edit-vendor-name')).toHaveValue('Local editable');
+  for (const field of ['registrationCode', 'phone', 'contactName', 'industry', 'address', 'website']) await expect(edit.locator(`#edit-vendor-${field}`)).toHaveValue('');
+  await edit.locator('#edit-vendor-name').fill('Local edited');
+  await edit.locator('#edit-vendor-category').selectOption('software');
+  await edit.locator('#edit-vendor-notes').fill('New notes');
+  await edit.getByRole('button', {name: 'Salvează modificările'}).click();
+  await expect(page.locator('h1')).toHaveText('Local edited');
+  await expect(page).toHaveURL(new RegExp(`/vendors/${id}$`));
+  await expect(page.locator('[data-vendor-lifecycle]')).toHaveText('Inactiv');
+  await expect(page.getByText('Necesită configurare', {exact: true})).toBeVisible();
+  expect(await page.locator('tbody').innerText()).toBe(documents);
+  await page.reload();
+  await expect(page.getByText('Furnizorul local nu mai este disponibil.')).toBeVisible();
+  await expect(page.getByRole('button', {name: 'Editează furnizor'})).toHaveCount(0);
+});
+
+test('missing seeded fields stay empty and required, and drawer/actions remain contained at all widths', async ({page}) => {
+  await page.goto('/vendors/alpha-construction');
+  let dialog = await openEdit(page);
+  await expect(dialog.locator('#edit-vendor-email')).toHaveValue('');
+  await dialog.locator('#edit-vendor-name').fill('Alpha updated');
+  await expect(dialog.getByRole('button', {name: 'Salvează modificările'})).toBeDisabled();
+  await dialog.locator('#edit-vendor-email').fill('alpha@example.test');
+  await dialog.getByRole('button', {name: 'Salvează modificările'}).click();
+  await expect(page.locator('h1')).toHaveText('Alpha updated');
+  for (const width of [1448, 1024, 758, 600, 375, 320]) {
+    await page.setViewportSize({width, height: width === 1448 ? 1086 : 812});
+    dialog = await openEdit(page);
+    const geometry = await dialog.evaluate((element) => ({width: document.documentElement.scrollWidth, right: element.getBoundingClientRect().right, scrollWidth: element.scrollWidth, panelWidth: element.clientWidth}));
+    expect(geometry.width).toBeLessThanOrEqual(width);
+    expect(geometry.right).toBeLessThanOrEqual(width);
+    expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.panelWidth);
+    await dialog.locator('#edit-vendor-notes').fill(`Note at ${width}px`);
+    await dialog.evaluate((element) => {element.scrollTop = element.scrollHeight;});
+    await expect(dialog.getByRole('button', {name: 'Anulează'})).toBeInViewport();
+    await expect(dialog.getByRole('button', {name: 'Salvează modificările'})).toBeInViewport();
+    expect(await dialog.locator('[data-edit-vendor-actions] button').evaluateAll((buttons) => buttons.every((button) => {
+      const box = button.getBoundingClientRect();
+      const label = button.querySelector('span')!.getBoundingClientRect();
+      return label.left >= box.left && label.right <= box.right;
+    }))).toBe(true);
+    await dialog.getByRole('button', {name: 'Salvează modificările'}).click();
+    await expect(dialog).toHaveCount(0);
+    await page.getByRole('tab', {name: 'Note', exact: true}).click();
+    await expect(page.getByRole('tabpanel')).toContainText(`Note at ${width}px`);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+  }
+});

@@ -751,10 +751,25 @@
     "submit": "Adaugă furnizor",
     "nameRequired": "Introdu numele furnizorului.",
     "cuiRequired": "Introdu CUI-ul sau codul fiscal.",
+    "cuiDuplicate": "Un alt furnizor din această companie folosește deja acest CUI.",
     "emailRequired": "Introdu emailul de contact.",
     "emailInvalid": "Introdu o adresă de email validă.",
     "categoryRequired": "Selectează categoria furnizorului.",
     "websiteInvalid": "Introdu un URL valid pentru website."
+  },
+  "EditVendor": {
+    "title": "Editează furnizor",
+    "description": "Actualizează detaliile companiei și datele de contact ale furnizorului.",
+    "close": "Închide editarea furnizorului",
+    "submit": "Salvează modificările",
+    "success": "Furnizor actualizat",
+    "noticeTitle": "Modificările se aplică doar după salvare.",
+    "noticeDescription": "Identitatea furnizorului, documentele și starea acestuia sunt păstrate. Categoria nu atribuie automat cerințe.",
+    "discardTitle": "Renunți la modificările nesalvate?",
+    "discardDescription": "Modificările furnizorului nu au fost salvate.",
+    "continueEditing": "Continuă editarea",
+    "discardChanges": "Renunță la modificări",
+    "saveFailure": "Furnizorul nu a putut fi actualizat. Verifică datele și încearcă din nou."
   },
   "AddDocument": {
     "close": "Închide adăugarea documentului",

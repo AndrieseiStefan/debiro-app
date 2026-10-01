@@ -1,111 +1,106 @@
 'use client';
 
-import {useState, type FormEvent, type RefObject} from 'react';
+import {useCallback, useEffect, useRef, useState, type FormEvent, type RefObject} from 'react';
 import {useTranslations} from 'next-intl';
 import {AppIcon} from '@/components/layout/AppIcon';
 import {Button} from '@/components/ui/Button';
+import {ConfirmationDialog} from '@/components/ui/ConfirmationDialog';
 import {Drawer, type DrawerPhase} from '@/components/ui/Drawer';
 import {Field} from '@/components/ui/Field';
 import {SelectField} from '@/components/ui/SelectField';
-import type {NewVendorInput} from './created-vendors';
+import {useCompanyState} from '@/features/companies/company-state';
+import {hasDuplicateVendorCui, useVendorState, type NewVendorInput} from './created-vendors';
+import {normalizeVendorValues, validateVendorValues, vendorDraftDirty, vendorFormValues, type VendorFormValues, type VendorMetadata} from './vendor-form';
 import {vendorCategories, type VendorCategory} from './types';
 import styles from './AddVendorDrawer.module.css';
 
-type Values = {
-  name: string;
-  cui: string;
-  registrationCode: string;
-  email: string;
-  phone: string;
-  contactName: string;
-  category: VendorCategory | '';
-  industry: string;
-  address: string;
-  website: string;
-  notes: string;
-};
-
-type Errors = Partial<Record<'name' | 'cui' | 'email' | 'category' | 'website', string>>;
-const optional = (value: string) => value.trim() || undefined;
-
-function validWebsite(value: string) {
-  try {
-    const url = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
-    return ['http:', 'https:'].includes(url.protocol) && url.hostname.includes('.');
-  } catch {return false;}
-}
-
-export function AddVendorDrawer({phase, onClose, onExited, triggerRef, onCreate}: {
+type DrawerProps = {
   phase: DrawerPhase;
   onClose: () => void;
   onExited: () => void;
   triggerRef: RefObject<HTMLButtonElement | null>;
-  onCreate: (vendor: NewVendorInput) => void;
+};
+
+export function AddVendorDrawer({onCreate, ...props}: DrawerProps & {onCreate: (vendor: NewVendorInput) => void}) {
+  const companyId = useCompanyState().activeCompanyId ?? '';
+  return <VendorFormDrawer {...props} mode="create" companyId={companyId} onSubmit={onCreate}/>;
+}
+
+export function VendorFormDrawer({phase, onClose, onExited, triggerRef, mode, initialValues, companyId, vendorId, onSubmit}: DrawerProps & {
+  mode: 'create' | 'edit';
+  initialValues?: VendorMetadata;
+  companyId: string;
+  vendorId?: string;
+  onSubmit: (vendor: VendorMetadata) => void | 'saved' | 'invalid' | 'duplicate' | 'missing';
 }) {
   const t = useTranslations('AddVendor');
+  const actionT = useTranslations(mode === 'edit' ? 'EditVendor' : 'AddVendor');
   const vendorsT = useTranslations('Vendors');
-  const [values, setValues] = useState<Values>({name: '', cui: '', registrationCode: '', email: '', phone: '', contactName: '', category: '', industry: '', address: '', website: '', notes: ''});
-  const [errors, setErrors] = useState<Errors>({});
+  const vendorState = useVendorState();
+  const [initial] = useState(() => vendorFormValues(initialValues));
+  const [values, setValues] = useState(initial);
+  const [touched, setTouched] = useState<Partial<Record<keyof VendorFormValues, boolean>>>({});
+  const [submitted, setSubmitted] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const dirty = vendorDraftDirty(values, initial);
+  const dirtyRef = useRef(dirty);
+  useEffect(() => {dirtyRef.current = dirty;}, [dirty]);
+  const requestClose = useCallback(() => {
+    if (mode === 'edit' && dirtyRef.current) setConfirmDiscard(true);
+    else onClose();
+  }, [mode, onClose]);
+  const continueEditing = useCallback(() => setConfirmDiscard(false), []);
+  const prefix = mode === 'edit' ? 'edit-vendor' : 'add-vendor';
+  const errors = validateVendorValues(values, hasDuplicateVendorCui(vendorState, companyId, values.cui, vendorId));
+  const error = (key: keyof typeof errors) => (submitted || touched[key]) && errors[key] ? t(errors[key]) : undefined;
 
-  function update<Key extends keyof Values>(key: Key, value: Values[Key]) {
+  function update<Key extends keyof VendorFormValues>(key: Key, value: VendorFormValues[Key]) {
     setValues((current) => ({...current, [key]: value}));
-    setErrors((current) => ({...current, [key]: undefined}));
+    setTouched((current) => ({...current, [key]: true}));
+    setSaveError(false);
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const nextErrors: Errors = {};
-    if (!values.name.trim()) nextErrors.name = t('nameRequired');
-    if (!values.cui.trim()) nextErrors.cui = t('cuiRequired');
-    if (!values.email.trim()) nextErrors.email = t('emailRequired');
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) nextErrors.email = t('emailInvalid');
-    if (!values.category) nextErrors.category = t('categoryRequired');
-    if (values.website.trim() && !validWebsite(values.website.trim())) nextErrors.website = t('websiteInvalid');
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) {
-      const firstInvalid = (['name', 'cui', 'email', 'category', 'website'] as const).find((key) => nextErrors[key]);
-      if (firstInvalid) document.getElementById(`add-vendor-${firstInvalid}`)?.focus();
+    setSubmitted(true);
+    if (Object.keys(errors).length > 0) {
+      const firstInvalid = (['name', 'cui', 'email', 'category', 'website'] as const).find((key) => errors[key]);
+      if (firstInvalid) document.getElementById(`${prefix}-${firstInvalid}`)?.focus();
       return;
     }
-    onCreate({
-      name: values.name.trim(),
-      cui: values.cui.trim(),
-      category: values.category as VendorCategory,
-      email: values.email.trim(),
-      registrationCode: optional(values.registrationCode),
-      phone: optional(values.phone),
-      contactName: optional(values.contactName),
-      industry: optional(values.industry),
-      address: optional(values.address),
-      website: optional(values.website),
-      notes: optional(values.notes)
-    });
+    if (mode === 'edit' && !dirty) return;
+    const result = onSubmit(normalizeVendorValues(values));
+    if (result && result !== 'saved') setSaveError(true);
   }
 
-  return <Drawer phase={phase} onClose={onClose} onExited={onExited} triggerRef={triggerRef} titleId="add-vendor-title" descriptionId="add-vendor-description" closeLabel={t('close')} contentClassName={styles.content}>
+  return <><Drawer phase={phase} onClose={requestClose} onExited={onExited} triggerRef={triggerRef} titleId={`${prefix}-title`} descriptionId={`${prefix}-description`} closeLabel={actionT('close')} contentClassName={styles.content}>
     <span className={styles.heroIcon}><AppIcon name="users" size={29}/></span>
-    <h2 id="add-vendor-title">{t('title')}</h2>
-    <p id="add-vendor-description" className={styles.intro}>{t('description')}</p>
-    <form id="add-vendor-form" noValidate onSubmit={submit} className={styles.form}>
-      <Field id="add-vendor-name" label={t('name')} placeholder={t('namePlaceholder')} required value={values.name} onChange={(event) => update('name', event.target.value)} error={errors.name} controlSize="compact" className={styles.field}/>
+    <h2 id={`${prefix}-title`}>{actionT('title')}</h2>
+    <p id={`${prefix}-description`} className={styles.intro}>{actionT('description')}</p>
+    <form id={`${prefix}-form`} noValidate onSubmit={submit} className={styles.form}>
+      <Field id={`${prefix}-name`} label={t('name')} placeholder={t('namePlaceholder')} required value={values.name} onChange={(event) => update('name', event.target.value)} error={error('name')} controlSize="compact" className={styles.field}/>
       <div className={styles.row}>
-        <Field id="add-vendor-cui" label={t('cui')} placeholder={t('cuiPlaceholder')} required value={values.cui} onChange={(event) => update('cui', event.target.value)} error={errors.cui} controlSize="compact" className={styles.field}/>
-        <Field id="add-vendor-registrationCode" label={t('registrationCode')} placeholder={t('registrationPlaceholder')} value={values.registrationCode} onChange={(event) => update('registrationCode', event.target.value)} controlSize="compact" className={styles.field}/>
+        <Field id={`${prefix}-cui`} label={t('cui')} placeholder={t('cuiPlaceholder')} required value={values.cui} onChange={(event) => update('cui', event.target.value)} error={error('cui')} controlSize="compact" className={styles.field}/>
+        <Field id={`${prefix}-registrationCode`} label={t('registrationCode')} placeholder={t('registrationPlaceholder')} value={values.registrationCode} onChange={(event) => update('registrationCode', event.target.value)} controlSize="compact" className={styles.field}/>
       </div>
       <div className={styles.row}>
-        <Field id="add-vendor-email" label={t('email')} placeholder={t('emailPlaceholder')} type="email" required value={values.email} onChange={(event) => update('email', event.target.value)} error={errors.email} controlSize="compact" className={styles.field}/>
-        <Field id="add-vendor-phone" label={t('phone')} placeholder={t('phonePlaceholder')} type="tel" value={values.phone} onChange={(event) => update('phone', event.target.value)} controlSize="compact" className={styles.field}/>
+        <Field id={`${prefix}-email`} label={t('email')} placeholder={t('emailPlaceholder')} type="email" required value={values.email} onChange={(event) => update('email', event.target.value)} error={error('email')} controlSize="compact" className={styles.field}/>
+        <Field id={`${prefix}-phone`} label={t('phone')} placeholder={t('phonePlaceholder')} type="tel" value={values.phone} onChange={(event) => update('phone', event.target.value)} controlSize="compact" className={styles.field}/>
       </div>
-      <Field id="add-vendor-contactName" label={t('contactName')} placeholder={t('contactPlaceholder')} value={values.contactName} onChange={(event) => update('contactName', event.target.value)} controlSize="compact" className={styles.field}/>
+      <Field id={`${prefix}-contactName`} label={t('contactName')} placeholder={t('contactPlaceholder')} value={values.contactName} onChange={(event) => update('contactName', event.target.value)} controlSize="compact" className={styles.field}/>
       <div className={styles.row}>
-        <SelectField id="add-vendor-category" label={t('category')} placeholder={t('categoryPlaceholder')} required value={values.category} onChange={(event) => update('category', event.target.value as VendorCategory | '')} error={errors.category} controlSize="compact" className={styles.field}>{vendorCategories.map((category) => <option key={category} value={category}>{vendorsT(`category.${category}`)}</option>)}</SelectField>
-        <Field id="add-vendor-industry" label={t('industry')} placeholder={t('industryPlaceholder')} value={values.industry} onChange={(event) => update('industry', event.target.value)} controlSize="compact" className={styles.field}/>
+        <SelectField id={`${prefix}-category`} label={t('category')} placeholder={t('categoryPlaceholder')} required value={values.category} onChange={(event) => update('category', event.target.value as VendorCategory | '')} error={error('category')} controlSize="compact" className={styles.field}>{vendorCategories.map((category) => <option key={category} value={category}>{vendorsT(`category.${category}`)}</option>)}</SelectField>
+        <Field id={`${prefix}-industry`} label={t('industry')} placeholder={t('industryPlaceholder')} value={values.industry} onChange={(event) => update('industry', event.target.value)} controlSize="compact" className={styles.field}/>
       </div>
-      <div className={styles.textareaField}><label htmlFor="add-vendor-address">{t('address')}</label><textarea id="add-vendor-address" placeholder={t('addressPlaceholder')} value={values.address} onChange={(event) => update('address', event.target.value)}/></div>
-      <Field id="add-vendor-website" label={t('website')} placeholder={t('websitePlaceholder')} type="url" value={values.website} onChange={(event) => update('website', event.target.value)} error={errors.website} controlSize="compact" className={styles.field}/>
-      <div className={styles.textareaField}><label htmlFor="add-vendor-notes">{t('notes')}</label><textarea id="add-vendor-notes" placeholder={t('notesPlaceholder')} value={values.notes} onChange={(event) => update('notes', event.target.value)}/></div>
-      <div className={styles.notice} data-add-vendor-notice><AppIcon name="info" size={22}/><p><strong>{t('noticeTitle')}</strong><span>{t('noticeDescription')}</span></p></div>
-      <div className={styles.actions} data-add-vendor-actions><Button variant="secondary" onClick={onClose}>{t('cancel')}</Button><Button type="submit">{t('submit')}</Button></div>
+      <div className={styles.textareaField}><label htmlFor={`${prefix}-address`}>{t('address')}</label><textarea id={`${prefix}-address`} placeholder={t('addressPlaceholder')} value={values.address} onChange={(event) => update('address', event.target.value)}/></div>
+      <Field id={`${prefix}-website`} label={t('website')} placeholder={t('websitePlaceholder')} type="url" value={values.website} onChange={(event) => update('website', event.target.value)} error={error('website')} controlSize="compact" className={styles.field}/>
+      <div className={styles.textareaField}><label htmlFor={`${prefix}-notes`}>{t('notes')}</label><textarea id={`${prefix}-notes`} placeholder={t('notesPlaceholder')} value={values.notes} onChange={(event) => update('notes', event.target.value)}/></div>
+      <div className={styles.notice} data-add-vendor-notice={mode === 'create' || undefined} data-edit-vendor-notice={mode === 'edit' || undefined}><AppIcon name="info" size={22}/><p><strong>{actionT('noticeTitle')}</strong><span>{actionT('noticeDescription')}</span></p></div>
+      {saveError && <p role="alert" className={styles.error}>{actionT('saveFailure')}</p>}
+      <div className={styles.actions} data-add-vendor-actions={mode === 'create' || undefined} data-edit-vendor-actions={mode === 'edit' || undefined}><Button variant="secondary" onClick={requestClose}>{t('cancel')}</Button><Button type="submit" disabled={mode === 'edit' && (!dirty || Object.keys(errors).length > 0)}>{actionT('submit')}</Button></div>
     </form>
-  </Drawer>;
+  </Drawer>
+    {confirmDiscard && <ConfirmationDialog title={actionT('discardTitle')} description={actionT('discardDescription')} cancelLabel={actionT('continueEditing')} confirmLabel={actionT('discardChanges')} onCancel={continueEditing} onConfirm={() => {setConfirmDiscard(false); onClose();}} backgroundSelector={`[role="dialog"][aria-labelledby="${prefix}-title"]`}/>}
+  </>;
 }

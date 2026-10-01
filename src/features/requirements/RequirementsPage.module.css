@@ -95,12 +95,6 @@
 .footer :global(button) {min-height: 47px;}
 .footer :global(button:last-child) {font-size: 14px;}
 .srOnly {clip: rect(0 0 0 0); clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px;}
-.confirmBackdrop {align-items: center; background: rgb(14 31 57 / 58%); display: flex; inset: 0; justify-content: center; padding: 16px; position: fixed; z-index: 1100;}
-.confirmDialog {background: #fff; border-radius: 11px; box-shadow: 0 16px 45px rgb(12 31 62 / 23%); max-width: 440px; padding: 24px; width: 100%;}
-.confirmDialog h2 {color: #182a4e; font-size: 20px;}
-.confirmDialog p {color: #58749e; font-size: 14px; line-height: 1.45; margin-top: 8px;}
-.confirmDialog > div {display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 23px;}
-.confirmDialog :global(button) {flex: 1 0 max-content;}
 .draftDescription textarea:focus-visible, .addTemplate:focus-visible, .templateItem:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 2px;}
 
 @media (max-width: 1199px) {

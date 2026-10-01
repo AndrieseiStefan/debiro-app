@@ -70,7 +70,7 @@ export function Drawer({phase, onClose, onExited, triggerRef, titleId, descripti
     };
   }, [onClose, triggerRef]);
 
-  return createPortal(<div className={styles.backdrop} data-phase={phase} onMouseDown={(event) => {if (event.target === event.currentTarget) onClose();}}>
+  return createPortal(<div className={styles.backdrop} data-phase={phase} onMouseDown={(event) => {if (event.target === event.currentTarget) {event.preventDefault(); onClose();}}}>
     <aside ref={panelRef} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} tabIndex={-1} className={[styles.drawer, panelClassName].filter(Boolean).join(' ')} data-phase={phase}>
       <div className={[styles.content, contentClassName].filter(Boolean).join(' ')}>
         <button type="button" className={styles.close} aria-label={closeLabel} onClick={onClose}><AppIcon name="close" size={23}/></button>

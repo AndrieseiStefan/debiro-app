@@ -1,0 +1,6 @@
+.backdrop {align-items: center; background: rgb(14 31 57 / 58%); display: flex; inset: 0; justify-content: center; padding: 16px; position: fixed; z-index: 1100;}
+.dialog {background: #fff; border-radius: 11px; box-shadow: 0 16px 45px rgb(12 31 62 / 23%); max-width: 440px; padding: 24px; width: 100%;}
+.dialog h2 {color: #182a4e; font-size: 20px;}
+.dialog p {color: #58749e; font-size: 14px; line-height: 1.45; margin-top: 8px;}
+.dialog > div {display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 23px;}
+.dialog :global(button) {flex: 1 0 max-content;}

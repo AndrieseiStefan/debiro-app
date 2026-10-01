@@ -1,13 +1,13 @@
 'use client';
 
 import {useEffect, useRef, useState} from 'react';
-import {createPortal} from 'react-dom';
 import {useTranslations} from 'next-intl';
 import {AppIcon} from '@/components/layout/AppIcon';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
 import {AuthenticatedBreadcrumbs} from '@/components/layout/AuthenticatedBreadcrumbs';
 import {AuthenticatedPageHeader, AuthenticatedPagePrimaryAction} from '@/components/layout/AuthenticatedPageHeader';
 import {Button} from '@/components/ui/Button';
+import {ConfirmationDialog} from '@/components/ui/ConfirmationDialog';
 import {Field} from '@/components/ui/Field';
 import {SelectField} from '@/components/ui/SelectField';
 import {Surface} from '@/components/ui/Surface';
@@ -40,50 +40,6 @@ function ActionGlyph({kind}: {kind: 'copy' | 'trash' | 'save'}) {
   };
   return <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{paths[kind]}</svg>;
 }
-
-function ConfirmationDialog({onCancel, onConfirm, title, description, cancelLabel, confirmLabel}: {
-  onCancel: () => void; onConfirm: () => void; title: string; description: string; cancelLabel: string; confirmLabel: string;
-}) {
-  const continueRef = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const background = document.querySelector<HTMLElement>('main')?.parentElement;
-    const previousInert = background?.inert ?? false;
-    const previousHidden = background?.getAttribute('aria-hidden');
-    const previousOverflow = document.body.style.overflow;
-    if (background) {background.inert = true; background.setAttribute('aria-hidden', 'true');}
-    document.body.style.overflow = 'hidden';
-    continueRef.current?.focus();
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {event.preventDefault(); onCancel();}
-      if (event.key === 'Tab') {
-        const dialog = continueRef.current?.closest('[role="alertdialog"]');
-        const buttons = [...(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? [])];
-        if (event.shiftKey && document.activeElement === buttons[0]) {event.preventDefault(); buttons.at(-1)?.focus();}
-        else if (!event.shiftKey && document.activeElement === buttons.at(-1)) {event.preventDefault(); buttons[0]?.focus();}
-      }
-    }
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-      if (background) {
-        background.inert = previousInert;
-        if (previousHidden == null) background.removeAttribute('aria-hidden');
-        else background.setAttribute('aria-hidden', previousHidden);
-      }
-      document.body.style.overflow = previousOverflow;
-      if (previousFocus?.isConnected) previousFocus.focus({preventScroll: true});
-      else (document.querySelector<HTMLElement>('[data-template-id][data-selected="true"]') ?? document.querySelector<HTMLElement>('[data-page-primary-action]'))?.focus({preventScroll: true});
-    };
-  }, [onCancel]);
-  return createPortal(<div className={styles.confirmBackdrop}>
-    <div role="alertdialog" aria-modal="true" aria-labelledby="requirement-discard-title" aria-describedby="requirement-discard-description" className={styles.confirmDialog}>
-      <h2 id="requirement-discard-title">{title}</h2><p id="requirement-discard-description">{description}</p>
-      <div><Button ref={continueRef} variant="secondary" onClick={onCancel}>{cancelLabel}</Button><Button variant="destructive" onClick={onConfirm}>{confirmLabel}</Button></div>
-    </div>
-  </div>, document.body);
-}
-
 export function RequirementsPage({locale, view}: {locale: string; view: RequirementsViewModel}) {
   const t = useTranslations('Requirements');
   const app = useTranslations('AppShell');

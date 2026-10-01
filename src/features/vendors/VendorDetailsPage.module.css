@@ -23,7 +23,8 @@
 .complianceSummary small {color: #385775; display: block; font-size: 12px; line-height: 1.35; margin-top: 4px; white-space: nowrap;}
 .complianceSummary[data-document-details='unavailable'] small {white-space: normal;}
 .complianceSummary[data-compliance='attention'] strong {white-space: normal;}
-.pageActions {display: flex; gap: 10px; min-width: 0;}
+.pageActions {display: flex; flex-wrap: wrap; gap: 10px; min-width: 0;}
+.success {color: var(--color-success); font-size: 14px; margin-top: 16px;}
 .inviteAction {border-color: #aaccff; color: #0757c6; font-size: 15px; min-height: 52px;}
 .inviteAction[aria-disabled='true'] {cursor: default;}
 .contacts {align-items: stretch; background: #dce7f6; display: flex; flex-wrap: wrap; gap: 1px; margin-top: 20px; overflow: hidden; padding: 1px;}
@@ -84,7 +85,8 @@
 .bannerHandwriting {color: #0b4ca8; font-family: 'Comic Sans MS', 'Bradley Hand', cursive; font-size: 18px; font-style: italic; line-height: 1.15; max-width: 170px; text-align: center; transform: rotate(-9deg);}
 .visuallyHidden {clip: rect(0 0 0 0); clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px;}
 
-@media (max-width: 1439px) {.vendorHeader {grid-template-columns: 252px minmax(0, 1fr);}.identityBlock {grid-column: 1 / -1;}.complianceSummary {grid-column: 1; min-height: 102px;}.pageActions {grid-column: 2; justify-self: start;}.titleLine {gap: 16px;}.vendorIcon {flex-basis: 66px; height: 66px;}.identityMeta {margin-left: 82px;}}
+@media (max-width: 1799px) {.vendorHeader {grid-template-columns: 252px minmax(0, 1fr);}.identityBlock {grid-column: 1 / -1;}.complianceSummary {grid-column: 1; min-height: 102px;}.pageActions {grid-column: 2; justify-self: start;}}
+@media (max-width: 1439px) {.titleLine {gap: 16px;}.vendorIcon {flex-basis: 66px; height: 66px;}.identityMeta {margin-left: 82px;}}
 @media (max-width: 1399px) {.contactItem {flex-basis: calc((100% - 1px) / 2);}}
 @media (max-width: 1199px) {.contacts {margin-top: 16px;}.panelHeader {align-items: stretch; flex-direction: column;}.documentControls {width: 100%;}.documentSearch {flex: 1 1 auto; width: auto;}}
 @media (max-width: 1000px) {.vendorHeader {grid-template-columns: minmax(0, 1fr);}.identityBlock, .complianceSummary, .pageActions {grid-column: 1;}.complianceSummary {width: 100%;}}

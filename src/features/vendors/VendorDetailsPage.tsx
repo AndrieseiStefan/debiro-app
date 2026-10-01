@@ -14,7 +14,9 @@ import type {VendorDetailsViewModel, VendorDocumentRow} from './types';
 import {InviteVendorDrawer} from './InviteVendorDrawer';
 import {AddDocumentDrawer} from '@/features/documents/AddDocumentDrawer';
 import {createLocalDocument, toVendorDocumentRow, useCreatedDocuments} from '@/features/documents/created-documents';
-import {useVendorState} from './created-vendors';
+import {getVendorMetadata, projectVendorDetails, updateVendorMetadata, useVendorState} from './created-vendors';
+import {VendorFormDrawer} from './AddVendorDrawer';
+import {useCompanyState} from '@/features/companies/company-state';
 import styles from './VendorDetailsPage.module.css';
 
 const statusTone: Record<VendorDocumentRow['status'], StatusTone> = {
@@ -34,19 +36,28 @@ function ContactItem({icon, label, children}: {icon: 'users' | 'mail' | 'phone' 
   </div>;
 }
 
-export function VendorDetailsPage({locale, view}: {locale: string; view: VendorDetailsViewModel}) {
+export function VendorDetailsPage({locale, view: initialView}: {locale: string; view: VendorDetailsViewModel}) {
   const t = useTranslations('VendorDetails');
   const vendorsT = useTranslations('Vendors');
   const vendorState = useVendorState();
+  const view = projectVendorDetails(initialView, vendorState);
+  const metadata = getVendorMetadata(vendorState, view.vendor.id);
+  const companyId = useCompanyState().activeCompanyId ?? '';
+  const editT = useTranslations('EditVendor');
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'documents' | 'notes'>('documents');
   const [invitePhase, setInvitePhase] = useState<'closed' | 'open' | 'closing'>('closed');
   const [addDocumentPhase, setAddDocumentPhase] = useState<'closed' | 'open' | 'closing'>('closed');
+  const [editPhase, setEditPhase] = useState<'closed' | 'open' | 'closing'>('closed');
+  const [updated, setUpdated] = useState(false);
+  const editTriggerRef = useRef<HTMLButtonElement>(null);
   const inviteTriggerRef = useRef<HTMLButtonElement>(null);
   const addDocumentTriggerRef = useRef<HTMLButtonElement>(null);
   const closeInvite = useCallback(() => setInvitePhase('closing'), []);
   const finishInvite = useCallback(() => setInvitePhase('closed'), []);
+  const closeEdit = useCallback(() => setEditPhase('closing'), [setEditPhase]);
+  const finishEdit = useCallback(() => setEditPhase('closed'), [setEditPhase]);
   const localized = locale === 'en' ? 'en' : 'ro';
   const createdDocuments = useCreatedDocuments().filter((document) => document.vendorId === view.vendor.id);
   const allDocuments = [...createdDocuments.map((document) => toVendorDocumentRow(document, localized)), ...view.documents];
@@ -69,9 +80,10 @@ export function VendorDetailsPage({locale, view}: {locale: string; view: VendorD
           />
         </div>
         <div className={styles.complianceSummary} data-vendor-status data-compliance={vendor.status} data-document-details={view.validDocumentCount === undefined ? 'unavailable' : undefined} data-setup={setupNeeded || undefined}><span className={styles.complianceIcon}><AppIcon name={setupNeeded || vendor.status === 'attention' ? 'clock' : vendor.status === 'noncompliant' ? 'close' : 'check'} size={34}/></span><span><strong>{setupNeeded ? t('setupRequired') : vendorsT(`status.${vendor.status}`)}</strong><small>{setupNeeded ? t('noRequirements') : view.validDocumentCount === undefined ? t('documentDetailsUnavailable') : <>{t('complianceDescription')}<br/><span>{t('validCount', {count: view.validDocumentCount, total: vendor.documentTarget})}</span></>}</small></span></div>
-        <div className={styles.pageActions} data-vendor-actions><Button variant="secondary" ref={inviteTriggerRef} onClick={view.invitationPreview ? () => setInvitePhase('open') : undefined} aria-disabled={!view.invitationPreview || undefined} className={styles.inviteAction}><svg aria-hidden="true" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21 3-7.5 18-3.2-7.3L3 10.5 21 3ZM10.3 13.7 21 3"/></svg>{t('invite')}</Button><AuthenticatedPagePrimaryAction icon="plus" ref={addDocumentTriggerRef} onClick={() => setAddDocumentPhase('open')}>{t('addDocument')}</AuthenticatedPagePrimaryAction></div>
+        <div className={styles.pageActions} data-vendor-actions><Button variant="secondary" ref={editTriggerRef} onClick={metadata ? () => {setUpdated(false); setEditPhase('open');} : undefined} aria-disabled={!metadata || undefined} className={styles.inviteAction}>{editT('title')}</Button><Button variant="secondary" ref={inviteTriggerRef} onClick={view.invitationPreview ? () => setInvitePhase('open') : undefined} aria-disabled={!view.invitationPreview || undefined} className={styles.inviteAction}><svg aria-hidden="true" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21 3-7.5 18-3.2-7.3L3 10.5 21 3ZM10.3 13.7 21 3"/></svg>{t('invite')}</Button><AuthenticatedPagePrimaryAction icon="plus" ref={addDocumentTriggerRef} onClick={() => setAddDocumentPhase('open')}>{t('addDocument')}</AuthenticatedPagePrimaryAction></div>
       </div>
 
+      {updated && <p role="status" className={styles.success}>{editT('success')}</p>}
       <Surface className={styles.contacts} role="region" aria-label={t('contactDetails')}>
         {contact.name && <ContactItem icon="users" label={t('contactPerson')}><strong>{contact.name}</strong>{contact.role && <span>{contact.role[localized]}</span>}</ContactItem>}
         {contact.email && <ContactItem icon="mail" label={t('email')}><a href={`mailto:${contact.email}`}>{contact.email}</a></ContactItem>}
@@ -95,6 +107,7 @@ export function VendorDetailsPage({locale, view}: {locale: string; view: VendorD
       </Surface> : <Surface className={styles.notesPanel} role="tabpanel" id="vendor-notes" aria-labelledby="tab-notes"><h2>{t('tabs.notes')}</h2><p>{view.notes}</p></Surface>}
       <aside className={styles.banner}><div><h2>{t('bannerTitle')}</h2><p>{t('bannerDescription')}</p></div><p className={styles.bannerHandwriting}>{t('bannerHandwriting')}</p></aside>
     </div>
+    {editPhase !== 'closed' && metadata && <VendorFormDrawer mode="edit" phase={editPhase} onClose={closeEdit} onExited={finishEdit} triggerRef={editTriggerRef} initialValues={metadata} companyId={companyId} vendorId={vendor.id} onSubmit={(input) => {const result = updateVendorMetadata(companyId, vendor.id, input); if (result === 'saved') {setEditPhase('closed'); setUpdated(true); if (!input.notes) setActiveTab('documents');} return result;}}/>}
     {invitePhase !== 'closed' && view.invitationPreview && <InviteVendorDrawer phase={invitePhase} onClose={closeInvite} onExited={finishInvite} triggerRef={inviteTriggerRef} vendorName={vendor.name} contactEmail={contact.email ?? ''} preview={view.invitationPreview} locale={locale}/>}
     {addDocumentPhase !== 'closed' && <AddDocumentDrawer phase={addDocumentPhase} onClose={() => setAddDocumentPhase('closing')} onExited={() => setAddDocumentPhase('closed')} triggerRef={addDocumentTriggerRef} vendor={{id: vendor.id, name: vendor.name, registrationNumber: vendor.registrationNumber, registrationCode: view.registrationCode ?? ''}} uploadedBy={view.user.fullName} onCreate={(input) => {const document = createLocalDocument(input); setAddDocumentPhase('closed'); setActiveTab('documents'); setQuery(''); if (document.reviewRoute) router.push(document.reviewRoute);}}/>}
   </AuthenticatedAppShell>;

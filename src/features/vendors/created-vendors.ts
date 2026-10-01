@@ -2,27 +2,21 @@
 
 import {useSyncExternalStore} from 'react';
 import {vendorsListFixture} from './fixtures';
-import type {VendorCategory, VendorDetailsViewModel, VendorLifecycleStatus, VendorListItem, VendorsListViewModel} from './types';
+import {getVendorDetailsFixture} from './detail-fixtures';
+import {companySettingsFixture} from '@/features/company-settings/fixtures';
+import {normalizeCui, normalizeVendorValues, validateVendorValues, vendorFormValues, type VendorMetadata} from './vendor-form';
+import type {VendorDetailsViewModel, VendorLifecycleStatus, VendorListItem, VendorsListViewModel} from './types';
 
-export type CreatedVendor = {
+export type CreatedVendor = VendorMetadata & {
   id: string;
-  name: string;
-  cui: string;
-  category: VendorCategory;
-  email: string;
-  registrationCode?: string;
-  contactName?: string;
-  phone?: string;
-  industry?: string;
-  address?: string;
-  website?: string;
-  notes?: string;
+  companyId?: string;
   lifecycleStatus: VendorLifecycleStatus;
 };
 
-export type NewVendorInput = Omit<CreatedVendor, 'id' | 'lifecycleStatus'>;
+export type NewVendorInput = VendorMetadata;
 
-const initialState = {createdVendors: [] as CreatedVendor[], fixtureVendors: vendorsListFixture.vendors};
+export const vendorFixtureCompanyId = companySettingsFixture.company.id;
+const initialState = {createdVendors: [] as CreatedVendor[], fixtureVendors: vendorsListFixture.vendors, fixtureMetadata: {} as Record<string, VendorMetadata>};
 let state = initialState;
 const listeners = new Set<() => void>();
 
@@ -42,7 +36,7 @@ export function useVendorState() {
 }
 
 export function vendorListItems(snapshot: typeof initialState, fixtures: VendorListItem[]): VendorListItem[] {
-  return [...snapshot.createdVendors.map(toVendorListItem), ...fixtures.map((vendor) => ({...vendor,
+  return [...snapshot.createdVendors.map(toVendorListItem), ...fixtures.map((vendor) => ({...vendor, ...metadataListPatch(snapshot.fixtureMetadata[vendor.id]),
     lifecycleStatus: snapshot.fixtureVendors.find((item) => item.id === vendor.id)?.lifecycleStatus ?? vendor.lifecycleStatus}))];
 }
 
@@ -60,11 +54,57 @@ export function setVendorLifecycle(vendorId: string, lifecycleStatus: VendorLife
   listeners.forEach((listener) => listener());
 }
 
-export function createLocalVendor(input: NewVendorInput): CreatedVendor {
-  const vendor: CreatedVendor = {...input, id: `local-${crypto.randomUUID()}`, lifecycleStatus: 'active'};
+export function createLocalVendor(input: NewVendorInput, companyId = vendorFixtureCompanyId): CreatedVendor {
+  const vendor: CreatedVendor = {...input, companyId, id: `local-${crypto.randomUUID()}`, lifecycleStatus: 'active'};
   state = {...state, createdVendors: [vendor, ...state.createdVendors]};
   listeners.forEach((listener) => listener());
   return vendor;
+}
+
+function metadataListPatch(metadata?: VendorMetadata) {
+  return metadata ? {name: metadata.name, registrationNumber: metadata.cui, category: metadata.category, contactName: metadata.contactName} : {};
+}
+
+export function getVendorMetadata(snapshot: typeof initialState, vendorId: string): VendorMetadata | undefined {
+  const created = snapshot.createdVendors.find((item) => item.id === vendorId);
+  if (created) return normalizeVendorValues(vendorFormValues(created));
+  if (Object.hasOwn(snapshot.fixtureMetadata, vendorId)) return snapshot.fixtureMetadata[vendorId];
+  const view = getVendorDetailsFixture(vendorId);
+  if (!view) return undefined;
+  return {name: view.vendor.name, cui: view.vendor.registrationNumber, category: view.vendor.category, email: view.contact.email ?? '', registrationCode: view.registrationCode,
+    contactName: view.contact.name, phone: view.contact.phone, address: view.contact.address?.ro, website: view.contact.website, industry: view.industry, notes: view.notes};
+}
+
+export function hasDuplicateVendorCui(snapshot: typeof initialState, companyId: string, cui: string, excludeId?: string) {
+  const normalized = normalizeCui(cui);
+  return snapshot.createdVendors.some((vendor) => (vendor.companyId ?? vendorFixtureCompanyId) === companyId && vendor.id !== excludeId && normalizeCui(vendor.cui) === normalized)
+    || (companyId === vendorFixtureCompanyId && snapshot.fixtureVendors.some((vendor) => vendor.id !== excludeId && normalizeCui(vendor.registrationNumber) === normalized));
+}
+
+export function updateVendorMetadata(companyId: string, vendorId: string, input: VendorMetadata): 'saved' | 'invalid' | 'duplicate' | 'missing' {
+  const created = state.createdVendors.find((vendor) => vendor.id === vendorId);
+  const fixture = state.fixtureVendors.find((vendor) => vendor.id === vendorId);
+  if (created ? (created.companyId ?? vendorFixtureCompanyId) !== companyId : !fixture || companyId !== vendorFixtureCompanyId) return 'missing';
+  const values = vendorFormValues(input);
+  if (Object.keys(validateVendorValues(values)).length > 0) return 'invalid';
+  if (hasDuplicateVendorCui(state, companyId, input.cui, vendorId)) return 'duplicate';
+  const metadata = normalizeVendorValues(values);
+  state = created ? {...state, createdVendors: state.createdVendors.map((vendor) => vendor.id === vendorId ? {...vendor, ...metadata} : vendor)}
+    : {...state, fixtureVendors: state.fixtureVendors.map((vendor) => vendor.id === vendorId ? {...vendor, ...metadataListPatch(metadata)} : vendor), fixtureMetadata: {...state.fixtureMetadata, [vendorId]: metadata}};
+  listeners.forEach((listener) => listener());
+  return 'saved';
+}
+
+export function projectVendorDetails(view: VendorDetailsViewModel, snapshot: typeof initialState): VendorDetailsViewModel {
+  const created = snapshot.createdVendors.find((vendor) => vendor.id === view.vendor.id);
+  if (created) return toVendorDetailsView(created, view);
+  const metadata = snapshot.fixtureMetadata[view.vendor.id];
+  const lifecycleStatus = snapshot.fixtureVendors.find((vendor) => vendor.id === view.vendor.id)?.lifecycleStatus ?? view.vendor.lifecycleStatus;
+  if (!metadata) return {...view, vendor: {...view.vendor, lifecycleStatus}};
+  return {...view, vendor: {...view.vendor, ...metadataListPatch(metadata), lifecycleStatus}, registrationCode: metadata.registrationCode,
+    categoryDetail: metadata.category === view.vendor.category ? view.categoryDetail : undefined, industry: metadata.industry, notes: metadata.notes,
+    contact: {...view.contact, name: metadata.contactName, email: metadata.email, phone: metadata.phone, website: metadata.website,
+      address: metadata.address === view.contact.address?.ro ? view.contact.address : metadata.address ? {ro: metadata.address, en: metadata.address} : undefined}};
 }
 
 export function toVendorListItem(vendor: CreatedVendor): VendorListItem {
@@ -84,7 +124,9 @@ export function toVendorListItem(vendor: CreatedVendor): VendorListItem {
 
 export function toVendorDetailsView(vendor: CreatedVendor, context: Pick<VendorsListViewModel, 'user' | 'organization' | 'notificationCount'>): VendorDetailsViewModel {
   return {
-    ...context,
+    user: context.user,
+    organization: context.organization,
+    notificationCount: context.notificationCount,
     vendor: toVendorListItem(vendor),
     registrationCode: vendor.registrationCode,
     validDocumentCount: 0,

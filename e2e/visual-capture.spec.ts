@@ -101,6 +101,18 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
         await page.getByRole('button', {name: english ? 'Add document' : 'Adaugă document'}).click();
         if (action === 'requirement-custom') await page.getByRole('dialog', {name: english ? 'Add document' : 'Adaugă document'}).getByRole('button', {name: english ? 'Custom document' : 'Document personalizat'}).click();
       }
+    } else if (action === 'edit-vendor' || action === 'edit-vendor-end' || action === 'edit-vendor-dirty') {
+      if (route !== '/vendors/construct-pro' && route !== '/en/vendors/construct-pro') throw new Error('Edit Vendor capture requires the canonical vendor route.');
+      const english = route.startsWith('/en');
+      await page.getByRole('button', {name: english ? 'Edit vendor' : 'Editează furnizor'}).click();
+      const dialog = page.getByRole('dialog', {name: english ? 'Edit vendor' : 'Editează furnizor'});
+      await expect(dialog).toBeVisible();
+      if (action === 'edit-vendor-end') await dialog.evaluate((element) => {element.scrollTop = element.scrollHeight;});
+      if (action === 'edit-vendor-dirty') {
+        await dialog.locator('#edit-vendor-name').fill('Construct Pro Updated SRL');
+        await page.keyboard.press('Escape');
+        await expect(page.getByRole('alertdialog')).toBeVisible();
+      }
     } else if (action === 'invite-vendor') {
       await page.getByRole('button', {name: 'Invită furnizor'}).click();
       await expect(page.getByRole('dialog', {name: 'Invită furnizorul să încarce documentele'})).toBeVisible();

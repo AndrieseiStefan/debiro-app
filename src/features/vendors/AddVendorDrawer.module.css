@@ -11,6 +11,7 @@
 .notice svg {flex: 0 0 auto;}
 .notice p {display: grid; font-size: 13px; gap: 3px; line-height: 1.42;}
 .notice strong {font-weight: 700;}
+.error {color: var(--color-danger); font-size: 14px;}
 .actions {display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;}
 .actions :global(button) {font-size: 14px; min-height: 46px; min-width: 0;}
-@media (max-width: 375px) {.content h2 {font-size: 25px;}.row {gap: 16px; grid-template-columns: minmax(0, 1fr);}.actions {display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);}.actions :global(button) {padding-inline: 8px;}}
+@media (max-width: 375px) {.content h2 {font-size: 25px;}.row {gap: 16px; grid-template-columns: minmax(0, 1fr);}.actions {display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);}.actions[data-edit-vendor-actions] {grid-template-columns: minmax(0, 1fr);}.actions :global(button) {padding-inline: 8px;}}
