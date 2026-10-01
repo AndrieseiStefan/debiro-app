@@ -9,13 +9,20 @@
 .metaDivider {background: #c7d6ea; height: 16px; width: 1px;}
 .categoryChip {align-items: center; background: #edf3fc; border-radius: 999px; color: #4b658a; display: inline-flex; flex: 0 0 auto; font-size: 12px; font-weight: 650; gap: 6px; max-width: 100%; padding: 3px 11px; white-space: nowrap; width: max-content;}
 .industryMeta {color: #58729a; font-size: 12px;}
+.inactiveBadge {background: var(--color-neutral-soft); border-radius: 999px; color: var(--color-text-secondary); font-size: 12px; font-weight: 600; padding: 3px 10px;}
 .complianceSummary {align-items: center; background: linear-gradient(110deg, #edfcf6, #e9faf2); border-radius: 12px; display: flex; gap: 14px; min-height: 120px; min-width: 0; padding: 18px; width: 252px;}
 .complianceIcon {align-items: center; background: #0da778; border: 14px solid #cff5e4; border-radius: 50%; color: #fff; display: inline-flex; flex: 0 0 64px; height: 64px; justify-content: center;}
 .complianceSummary[data-setup='true'] {background: linear-gradient(110deg, #fff8e9, #fff2d8);}
 .complianceSummary[data-setup='true'] .complianceIcon {background: #e39a12; border-color: #ffedc7;}
+.complianceSummary[data-compliance='attention']:not([data-setup]) {background: var(--color-warning-soft);}
+.complianceSummary[data-compliance='attention']:not([data-setup]) .complianceIcon {background: #e39a12; border-color: #ffedc7;}
+.complianceSummary[data-compliance='noncompliant'] {background: var(--color-danger-soft);}
+.complianceSummary[data-compliance='noncompliant'] .complianceIcon {background: #e52d4d; border-color: #ffe2e9;}
 .complianceSummary[data-setup='true'] strong, .complianceSummary[data-setup='true'] small {white-space: normal;}
 .complianceSummary strong {color: #113047; display: block; font-size: 20px; white-space: nowrap;}
 .complianceSummary small {color: #385775; display: block; font-size: 12px; line-height: 1.35; margin-top: 4px; white-space: nowrap;}
+.complianceSummary[data-document-details='unavailable'] small {white-space: normal;}
+.complianceSummary[data-compliance='attention'] strong {white-space: normal;}
 .pageActions {display: flex; gap: 10px; min-width: 0;}
 .inviteAction {border-color: #aaccff; color: #0757c6; font-size: 15px; min-height: 52px;}
 .inviteAction[aria-disabled='true'] {cursor: default;}
@@ -28,6 +35,7 @@
 .contactText a {color: #075cca; text-decoration: none;}
 .contactText a:hover {text-decoration: underline;}
 .address {white-space: pre-line;}
+.emptyContact {background: var(--color-surface); color: var(--color-text-secondary); font-size: 13px; padding: 20px; width: 100%;}
 .tabs {border-bottom: 1px solid #dae6f7; display: flex; gap: 10px; margin-top: 24px; max-width: 100%; overflow-x: auto; scrollbar-width: thin;}
 .tabs button {align-items: center; background: none; border: 0; border-bottom: 3px solid transparent; color: #365581; display: inline-flex; flex: 0 0 auto; font-size: 16px; gap: 14px; min-height: 51px; padding: 0 22px; white-space: nowrap;}
 .tabs button[aria-disabled='true'] {cursor: default;}

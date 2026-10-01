@@ -6,4 +6,6 @@ Name, CUI/tax ID, contact email, and category are required. Inputs are trimmed; 
 
 Submission creates a browser-memory vendor, navigates to the existing Vendor Details screen, and keeps the vendor in the Vendors list across normal client-side navigation and locale changes. A full refresh clears this transient state. The new row has the existing attention status, `0/0` documents, and no expiration. Details show a setup-needed summary, supplied contact/metadata and note, and zero documents; no requirements, invitation, compliance result, expiry, or optional value is fabricated. The fixture vendors retain their existing content and behavior.
 
+E1-026A creates vendors with `lifecycleStatus: active` and gives them the same name navigation and Open/Mark Inactive/Mark Active context menu as seeded vendors. Lifecycle changes preserve supplied metadata and notes and survive client navigation/locale switching in the existing vendor memory store. They do not change the attention compliance snapshot or add editing.
+
 RO and EN are supported. No backend, API, database, authentication, persistence, email delivery, supplier invitation, document upload, or compliance calculation is implemented. Captures in `artifacts/visual/` are ignored, unapproved comparison artifacts.

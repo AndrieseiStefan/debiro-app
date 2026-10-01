@@ -1,6 +1,6 @@
 import type {VendorsListViewModel, VendorListItem} from './types';
 
-const vendors: VendorListItem[] = [
+const vendors: Omit<VendorListItem, 'lifecycleStatus'>[] = [
   {id: 'construct-pro', name: 'Construct Pro SRL', registrationNumber: 'RO12345678', contactName: 'Ion Popescu', category: 'construction', status: 'compliant', documentCount: 4, documentTarget: 5, nextExpiry: {ro: '12 ian. 2025', en: 'Jan 12, 2025', tone: 'danger'}},
   {id: 'global-clean', name: 'Global Clean Services', registrationNumber: 'RO87654321', contactName: 'Elena Marin', category: 'cleaning', status: 'attention', documentCount: 3, documentTarget: 5, nextExpiry: {ro: '28 apr. 2025', en: 'Apr 28, 2025', tone: 'warning'}},
   {id: 'tech-solutions', name: 'Tech Solutions SRL', registrationNumber: 'RO11223344', contactName: 'Radu Popa', category: 'software', status: 'compliant', documentCount: 4, documentTarget: 5, nextExpiry: {ro: '03 mai 2025', en: 'May 3, 2025', tone: 'warning'}},
@@ -31,5 +31,5 @@ export const vendorsListFixture: VendorsListViewModel = {
   user: {fullName: 'Andrei Popescu', initials: 'AP'},
   organization: {name: 'Demo Company SRL'},
   notificationCount: 3,
-  vendors
+  vendors: vendors.map((vendor) => ({...vendor, lifecycleStatus: 'active'}))
 };

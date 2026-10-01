@@ -24,7 +24,22 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   await page.waitForLoadState('networkidle');
   await page.evaluate(async () => { await document.fonts.ready; });
   if (action) {
-    if (action === 'invite-member') {
+    if (action === 'vendor-inactive' || action === 'vendor-menu' || action === 'vendor-inactive-details') {
+      if (route !== '/vendors' && route !== '/en/vendors') throw new Error('Vendor lifecycle capture requires the Vendors route.');
+      const english = route.startsWith('/en');
+      const row = page.locator('[data-vendor-id="construct-pro"]');
+      await row.getByRole('button', {name: english ? 'Actions for Construct Pro SRL' : 'Acțiuni pentru Construct Pro SRL'}).click();
+      if (action !== 'vendor-menu') {
+        await page.getByRole('menuitem', {name: english ? 'Mark inactive' : 'Marchează ca inactiv'}).click();
+        await expect(row).toHaveAttribute('data-lifecycle', 'inactive');
+        await row.evaluate((element) => {element.closest('[role="region"]')!.scrollLeft = 0;});
+        if (action === 'vendor-inactive-details') {
+          await row.getByRole('link').click();
+          await expect(page.locator('[data-vendor-lifecycle]')).toHaveText(english ? 'Inactive' : 'Inactiv');
+        }
+        await page.evaluate(() => window.scrollTo(0, 0));
+      }
+    } else if (action === 'invite-member') {
       if (route !== '/company/settings/members' && route !== '/en/company/settings/members') throw new Error('Invite Member capture requires the Members & Access route.');
       await page.getByRole('button', {name: route.startsWith('/en') ? 'Invite member' : 'Invită membru'}).click();
       await expect(page.getByRole('dialog', {name: route.startsWith('/en') ? 'Invite member' : 'Invită membru'})).toBeVisible();
@@ -121,7 +136,8 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
 
   const name = route === '/' ? 'root' : route.replace(/^\/+|\/+$/g, '').replace(/[^a-zA-Z0-9_-]+/g, '-');
   const output = path.join(process.cwd(), 'artifacts', 'visual', `${name}${action ? `-${action}` : ''}${viewportWidth ? `-${viewportWidth}x${viewportHeight}` : ''}.png`);
-  await page.screenshot({path: output, fullPage: !action || action === 'requirement-edit' || action === 'requirement-preview', animations: 'disabled'});
+  await page.screenshot({path: output, fullPage: !action || action === 'requirement-edit' || action === 'requirement-preview' || action.startsWith('vendor-'), animations: 'disabled'});
+  if (action === 'vendor-menu') await page.getByRole('menu').screenshot({path: output.replace(/\.png$/, '-menu.png'), animations: 'disabled'});
   if (action === 'requirement-preview') await page.locator('#preview-panel').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});
   if (/^\/(en\/)?upload\//.test(route)) await page.locator('[data-supplier-requirements]').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});
 });

@@ -1,9 +1,9 @@
 import {describe, expect, it} from 'vitest';
-import {toVendorDetailsView, toVendorListItem, type CreatedVendor} from '@/features/vendors/created-vendors';
+import {createLocalVendor, getVendorState, setVendorLifecycle, toVendorDetailsView, toVendorListItem, vendorListItems, vendorSummary, type CreatedVendor} from '@/features/vendors/created-vendors';
 import {vendorsListFixture} from '@/features/vendors/fixtures';
 
 const requiredOnly: CreatedVendor = {
-  id: 'local-test', name: 'Atlas SRL', cui: 'RO12345678', category: 'software', email: 'hello@atlas.example'
+  id: 'local-test', name: 'Atlas SRL', cui: 'RO12345678', category: 'software', email: 'hello@atlas.example', lifecycleStatus: 'active'
 };
 
 describe('new vendor view mapping', () => {
@@ -26,5 +26,36 @@ describe('new vendor view mapping', () => {
     expect(details.industry).toBe('Consulting');
     expect(details.registrationCode).toBe('J40/12/2026');
     expect(details.notes).toBe('Call first');
+  });
+
+  it('separates fixture lifecycle from compliance and preserves every other field through reactivation', () => {
+    const original = getVendorState().fixtureVendors.find((vendor) => vendor.id === 'construct-pro')!;
+    setVendorLifecycle(original.id, 'inactive');
+    const inactive = getVendorState().fixtureVendors.find((vendor) => vendor.id === original.id)!;
+    expect(inactive).toEqual({...original, lifecycleStatus: 'inactive'});
+    const list = vendorListItems(getVendorState(), vendorsListFixture.vendors);
+    expect(vendorSummary(list)).toEqual({all: 24, compliant: 15, attention: 5, noncompliant: 3});
+    expect(list.find((vendor) => vendor.id === original.id)?.status).toBe('compliant');
+    setVendorLifecycle(original.id, 'active');
+    expect(getVendorState().fixtureVendors.find((vendor) => vendor.id === original.id)).toEqual(original);
+    expect(vendorSummary(vendorListItems(getVendorState(), vendorsListFixture.vendors))).toEqual({all: 24, compliant: 16, attention: 5, noncompliant: 3});
+  });
+
+  it('uses the same lifecycle for created vendors without losing supplied optional data', () => {
+    const input = {name: requiredOnly.name, cui: requiredOnly.cui, category: requiredOnly.category, email: requiredOnly.email};
+    const vendor = createLocalVendor({...input, notes: 'Keep this note', phone: '+40 700 000 000'});
+    expect(vendor.lifecycleStatus).toBe('active');
+    setVendorLifecycle(vendor.id, 'inactive');
+    const inactive = getVendorState().createdVendors.find((item) => item.id === vendor.id)!;
+    expect(inactive).toEqual({...vendor, lifecycleStatus: 'inactive'});
+    expect(toVendorDetailsView(inactive, vendorsListFixture).vendor.lifecycleStatus).toBe('inactive');
+    expect(vendorSummary(vendorListItems(getVendorState(), vendorsListFixture.vendors))).toEqual({all: 25, compliant: 16, attention: 5, noncompliant: 3});
+    setVendorLifecycle(vendor.id, 'active');
+    expect(getVendorState().createdVendors.find((item) => item.id === vendor.id)).toEqual(vendor);
+    expect(vendorSummary(vendorListItems(getVendorState(), vendorsListFixture.vendors)).attention).toBe(6);
+    const before = getVendorState();
+    setVendorLifecycle('unknown', 'inactive');
+    setVendorLifecycle(vendor.id, 'active');
+    expect(getVendorState()).toBe(before);
   });
 });

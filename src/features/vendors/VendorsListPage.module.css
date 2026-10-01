@@ -27,19 +27,17 @@
 .listSurface {margin-top: 18px; overflow: hidden; padding: 0;}
 .tableScroll {max-width: 100%; min-width: 0; overflow-x: auto; scrollbar-width: thin;}
 .vendorTable {border-collapse: collapse; color: #203658; font-size: 13px; min-width: 1100px; table-layout: fixed; text-align: left; width: 100%;}
-.vendorTable th:nth-child(1) {width: 54px;}
-.vendorTable th:nth-child(2) {width: 220px;}
-.vendorTable th:nth-child(3) {width: 199px;}
-.vendorTable th:nth-child(4) {width: 176px;}
-.vendorTable th:nth-child(5) {width: 194px;}
-.vendorTable th:nth-child(6) {width: 207px;}
-.vendorTable th:nth-child(7) {width: 78px;}
+.vendorTable th:nth-child(1) {width: 274px;}
+.vendorTable th:nth-child(2) {width: 199px;}
+.vendorTable th:nth-child(3) {width: 176px;}
+.vendorTable th:nth-child(4) {width: 194px;}
+.vendorTable th:nth-child(5) {width: 207px;}
+.vendorTable th:nth-child(6) {width: 78px;}
+.vendorTable th:first-child, .vendorTable td:first-child {padding-left: 18px;}
 .vendorTable th {color: #557099; font-size: 11px; font-weight: 600; height: 41px; letter-spacing: .025em; white-space: nowrap;}
 .vendorTable th > span {color: #2e64b2; font-size: 16px; margin-left: 4px;}
 .vendorTable th, .vendorTable td {border-bottom: 1px solid #dfeafa; padding-inline: 8px;}
 .vendorTable td {height: 57px; white-space: nowrap;}
-.checkboxCell {text-align: center;}
-.checkboxCell input {accent-color: var(--color-action-primary); height: 18px; vertical-align: middle; width: 18px;}
 .vendorIdentity {align-items: center; display: flex; gap: 12px; min-width: 0;}
 .avatar {align-items: center; background: #e1edff; border-radius: 50%; color: #0a5ed3; display: inline-flex; flex: 0 0 42px; font-size: 14px; font-weight: 750; height: 42px; justify-content: center;}
 .avatar[data-avatar='cleaning'], .avatar[data-avatar='logistics'] {background: #ddf8f1; color: #22536c;}
@@ -47,7 +45,13 @@
 .avatar[data-avatar='materials'], .avatar[data-avatar='food'] {background: #ffe7ef; color: #bc274c;}
 .avatar[data-avatar='energy'] {background: #e2efff; color: #1755bf;}
 .vendorName {display: grid; line-height: 1.25; min-width: 0;}
-.vendorName strong {color: #192b4d; font-size: 13px; font-weight: 650; overflow: hidden; text-overflow: ellipsis;}
+.nameLine {align-items: center; display: flex; gap: 8px; min-width: 0;}
+.nameLine a {color: #192b4d; font-size: 13px; font-weight: 650; min-width: 0; overflow: hidden; text-decoration: none; text-overflow: ellipsis;}
+.nameLine a:hover {color: var(--color-action-primary); text-decoration: underline;}
+.inactiveBadge {background: var(--color-neutral-soft); border-radius: 999px; color: var(--color-text-secondary); flex: 0 0 auto; font-size: 11px; font-weight: 600; padding: 2px 7px;}
+.vendorTable tr[data-lifecycle='inactive'] {background: var(--color-page);}
+.vendorTable tr[data-lifecycle='inactive'] .avatar {background: var(--color-surface); color: var(--color-text-secondary);}
+.vendorTable tr[data-lifecycle='inactive'] .category, .vendorTable tr[data-lifecycle='inactive'] .vendorName small {color: var(--color-text-secondary);}
 .vendorName small {color: #5a7194; font-size: 12px;}
 .category {align-items: center; display: inline-flex; gap: 16px;}
 .category svg {color: #4c689b; flex: 0 0 auto;}
@@ -65,6 +69,9 @@
 .expiry[data-tone='neutral'] {color: #4b6690;}
 .actionsCell {text-align: center;}
 .rowAction {background: transparent; border: 0; color: #4d6897; display: inline-flex; padding: 8px;}
+.rowMenu {background: var(--color-surface-elevated); border: 1px solid var(--color-border); border-radius: 10px; box-shadow: var(--shadow-card); padding: 5px; position: fixed; z-index: 100;}
+.rowMenu a, .rowMenu button {background: none; border: 0; border-radius: 6px; color: var(--color-text-primary); display: block; font-size: 13px; min-height: 40px; padding: 10px 12px; text-align: left; text-decoration: none; width: 100%;}
+.rowMenu a:hover, .rowMenu button:hover {background: var(--color-neutral-soft);}
 .noResults {color: #5d7090; font-size: 14px; text-align: center;}
 .tableFooter {align-items: center; color: #58709a; display: grid; font-size: 13px; gap: 16px; grid-template-columns: minmax(0, 1fr) auto 145px; min-height: 59px; padding: 10px 16px;}
 .pagination {display: flex; gap: 7px;}

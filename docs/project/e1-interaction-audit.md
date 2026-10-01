@@ -1,6 +1,6 @@
 # E1 Interaction & Missing Flow Audit
 
-Audit date: 2026-09-29. Initial baseline: `main` at `4c898fa8d76e431466fa24e4499230ec096c1d25`; updated after E1-024 and E1-025A/B/C/D to reflect resolved account-entry links and the local template lifecycle. This is a discovery record, not approval to implement the backlog. The current product is a fixture/browser-memory demonstration without authentication, persistence, file storage, or external services. The original 24 approved images in `docs/design/mockups/` were inspected during the audit; E1-025D adds two approved section-specific Preview/Portal references; later documented product decisions take precedence over older images (notably the reduced profile menu, two requirement tabs, single vendor category, and immutable catalog names).
+Audit date: 2026-09-29. Initial baseline: `main` at `4c898fa8d76e431466fa24e4499230ec096c1d25`; updated after E1-024, E1-025A/B/C/D and E1-026A to reflect resolved account-entry links, the local template lifecycle and actionable vendor identities/lifecycle. This is a discovery record, not approval to implement the backlog. The current product is a fixture/browser-memory demonstration without authentication, persistence, file storage, or external services. The original 24 approved images in `docs/design/mockups/` were inspected during the audit; E1-025D adds two approved section-specific Preview/Portal references; later documented product decisions take precedence over older images (notably the reduced profile menu, two requirement tabs, single vendor category, immutable catalog names and removal of unsupported vendor bulk selection).
 
 Method: inspected all product route files, screen components, state stores, feature contracts, and targeted E2E coverage; opened every current RO and EN route in Chromium; exercised representative forms, drawers, popovers, navigation, local mutations, and 320px overlays. Direct route checks returned HTTP 200 for all 14 implemented product route families in both languages. Unknown fixture vendor/document IDs returned 404; lost `local-*` IDs have recovery UI. The missing routes listed below returned 404 in both languages. The development-only design-system preview is not a product route and is excluded from the counts. No production code was changed during the initial audit.
 
@@ -8,13 +8,13 @@ Status and priority are different axes. `IMPLEMENTED` means the current **E1 loc
 
 ## 1. Executive Summary
 
-The current E1 UI is broad but not yet a coherent end-to-end local product flow. Local create flows, RO/EN navigation, company switching, list filters, drawer mechanics, Landing account-entry links, and existing-template Save/Cancel editing work. The largest remaining gaps are inaccessible details for most fixture vendors/documents, no vendor requirement assignment, and document-review results that do not propagate. Billing/auth/upload delivery are deliberately service-dependent and should not be faked to close E1.
+The current E1 UI is broad but not yet a coherent end-to-end local product flow. Local create flows, RO/EN navigation, company switching, list filters, drawer mechanics, Landing account-entry links, existing-template Save/Cancel editing and vendor Open/Active/Inactive actions work. The largest remaining gaps are inaccessible details for most fixture documents, no vendor requirement assignment, and document-review results that do not propagate. Billing/auth/upload delivery are deliberately service-dependent and should not be faked to close E1.
 
 Inventory counts (unique control/interaction families in §3, not individual rendered buttons):
 
 | IMPLEMENTED | PARTIAL | MISSING | DESIGN_REQUIRED | INTENTIONALLY_DEFERRED | BUG / INCONSISTENT |
 | ---: | ---: | ---: | ---: | ---: | ---: |
-| 31 | 12 | 6 | 14 | 8 | 2 |
+| 33 | 12 | 5 | 13 | 8 | 2 |
 
 The six status counts total 73 inventory families. Separately, 14 non-implemented families carry the `BACKEND_DEFERRED` **priority/disposition** (including six `PARTIAL` families); this is not a seventh mutually exclusive status.
 
@@ -22,7 +22,7 @@ Route coverage: 14 implemented product route families × 2 locales; four named p
 
 ## 2. Route Coverage
 
-`{ro,en}` below means the Romanian default path and the equivalent `/en` path. Dynamic IDs are examples, not a promise that every fixture ID has a Details/Review implementation.
+`{ro,en}` below means the Romanian default path and the equivalent `/en` path. Every listed vendor ID now resolves to Details; document Review remains limited to supported fixture/local IDs.
 
 | Route | Screen / purpose / main entry | Status | Main gaps |
 | --- | --- | --- | --- |
@@ -31,8 +31,8 @@ Route coverage: 14 implemented product route families × 2 locales; four named p
 | `{ro,en}/onboarding` | Three-step account setup UI; Login sign-up link/direct URL | PARTIAL | Local selections are discarded on Dashboard entry; only one fixture option per Step-1 select; help/legal URLs absent. |
 | `{ro,en}/upload/demo-construct-pro` | Supplier-facing invitation preview; Invite Vendor preview link | PARTIAL | File selection is not upload; progress stays fixture-based; uploaded-file actions unavailable. Unknown tokens 404. |
 | `{ro,en}/dashboard` | Authenticated-looking overview; Login/Onboarding/sidebar | PARTIAL | Panel CTAs and document actions unavailable; snapshot KPIs do not derive from local mutations. |
-| `{ro,en}/vendors` | Supplier list; sidebar/breadcrumb | PARTIAL | Add Vendor and local filters work; 23 of 24 initial fixture rows lack details; selection/sort/more filters have no outcome. |
-| `{ro,en}/vendors/construct-pro` and `/vendors/local-*` | Vendor Details; supported Vendors row action | PARTIAL | Fixture invite is preview only; new local vendor cannot invite or acquire requirements; edit/archive, tabs, filter, row actions absent. Unknown fixture IDs 404; lost local IDs show recovery. |
+| `{ro,en}/vendors` | Supplier list; sidebar/breadcrumb | PARTIAL | All names open Details; Open/Active/Inactive menus and local filters work. Bulk selection removed; sort/more filters remain unavailable. |
+| `{ro,en}/vendors/[vendorId]` | Vendor Details; vendor-name/context-menu navigation | PARTIAL | All listed fixture/local identities work; missing optional data is not fabricated. Construct Pro invite is preview only; other vendors cannot invite or acquire requirements; editing, tabs, filter, document-row actions absent. Unknown fixture IDs 404; lost local IDs show recovery. |
 | `{ro,en}/documents` | Global document list; sidebar/review return | PARTIAL | One initial fixture review route and matching local simulated routes work; most rows cannot be opened or managed. |
 | `{ro,en}/documents/construct-pro-tax-2024/review` and `/documents/local-document-*/review` | Human review UI; supported document row/bell link | BUG / INCONSISTENT | Reject/draft/confirm only change component state; returning to Documents restores unchanged status. Unknown fixture IDs 404; lost local IDs show recovery. |
 | `{ro,en}/requirements` | Company-scoped template list/editor; sidebar | PARTIAL | New and existing-template drafts use atomic Save/Cancel; appearance and duplicate/delete work locally. Read-only supplier Preview reflects staged rules; vendor assignment remains unavailable. |
@@ -78,10 +78,10 @@ The table accounts for all visible control **families**, including repeated rows
 | 24 | Dashboard | Five attention-document `...` buttons | All unavailable. | Open an applicable document/review context or explicitly remove unsupported row action. | MISSING | P1 — COMPLETE BEFORE BACKEND IF PRACTICAL |
 | 25 | Vendors | `Adaugă furnizor`, drawer Cancel/X/Escape, valid submit | Shared accessible drawer, validation, local record, Details navigation work. | Same E1 local path. | IMPLEMENTED | — |
 | 26 | Vendors | Search, category/status filters, pagination/page size | Mutate current list locally; filtered empty text is shown. | Same. | IMPLEMENTED | — |
-| 27 | Vendors | Select-all and row checkboxes | Selection toggles, but no bulk operation or selected-state action exists. | Decide bulk task or remove selection affordance. | DESIGN_REQUIRED | DESIGN_REQUIRED |
+| 27 | Vendors | Unsupported bulk-selection affordance | Header/row checkboxes and selection state removed in E1-026A. | Keep removed until a bulk action is approved. | IMPLEMENTED | — |
 | 28 | Vendors | Sort-looking table headers; `Filtre suplimentare` | Header arrows are static glyphs; filter button unavailable. | Implement approved sort/advanced-filter contract or de-emphasize affordance. | DESIGN_REQUIRED | DESIGN_REQUIRED |
-| 29 | Vendors | Row `...` for Construct Pro and locally created rows | Navigates to Details, rather than opening a menu. | Same supported destination; menu semantics may be refined later. | IMPLEMENTED | — |
-| 30 | Vendors | Row `...` for other 23 fixture suppliers | Unavailable because no Details fixture/route for them. | Provide a usable vendor context for every listed supplier, or stop presenting unavailable action. | MISSING | P0 — REQUIRED BEFORE E2 |
+| 29 | Vendors | Names and row `...` for Construct Pro and locally created rows | Names open Details; menus offer Open and Mark Inactive/Active. Lifecycle persists across client navigation/locales without changing compliance/data. | Same E1 local contract. | IMPLEMENTED | — |
+| 30 | Vendors | Names and row `...` for other 23 fixture suppliers | All resolve identity-driven Details with safe absent data and the same Open/Active/Inactive menu. | Same E1 local contract. | IMPLEMENTED | — |
 | 31 | Vendor Details | Breadcrumb; contact mail/tel/site; document search | Routes and OS/external links work; search filters rows. | Same. | IMPLEMENTED | — |
 | 32 | Vendor Details | `Invită furnizor` on Construct Pro; invitation fields/toggles/copy/preview/Cancel | Form validates; copy and preview work; Send only says nothing was sent. | Keep demo honesty; real invitation/token/email later. | PARTIAL | BACKEND_DEFERRED |
 | 33 | Vendor Details | `Invită furnizor` on a newly created vendor | Unavailable because no invitation preview/token fixture is generated. | New local vendor must have a coherent local invitation preview path or an approved alternative. | MISSING | P0 — REQUIRED BEFORE E2 |
@@ -134,7 +134,7 @@ Items that merely display data—contact cards, static KPI copy, notification ro
 
 | Entity | Create | Read | Update | Delete / Archive | Gap |
 | --- | --- | --- | --- | --- | --- |
-| Vendor | Local Add Vendor | Fixture Construct Pro + local Details; most fixture vendors list-only | None | None | Edit/category correction and usable Details for listed vendors are MVP needs; archive policy needs design. |
+| Vendor | Local Add Vendor | Details for every listed fixture/local identity; absent fields safely omitted | Browser-memory Active/Inactive, separate from compliance | None | Editing/category correction remains E1-026B; invitation continuation and assignment remain separate work. No deletion/archive is introduced. |
 | Requirement Template | Local draft + Save and Duplicate, company-keyed | List/editor | Atomic metadata, appearance, and document/rule Save/Cancel | Confirmed local Delete | Read-only supplier Preview is implemented; assigned-template deletion policy still needs design. |
 | Requirement Template Document | Catalog/custom Add in draft | Editor table | Required/alert/validity, custom metadata and appearance | Draft-only removal | Catalog names and appearance remain immutable; no global catalog publication. |
 | Uploaded Document | Vendor Details local metadata create | Global/Vendor tables; one fixture/local-simulated Review | Review form page-local only | None | Shared review transition and a path to inspect/manage non-review docs needed; replacement/history needs design. File bytes are not stored. |
@@ -157,7 +157,7 @@ Items that merely display data—contact cards, static KPI copy, notification ro
 
 ## 6. Inert / Dead UI
 
-Inventory rows **04–06, 09, 11, 16, 19–20, 22–24, 27–28, 30, 33, 35–37, 40, 52–53, 57, 60, 62–63, 65–66, 68, 70** cover visually actionable controls that are inactive, incomplete, or lead to an incomplete flow. Not all are E1 coding tasks: provider-backed controls (for example Logout, invoice download, real upload) have a concrete service dependency; undefined menus/screens require design. In particular:
+Inventory rows **04–06, 09, 11, 16, 19–20, 22–24, 28, 33, 35–37, 40, 52–53, 57, 60, 62–63, 65–66, 68, 70** cover visually actionable controls that are inactive, incomplete, or lead to an incomplete flow. Not all are E1 coding tasks: provider-backed controls (for example Logout, invoice download, real upload) have a concrete service dependency; undefined menus/screens require design. In particular:
 
 - Landing account-entry links are functional; remaining public marketing actions lack approved destinations or content.
 - Dashboard panel links, most row ellipses, Vendor missing-upload/requirements actions, and most Documents ellipses do not provide a usable path (P0/P1 as inventoried).
@@ -184,7 +184,7 @@ An `aria-disabled` affordance prevents accidental navigation, but it is still vi
 
 1. `company-state.ts` is the shared source for global current user, accessible companies, active company, and active membership. Profile, My Companies, switcher, Members, and Billing read it consistently. Memberships and subscription/billing belong to a company; profile identity is global. Local member invitations are keyed by company and do not consume seats until active.
 2. `requirements-state.ts` is company-keyed and shares the same `VendorCategory` IDs as Add Vendor. Eligibility is represented only by category metadata and notice text. No assignment is made, and a newly created matching-category vendor has zero applicable requirements. `Vendor.industry` is not used for matching, correctly.
-3. `created-vendors.ts` and `created-documents.ts` are separate global in-memory arrays without `companyId`; the authenticated shell hides Demo-only data in another workspace rather than providing company-owned operational state. This avoids immediate cross-company visual leakage but leaves a newly created company unable to start vendor/document work.
+3. `created-vendors.ts` holds seeded/created vendor lifecycle state and `created-documents.ts` holds a separate global in-memory document array, without `companyId`; the authenticated shell hides Demo-only data in another workspace rather than providing company-owned operational state. This avoids immediate cross-company visual leakage but leaves a newly created company unable to start vendor/document work.
 4. Dashboard, Vendor Details fixture compliance, Documents fixture statuses, Notifications, and audit are independent snapshots. A local vendor/document or review action does not update all apparent totals/statuses. In particular, Review has no shared mutation store and confirmed/rejected outcomes disappear on navigation; this is a product-level inconsistency, not merely absent persistence.
 5. Existing Requirements metadata, documents, rules, and custom metadata use one staged working copy. Save commits it and any new custom candidates together; Cancel restores committed state. Dirty-draft navigation protection covers both new and existing templates.
 6. All module stores are process-local browser state. Direct reload resets created company/vendor/document/invitation/template and notification read changes; locally generated Details/Review URLs then show recovery states. This limitation is honestly documented, but E1 must not imply durability.
@@ -206,7 +206,7 @@ Normal/empty/loading/error coverage for the main data surfaces:
 - All 14 implemented product route families rendered in both locales in the browser; locale controls preserved the corresponding route in inspected public, supplier, and authenticated shells. Existing sidebar/breadcrumb targets worked under direct and client navigation.
 - The default `/` is Romanian Landing and `/en` is English Landing. Dashboard is `/dashboard` or `/en/dashboard`; no `Dashboard > Dashboard` breadcrumb appears.
 - Named absent routes (`/reports`, `/company/settings/profile`, `/profile`, `/profile/invitations`) were 404 in both locales, but their current menu controls were unavailable rather than live broken links. Unknown supplier tokens and unknown fixture vendor/review IDs also 404 deliberately.
-- Only `construct-pro` has initial Vendor Details, and only `construct-pro-tax-2024` has initial Review. Locally created supported IDs work within the current browser session; lost IDs have a return link.
+- E1-026A provides Details for all 24 listed vendor fixtures using only known metadata; only `construct-pro` has detailed document/contact fixtures. Only `construct-pro-tax-2024` has initial Review. Locally created supported IDs work within the current browser session; lost IDs have a return link.
 - `Prețuri` and supplier `Vezi secțiunea de ajutor` use real in-page anchors. No production `href="#"` placeholder was found.
 - English strings are working translations awaiting Product Owner approval, not a second approved copy contract.
 
@@ -216,11 +216,11 @@ At 320px, the Add Vendor, Add Document, Add Requirement Document, Invite Member,
 
 ## 11. Recommended Remaining E1 Backlog
 
-Order reflects dependencies. E1-024 and E1-025A/B/C/D are complete and no longer appear in the remaining backlog. `DESIGN_REQUIRED first` is a gate, not permission to invent behavior. Sizes are estimates for the proposed scope, not detailed tickets.
+Order reflects dependencies. E1-024, E1-025A/B/C/D and E1-026A are complete. E1-026A closes vendor Details coverage and local Active/Inactive lifecycle, not editing or invitation continuation. `DESIGN_REQUIRED first` is a gate, not permission to invent behavior. Sizes are estimates for the proposed scope, not detailed tickets.
 
 | Order / proposed ID | Title | Priority | Size | Dependencies | DESIGN_REQUIRED first? | One-sentence scope |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 / E1-026 | Make listed vendors manageable | P0 | L | Vendor list/Details/Add Vendor | Yes for edit/archive and fixture-detail coverage | Provide a usable Details/edit path for listed vendors and a coherent local invite continuation for newly created vendors. |
+| 1 / E1-026B + later invite scope | Complete vendor editing/invite continuation | P0 | L | E1-026A Vendor list/Details/Add Vendor | Yes for edit and invitation continuation | Editing/category correction and local invite continuation remain; all listed vendors already have Details and reversible Active/Inactive state. |
 | 2 / E1-027 | Define and implement vendor requirement assignment | P0 | L | E1-025A, E1-026, shared category IDs | Yes | Approve manual assignment and show applicable requirements/status on Vendor Details without silently auto-assigning. |
 | 3 / E1-028 | Propagate document review outcomes | P0 | M | Created-document state, Documents/Vendor Details/Review | No for existing statuses | Persist E1-local reject/draft/confirm state across client navigation and project it into document surfaces. |
 | 4 / E1-029 | Define document open, replacement and history | P0 | L | E1-028; storage later | Yes | Give non-review document rows a meaningful management path and define renewal/version behavior, while keeping bytes/backend deferred. |
@@ -233,9 +233,9 @@ The sequence intentionally does **not** include real auth, storage, email, OCR, 
 
 ## Decision Output
 
-**READY BEFORE E2:** implemented route shells, locale navigation, and Landing account-entry links (E1-024); Login/Onboarding local validation; accessible shared drawers/popovers; Add Vendor, Add Document, Create Template, atomic existing-template editing, appearance, duplicate, delete and supplier Preview (E1-025A/B/C/D), Invite Member, Create/Switch Company local happy paths; Documents/Vendors/Notifications filters; bell mark-all-read; audit CSV.
+**READY BEFORE E2:** implemented route shells, locale navigation, and Landing account-entry links (E1-024); Login/Onboarding local validation; accessible shared drawers/popovers; Add Vendor, all listed Vendor Details/name links, Open/Active/Inactive menus and removal of unsupported selection (E1-026A); Add Document, Create Template, atomic existing-template editing, appearance, duplicate, delete and supplier Preview (E1-025A/B/C/D), Invite Member, Create/Switch Company local happy paths; Documents/Vendors/Notifications filters; bell mark-all-read; audit CSV.
 
-**IMPLEMENT BEFORE E2:** usable vendor Details/local invite (E1-026); approved vendor requirement assignment (E1-027); shared Review outcomes (E1-028); document management/renewal path (E1-029); Company Profile and usable new-company workspace (E1-030/031). The design-gated parts require approval first.
+**IMPLEMENT BEFORE E2:** vendor editing/category correction (E1-026B) and local invite continuation; approved vendor requirement assignment (E1-027); shared Review outcomes (E1-028); document management/renewal path (E1-029); Company Profile and usable new-company workspace (E1-030/031). The design-gated parts require approval first.
 
 **DESIGN FIRST:** manual template assignment and category-change policy, including future assigned-template deletion; vendor edit/archive; document open/replacement/history; Company Profile; first-run company workspace; member/company row actions; My Profile/My Invitations/help/legal/marketing destinations; Reports inclusion versus explicit deferral.
 

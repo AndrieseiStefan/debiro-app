@@ -5,6 +5,8 @@ import en from '../../messages/en.json';
 import ro from '../../messages/ro.json';
 import {VendorDetailsPage} from '@/features/vendors/VendorDetailsPage';
 import {getVendorDetailsFixture} from '@/features/vendors/detail-fixtures';
+import {vendorsListFixture} from '@/features/vendors/fixtures';
+import {setVendorLifecycle} from '@/features/vendors/created-vendors';
 
 vi.mock('@/i18n/navigation', () => ({
   usePathname: () => '/vendors/construct-pro',
@@ -50,6 +52,35 @@ describe('vendor details', () => {
   it('returns no fixture for unknown IDs', () => {
     expect(getVendorDetailsFixture('unknown')).toBeUndefined();
     expect(getVendorDetailsFixture('__proto__')).toBeUndefined();
+  });
+
+  it('resolves every listed fixture using its own identity without fabricating optional information', () => {
+    for (const vendor of vendorsListFixture.vendors) {
+      const view = getVendorDetailsFixture(vendor.id)!;
+      expect(view.vendor).toEqual(vendor);
+      if (vendor.id === 'construct-pro') continue;
+      expect(view.contact).toEqual({name: vendor.contactName});
+      expect(view.documents).toEqual([]);
+      expect(view.validDocumentCount).toBeUndefined();
+      expect(view.notes).toBeUndefined();
+      expect(view.registrationCode).toBeUndefined();
+      expect(view.invitationPreview).toBeUndefined();
+    }
+  });
+
+  it('renders absent contact/documents safely and displays inactive state independently', () => {
+    const view = getVendorDetailsFixture('alpha-construction')!;
+    setVendorLifecycle(view.vendor.id, 'inactive');
+    render(<NextIntlClientProvider locale="ro" messages={ro}><VendorDetailsPage locale="ro" view={view}/></NextIntlClientProvider>);
+    expect(screen.getByRole('heading', {name: view.vendor.name})).toBeVisible();
+    expect(screen.getByText('Inactiv')).toBeVisible();
+    expect(screen.getByText('În regulă', {exact: true})).toBeVisible();
+    expect(screen.getByText('Detaliile documentelor nu sunt disponibile.')).toBeVisible();
+    expect(screen.getByText('Nu sunt disponibile date de contact.')).toBeVisible();
+    expect(screen.getByText('Nu există documente încă.')).toBeVisible();
+    expect(screen.queryByRole('link', {name: /@/})).not.toBeInTheDocument();
+    expect(screen.getByRole('tab', {name: 'Note'})).toHaveAttribute('aria-disabled', 'true');
+    setVendorLifecycle(view.vendor.id, 'active');
   });
 
   it('opens the local invitation drawer from the current vendor and validates without sending', async () => {

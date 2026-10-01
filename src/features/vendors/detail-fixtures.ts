@@ -31,5 +31,9 @@ const detailsById: Record<string, VendorDetailsViewModel> = {
 };
 
 export function getVendorDetailsFixture(vendorId: string): VendorDetailsViewModel | undefined {
-  return Object.hasOwn(detailsById, vendorId) ? detailsById[vendorId] : undefined;
+  if (Object.hasOwn(detailsById, vendorId)) return detailsById[vendorId];
+  const vendor = vendorsListFixture.vendors.find((item) => item.id === vendorId);
+  if (!vendor) return undefined;
+  return {user: vendorsListFixture.user, organization: vendorsListFixture.organization, notificationCount: vendorsListFixture.notificationCount,
+    vendor, contact: {name: vendor.contactName}, documents: []};
 }

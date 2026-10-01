@@ -39,6 +39,8 @@ describe('vendors list', () => {
     for (const count of ['24', '16', '5', '3']) expect(within(summary).getByText(count)).toBeVisible();
 
     const table = screen.getByRole('table');
+    expect(within(table).queryByRole('checkbox')).not.toBeInTheDocument();
+    expect(within(table).getByRole('link', {name: 'Detalii pentru Global Clean Services'})).toHaveAttribute('href', '/vendors/global-clean');
     expect(within(table).getAllByRole('row')).toHaveLength(9);
     for (const heading of ['FURNIZOR', 'CATEGORIE', 'STATUS GENERAL', 'DOCUMENTE', 'URMĂTOAREA EXPIRARE', 'ACȚIUNI']) {
       expect(within(table).getByRole('columnheader', {name: heading})).toBeVisible();
@@ -66,5 +68,31 @@ describe('vendors list', () => {
     fireEvent.change(screen.getByRole('combobox', {name: 'Status'}), {target: {value: 'all'}});
     fireEvent.change(screen.getByRole('searchbox', {name: 'Search suppliers by name, registration number or contact person'}), {target: {value: 'Radu Popa'}});
     expect(screen.getByText('Tech Solutions SRL')).toBeVisible();
+  });
+
+  it('offers exactly the approved contextual actions and reactivates without changing compliance', () => {
+    renderVendors('ro');
+    const trigger = screen.getByRole('button', {name: 'Acțiuni pentru Construct Pro SRL'});
+    fireEvent.click(trigger);
+    let menu = screen.getByRole('menu');
+    expect(within(menu).getAllByRole('menuitem')).toHaveLength(2);
+    expect(within(menu).getByRole('menuitem', {name: 'Deschide furnizorul'})).toHaveAttribute('href', '/vendors/construct-pro');
+    fireEvent.click(within(menu).getByRole('menuitem', {name: 'Marchează ca inactiv'}));
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+    const row = trigger.closest('tr')!;
+    expect(row).toHaveAttribute('data-lifecycle', 'inactive');
+    expect(within(row).getByText('Inactiv')).toBeVisible();
+    expect(within(row).getByText('În regulă')).toBeVisible();
+    const summary = screen.getByRole('region', {name: 'Rezumat furnizori'});
+    expect(within(summary).getByText('24')).toBeVisible();
+    expect(within(summary).getByText('15')).toBeVisible();
+    fireEvent.click(trigger);
+    menu = screen.getByRole('menu');
+    expect(within(menu).getAllByRole('menuitem')).toHaveLength(2);
+    fireEvent.click(within(menu).getByRole('menuitem', {name: 'Marchează ca activ'}));
+    expect(row).toHaveAttribute('data-lifecycle', 'active');
+    expect(within(row).queryByText('Inactiv')).not.toBeInTheDocument();
+    expect(within(summary).getByText('16')).toBeVisible();
   });
 });

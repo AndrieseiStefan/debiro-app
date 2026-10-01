@@ -11,7 +11,8 @@ import {StatusBadge, type StatusTone} from '@/components/ui/StatusBadge';
 import {Surface} from '@/components/ui/Surface';
 import {vendorCategories, type VendorCategory, type VendorListItem, type VendorStatus, type VendorsListViewModel} from './types';
 import {AddVendorDrawer} from './AddVendorDrawer';
-import {createLocalVendor, toVendorListItem, useCreatedVendors, type CreatedVendor} from './created-vendors';
+import {createLocalVendor, useVendorState, vendorListItems, vendorSummary, type NewVendorInput} from './created-vendors';
+import {VendorRowActions} from './VendorRowActions';
 import styles from './VendorsListPage.module.css';
 
 const statuses: VendorStatus[] = ['compliant', 'attention', 'noncompliant'];
@@ -41,30 +42,29 @@ function VendorStatusBadge({status}: {status: VendorStatus}) {
   </StatusBadge>;
 }
 
-function VendorRow({vendor, locale, selected, onSelect}: {vendor: VendorListItem; locale: string; selected: boolean; onSelect: (id: string, checked: boolean) => void}) {
+function VendorRow({vendor, locale, menuOpen, onMenuChange}: {vendor: VendorListItem; locale: string; menuOpen: boolean; onMenuChange: (open: boolean) => void}) {
   const t = useTranslations('Vendors');
   const initials = vendor.name.split(/\s+/).filter((word) => /[\p{L}\p{N}]/u.test(word)).slice(0, 2).map((word) => word[0]).join('').toUpperCase();
   const documentPercent = vendor.documentTarget > 0 ? vendor.documentCount / vendor.documentTarget * 100 : 0;
 
-  return <tr>
-    <td className={styles.checkboxCell}><input type="checkbox" aria-label={t('selectVendor', {name: vendor.name})} checked={selected} onChange={(event) => onSelect(vendor.id, event.target.checked)} /></td>
+  return <tr data-vendor-id={vendor.id} data-lifecycle={vendor.lifecycleStatus}>
     <td><div className={styles.vendorIdentity}>
       <span className={styles.avatar} data-avatar={vendor.category}>{initials}</span>
-      <span className={styles.vendorName}><strong>{vendor.name}</strong><small>{t('registrationPrefix')}: {vendor.registrationNumber}</small></span>
+      <span className={styles.vendorName}><span className={styles.nameLine}><Link href={`/vendors/${vendor.id}`} aria-label={t('detailsAction', {name: vendor.name})}>{vendor.name}</Link>{vendor.lifecycleStatus === 'inactive' && <span className={styles.inactiveBadge}>{t('inactive')}</span>}</span><small>{t('registrationPrefix')}: {vendor.registrationNumber}</small></span>
     </div></td>
     <td><span className={styles.category}><CategoryIcon category={vendor.category} />{t(`category.${vendor.category}`)}</span></td>
     <td><VendorStatusBadge status={vendor.status} /></td>
     <td><span className={styles.documents}><span className={styles.progressTrack}><span className={styles.progressFill} data-status={vendor.status} style={{width: `${documentPercent}%`}} /></span><span>{vendor.documentCount}/{vendor.documentTarget}</span></span></td>
     <td><time className={styles.expiry} data-tone={vendor.nextExpiry.tone}>{locale === 'en' ? vendor.nextExpiry.en : vendor.nextExpiry.ro}</time></td>
-    <td className={styles.actionsCell}>{vendor.id === 'construct-pro' || vendor.id.startsWith('local-') ? <Link href={`/vendors/${vendor.id}`} aria-label={t('detailsAction', {name: vendor.name})} className={styles.rowAction}><AppIcon name="more" size={21} /></Link> : <button type="button" aria-disabled="true" aria-label={t('rowAction', {name: vendor.name})} className={styles.rowAction}><AppIcon name="more" size={21} /></button>}</td>
+    <td className={styles.actionsCell}><VendorRowActions vendor={vendor} open={menuOpen} onOpenChange={onMenuChange}/></td>
   </tr>;
 }
 
 export function VendorsListPage({locale, view}: {locale: string; view: VendorsListViewModel}) {
   const t = useTranslations('Vendors');
   const router = useRouter();
-  const createdVendors = useCreatedVendors();
-  const allVendors = [...createdVendors.map(toVendorListItem), ...view.vendors];
+  const vendorState = useVendorState();
+  const allVendors = vendorListItems(vendorState, view.vendors);
   const [addPhase, setAddPhase] = useState<'closed' | 'open' | 'closing'>('closed');
   const addTriggerRef = useRef<HTMLButtonElement>(null);
   const closeAdd = useCallback(() => setAddPhase('closing'), []);
@@ -74,12 +74,8 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
   const [status, setStatus] = useState<VendorStatus | 'all'>('all');
   const [pageSize, setPageSize] = useState(8);
   const [page, setPage] = useState(1);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const counts = {
-    compliant: allVendors.filter((vendor) => vendor.status === 'compliant').length,
-    attention: allVendors.filter((vendor) => vendor.status === 'attention').length,
-    noncompliant: allVendors.filter((vendor) => vendor.status === 'noncompliant').length
-  };
+  const [menuVendorId, setMenuVendorId] = useState<string | null>(null);
+  const counts = vendorSummary(allVendors);
   const filtered = allVendors.filter((vendor) => {
     const matchesQuery = `${vendor.name} ${vendor.registrationNumber} ${vendor.contactName ?? ''}`.toLocaleLowerCase(locale).includes(query.trim().toLocaleLowerCase(locale));
     return matchesQuery && (category === 'all' || vendor.category === category) && (status === 'all' || vendor.status === status);
@@ -87,15 +83,10 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = Math.min(page, pageCount);
   const visible = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-  const allVisibleSelected = visible.length > 0 && visible.every((vendor) => selectedIds.includes(vendor.id));
   const start = filtered.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const end = Math.min(currentPage * pageSize, filtered.length);
 
-  function selectVendor(id: string, checked: boolean) {
-    setSelectedIds((current) => checked ? [...current, id] : current.filter((selectedId) => selectedId !== id));
-  }
-
-  function createVendor(input: Omit<CreatedVendor, 'id'>) {
+  function createVendor(input: NewVendorInput) {
     const vendor = createLocalVendor(input);
     router.push(`/vendors/${vendor.id}`);
   }
@@ -142,10 +133,6 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
         <div className={styles.tableScroll} role="region" aria-label={t('tableRegion')} tabIndex={0}>
           <table className={styles.vendorTable}>
             <thead><tr>
-              <th scope="col" className={styles.checkboxCell}><input type="checkbox" aria-label={t('selectVisible')} checked={allVisibleSelected} onChange={(event) => {
-                const visibleIds = visible.map((vendor) => vendor.id);
-                setSelectedIds((current) => event.target.checked ? [...new Set([...current, ...visibleIds])] : current.filter((id) => !visibleIds.includes(id)));
-              }} /></th>
               <th scope="col">{t('table.vendor')} <span aria-hidden="true">↕</span></th>
               <th scope="col">{t('table.category')} <span aria-hidden="true">↕</span></th>
               <th scope="col">{t('table.generalStatus')} <span aria-hidden="true">↕</span></th>
@@ -153,8 +140,8 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
               <th scope="col">{t('table.nextExpiry')} <span aria-hidden="true">↕</span></th>
               <th scope="col">{t('table.actions')}</th>
             </tr></thead>
-            <tbody>{visible.map((vendor) => <VendorRow key={vendor.id} vendor={vendor} locale={locale} selected={selectedIds.includes(vendor.id)} onSelect={selectVendor} />)}
-              {visible.length === 0 && <tr><td colSpan={7} className={styles.noResults}>{t('noResults')}</td></tr>}
+            <tbody>{visible.map((vendor) => <VendorRow key={vendor.id} vendor={vendor} locale={locale} menuOpen={menuVendorId === vendor.id} onMenuChange={(open) => setMenuVendorId(open ? vendor.id : null)} />)}
+              {visible.length === 0 && <tr><td colSpan={6} className={styles.noResults}>{t('noResults')}</td></tr>}
             </tbody>
           </table>
         </div>

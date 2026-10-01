@@ -7,7 +7,7 @@ import {Button} from '@/components/ui/Button';
 import {Drawer, type DrawerPhase} from '@/components/ui/Drawer';
 import {Field} from '@/components/ui/Field';
 import {SelectField} from '@/components/ui/SelectField';
-import type {CreatedVendor} from './created-vendors';
+import type {NewVendorInput} from './created-vendors';
 import {vendorCategories, type VendorCategory} from './types';
 import styles from './AddVendorDrawer.module.css';
 
@@ -40,7 +40,7 @@ export function AddVendorDrawer({phase, onClose, onExited, triggerRef, onCreate}
   onClose: () => void;
   onExited: () => void;
   triggerRef: RefObject<HTMLButtonElement | null>;
-  onCreate: (vendor: Omit<CreatedVendor, 'id'>) => void;
+  onCreate: (vendor: NewVendorInput) => void;
 }) {
   const t = useTranslations('AddVendor');
   const vendorsT = useTranslations('Vendors');

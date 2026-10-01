@@ -1,5 +1,6 @@
 /** Presentation data for the fixture-backed vendors list; not a persistence model. */
 export type VendorStatus = 'compliant' | 'attention' | 'noncompliant';
+export type VendorLifecycleStatus = 'active' | 'inactive';
 
 export type VendorCategory =
   | 'construction'
@@ -20,6 +21,7 @@ export type VendorListItem = {
   contactName?: string;
   category: VendorCategory;
   status: VendorStatus;
+  lifecycleStatus: VendorLifecycleStatus;
   documentCount: number;
   documentTarget: number;
   nextExpiry: {ro: string; en: string; tone: 'danger' | 'warning' | 'neutral'};
@@ -53,7 +55,7 @@ export type VendorDetailsViewModel = {
   vendor: VendorListItem;
   registrationCode?: string;
   categoryDetail?: {ro: string; en: string};
-  validDocumentCount: number;
+  validDocumentCount?: number;
   invitationPreview?: {
     /** Deterministic display-only URL; not a generated access token. */
     demoUploadUrl: string;
@@ -65,7 +67,7 @@ export type VendorDetailsViewModel = {
   contact: {
     name?: string;
     role?: {ro: string; en: string};
-    email: string;
+    email?: string;
     phone?: string;
     address?: {ro: string; en: string};
     website?: string;

@@ -1,7 +1,8 @@
 'use client';
 
 import {useSyncExternalStore} from 'react';
-import type {VendorCategory, VendorDetailsViewModel, VendorListItem, VendorsListViewModel} from './types';
+import {vendorsListFixture} from './fixtures';
+import type {VendorCategory, VendorDetailsViewModel, VendorLifecycleStatus, VendorListItem, VendorsListViewModel} from './types';
 
 export type CreatedVendor = {
   id: string;
@@ -16,10 +17,13 @@ export type CreatedVendor = {
   address?: string;
   website?: string;
   notes?: string;
+  lifecycleStatus: VendorLifecycleStatus;
 };
 
-const emptyVendors: CreatedVendor[] = [];
-let vendors: CreatedVendor[] = emptyVendors;
+export type NewVendorInput = Omit<CreatedVendor, 'id' | 'lifecycleStatus'>;
+
+const initialState = {createdVendors: [] as CreatedVendor[], fixtureVendors: vendorsListFixture.vendors};
+let state = initialState;
 const listeners = new Set<() => void>();
 
 function subscribe(listener: () => void) {
@@ -28,12 +32,37 @@ function subscribe(listener: () => void) {
 }
 
 export function useCreatedVendors() {
-  return useSyncExternalStore(subscribe, () => vendors, () => emptyVendors);
+  return useSyncExternalStore(subscribe, () => state.createdVendors, () => initialState.createdVendors);
 }
 
-export function createLocalVendor(input: Omit<CreatedVendor, 'id'>): CreatedVendor {
-  const vendor = {id: `local-${crypto.randomUUID()}`, ...input};
-  vendors = [vendor, ...vendors];
+export function getVendorState() {return state;}
+
+export function useVendorState() {
+  return useSyncExternalStore(subscribe, getVendorState, () => initialState);
+}
+
+export function vendorListItems(snapshot: typeof initialState, fixtures: VendorListItem[]): VendorListItem[] {
+  return [...snapshot.createdVendors.map(toVendorListItem), ...fixtures.map((vendor) => ({...vendor,
+    lifecycleStatus: snapshot.fixtureVendors.find((item) => item.id === vendor.id)?.lifecycleStatus ?? vendor.lifecycleStatus}))];
+}
+
+export function vendorSummary(vendors: VendorListItem[]) {
+  const active = vendors.filter((vendor) => vendor.lifecycleStatus === 'active');
+  return {all: vendors.length, compliant: active.filter((vendor) => vendor.status === 'compliant').length,
+    attention: active.filter((vendor) => vendor.status === 'attention').length, noncompliant: active.filter((vendor) => vendor.status === 'noncompliant').length};
+}
+
+export function setVendorLifecycle(vendorId: string, lifecycleStatus: VendorLifecycleStatus) {
+  const vendor = state.createdVendors.find((item) => item.id === vendorId) ?? state.fixtureVendors.find((item) => item.id === vendorId);
+  if (!vendor || vendor.lifecycleStatus === lifecycleStatus) return;
+  state = {...state, createdVendors: state.createdVendors.map((item) => item.id === vendorId ? {...item, lifecycleStatus} : item),
+    fixtureVendors: state.fixtureVendors.map((item) => item.id === vendorId ? {...item, lifecycleStatus} : item)};
+  listeners.forEach((listener) => listener());
+}
+
+export function createLocalVendor(input: NewVendorInput): CreatedVendor {
+  const vendor: CreatedVendor = {...input, id: `local-${crypto.randomUUID()}`, lifecycleStatus: 'active'};
+  state = {...state, createdVendors: [vendor, ...state.createdVendors]};
   listeners.forEach((listener) => listener());
   return vendor;
 }
@@ -46,6 +75,7 @@ export function toVendorListItem(vendor: CreatedVendor): VendorListItem {
     contactName: vendor.contactName,
     category: vendor.category,
     status: 'attention',
+    lifecycleStatus: vendor.lifecycleStatus,
     documentCount: 0,
     documentTarget: 0,
     nextExpiry: {ro: '—', en: '—', tone: 'neutral'}
