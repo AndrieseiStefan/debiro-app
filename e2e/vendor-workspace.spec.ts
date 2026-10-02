@@ -179,7 +179,8 @@ for (const english of [false, true]) {
       await expect(thread).toHaveCount(0);
     }
     await expect(page.locator('#vendor-note-content')).toHaveCount(0);
-    await expect(page.getByRole('button', {name: english ? 'Create the first note' : 'Creează prima notiță'})).toBeVisible();
+    await expect(page.getByRole('button', {name: english ? 'Create the first note' : 'Creează prima notiță'})).toHaveCount(0);
+    await expect(page.locator('#vendor-notes').getByRole('button')).toHaveCount(1);
   });
   test(`${english ? 'EN' : 'RO'} responsive tabs and safe invitation without contact email`, async ({page}) => {
     await page.goto(`${prefix}/vendors/construct-pro`);
@@ -206,6 +207,77 @@ for (const english of [false, true]) {
     await expect(page.getByRole('dialog').getByRole('button', {name: english ? 'Send invitation' : 'Trimite invitația'})).toBeDisabled();
     await page.getByRole('dialog').getByRole('button', {name: english ? 'Add contact' : 'Adaugă contact', exact: true}).click();
     await expect(page.locator('#vendor-contacts')).toBeVisible();
+  });
+  test(`${english ? 'EN' : 'RO'} missing requirements banner updates after upload/removal and ignores search`, async ({page}) => {
+    await page.goto(`${prefix}/vendors/construct-pro`);
+    const banner = page.locator('[data-missing-requirements]');
+    const message = (count: number) => english ? `${count} ${count === 1 ? 'document is' : 'documents are'} missing from this supplier's required list.` : `${count} ${count === 1 ? 'document lipsește' : 'documente lipsesc'} din lista cerută pentru acest furnizor.`;
+    await expect(banner).toHaveText(message(1));
+    await expect(banner.locator('a, button')).toHaveCount(0);
+    await page.getByRole('searchbox', {name: english ? 'Search documents' : 'Caută documente'}).fill('no-matching-document');
+    await expect(banner).toHaveText(message(1));
+    await page.getByRole('searchbox', {name: english ? 'Search documents' : 'Caută documente'}).fill('');
+    await page.getByRole('button', {name: english ? 'Set up documents from templates' : 'Setează documente din șablon'}).click();
+    const selector = page.getByRole('dialog');
+    await selector.getByRole('checkbox', {name: english ? /^Construction subcontractor/ : /^Subcontractor construcții/}).check();
+    await selector.getByRole('button', {name: english ? 'Apply 1 template' : 'Aplică 1 șablon'}).click();
+    await page.getByRole('dialog').getByRole('button', {name: english ? 'Apply templates' : 'Aplică șabloanele', exact: true}).click();
+    await expect(banner).toHaveText(message(3));
+    const uploadMissing = async (name: string) => {
+      await page.getByRole('row').filter({hasText: name}).getByRole('button', {name: english ? 'Upload' : 'Încarcă', exact: true}).click();
+      const drawer = page.getByRole('dialog');
+      await drawer.locator('input[type=file]').setInputFiles({name: 'missing-document.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF local fixture')});
+      await drawer.getByRole('button', {name: english ? 'Upload and continue' : 'Încarcă și continuă'}).click();
+      await expect(drawer).toHaveCount(0);
+    };
+    const removeMissing = async (name: string) => {
+      await page.getByRole('row').filter({hasText: name}).getByRole('button', {name: english ? `Actions for ${name}` : `Acțiuni pentru ${name}`, exact: true}).click();
+      await page.getByRole('menuitem', {name: english ? 'Remove requirement' : 'Elimină cerința'}).click();
+      await page.getByRole('alertdialog').getByRole('button', {name: english ? 'Remove requirement' : 'Elimină cerința', exact: true}).click();
+    };
+    await uploadMissing(english ? 'Work permit' : 'Autorizație de lucru');
+    await expect(banner).toHaveText(message(2));
+    await removeMissing(english ? 'Occupational safety declaration' : 'Declarație SSM');
+    await expect(banner).toHaveText(message(1));
+    await removeMissing(english ? 'ISO 9001 certification' : 'Certificat ISO 9001');
+    await expect(banner).toHaveCount(0);
+    await page.reload();
+    await uploadMissing(english ? 'ISO 9001 certification' : 'Certificat ISO 9001');
+    await expect(banner).toHaveCount(0);
+  });
+  test(`${english ? 'EN' : 'RO'} explicit note titles focus, validate, save and discard with content atomically`, async ({page}) => {
+    await page.goto(`${prefix}/vendors/construct-pro`);
+    await page.getByRole('tab', {name: english ? 'Notes' : 'Note', exact: true}).click();
+    const notes = page.locator('#vendor-notes');
+    await expect(notes.getByRole('button')).toHaveCount(1);
+    await notes.getByRole('button', {name: english ? 'Create a thread' : 'Creează un thread'}).click();
+    const title = page.getByRole('textbox', {name: english ? 'Thread title' : 'Titlul thread-ului', exact: true});
+    const content = page.locator('#vendor-note-content');
+    const save = page.getByRole('button', {name: english ? 'Save changes' : 'Salvează modificările'});
+    await expect(title).toBeFocused();
+    await expect(title).toHaveValue(english ? 'New note' : 'Notiță nouă');
+    expect(await title.evaluate((element: HTMLInputElement) => [element.selectionStart, element.selectionEnd])).toEqual([0, (english ? 'New note' : 'Notiță nouă').length]);
+    expect(await title.evaluate((element) => getComputedStyle(element).borderTopColor)).not.toBe('rgba(0, 0, 0, 0)');
+    await title.fill('   '); await expect(save).toBeDisabled();
+    await expect(title).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('#vendor-note-title-error')).toBeVisible();
+    await title.fill('  Contract discussions  '); await content.fill('Saved content'); await save.click();
+    await expect(title).toHaveValue('Contract discussions'); await expect(save).toBeDisabled();
+    const row = notes.locator('[data-note-id]'); await expect(row).toContainText('Contract discussions');
+    await title.fill('Contract renewal'); await expect(save).toBeEnabled(); await save.click();
+    await expect(row).toContainText('Contract renewal'); await expect(content).toHaveValue('Saved content'); await expect(save).toBeDisabled();
+    await title.fill('Unsaved title'); await content.fill('Unsaved content');
+    await page.getByRole('tab', {name: english ? 'Contacts' : 'Contacte', exact: true}).click();
+    await page.getByRole('alertdialog').getByRole('button', {name: english ? 'Continue editing' : 'Continuă editarea'}).click();
+    await expect(title).toHaveValue('Unsaved title'); await expect(content).toHaveValue('Unsaved content');
+    await page.getByRole('tab', {name: english ? 'Contacts' : 'Contacte', exact: true}).click();
+    await page.getByRole('alertdialog').getByRole('button', {name: english ? 'Discard changes' : 'Renunță la modificări'}).click();
+    await page.getByRole('tab', {name: english ? 'Notes' : 'Note', exact: true}).click();
+    await expect(title).toHaveValue('Contract renewal'); await expect(content).toHaveValue('Saved content'); await expect(save).toBeDisabled();
+    await title.fill('Title-only navigation');
+    await page.getByRole('navigation', {name: english ? 'Application navigation' : 'Navigare în aplicație'}).getByRole('link', {name: english ? 'Documents' : 'Documente', exact: true}).click();
+    await page.getByRole('alertdialog').getByRole('button', {name: english ? 'Continue editing' : 'Continuă editarea'}).click();
+    await expect(page).toHaveURL(/vendors\/construct-pro$/); await expect(title).toHaveValue('Title-only navigation');
   });
 }
 

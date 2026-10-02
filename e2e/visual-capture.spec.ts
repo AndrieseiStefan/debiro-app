@@ -25,15 +25,18 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   await page.waitForLoadState('networkidle');
   await page.evaluate(async () => { await document.fonts.ready; });
   if (action) {
-    if (action === 'vendor-contacts' || action === 'vendor-activity' || action === 'vendor-notes' || action === 'vendor-notes-discard' || action === 'vendor-notes-delete' || action === 'contact-drawer') {
+    if (action === 'vendor-documents' || action === 'vendor-contacts' || action === 'vendor-activity' || action === 'vendor-notes' || action === 'vendor-notes-empty' || action === 'vendor-notes-new' || action === 'vendor-notes-discard' || action === 'vendor-notes-delete' || action === 'contact-drawer') {
       if (route !== '/vendors/construct-pro' && route !== '/en/vendors/construct-pro') throw new Error('Vendor workspace capture requires the canonical vendor route.');
       const english = route.startsWith('/en');
-      const section = action === 'vendor-activity' ? english ? 'Activity' : 'Activitate' : action.startsWith('vendor-notes') ? english ? 'Notes' : 'Note' : english ? 'Contacts' : 'Contacte';
+      const section = action === 'vendor-documents' ? english ? 'Documents' : 'Documente' : action === 'vendor-activity' ? english ? 'Activity' : 'Activitate' : action.startsWith('vendor-notes') ? english ? 'Notes' : 'Note' : english ? 'Contacts' : 'Contacte';
       await page.getByRole('tab', {name: section, exact: true}).click();
       if (action === 'contact-drawer') {
         await page.getByRole('button', {name: english ? 'Add contact' : 'Adaugă contact', exact: true}).click();
         await expect(page.getByRole('dialog')).toBeVisible();
-      } else if (action.startsWith('vendor-notes')) {
+      } else if (action === 'vendor-notes-new') {
+        await page.getByRole('button', {name: english ? 'Create a thread' : 'Creează un thread'}).click();
+        await expect(page.locator('#vendor-note-title')).toBeFocused();
+      } else if (action.startsWith('vendor-notes') && action !== 'vendor-notes-empty') {
         for (const title of english ? ['General discussions', 'Compliance and documents', 'Site access'] : ['Discuții generale', 'Conformitate și documente', 'Acces șantier']) {
           await page.getByRole('button', {name: english ? 'Create a thread' : 'Creează un thread'}).click();
           await page.locator('#vendor-note-title').fill(title);
@@ -214,7 +217,7 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   const output = path.join(process.cwd(), 'artifacts', 'visual', `${name}${action ? `-${action}` : ''}${viewportWidth ? `-${viewportWidth}x${viewportHeight}` : ''}.png`);
   await page.screenshot({path: output, fullPage: !action || action === 'requirement-edit' || action === 'requirement-preview' || action.startsWith('vendor-'), animations: 'disabled'});
   if (action === 'vendor-menu') await page.getByRole('menu').screenshot({path: output.replace(/\.png$/, '-menu.png'), animations: 'disabled'});
-  if (action === 'vendor-contacts' || action === 'vendor-activity' || action === 'vendor-notes') await page.getByRole('tabpanel').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});
+  if (action === 'vendor-documents' || action === 'vendor-contacts' || action === 'vendor-activity' || action === 'vendor-notes' || action === 'vendor-notes-empty' || action === 'vendor-notes-new') await page.getByRole('tabpanel').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});
   if (action === 'requirement-preview') await page.locator('#preview-panel').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});
   if (/^\/(en\/)?upload\//.test(route)) await page.locator('[data-supplier-requirements]').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});
 });

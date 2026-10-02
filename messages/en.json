@@ -78,7 +78,6 @@
       "saved": "Changes saved.",
       "titleRequired": "Enter a thread title.",
       "empty": "There are no notes for this vendor.",
-      "first": "Create the first note",
       "actionsFor": "Actions for thread {name}",
       "discardTitle": "Discard unsaved changes?",
       "discardDescription": "You have unsaved changes in this thread. Are you sure you want to leave the tab?",
@@ -787,7 +786,7 @@
     "upload": "Upload",
     "documentActions": "Actions for {name}",
     "noDocuments": "No documents match your search.",
-    "missingNotice": "{count} document is missing from this supplier's required list.",
+    "missingNotice": "{count, plural, one {# document is missing from this supplier's required list.} other {# documents are missing from this supplier's required list.}}",
     "viewRequirements": "View applicable requirements",
     "bannerTitle": "Strong partnerships build lasting businesses.",
     "bannerDescription": "Compliance. Trust. Progress.",
@@ -1104,7 +1103,6 @@
     "loadingLabel": "Loading content"
   },
   "VendorTemplates": {
-    "configuredNotice": "This vendor has documents configured through templates. Check periodically that they remain relevant to the current category.",
     "title": "Set up documents from templates",
     "close": "Close template selector",
     "description": "Select one or more templates to add the relevant documents for this supplier. Only documents that do not already exist will be added.",

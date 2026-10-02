@@ -60,7 +60,9 @@
 .thread strong {font-size: 13px;}
 .thread small {color: #56729a; font-size: 11px;}
 .editor {display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 22px;}
-.noteTitle {background: transparent; border: 1px solid transparent; border-radius: 6px; color: #142649; font-size: 18px; font-weight: 700; min-width: 0; padding: 6px; width: 100%;}
+.noteTitle {background: var(--color-surface); border: 1px solid #cbdcf8; border-radius: 6px; color: #142649; font-size: 18px; font-weight: 700; min-width: 0; padding: 6px; width: 100%;}
+.noteTitle:focus {border-color: var(--color-action-primary);}
+.noteTitle[aria-invalid='true'] {border-color: var(--color-danger);}
 .editor > p {color: #56729a; font-size: 13px;}
 .editor > small {color: #56729a; font-size: 12px;}
 .editor textarea {background: #fff; border: 1px solid #cbdcf8; border-radius: 8px; color: #193258; font-size: 14px; line-height: 1.6; margin-top: 8px; min-height: 230px; min-width: 0; padding: 14px; resize: vertical; width: 100%;}

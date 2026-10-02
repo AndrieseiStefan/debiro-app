@@ -78,7 +78,6 @@
       "saved": "Modificările au fost salvate.",
       "titleRequired": "Introdu un titlu pentru thread.",
       "empty": "Nu există notițe pentru acest furnizor.",
-      "first": "Creează prima notiță",
       "actionsFor": "Acțiuni pentru thread-ul {name}",
       "discardTitle": "Renunți la modificările nesalvate?",
       "discardDescription": "Ai modificări nesalvate în acest thread. Ești sigur că vrei să părăsești tab-ul?",
@@ -787,7 +786,7 @@
     "upload": "Încarcă",
     "documentActions": "Acțiuni pentru {name}",
     "noDocuments": "Niciun document nu corespunde căutării.",
-    "missingNotice": "{count} document lipsesc din lista cerută pentru acest furnizor.",
+    "missingNotice": "{count, plural, one {# document lipsește din lista cerută pentru acest furnizor.} other {# documente lipsesc din lista cerută pentru acest furnizor.}}",
     "viewRequirements": "Vezi cerințele aplicabile",
     "bannerTitle": "Parteneriate solide construiesc afaceri durabile.",
     "bannerDescription": "Conformitate. Încredere. Progres.",
@@ -1104,7 +1103,6 @@
     "loadingLabel": "Se încarcă conținutul"
   },
   "VendorTemplates": {
-    "configuredNotice": "Acest furnizor are documente configurate prin șabloane. Verifică periodic dacă acestea sunt în continuare relevante pentru categoria actuală.",
     "title": "Setează documente din șablon",
     "close": "Închide selectorul de șabloane",
     "description": "Selectează unul sau mai multe șabloane pentru a adăuga documentele relevante acestui furnizor. Vor fi adăugate doar documentele care nu există deja.",

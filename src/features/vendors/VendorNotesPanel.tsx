@@ -28,6 +28,8 @@ export function VendorNotesPanel({companyId, vendorId, language, navigationRef}:
   const pending = useRef<(() => void) | null>(null);
   const allowNavigation = useRef(false);
   const historyGuard = useRef<{restore: () => void; release: () => Promise<void>} | null>(null);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const focusNewTitle = useRef(false);
   const dirty = Boolean(draft && (!draft.id || draft.title !== selected?.title || draft.content !== selected?.content));
   const displayed = draft ?? selected;
   const proceed = useCallback((action: () => void) => {
@@ -42,6 +44,12 @@ export function VendorNotesPanel({companyId, vendorId, language, navigationRef}:
   useImperativeHandle(navigationRef, () => ({requestLeave}), [requestLeave]);
   const continueEditing = useCallback(() => {historyGuard.current?.restore(); setConfirmDiscard(false); pending.current = null;}, [setConfirmDiscard]);
   const cancelDelete = useCallback(() => setDeleting(null), [setDeleting]);
+  useEffect(() => {
+    if (!focusNewTitle.current || !titleRef.current) return;
+    focusNewTitle.current = false;
+    titleRef.current.focus();
+    titleRef.current.select();
+  }, [draft]);
 
   // Same capture-before-navigation/confirmation pattern as Requirement editing.
   useEffect(() => {
@@ -104,7 +112,7 @@ export function VendorNotesPanel({companyId, vendorId, language, navigationRef}:
     return () => {window.removeEventListener('beforeunload', beforeUnload); window.removeEventListener('popstate', back, true); navigation?.removeEventListener('navigate', traverse); document.removeEventListener('click', click, true); if (historyGuard.current === guard) historyGuard.current = null; void guard.release();};
   }, [dirty, requestLeave, router]);
 
-  function create() {requestLeave(() => {setSelectedId(undefined); setDraft({title: t('newTitle'), content: ''}); setSaved(false);});}
+  function create() {requestLeave(() => {focusNewTitle.current = true; setSelectedId(undefined); setDraft({title: t('newTitle'), content: ''}); setSaved(false);});}
   function select(thread: VendorNoteThread) {if (selectedId === thread.id) return; requestLeave(() => {setSelectedId(thread.id); setDraft(null); setSaved(false);});}
   function update(patch: Partial<Draft>) {setDraft({...displayed!, ...patch}); setSaved(false);}
   function save() {
@@ -117,7 +125,7 @@ export function VendorNotesPanel({companyId, vendorId, language, navigationRef}:
     <aside className={styles.threadList} aria-label={t('listLabel')}><header><h2>{t('threads', {count: threads.length})}</h2><button type="button" aria-label={t('new')} onClick={create}><AppIcon name="plus" size={20}/></button></header>
       {threads.map((thread) => <div key={thread.id} className={styles.thread} data-selected={selectedId === thread.id} data-note-id={thread.id}><button type="button" onClick={() => select(thread)} aria-pressed={selectedId === thread.id}><AppIcon name="file" size={20}/><span><strong>{thread.title}</strong><small>{t('updated', {date: date(thread.updatedAt)})}</small></span></button><VendorDocumentActions name={thread.title} actionLabel={t('actionsFor', {name: thread.title})} actions={[{label: t('delete'), onClick: () => requestLeave(() => setDeleting(thread))}]}/></div>)}
     </aside>
-    {displayed ? <section className={styles.editor} aria-label={t('editor')}><label htmlFor="vendor-note-title" className={styles.srOnly}>{t('titleLabel')}</label><input id="vendor-note-title" className={styles.noteTitle} value={displayed.title} onChange={(event) => update({title: event.target.value})} aria-invalid={!displayed.title.trim()}/><p>{t('description')}</p>{selected && <small>{t('updated', {date: date(selected.updatedAt)})}</small>}<label htmlFor="vendor-note-content" className={styles.srOnly}>{t('contentLabel')}</label><textarea id="vendor-note-content" value={displayed.content} onChange={(event) => update({content: event.target.value})}/>{!displayed.title.trim() && <p role="alert" className={styles.error}>{t('titleRequired')}</p>}<footer>{saved && <span role="status">{t('saved')}</span>}<Button disabled={!dirty || !displayed.title.trim()} onClick={save}>{t('save')}</Button></footer></section> : <div className={styles.notesEmpty}><AppIcon name="file" size={32}/><p>{t('empty')}</p><Button onClick={create}>{t('first')}</Button></div>}
+    {displayed ? <section className={styles.editor} aria-label={t('editor')}><label htmlFor="vendor-note-title" className={styles.srOnly}>{t('titleLabel')}</label><input ref={titleRef} id="vendor-note-title" className={styles.noteTitle} value={displayed.title} onChange={(event) => update({title: event.target.value})} aria-invalid={!displayed.title.trim()} aria-describedby={!displayed.title.trim() ? 'vendor-note-title-error' : undefined}/><p>{t('description')}</p>{selected && <small>{t('updated', {date: date(selected.updatedAt)})}</small>}<label htmlFor="vendor-note-content" className={styles.srOnly}>{t('contentLabel')}</label><textarea id="vendor-note-content" value={displayed.content} onChange={(event) => update({content: event.target.value})}/>{!displayed.title.trim() && <p id="vendor-note-title-error" role="alert" className={styles.error}>{t('titleRequired')}</p>}<footer>{saved && <span role="status">{t('saved')}</span>}<Button disabled={!dirty || !displayed.title.trim()} onClick={save}>{t('save')}</Button></footer></section> : <div className={styles.notesEmpty}><AppIcon name="file" size={32}/><p>{t('empty')}</p></div>}
   </Surface>
     {confirmDiscard && <ConfirmationDialog icon="warning" title={t('discardTitle')} description={t('discardDescription')} cancelLabel={t('continue')} confirmLabel={t('discard')} onCancel={continueEditing} onConfirm={() => {setDraft(null); setConfirmDiscard(false); const action = pending.current; pending.current = null; if (action) proceed(action);}}/>}
     {deleting && <ConfirmationDialog icon="warning" title={t('deleteTitle')} description={t('deleteDescription')} cancelLabel={t('cancel')} confirmLabel={t('deleteConfirm')} onCancel={cancelDelete} onConfirm={() => {

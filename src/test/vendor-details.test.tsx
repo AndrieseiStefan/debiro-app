@@ -102,6 +102,6 @@ describe('vendor details', () => {
     expect(within(dialog).getByText('Introdu numele furnizorului.')).toBeVisible();
     fireEvent.click(within(dialog).getByRole('button', {name: 'Anulează'}));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    expect(screen.getByRole('button', {name: 'Invită furnizor'})).toHaveFocus();
+    await waitFor(() => expect(screen.getByRole('button', {name: 'Invită furnizor'})).toHaveFocus());
   });
 });
