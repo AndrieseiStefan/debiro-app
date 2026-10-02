@@ -5,6 +5,7 @@ import {getDocumentReviewFixture} from '@/features/document-review/fixtures';
 import type {DocumentSummary, DocumentType} from './types';
 import type {VendorDocumentRow} from '@/features/vendors/types';
 import type {DocumentTypeSnapshot} from '@/features/requirements/document-types';
+import {recordLocalAuditEvent} from '@/features/notifications/local-audit';
 
 export type CreatedDocument = DocumentSummary & {
   companyId?: string;
@@ -60,6 +61,8 @@ export function createLocalDocument(input: NewDocument): CreatedDocument {
     extractionState: reviewRequired ? 'simulated' : 'none'
   };
   documents = [document, ...documents];
+  recordLocalAuditEvent(document.companyId ?? 'demo-company', {vendorId: document.vendorId, documentId: document.id, actorName: document.uploadedBy,
+    eventType: 'document_upload', action: {ro: 'Document încărcat', en: 'Document uploaded'}, description: document.documentName, occurredAt: document.createdAt});
   listeners.forEach((listener) => listener());
   return document;
 }

@@ -34,7 +34,7 @@ describe('vendor details', () => {
     expect(screen.getByRole('button', {name: 'Adaugă document'})).toHaveAttribute('data-page-primary-action');
     expect(screen.getByText('ion.popescu@scconstruct.ro')).toBeVisible();
     expect(screen.getByRole('tab', {name: 'Documente'})).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('tab', {name: 'Contacte'})).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('tab', {name: 'Contacte'})).not.toHaveAttribute('aria-disabled');
     expect(screen.getByRole('table').getElementsByTagName('tbody')[0].rows).toHaveLength(5);
     for (const status of ['Valid', 'Expiră curând', 'Expirat', 'Lipsește']) expect(screen.getAllByText(status).length).toBeGreaterThan(0);
     expect(screen.getByText('Parteneriate solide construiesc afaceri durabile.')).toBeVisible();
@@ -79,7 +79,7 @@ describe('vendor details', () => {
     expect(screen.getByText('Nu sunt disponibile date de contact.')).toBeVisible();
     expect(screen.getByText('Nu există documente încă.')).toBeVisible();
     expect(screen.queryByRole('link', {name: /@/})).not.toBeInTheDocument();
-    expect(screen.getByRole('tab', {name: 'Note'})).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('tab', {name: 'Note'})).not.toHaveAttribute('aria-disabled');
     setVendorLifecycle(view.vendor.id, 'active');
   });
 
@@ -89,16 +89,17 @@ describe('vendor details', () => {
     const dialog = screen.getByRole('dialog', {name: 'Invită furnizorul să încarce documentele'});
     expect(dialog).toBeVisible();
     expect(within(dialog).getByRole('textbox', {name: /Numele furnizorului/})).toHaveValue('Construct Pro SRL');
-    expect(within(dialog).getByRole('textbox', {name: /Email de contact/})).toHaveValue('ion.popescu@scconstruct.ro');
+    expect((within(dialog).getByRole('combobox', {name: /Selectează persoana de contact/}) as HTMLSelectElement).selectedOptions[0].textContent).toContain('ion.popescu@scconstruct.ro');
     expect(within(dialog).getByRole('textbox', {name: /Link de încărcare securizat/})).toHaveValue('https://debiro.ro/upload/demo-construct-pro');
     expect(within(dialog).getByRole('link', {name: /Previzualizează pagina de încărcare/})).toHaveAttribute('href', '/upload/demo-construct-pro');
     expect(within(dialog).getByText('140/500')).toBeVisible();
     expect(within(dialog).getByText('Linkul va expira la 14 mar. 2025.')).toBeVisible();
     fireEvent.change(within(dialog).getByRole('textbox', {name: /Numele furnizorului/}), {target: {value: ''}});
-    fireEvent.change(within(dialog).getByRole('textbox', {name: /Email de contact/}), {target: {value: 'invalid'}});
+    fireEvent.change(within(dialog).getByRole('combobox', {name: /Selectează persoana de contact/}), {target: {value: ''}});
+    expect(within(dialog).getByRole('button', {name: 'Trimite invitația'})).toBeDisabled();
+    fireEvent.change(within(dialog).getByRole('combobox', {name: /Selectează persoana de contact/}), {target: {value: 'contact:construct-pro:primary'}});
     fireEvent.click(within(dialog).getByRole('button', {name: 'Trimite invitația'}));
     expect(within(dialog).getByText('Introdu numele furnizorului.')).toBeVisible();
-    expect(within(dialog).getByText('Introdu o adresă de email validă.')).toBeVisible();
     fireEvent.click(within(dialog).getByRole('button', {name: 'Anulează'}));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(screen.getByRole('button', {name: 'Invită furnizor'})).toHaveFocus();

@@ -16,7 +16,7 @@ describe('new vendor view mapping', () => {
     expect(details.validDocumentCount).toBe(0);
     expect(details.invitationPreview).toBeUndefined();
     expect(details.registrationCode).toBeUndefined();
-    expect(details.contact).toEqual({name: undefined, email: 'hello@atlas.example', phone: undefined, address: undefined, website: undefined});
+    expect(details.contact).toEqual({name: undefined, email: 'hello@atlas.example', phone: undefined, role: undefined, address: undefined, website: undefined});
     expect(details.notes).toBeUndefined();
   });
 

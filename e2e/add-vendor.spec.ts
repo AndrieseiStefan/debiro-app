@@ -33,8 +33,8 @@ test('validates required fields and creates a setup-needed vendor without inheri
   await expect(page.getByText('Nu sunt cerințe configurate')).toBeVisible();
   await expect(page.getByRole('table').getByRole('row')).toHaveCount(1);
   await expect(page.getByText('Nu există documente încă.')).toBeVisible();
-  await expect(page.getByRole('button', {name: 'Invită furnizor'})).toHaveAttribute('aria-disabled', 'true');
-  await expect(page.getByRole('tab', {name: 'Note'})).toHaveAttribute('aria-disabled', 'true');
+  await expect(page.getByRole('button', {name: 'Invită furnizor'})).toBeEnabled();
+  await expect(page.getByRole('tab', {name: 'Note'})).not.toHaveAttribute('aria-disabled');
   await expect(page.getByText('contact@atlas.example')).toBeVisible();
   await expect(page.getByText('Persoană de contact', {exact: true})).toHaveCount(0);
 

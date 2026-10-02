@@ -8,8 +8,10 @@ import {AppIcon} from '@/components/layout/AppIcon';
 import menuStyles from './VendorsListPage.module.css';
 import styles from './VendorDetailsPage.module.css';
 
-export function VendorDocumentActions({name, reviewRoute, onRemove}: {name: string; reviewRoute?: string | null; onRemove?: () => void}) {
+export function VendorDocumentActions({name, reviewRoute, onRemove, actions, actionLabel}: {name: string; reviewRoute?: string | null; onRemove?: () => void; actions?: {label: string; onClick: () => void}[]; actionLabel?: string}) {
   const t = useTranslations('VendorTemplates');
+  const label = actionLabel ?? t('rowActions', {name});
+  const available = Boolean(onRemove || actions?.length);
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({left: 0, top: 0, width: 220});
   const trigger = useRef<HTMLButtonElement>(null);
@@ -30,11 +32,11 @@ export function VendorDocumentActions({name, reviewRoute, onRemove}: {name: stri
     return () => {document.removeEventListener('pointerdown', outside); document.removeEventListener('focusin', outside); window.removeEventListener('resize', place); window.removeEventListener('scroll', place, true);};
   }, [open]);
   function close() {setOpen(false); trigger.current?.focus({preventScroll: true});}
-  if (!onRemove && reviewRoute) return <Link href={reviewRoute} aria-label={t('rowActions', {name})} className={styles.moreAction}><AppIcon name="more" size={19}/></Link>;
-  return <><button ref={trigger} type="button" aria-label={t('rowActions', {name})} aria-haspopup="menu" aria-expanded={open} aria-disabled={!onRemove || undefined} className={styles.moreAction} onClick={onRemove ? () => setOpen(!open) : undefined} onKeyDown={(event) => {if (onRemove && ['ArrowDown', 'ArrowUp'].includes(event.key)) {event.preventDefault(); setOpen(true);}}}><AppIcon name="more" size={19}/></button>
-    {open && createPortal(<div ref={menu} role="menu" aria-label={t('rowActions', {name})} className={menuStyles.rowMenu} style={position} onKeyDown={(event) => {
+  if (!available && reviewRoute) return <Link href={reviewRoute} aria-label={label} className={styles.moreAction}><AppIcon name="more" size={19}/></Link>;
+  return <><button ref={trigger} type="button" aria-label={label} aria-haspopup="menu" aria-expanded={open} aria-disabled={!available || undefined} className={styles.moreAction} onClick={available ? () => setOpen(!open) : undefined} onKeyDown={(event) => {if (available && ['ArrowDown', 'ArrowUp'].includes(event.key)) {event.preventDefault(); setOpen(true);}}}><AppIcon name="more" size={19}/></button>
+    {open && createPortal(<div ref={menu} role="menu" aria-label={label} className={menuStyles.rowMenu} style={position} onKeyDown={(event) => {
       if (event.key === 'Escape' || event.key === 'Tab') {if (event.key === 'Escape') event.preventDefault(); close();}
       if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {event.preventDefault(); const items = [...event.currentTarget.querySelectorAll<HTMLElement>('[role="menuitem"]')]; const index = items.indexOf(document.activeElement as HTMLElement); items[event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : (index + (event.key === 'ArrowUp' ? -1 : 1) + items.length) % items.length]?.focus();}
-    }}>{reviewRoute && <Link role="menuitem" tabIndex={-1} href={reviewRoute} onClick={close}>{t('review')}</Link>}<button role="menuitem" type="button" tabIndex={-1} onClick={() => {close(); onRemove?.();}}>{t('removeRequirement')}</button></div>, document.body)}
+    }}>{reviewRoute && <Link role="menuitem" tabIndex={-1} href={reviewRoute} onClick={close}>{t('review')}</Link>}{onRemove && <button role="menuitem" type="button" tabIndex={-1} onClick={() => {close(); onRemove();}}>{t('removeRequirement')}</button>}{actions?.map((action) => <button key={action.label} role="menuitem" type="button" tabIndex={-1} onClick={() => {close(); action.onClick();}}>{action.label}</button>)}</div>, document.body)}
   </>;
 }

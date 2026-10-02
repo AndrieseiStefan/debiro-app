@@ -20,15 +20,18 @@ export type NotificationActivityItem = {
 /** Read-only history: a distinct contract from notifications. */
 export type AuditEvent = {
   id: string;
-  eventType: NotificationActivityType;
+  eventType: AuditEventType;
   actorType: 'user' | 'system';
   actorName?: string;
   action: LocalizedText;
   description: LocalizedText;
   vendorId?: string;
   documentId?: string;
+  templateId?: string;
   occurredAt: string;
+  dateOnly?: boolean;
 };
+export type AuditEventType = NotificationActivityType | 'template_applied' | 'vendor_invited' | 'vendor_edited' | 'vendor_active' | 'vendor_inactive' | 'requirement_removed';
 
 export type ExpiringDocumentSummary = {
   id: string;

@@ -14,6 +14,15 @@ export type VendorCategory =
 
 export const vendorCategories: VendorCategory[] = ['construction', 'cleaning', 'software', 'materials', 'logistics', 'energy', 'food', 'medical'];
 
+/** Browser-memory contracts, scoped to the vendor inside its owning company. */
+export type VendorContact = {
+  id: string; companyId: string; vendorId: string; name?: string; role?: string;
+  email: string; phone?: string; isPrimary: boolean; createdAt: string; updatedAt: string;
+};
+export type VendorNoteThread = {
+  id: string; companyId: string; vendorId: string; title: string; content: string; createdAt: string; updatedAt: string;
+};
+
 export type VendorListItem = {
   id: string;
   name: string;

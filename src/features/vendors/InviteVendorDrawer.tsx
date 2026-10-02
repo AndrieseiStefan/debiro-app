@@ -6,8 +6,10 @@ import {AppIcon} from '@/components/layout/AppIcon';
 import {Button} from '@/components/ui/Button';
 import {Drawer, type DrawerPhase} from '@/components/ui/Drawer';
 import {Field} from '@/components/ui/Field';
+import {SelectField} from '@/components/ui/SelectField';
+import {recordLocalAuditEvent} from '@/features/notifications/local-audit';
 import {Link} from '@/i18n/navigation';
-import type {VendorDetailsViewModel} from './types';
+import type {VendorContact, VendorDetailsViewModel} from './types';
 import styles from './InviteVendorDrawer.module.css';
 
 type Errors = Partial<Record<'name' | 'email' | 'validity' | 'message', string>>;
@@ -25,19 +27,25 @@ function DrawerIcon({name}: {name: 'mail' | 'link' | 'copy' | 'eye' | 'lock' | '
   return <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>;
 }
 
-export function InviteVendorDrawer({phase, onClose, onExited, triggerRef, vendorName, contactEmail, preview, locale}: {
+export function InviteVendorDrawer({phase, onClose, onExited, triggerRef, vendorName, contacts, companyId, vendorId, onAddContact, preview, locale}: {
   phase: DrawerPhase;
   onClose: () => void;
   onExited: () => void;
   triggerRef: RefObject<HTMLButtonElement | null>;
   vendorName: string;
-  contactEmail: string;
-  preview: NonNullable<VendorDetailsViewModel['invitationPreview']>;
+  contacts: VendorContact[];
+  companyId: string;
+  vendorId: string;
+  onAddContact: () => void;
+  preview?: VendorDetailsViewModel['invitationPreview'];
   locale: string;
 }) {
   const t = useTranslations('InviteVendor');
   const [name, setName] = useState(vendorName);
-  const [email, setEmail] = useState(contactEmail);
+  const recipients = contacts.filter((contact) => contact.vendorId === vendorId && contact.companyId === companyId && contact.email);
+  const [contactId, setContactId] = useState(() => (recipients.find((contact) => contact.isPrimary) ?? recipients[0])?.id ?? '');
+  const recipient = recipients.find((contact) => contact.id === contactId);
+  const email = recipient?.email ?? '';
   const [message, setMessage] = useState(t('defaultMessage'));
   const [validityDays, setValidityDays] = useState(30);
   const [sendEmail, setSendEmail] = useState(true);
@@ -47,7 +55,8 @@ export function InviteVendorDrawer({phase, onClose, onExited, triggerRef, vendor
   const [submitNote, setSubmitNote] = useState('');
   const firstFieldRef = useRef<HTMLInputElement>(null);
 
-  const expiry = new Date(`${preview.referenceDate}T00:00:00Z`);
+  const [referenceDate] = useState(() => preview?.referenceDate ?? new Date().toISOString().slice(0, 10));
+  const expiry = new Date(`${referenceDate}T00:00:00Z`);
   expiry.setUTCDate(expiry.getUTCDate() + validityDays);
   const expiryText = new Intl.DateTimeFormat(locale === 'en' ? 'en-GB' : 'ro-RO', {day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'}).format(expiry);
 
@@ -61,11 +70,14 @@ export function InviteVendorDrawer({phase, onClose, onExited, triggerRef, vendor
     if (message.length > maxMessageLength) nextErrors.message = t('messageTooLong');
     setErrors(nextErrors);
     setSubmitNote(Object.keys(nextErrors).length === 0 ? t('demoNotSent') : '');
+    if (Object.keys(nextErrors).length === 0 && recipient) recordLocalAuditEvent(companyId, {vendorId, eventType: 'vendor_invited',
+      action: {ro: 'Invitație simulată', en: 'Invitation simulated'}, description: {ro: `Invitație demonstrativă către ${recipient.email}; nu a fost trimisă`, en: `Demo invitation for ${recipient.email}; not sent`}});
     if (nextErrors.name) firstFieldRef.current?.focus();
-    else if (nextErrors.email) document.getElementById('invite-vendor-email')?.focus();
+    else if (nextErrors.email) document.getElementById('invite-vendor-contact')?.focus();
   }
 
   async function copyLink() {
+    if (!preview || !recipient) return;
     try {
       await navigator.clipboard.writeText(preview.demoUploadUrl);
       setCopyState('copied');
@@ -79,7 +91,8 @@ export function InviteVendorDrawer({phase, onClose, onExited, triggerRef, vendor
 
         <form id="invite-vendor-form" onSubmit={submit} noValidate>
           <Field id="invite-vendor-name" ref={firstFieldRef} label={t('vendorName')} required value={name} onChange={(event) => {setName(event.target.value); setErrors((current) => ({...current, name: undefined}));}} error={errors.name} />
-          <Field id="invite-vendor-email" label={t('contactEmail')} required type="email" value={email} onChange={(event) => {setEmail(event.target.value); setErrors((current) => ({...current, email: undefined}));}} error={errors.email} />
+          <SelectField id="invite-vendor-contact" label={t('selectContact')} placeholder={t('contactPlaceholder')} controlSize="compact" required disabled={!recipients.length} value={contactId} onChange={(event) => {setContactId(event.target.value); setSubmitNote(''); setErrors((current) => ({...current, email: undefined}));}} error={errors.email}>{recipients.map((contact) => <option key={contact.id} value={contact.id}>{contact.name ? `${contact.name} — ` : ''}{contact.email}</option>)}</SelectField>
+          {!recipients.length && <div className={styles.demoNote}><p>{t('noContacts')}</p><Button variant="secondary" onClick={onAddContact}>{t('addContact')}</Button></div>}
           <div className={styles.messageField}><label htmlFor="invite-message">{t('personalMessage')} <span>{t('optional')}</span></label><textarea id="invite-message" maxLength={maxMessageLength} value={message} onChange={(event) => setMessage(event.target.value)} aria-invalid={errors.message ? true : undefined} aria-describedby="invite-message-counter" /><span className={styles.counter} id="invite-message-counter">{message.length}/{maxMessageLength}</span>{errors.message && <span className={styles.error} role="alert">{errors.message}</span>}</div>
           <div className={styles.validityField}><label htmlFor="invite-validity">{t('linkValidity')} <span className={styles.required}>*</span></label><div className={styles.selectWrap}><AppIcon name="calendar" size={19}/><select id="invite-validity" value={validityDays} onChange={(event) => {setValidityDays(Number(event.target.value)); setErrors((current) => ({...current, validity: undefined}));}} aria-invalid={errors.validity ? true : undefined}>{[7, 14, 30, 60].map((days) => <option key={days} value={days}>{t('days', {count: days})}</option>)}</select><AppIcon name="chevronDown" size={18}/></div><p className={styles.expiryHelp}>{t('expiresOn', {date: expiryText})}</p>{errors.validity && <span className={styles.error} role="alert">{errors.validity}</span>}</div>
 
@@ -88,8 +101,8 @@ export function InviteVendorDrawer({phase, onClose, onExited, triggerRef, vendor
             <label className={styles.option}><span className={styles.optionIcon}><AppIcon name="bell" size={19}/></span><span className={styles.optionCopy}><strong>{t('notifyOnUpload')}</strong><small>{t('notifyHelp')}</small></span><input type="checkbox" checked={notifyUpload} onChange={(event) => setNotifyUpload(event.target.checked)} /><span className={styles.switch} aria-hidden="true" /></label>
           </div>
 
-          <div className={styles.linkSection}><label htmlFor="invite-upload-link"><DrawerIcon name="link" />{t('secureLink')}</label><div className={styles.linkRow}><input id="invite-upload-link" readOnly value={preview.demoUploadUrl}/><Button variant="secondary" onClick={copyLink}><DrawerIcon name="copy" />{copyState === 'copied' ? t('copied') : t('copy')}</Button></div>{copyState === 'failed' && <span className={styles.error} role="alert">{t('copyFailed')}</span>}<Link href={preview.demoUploadPath} locale={locale === 'en' ? 'en' : undefined} target="_blank" rel="noopener noreferrer" className={styles.preview}><DrawerIcon name="eye" />{t('previewUpload')}<span aria-hidden="true">↗</span></Link></div>
-          <div className={styles.actions}><Button variant="secondary" onClick={onClose}>{t('cancel')}</Button><Button type="submit"><DrawerIcon name="send" />{t('sendInvitation')}</Button></div>
+          {preview ? <div className={styles.linkSection}><label htmlFor="invite-upload-link"><DrawerIcon name="link" />{t('secureLink')}</label><div className={styles.linkRow}><input id="invite-upload-link" readOnly value={preview.demoUploadUrl}/><Button variant="secondary" disabled={!recipient} onClick={copyLink}><DrawerIcon name="copy" />{copyState === 'copied' ? t('copied') : t('copy')}</Button></div>{copyState === 'failed' && <span className={styles.error} role="alert">{t('copyFailed')}</span>}{recipient ? <Link href={preview.demoUploadPath} locale={locale === 'en' ? 'en' : undefined} target="_blank" rel="noopener noreferrer" className={styles.preview}><DrawerIcon name="eye" />{t('previewUpload')}<span aria-hidden="true">↗</span></Link> : <span className={styles.preview} aria-disabled="true">{t('previewUpload')}</span>}</div> : <p className={styles.demoNote}>{t('noPreview')}</p>}
+          <div className={styles.actions}><Button variant="secondary" onClick={onClose}>{t('cancel')}</Button><Button type="submit" disabled={!recipient}><DrawerIcon name="send" />{t('sendInvitation')}</Button></div>
           {submitNote && <p className={styles.demoNote} role="status">{submitNote}</p>}
         </form>
         <p className={styles.security}><DrawerIcon name="lock" />{t('securityNote')}</p>

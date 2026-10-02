@@ -62,7 +62,7 @@ for (const english of [false, true]) {
     await page.getByRole('button', {name: english ? 'Invite supplier' : 'Invită furnizor', exact: true}).click();
     const invite = page.getByRole('dialog');
     await expect(invite.locator('input').first()).toHaveValue('Aardvark Updated SRL');
-    await expect(invite.getByRole('textbox', {name: english ? /Contact email/ : /Email de contact/})).toHaveValue('updated@example.test');
+    await expect(invite.locator('#invite-vendor-contact option:checked')).toContainText('updated@example.test');
     await expect(invite.getByRole('textbox', {name: english ? /Secure upload link/ : /Link de încărcare securizat/})).toHaveValue('https://debiro.ro/upload/demo-construct-pro');
     await page.keyboard.press('Escape');
     await expect(invite).toHaveCount(0);
@@ -85,7 +85,7 @@ for (const english of [false, true]) {
     await expect(dialog.locator('#edit-vendor-notes')).toHaveValue('Updated notes');
     await dialog.locator('#edit-vendor-notes').fill('');
     await save().click();
-    await expect(page.getByRole('tab', {name: english ? 'Notes' : 'Note', exact: true})).toHaveAttribute('aria-disabled', 'true');
+    await expect(page.getByRole('tab', {name: english ? 'Notes' : 'Note', exact: true})).not.toHaveAttribute('aria-disabled');
   });
 }
 

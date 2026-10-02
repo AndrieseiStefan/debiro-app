@@ -1,6 +1,6 @@
 # Approved Mockups
 
-This repository tracks twenty-seven approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
+This repository tracks twenty-eight approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
 
 ## Expected initial mapping
 
@@ -33,6 +33,7 @@ This repository tracks twenty-seven approved product mockup images listed below.
 | `previzualizare-cerinte.png` | E1-025D supplier-facing Requirements Preview section; includes the task-approved additional info banner |
 | `supplier-upload-portal-new.png` | E1-025D supplier context and requested-document section only; the existing Portal shell remains canonical |
 | `24-vendor-requirement-template-assignment.png` | E1-027 template assignment, snapshot provenance, requirement removal and category-change warning |
+| `25-vendor-details-contacts-activity-notes.png` | E1-027B vendor Contacts, Activity and threaded Notes; the task removes the redundant Documents CTA and retains shared immediate filters/plain-text notes |
 
 ## Contract
 

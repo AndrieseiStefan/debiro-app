@@ -38,15 +38,16 @@ test('validates locally, updates toggles and counter, and never claims an email 
   await page.goto(detailsPath);
   const dialog = await openDrawer(page);
   await expect(dialog.getByRole('textbox', {name: /Numele furnizorului/})).toHaveValue('Construct Pro SRL');
-  await expect(dialog.getByRole('textbox', {name: /Email de contact/})).toHaveValue('ion.popescu@scconstruct.ro');
+  await expect(dialog.locator('#invite-vendor-contact option:checked')).toContainText('ion.popescu@scconstruct.ro');
   await expect(dialog.getByRole('textbox', {name: /Link de încărcare securizat/})).toHaveValue('https://debiro.ro/upload/demo-construct-pro');
   await dialog.getByRole('textbox', {name: /Numele furnizorului/}).fill('');
-  await dialog.getByRole('textbox', {name: /Email de contact/}).fill('invalid');
+  await dialog.locator('#invite-vendor-contact').selectOption('');
+  await expect(dialog.getByRole('button', {name: 'Trimite invitația'})).toBeDisabled();
+  await dialog.locator('#invite-vendor-contact').selectOption('contact:construct-pro:primary');
   await dialog.getByRole('button', {name: 'Trimite invitația'}).click();
   await expect(dialog.getByText('Introdu numele furnizorului.')).toBeVisible();
-  await expect(dialog.getByText('Introdu o adresă de email validă.')).toBeVisible();
   await dialog.getByRole('textbox', {name: /Numele furnizorului/}).fill('Construct Pro SRL');
-  await dialog.getByRole('textbox', {name: /Email de contact/}).fill('ion.popescu@scconstruct.ro');
+  await dialog.locator('#invite-vendor-contact').selectOption('contact:construct-pro:primary');
   await dialog.getByRole('textbox', {name: /Mesaj personalizat/}).fill('Test local');
   await expect(dialog.getByText('10/500')).toBeVisible();
   await dialog.getByRole('textbox', {name: /Mesaj personalizat/}).fill('x'.repeat(501));
@@ -101,5 +102,5 @@ test('opens identically after client navigation from Vendors List and renders En
   await page.getByRole('button', {name: 'Invite supplier'}).click();
   const enDialog = page.getByRole('dialog', {name: 'Invite the supplier to upload documents'});
   await expect(enDialog).toBeVisible();
-  await expect(enDialog.getByRole('textbox', {name: /Contact email/})).toHaveValue('ion.popescu@scconstruct.ro');
+  await expect(enDialog.locator('#invite-vendor-contact option:checked')).toContainText('ion.popescu@scconstruct.ro');
 });

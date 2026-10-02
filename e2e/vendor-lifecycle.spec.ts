@@ -36,7 +36,7 @@ for (const locale of ['ro', 'en'] as const) {
         await expect(page.getByText(locale === 'ro' ? 'Nu există documente încă.' : 'No documents yet.')).toBeVisible();
         await expect(page.locator('a[href^="mailto:"]')).toHaveCount(0);
         await expect(page.locator('a[href^="tel:"]')).toHaveCount(0);
-        await expect(page.getByRole('tab', {name: locale === 'ro' ? 'Note' : 'Notes'})).toHaveAttribute('aria-disabled', 'true');
+        await expect(page.getByRole('tab', {name: locale === 'ro' ? 'Note' : 'Notes'})).not.toHaveAttribute('aria-disabled');
       }
       await returnToList(page, locale);
     }

@@ -25,7 +25,33 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   await page.waitForLoadState('networkidle');
   await page.evaluate(async () => { await document.fonts.ready; });
   if (action) {
-    if (action === 'filters') {
+    if (action === 'vendor-contacts' || action === 'vendor-activity' || action === 'vendor-notes' || action === 'vendor-notes-discard' || action === 'vendor-notes-delete' || action === 'contact-drawer') {
+      if (route !== '/vendors/construct-pro' && route !== '/en/vendors/construct-pro') throw new Error('Vendor workspace capture requires the canonical vendor route.');
+      const english = route.startsWith('/en');
+      const section = action === 'vendor-activity' ? english ? 'Activity' : 'Activitate' : action.startsWith('vendor-notes') ? english ? 'Notes' : 'Note' : english ? 'Contacts' : 'Contacte';
+      await page.getByRole('tab', {name: section, exact: true}).click();
+      if (action === 'contact-drawer') {
+        await page.getByRole('button', {name: english ? 'Add contact' : 'Adaugă contact', exact: true}).click();
+        await expect(page.getByRole('dialog')).toBeVisible();
+      } else if (action.startsWith('vendor-notes')) {
+        for (const title of english ? ['General discussions', 'Compliance and documents', 'Site access'] : ['Discuții generale', 'Conformitate și documente', 'Acces șantier']) {
+          await page.getByRole('button', {name: english ? 'Create a thread' : 'Creează un thread'}).click();
+          await page.locator('#vendor-note-title').fill(title);
+          await page.locator('#vendor-note-content').fill(english ? 'Internal coordination notes for this vendor.' : 'Notițe interne pentru coordonarea cu acest furnizor.');
+          await page.getByRole('button', {name: english ? 'Save changes' : 'Salvează modificările'}).click();
+        }
+        await page.locator('[data-note-id]').first().getByRole('button').first().click();
+        if (action === 'vendor-notes-discard') {
+          await page.locator('#vendor-note-content').fill('Unsaved draft');
+          await page.getByRole('tab', {name: english ? 'Contacts' : 'Contacte', exact: true}).click();
+        } else if (action === 'vendor-notes-delete') {
+          await page.locator('[data-note-id]').first().getByRole('button').last().click();
+          await page.getByRole('menuitem', {name: english ? 'Delete thread' : 'Șterge thread-ul'}).click();
+        }
+        if (action !== 'vendor-notes') await expect(page.getByRole('alertdialog')).toBeVisible();
+      }
+      if (action !== 'contact-drawer' && action !== 'vendor-notes-discard' && action !== 'vendor-notes-delete') await page.getByRole('tabpanel').scrollIntoViewIfNeeded();
+    } else if (action === 'filters') {
       if (!/^\/(en\/)?(vendors(\/construct-pro)?|documents)$/.test(route)) throw new Error('Filter capture requires an implemented data-view route.');
       await openFilters(page);
     } else if (action === 'vendor-sort-name-asc' || action === 'vendor-sort-expiry-desc') {
@@ -188,6 +214,7 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   const output = path.join(process.cwd(), 'artifacts', 'visual', `${name}${action ? `-${action}` : ''}${viewportWidth ? `-${viewportWidth}x${viewportHeight}` : ''}.png`);
   await page.screenshot({path: output, fullPage: !action || action === 'requirement-edit' || action === 'requirement-preview' || action.startsWith('vendor-'), animations: 'disabled'});
   if (action === 'vendor-menu') await page.getByRole('menu').screenshot({path: output.replace(/\.png$/, '-menu.png'), animations: 'disabled'});
+  if (action === 'vendor-contacts' || action === 'vendor-activity' || action === 'vendor-notes') await page.getByRole('tabpanel').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});
   if (action === 'requirement-preview') await page.locator('#preview-panel').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});
   if (/^\/(en\/)?upload\//.test(route)) await page.locator('[data-supplier-requirements]').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});
 });

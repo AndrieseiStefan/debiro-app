@@ -10,11 +10,11 @@
 
 **Domain strategy:** Single domain
 
-**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and all twenty-seven approved fixture/browser-local canonical mockup states are implemented; backend/auth integrations are not.
+**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and all twenty-eight approved fixture/browser-local canonical mockup states are implemented; backend/auth integrations are not.
 
 ## Design state
 
-Twenty-seven approved product mockups are tracked in `docs/design/mockups/`. They are canonical contracts requiring:
+Twenty-eight approved product mockups are tracked in `docs/design/mockups/`. They are canonical contracts requiring:
 
 - UI fidelity as close to 1:1 as technically practical
 - Interaction fidelity as close to 1:1 as technically practical
@@ -42,6 +42,7 @@ The final logo is not yet designed and must not be invented.
 - E1-006/E1-023/E1-025A/B/C/D Document Requirements at `/requirements` and `/en/requirements`, with company-scoped browser-memory templates, atomic template/document/rule and appearance editing, catalog/custom Add Document drawer, local template duplicate/delete, read-only supplier Preview reflecting current drafts, and Save-only custom-candidate learning; see [requirements](../features/requirements.md)
 - E1-027A shared authenticated SearchInput, FilterTrigger and responsive FilterPanel; Vendors category/compliance, Vendor Documents status and Global Documents existing filters apply immediately, expose active counts and preserve search on Reset; Requirements searches reuse the same input; see [search/filter contract](../design/ui-foundation.md#authenticated-search-and-filters-e1-027a)
 - E1-027 vendor requirement template application — multi-select/confirmation, identity-based deduplication, independent snapshots/provenance, company custom document types, missing-row upload, explicit requirement/document removal and category-change relevance warning; browser-memory only; see [vendor requirements](../features/vendor-requirements.md)
+- E1-027B Vendor Contacts, complete vendor-scoped Activity and threaded Notes — company/vendor-owned primary-contact synchronization and contact-based Invite simulation, shared local audit events/search/filters/pagination, plain-text Save/dirty-navigation/delete lifecycle and compact informational Documents banner; browser-memory only; see [vendor details](../features/vendor-details.md#contacts-activity-and-notes-e1-027b)
 - E1-007 canonical Invite Vendor drawer from Vendor Details, with local form validation and a deterministic demo link but no email delivery; see [invite vendor](../features/invite-vendor.md)
 - E1-008 canonical Supplier Upload Portal at `/upload/demo-construct-pro` and `/en/upload/demo-construct-pro`, with an external-supplier layout, typed token fixture, shared Preview/Portal requirement presentation, and browser-local file selection only; see [supplier upload portal](../features/supplier-upload-portal.md)
 - E1-009 canonical Document Review at `/documents/construct-pro-tax-2024/review` and `/en/documents/construct-pro-tax-2024/review`, with typed document/extraction fixtures and browser-local human review only; see [document review](../features/document-review.md)
@@ -74,4 +75,4 @@ TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to
 
 ## Next
 
-All twenty-seven tracked canonical mockup states have fixture/browser-local implementations; product-owner visual approval remains pending. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).
+All twenty-eight tracked canonical mockup states have fixture/browser-local implementations; product-owner visual approval remains pending. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).

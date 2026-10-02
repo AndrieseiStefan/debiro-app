@@ -9,6 +9,7 @@ import {deleteLocalDocument, type CreatedDocument} from '@/features/documents/cr
 import {getVendorDetailsFixture} from './detail-fixtures';
 import {getVendorMetadata, getVendorState, vendorFixtureCompanyId} from './created-vendors';
 import type {VendorDocumentRow} from './types';
+import {recordLocalAuditEvent} from '@/features/notifications/local-audit';
 
 export type VendorRequirement = DocumentTypeSnapshot & {
   id: string; companyId: string; vendorId: string; required: boolean; expiryWarningDays?: ExpiryWarningDays; validityMonths?: ValidityMonths;
@@ -92,6 +93,10 @@ export function applyVendorTemplates(companyId: string, vendorId: string, templa
     if (!appliedTemplates.some((item) => item.templateId === template.id)) appliedTemplates.push({companyId, vendorId, templateId: template.id, title: {...template.title}, appliedAt: now});
   }
   publish(companyId, vendorId, {requirements, appliedTemplates});
+  for (const template of selected) {
+    if (!workspace.appliedTemplates.some((item) => item.templateId === template.id)) recordLocalAuditEvent(companyId, {vendorId, templateId: template.id, eventType: 'template_applied',
+      action: {ro: 'Șablon aplicat', en: 'Template applied'}, description: {ro: `${template.title.ro} (${template.documents.length} documente)`, en: `${template.title.en} (${template.documents.length} documents)`}});
+  }
   return {addedCount, existingCount: existingSelectedKeys.size, templateCount: selected.length};
 }
 
@@ -107,6 +112,7 @@ export function removeVendorRequirement(companyId: string, vendorId: string, req
   const requirement = workspace.requirements.find((item) => item.id === requirementId);
   if (!requirement || (requirement.uploadedDocumentId && !deleteLocalDocument(companyId, requirement.uploadedDocumentId))) return false;
   publish(companyId, vendorId, {...workspace, requirements: workspace.requirements.filter((item) => item.id !== requirementId)});
+  recordLocalAuditEvent(companyId, {vendorId, documentId: requirement.uploadedDocumentId, eventType: 'requirement_removed', action: {ro: 'Cerință eliminată', en: 'Requirement removed'}, description: requirement.name});
   return true;
 }
 

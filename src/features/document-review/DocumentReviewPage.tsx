@@ -8,6 +8,8 @@ import {AuthenticatedBreadcrumbs} from '@/components/layout/AuthenticatedBreadcr
 import {Button} from '@/components/ui/Button';
 import {EmptyState} from '@/components/ui/EmptyState';
 import {useDeletedDocumentIds} from '@/features/documents/created-documents';
+import {recordLocalAuditEvent} from '@/features/notifications/local-audit';
+import {useCompanyState} from '@/features/companies/company-state';
 import {Link} from '@/i18n/navigation';
 import type {DocumentReviewViewModel, ReviewValues} from './types';
 import styles from './DocumentReviewPage.module.css';
@@ -96,6 +98,7 @@ function DocumentPreview({view, locale}: {view: DocumentReviewViewModel; locale:
 }
 
 export function DocumentReviewPage({locale, view}: {locale: string; view: DocumentReviewViewModel}) {
+  const companyId = useCompanyState().activeCompanyId ?? '';
   const t = useTranslations('DocumentReview');
   const app = useTranslations('AppShell');
   const [values, setValues] = useState<ReviewValues>(() => ({...view.extraction.values}));
@@ -122,7 +125,11 @@ export function DocumentReviewPage({locale, view}: {locale: string; view: Docume
     if (values.expiresAt.trim() && expiryTime === null) nextErrors.expiresAt = t('dateError');
     if (issueTime !== null && expiryTime !== null && expiryTime < issueTime) nextErrors.expiresAt = t('expiryError');
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length === 0) setReviewState('confirmed');
+    if (Object.keys(nextErrors).length === 0) {
+      if (reviewState !== 'confirmed') recordLocalAuditEvent(companyId, {vendorId: view.vendor.id, documentId: view.id, eventType: 'document_confirmed',
+        action: {ro: 'Document confirmat', en: 'Document confirmed'}, description: {ro: view.file.name, en: view.file.name}});
+      setReviewState('confirmed');
+    }
   }
 
   const control = (field: FieldName, icon: AppIconName | 'number', label: string, select = false) => {

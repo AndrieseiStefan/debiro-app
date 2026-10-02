@@ -10,25 +10,27 @@ import {EmptyState} from '@/components/ui/EmptyState';
 import {StatusBadge} from '@/components/ui/StatusBadge';
 import {Surface} from '@/components/ui/Surface';
 import {useNotificationItems} from './local-state';
+import {useLocalAuditEvents} from './local-audit';
+import {useCompanyState} from '@/features/companies/company-state';
 import {auditEventsToCsv, filterAuditEvents, filterNotifications, type ActivityCategory, type ActivityRange} from './selectors';
-import type {NotificationActivityType, NotificationsViewModel} from './types';
+import type {AuditEventType, NotificationsViewModel} from './types';
 import styles from './NotificationsPage.module.css';
 
 const categories: ActivityCategory[] = ['all', 'unread', 'reminders', 'uploads', 'status'];
-const activityIcons: Record<NotificationActivityType, AppIconName> = {
+const activityIcons: Record<AuditEventType, AppIconName> = {
   reminder: 'bell', document_upload: 'file', document_confirmed: 'check', document_expiring: 'clock',
-  document_missing: 'fileX', status_changed: 'clock', vendor_added: 'users', other: 'info'
+  document_missing: 'fileX', status_changed: 'clock', vendor_added: 'users', other: 'info', template_applied: 'file', vendor_invited: 'send', vendor_edited: 'edit', vendor_active: 'check', vendor_inactive: 'close', requirement_removed: 'fileX'
 };
-const activityTones: Record<NotificationActivityType, string> = {
+const activityTones: Record<AuditEventType, string> = {
   reminder: 'blue', document_upload: 'green', document_confirmed: 'green', document_expiring: 'amber',
-  document_missing: 'red', status_changed: 'blue', vendor_added: 'blue', other: 'blue'
+  document_missing: 'red', status_changed: 'blue', vendor_added: 'blue', other: 'blue', template_applied: 'blue', vendor_invited: 'blue', vendor_edited: 'amber', vendor_active: 'green', vendor_inactive: 'red', requirement_removed: 'red'
 };
 
 function dateLabel(value: string, locale: string) {
   return new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'ro-RO', {day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC'}).format(new Date(value));
 }
 
-function EventIcon({type}: {type: NotificationActivityType}) {
+function EventIcon({type}: {type: AuditEventType}) {
   return <span className={styles.eventIcon} data-tone={activityTones[type]}><AppIcon name={activityIcons[type]} size={16} /></span>;
 }
 
@@ -42,7 +44,9 @@ export function NotificationsPage({locale, view}: {locale: string; view: Notific
   const notifications = useNotificationItems(view.notifications);
   const visibleNotifications = filterNotifications(notifications, category, range, view.referenceTime);
   const rangedNotifications = filterNotifications(notifications, 'all', range, view.referenceTime);
-  const auditEvents = filterAuditEvents(view.auditEvents, range, view.referenceTime);
+  const companyId = useCompanyState().activeCompanyId;
+  const localAudit = useLocalAuditEvents().filter((event) => event.companyId === companyId);
+  const auditEvents = filterAuditEvents([...view.auditEvents, ...localAudit], range, localAudit.reduce((latest, event) => event.occurredAt > latest ? event.occurredAt : latest, view.referenceTime));
   const unreadCount = notifications.filter((item) => item.isUnread).length;
   const expiringRows = expanded.expiring ? view.expiringDocuments : view.expiringDocuments.slice(0, 3);
   const missingRows = expanded.missing ? view.missingDocuments : view.missingDocuments.slice(0, 3);
