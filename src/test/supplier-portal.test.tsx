@@ -24,13 +24,13 @@ describe('supplier upload portal', () => {
     renderPortal();
     expect(screen.getByRole('heading', {level: 1, name: 'Încarcă documentele companiei tale'})).toBeVisible();
     expect(screen.getByRole('region', {name: 'Detaliile solicitării'})).toHaveTextContent('Construct Pro SRL');
-    expect(screen.getByRole('heading', {name: 'Documente solicitate (4)'})).toBeVisible();
-    expect(screen.getByText('2 din 4 finalizate')).toBeVisible();
-    expect(screen.getByRole('progressbar', {name: 'Progresul documentelor'})).toHaveAttribute('aria-valuenow', '50');
-    expect(screen.getAllByText('Încărcat')).toHaveLength(2);
+    expect(screen.getByRole('heading', {name: 'Documente solicitate (5)'})).toBeVisible();
+    expect(screen.getByText('3 din 5 finalizate')).toBeVisible();
+    expect(screen.getByRole('progressbar', {name: 'Progresul documentelor'})).toHaveAttribute('aria-valuenow', '60');
+    expect(screen.getAllByText('Încărcat')).toHaveLength(3);
     expect(screen.getByText('În review')).toBeVisible();
-    expect(screen.getByText('certificat_fiscal.pdf')).toBeVisible();
-    expect(screen.getAllByText('Obligatoriu')).toHaveLength(3);
+    expect(screen.getByText('Certificat_fiscal_CP_2024.pdf')).toBeVisible();
+    expect(screen.getAllByText('Obligatoriu')).toHaveLength(4);
     expect(screen.getByText('Opțional')).toBeVisible();
     expect(screen.getByText('Lipsește')).toBeVisible();
     expect(screen.getByRole('heading', {name: 'Încărcare securizată'})).toBeVisible();
@@ -41,15 +41,16 @@ describe('supplier upload portal', () => {
   it('renders English and keeps locale links on the same fixture token', () => {
     renderPortal('en');
     expect(screen.getByRole('heading', {level: 1, name: 'Upload your company documents'})).toBeVisible();
-    expect(screen.getByRole('heading', {name: 'Requested documents (4)'})).toBeVisible();
+    expect(screen.getByRole('heading', {name: 'Requested documents (5)'})).toBeVisible();
     const language = screen.getByRole('navigation', {name: 'Language'});
     expect(within(language).getByRole('link', {name: 'RO'})).toHaveAttribute('href', '/upload/demo-construct-pro');
     expect(within(language).getByRole('link', {name: 'EN'})).toHaveAttribute('href', '/en/upload/demo-construct-pro');
   });
 
-  it('validates a file and shows local-only selection without changing server progress', () => {
+  it('validates files and enters review locally without counting the upload as approved', () => {
     renderPortal();
-    const fileInput = screen.getByLabelText('Încarcă document pentru Certificat fiscal') as HTMLInputElement;
+    expect(screen.queryByLabelText('Încarcă document pentru Certificat fiscal')).not.toBeInTheDocument();
+    const fileInput = screen.getByLabelText('Încarcă document pentru Certificare ISO 9001') as HTMLInputElement;
     fireEvent.change(fileInput, {target: {files: [new File(['bad'], 'notes.txt', {type: 'text/plain'})]}});
     expect(screen.getByRole('alert')).toHaveTextContent('Alege un fișier PDF, JPG sau PNG.');
     expect(fileInput).toHaveAttribute('aria-invalid', 'true');
@@ -60,15 +61,15 @@ describe('supplier upload portal', () => {
     fireEvent.change(fileInput, {target: {files: [new File(['demo'], 'tax.pdf', {type: 'application/pdf'})]}});
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(screen.getByText('tax.pdf')).toBeVisible();
-    expect(screen.getByText('Selectat local')).toBeVisible();
-    expect(screen.getByText('Fișierul este selectat doar în acest browser. Nu a fost încărcat sau trimis.')).toBeVisible();
-    expect(screen.getByRole('progressbar', {name: 'Progresul documentelor'})).toHaveAttribute('aria-valuenow', '50');
-    expect(screen.getByText('În review')).toBeVisible();
+    expect(screen.getByText('Încărcarea este înregistrată doar în memoria acestui browser. Fișierul nu este stocat sau trimis.')).toBeVisible();
+    expect(screen.getByRole('progressbar', {name: 'Progresul documentelor'})).toHaveAttribute('aria-valuenow', '60');
+    expect(screen.getAllByText('În review')).toHaveLength(2);
+    expect(screen.queryByLabelText('Încarcă document pentru Certificare ISO 9001')).not.toBeInTheDocument();
   });
 
   it('safely renders a no-request state without fabricated rows or invalid progress', () => {
     const view = getSupplierPortalFixture('demo-construct-pro')!;
-    render(<NextIntlClientProvider locale="ro" messages={ro}><SupplierUploadPortalPage locale="ro" view={{...view, documents: []}}/></NextIntlClientProvider>);
+    render(<NextIntlClientProvider locale="ro" messages={ro}><SupplierUploadPortalPage locale="ro" view={{...view, vendorId: 'not-configured'}}/></NextIntlClientProvider>);
     expect(screen.getByRole('heading', {name: 'Nu sunt solicitate documente'})).toBeVisible();
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0');
     expect(document.querySelectorAll('[data-document-id]')).toHaveLength(0);

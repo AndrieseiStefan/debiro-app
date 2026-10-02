@@ -7,6 +7,9 @@ import {AppIcon} from '@/components/layout/AppIcon';
 import {PortalContainer} from '@/components/layout/PortalContainer';
 import {Link} from '@/i18n/navigation';
 import {documentDisplay} from '@/features/requirements/document-presentation';
+import type {DocumentType} from '@/features/documents/types';
+import {createLocalDocument, useDocumentRecords} from '@/features/documents/created-documents';
+import {associateRequirementUpload, getVendorRequirements, readVendorRequirements, supplierVendorDocuments, useVendorRequirements} from '@/features/vendors/vendor-requirements';
 import {SupplierRequirementContext, SupplierRequirementList, UploadGlyph} from '@/features/supplier-requirements/SupplierRequirements';
 import shared from '@/features/supplier-requirements/SupplierRequirements.module.css';
 import type {SupplierDocument, SupplierPortalViewModel} from './types';
@@ -31,14 +34,24 @@ export function SupplierUploadPortalPage({locale, view}: {locale: string; view: 
   const t = useTranslations('SupplierPortal');
   const lang = locale === 'en' ? 'en' : 'ro';
   const [localFiles, setLocalFiles] = useState<LocalFileState>({});
-  const documents = view.documents.map((document) => localFiles[document.id]?.name
-    ? {...document, uploadedFile: localFiles[document.id].name, selectedLocally: true} : document);
+  const workspace = getVendorRequirements(useVendorRequirements(), view.companyId, view.vendorId);
+  const documents = supplierVendorDocuments(workspace, useDocumentRecords(), lang);
 
   function chooseFile(event: ChangeEvent<HTMLInputElement>, document: SupplierDocument) {
     const file = event.currentTarget.files?.[0];
     if (!file) return;
     const extension = file.name.split('.').pop()?.toLowerCase();
-    const error = !extension || !allowedExtensions.includes(extension) ? t('fileTypeError') : file.size > maxFileBytes ? t('fileSizeError') : undefined;
+    const requirement = getVendorRequirements(readVendorRequirements(), view.companyId, view.vendorId).requirements.find((item) => item.id === document.id);
+    let error = !extension || !allowedExtensions.includes(extension) || (file.type && !['application/pdf', 'image/jpeg', 'image/png'].includes(file.type)) ? t('fileTypeError') : file.size > maxFileBytes ? t('fileSizeError') : undefined;
+    if (!error && (!requirement || requirement.status !== 'missing' || requirement.uploadedDocumentId)) error = t('uploadUnavailable');
+    if (!error && requirement) {
+      const now = new Date().toISOString();
+      const upload = createLocalDocument({companyId: view.companyId, vendorId: view.vendorId, vendorName: view.supplier.name, vendorRegistrationNumber: view.supplier.registrationNumber,
+        vendorRegistrationCode: '', documentName: requirement.name, documentType: requirement.catalogDocumentTypeId === 'liability' ? 'insurance' : requirement.documentTypeSource === 'company' ? 'custom' : requirement.catalogDocumentTypeId as DocumentType,
+        typeSnapshot: requirement, filename: file.name, fileType: file.type, fileSize: file.size, uploadedAt: now.slice(0, 10), createdAt: now, expiresAt: null,
+        uploadedBy: view.supplier.name, extractionRequested: false, reviewRequired: false});
+      associateRequirementUpload(view.companyId, view.vendorId, upload, requirement.id);
+    }
     setLocalFiles((previous) => ({...previous, [document.id]: error ? {error} : {name: file.name}}));
     event.currentTarget.value = '';
   }
@@ -74,9 +87,7 @@ export function SupplierUploadPortalPage({locale, view}: {locale: string; view: 
         <div className={styles.intro}><p className={styles.eyebrow}>{t('eyebrow')}</p><h1>{t('title')}</h1><p>{t('description')}</p></div>
 
         <SupplierRequirementContext locale={locale} requester={view.requester} supplier={view.supplier}/>
-        <SupplierRequirementList locale={locale} documents={documents} renderUpload={(document) => renderUpload(document)} renderFileAction={(document) => document.status !== 'uploaded'
-          ? renderUpload(document, true)
-          : <button type="button" aria-label={t('documentActions', {name: documentDisplay(document, lang).name})} aria-disabled="true" className={styles.moreAction}><AppIcon name="more" size={23}/></button>}
+        <SupplierRequirementList locale={locale} documents={documents} renderUpload={(document) => renderUpload(document)} renderFileAction={(document) => <button type="button" aria-label={t('documentActions', {name: documentDisplay(document, lang).name})} aria-disabled="true" className={styles.moreAction}><AppIcon name="more" size={23}/></button>}
           renderFeedback={(document) => localFiles[document.id]?.error ? <span className={styles.fileError} role="alert" id={`upload-error-${document.id}`}>{localFiles[document.id].error}</span> : null}/>
 
         <aside className={styles.afterUpload}><span className={styles.infoIcon}><AppIcon name="info" size={23}/></span><p>{t('afterUpload')}</p><div><strong>{t('questions')}</strong><a href="#portal-help">{t('seeHelp')} <AppIcon name="arrowRight" size={18}/></a></div></aside>

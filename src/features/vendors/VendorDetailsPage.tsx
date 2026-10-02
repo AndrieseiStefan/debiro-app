@@ -13,8 +13,8 @@ import {EmptyState} from '@/components/ui/EmptyState';
 import type {VendorDetailsViewModel} from './types';
 import {InviteVendorDrawer} from './InviteVendorDrawer';
 import {AddDocumentDrawer} from '@/features/documents/AddDocumentDrawer';
-import {createLocalDocument} from '@/features/documents/created-documents';
-import {associateRequirementUpload, getVendorRequirements, useVendorRequirements, type VendorRequirement} from './vendor-requirements';
+import {createLocalDocument, useDocumentRecords} from '@/features/documents/created-documents';
+import {associateRequirementUpload, getVendorRequirements, useVendorRequirements, vendorCompliance, type VendorRequirement} from './vendor-requirements';
 import {VendorDocumentsPanel} from './VendorDocumentsPanel';
 import {getVendorContacts, getVendorMetadata, projectVendorDetails, updateVendorMetadata, useVendorState, vendorOwnedByCompany} from './created-vendors';
 import {VendorContactsPanel} from './VendorContactsPanel';
@@ -51,10 +51,13 @@ function VendorDetailsWorkspace({locale, initialView, companyId}: {locale: strin
   const t = useTranslations('VendorDetails');
   const vendorsT = useTranslations('Vendors');
   const vendorState = useVendorState();
-  const view = projectVendorDetails(initialView, vendorState);
+  const projected = projectVendorDetails(initialView, vendorState);
+  const workspace = getVendorRequirements(useVendorRequirements(), companyId, projected.vendor.id);
+  const compliance = vendorCompliance(workspace, useDocumentRecords());
+  const view = compliance ? {...projected, validDocumentCount: compliance.validCount, vendor: {...projected.vendor, status: compliance.status, documentCount: compliance.validCount, documentTarget: compliance.total}} : projected;
   const metadata = getVendorMetadata(vendorState, view.vendor.id);
   const contacts = getVendorContacts(vendorState, companyId, view.vendor.id);
-  const configuredRequirements = getVendorRequirements(useVendorRequirements(), companyId, view.vendor.id).requirements.length;
+  const configuredRequirements = workspace.requirements.length;
   const editT = useTranslations('EditVendor');
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'documents' | 'contacts' | 'activity' | 'notes'>('documents');
@@ -125,6 +128,6 @@ function VendorDetailsWorkspace({locale, initialView, companyId}: {locale: strin
     </div>
     {editPhase !== 'closed' && metadata && <VendorFormDrawer mode="edit" phase={editPhase} onClose={closeEdit} onExited={finishEdit} triggerRef={editTriggerRef} initialValues={metadata} companyId={companyId} vendorId={vendor.id} onSubmit={(input) => {const result = updateVendorMetadata(companyId, vendor.id, input); if (result === 'saved') {setEditPhase('closed'); setUpdated(true);} return result;}}/>}
     {invitePhase !== 'closed' && <InviteVendorDrawer phase={invitePhase} onClose={closeInvite} onExited={finishInvite} triggerRef={inviteTriggerRef} vendorName={vendor.name} contacts={contacts} companyId={companyId} vendorId={vendor.id} preview={view.invitationPreview} locale={locale} onAddContact={() => {setInvitePhase('closed'); setActiveTab('contacts');}}/>}
-    {addDocumentPhase !== 'closed' && <AddDocumentDrawer phase={addDocumentPhase} onClose={() => setAddDocumentPhase('closing')} onExited={() => setAddDocumentPhase('closed')} triggerRef={uploadRequirement ? uploadTriggerRef : addDocumentTriggerRef} requiredType={uploadRequirement} vendor={{id: vendor.id, name: vendor.name, registrationNumber: vendor.registrationNumber, registrationCode: view.registrationCode ?? ''}} uploadedBy={view.user.fullName} onCreate={(input) => {const document = createLocalDocument(input); associateRequirementUpload(companyId, vendor.id, document, uploadRequirement?.id); setAddDocumentPhase('closed'); setActiveTab('documents'); setQuery(''); if (document.reviewRoute) router.push(document.reviewRoute);}}/>}
+    {addDocumentPhase !== 'closed' && <AddDocumentDrawer phase={addDocumentPhase} onClose={() => setAddDocumentPhase('closing')} onExited={() => setAddDocumentPhase('closed')} triggerRef={uploadRequirement ? uploadTriggerRef : addDocumentTriggerRef} requiredType={uploadRequirement} vendor={{id: vendor.id, name: vendor.name, registrationNumber: vendor.registrationNumber, registrationCode: view.registrationCode ?? ''}} uploadedBy={view.user.fullName} onCreate={(input) => {const document = createLocalDocument(input); associateRequirementUpload(companyId, vendor.id, document, uploadRequirement?.id); setAddDocumentPhase('closed'); setActiveTab('documents'); setQuery(''); if (input.reviewRequired && document.reviewRoute) router.push(document.reviewRoute);}}/>}
   </AuthenticatedAppShell>;
 }

@@ -25,7 +25,45 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   await page.waitForLoadState('networkidle');
   await page.evaluate(async () => { await document.fonts.ready; });
   if (action) {
-    if (action === 'vendor-documents' || action === 'vendor-contacts' || action === 'vendor-activity' || action === 'vendor-notes' || action === 'vendor-notes-empty' || action === 'vendor-notes-new' || action === 'vendor-notes-discard' || action === 'vendor-notes-delete' || action === 'contact-drawer') {
+    if (['review-confirmed', 'review-reject-confirmation', 'review-rejected-vendor', 'review-rejected-portal', 'review-reupload-portal', 'review-replacement'].includes(action)) {
+      if (!/^\/(en\/)?documents\/construct-pro-tax-2024\/review$/.test(route)) throw new Error('Review lifecycle capture requires the canonical Review route.');
+      const english = route.startsWith('/en');
+      if (action === 'review-confirmed') {
+        await page.locator('#review-expiresAt').fill('01.01.2099');
+        await page.getByRole('button', {name: english ? 'Confirm and save' : 'Confirmă și salvează'}).click();
+        await expect(page.locator('[data-review-state="confirmed"]')).toBeVisible();
+      } else {
+        await page.getByRole('button', {name: english ? 'Reject' : 'Respinge', exact: true}).click();
+        await expect(page.getByRole('alertdialog')).toBeVisible();
+        if (action !== 'review-reject-confirmation') {
+          await page.getByRole('alertdialog').getByRole('button', {name: english ? 'Reject' : 'Respinge', exact: true}).click();
+          await page.getByRole('link', {name: english ? 'Back to documents' : 'Înapoi la documente'}).click();
+          await page.getByRole('navigation', {name: english ? 'Application navigation' : 'Navigare în aplicație'}).getByRole('link', {name: english ? 'Suppliers' : 'Furnizori', exact: true}).click();
+          await page.getByRole('link', {name: english ? 'Details for Construct Pro SRL' : 'Detalii pentru Construct Pro SRL'}).click();
+          if (action === 'review-rejected-vendor') {
+            await expect(page.locator('[data-missing-requirements="2"]')).toBeVisible();
+          } else {
+            await page.getByRole('button', {name: english ? 'Invite supplier' : 'Invită furnizor', exact: true}).click();
+            const preview = page.getByRole('dialog').getByRole('link', {name: english ? /Preview upload page/ : /Previzualizează pagina de încărcare/});
+            await preview.evaluate((element) => element.removeAttribute('target'));
+            await preview.click();
+            const tax = page.locator('[data-document-id="vendor-requirement:construct-pro:tax"]');
+            await expect(tax.locator('input[type=file]')).toBeVisible();
+            if (action === 'review-reupload-portal' || action === 'review-replacement') {
+              await tax.locator('input[type=file]').setInputFiles({name: 'Replacement_tax.pdf', mimeType: 'application/pdf', buffer: Buffer.from('local metadata only')});
+              await expect(tax.locator('[data-status="in_review"]')).toBeVisible();
+              if (action === 'review-replacement') {
+                await page.goBack();
+                const row = page.locator('[data-requirement-id="vendor-requirement:construct-pro:tax"]');
+                await row.getByRole('button', {name: english ? 'Actions for Tax certificate' : 'Acțiuni pentru Certificat fiscal'}).click();
+                await page.getByRole('menuitem', {name: english ? 'Review document' : 'Revizuiește documentul'}).click();
+                await expect(page.getByRole('heading', {name: english ? 'Details to review' : 'Date de revizuit'})).toBeVisible();
+              }
+            }
+          }
+        }
+      }
+    } else if (action === 'vendor-documents' || action === 'vendor-contacts' || action === 'vendor-activity' || action === 'vendor-notes' || action === 'vendor-notes-empty' || action === 'vendor-notes-new' || action === 'vendor-notes-discard' || action === 'vendor-notes-delete' || action === 'contact-drawer') {
       if (route !== '/vendors/construct-pro' && route !== '/en/vendors/construct-pro') throw new Error('Vendor workspace capture requires the canonical vendor route.');
       const english = route.startsWith('/en');
       const section = action === 'vendor-documents' ? english ? 'Documents' : 'Documente' : action === 'vendor-activity' ? english ? 'Activity' : 'Activitate' : action.startsWith('vendor-notes') ? english ? 'Notes' : 'Note' : english ? 'Contacts' : 'Contacte';
@@ -189,7 +227,7 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
         await dialog.getByRole('button', {name: english ? 'Upload and continue' : 'Încarcă și continuă'}).click();
         await expect(dialog).not.toBeVisible();
         if (action === 'add-document-review') await expect(page).toHaveURL(/\/documents\/local-document-[a-f0-9-]+\/review$/);
-        else await expect(page.getByRole('row', {name: /Certificat fiscal.*Încărcat|Tax certificate.*Uploaded/}).first()).toBeVisible();
+        else await expect(page.getByRole('row', {name: /Certificat fiscal.*Necesită revizuire|Tax certificate.*Needs review/}).first()).toBeVisible();
       }
     } else if (action === 'add-vendor' || action === 'add-vendor-end' || action === 'add-vendor-created') {
       if (route !== '/vendors' && route !== '/en/vendors') throw new Error('Add Vendor capture action requires a vendors route.');
@@ -215,7 +253,9 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
 
   const name = route === '/' ? 'root' : route.replace(/^\/+|\/+$/g, '').replace(/[^a-zA-Z0-9_-]+/g, '-');
   const output = path.join(process.cwd(), 'artifacts', 'visual', `${name}${action ? `-${action}` : ''}${viewportWidth ? `-${viewportWidth}x${viewportHeight}` : ''}.png`);
-  await page.screenshot({path: output, fullPage: !action || action === 'requirement-edit' || action === 'requirement-preview' || action.startsWith('vendor-'), animations: 'disabled'});
+  await page.screenshot({path: output, fullPage: !action || action === 'requirement-edit' || action === 'requirement-preview' || action.startsWith('vendor-') || action.startsWith('review-') && action !== 'review-reject-confirmation', animations: 'disabled'});
+  if (action === 'review-reject-confirmation') await page.getByRole('alertdialog').screenshot({path: output.replace(/\.png$/, '-dialog.png'), animations: 'disabled'});
+  if (action === 'review-rejected-portal' || action === 'review-reupload-portal') await page.locator('[data-supplier-requirements]').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});
   if (action === 'vendor-menu') await page.getByRole('menu').screenshot({path: output.replace(/\.png$/, '-menu.png'), animations: 'disabled'});
   if (action === 'vendor-documents' || action === 'vendor-contacts' || action === 'vendor-activity' || action === 'vendor-notes' || action === 'vendor-notes-empty' || action === 'vendor-notes-new') await page.getByRole('tabpanel').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});
   if (action === 'requirement-preview') await page.locator('#preview-panel').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});

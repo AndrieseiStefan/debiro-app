@@ -29,20 +29,20 @@ describe('vendor details', () => {
     expect(within(breadcrumb).getByRole('link', {name: 'Furnizori'})).toHaveAttribute('href', '/vendors');
     expect(within(breadcrumb).getByText('Construct Pro SRL')).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('navigation', {name: 'Navigare în aplicație'}).querySelector('[aria-current="page"]')).toHaveTextContent('Furnizori');
-    expect(screen.getByText('4 din 5 documente valide')).toBeVisible();
+    expect(screen.getByText('3 din 5 documente valide')).toBeVisible();
     expect(screen.getByRole('button', {name: 'Invită furnizor'})).toBeEnabled();
     expect(screen.getByRole('button', {name: 'Adaugă document'})).toHaveAttribute('data-page-primary-action');
     expect(screen.getByText('ion.popescu@scconstruct.ro')).toBeVisible();
     expect(screen.getByRole('tab', {name: 'Documente'})).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('tab', {name: 'Contacte'})).not.toHaveAttribute('aria-disabled');
     expect(screen.getByRole('table').getElementsByTagName('tbody')[0].rows).toHaveLength(5);
-    for (const status of ['Valid', 'Expiră curând', 'Expirat', 'Lipsește']) expect(screen.getAllByText(status).length).toBeGreaterThan(0);
+    for (const status of ['Valid', 'Necesită revizuire', 'Lipsește']) expect(screen.getAllByText(status).length).toBeGreaterThan(0);
     expect(screen.getByText('Parteneriate solide construiesc afaceri durabile.')).toBeVisible();
   });
 
   it('renders English and filters visible documents locally', () => {
     renderDetails('en');
-    expect(screen.getByText('4 of 5 valid documents')).toBeVisible();
+    expect(screen.getByText('3 of 5 valid documents')).toBeVisible();
     expect(screen.getByRole('button', {name: 'Add document'})).toBeVisible();
     fireEvent.change(screen.getByRole('searchbox', {name: 'Search documents'}), {target: {value: 'ISO'}});
     expect(screen.getByRole('table').getElementsByTagName('tbody')[0].rows).toHaveLength(1);
@@ -77,7 +77,7 @@ describe('vendor details', () => {
     expect(screen.getByText('În regulă', {exact: true})).toBeVisible();
     expect(screen.getByText('Detaliile documentelor nu sunt disponibile.')).toBeVisible();
     expect(screen.getByText('Nu sunt disponibile date de contact.')).toBeVisible();
-    expect(screen.getByText('Nu există documente încă.')).toBeVisible();
+    expect(screen.getByRole('row', {name: /Certificat fiscal/})).toBeVisible();
     expect(screen.queryByRole('link', {name: /@/})).not.toBeInTheDocument();
     expect(screen.getByRole('tab', {name: 'Note'})).not.toHaveAttribute('aria-disabled');
     setVendorLifecycle(view.vendor.id, 'active');

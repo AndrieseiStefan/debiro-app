@@ -5,15 +5,18 @@ import {catalogDocument} from '@/features/requirements/catalog';
 import {documentIdentityKey, templateDocumentType, type DocumentTypeSnapshot} from '@/features/requirements/document-types';
 import {getCompanyDocumentTypes, getRequirementsWorkspace, readRequirementsState} from '@/features/requirements/requirements-state';
 import type {ExpiryWarningDays, LocalizedText, RequirementTemplate, ValidityMonths} from '@/features/requirements/types';
-import {deleteLocalDocument, type CreatedDocument} from '@/features/documents/created-documents';
+import {approvedCompliance, deleteLocalDocument, readDocumentRecords, reviewDateToIso, updateDocumentRecord, type CreatedDocument} from '@/features/documents/created-documents';
+import type {ReviewValues} from '@/features/document-review/types';
+import type {SupplierRequirementDocument, SupplierRequirementStatus} from '@/features/supplier-requirements/types';
 import {getVendorDetailsFixture} from './detail-fixtures';
 import {getVendorMetadata, getVendorState, vendorFixtureCompanyId} from './created-vendors';
 import type {VendorDocumentRow} from './types';
 import {recordLocalAuditEvent} from '@/features/notifications/local-audit';
+import {currentUser} from '@/features/companies/company-state';
 
 export type VendorRequirement = DocumentTypeSnapshot & {
   id: string; companyId: string; vendorId: string; required: boolean; expiryWarningDays?: ExpiryWarningDays; validityMonths?: ValidityMonths;
-  sourceTemplateIds: string[]; sourceTemplateNames: Record<string, LocalizedText>; status: VendorDocumentRow['status'];
+  sourceTemplateIds: string[]; sourceTemplateNames: Record<string, LocalizedText>; status: SupplierRequirementStatus;
   uploadedDocumentId?: string; createdAt: string; fixtureRow?: VendorDocumentRow;
 };
 export type VendorAppliedTemplate = {vendorId: string; companyId: string; templateId: string; title: LocalizedText; appliedAt: string};
@@ -23,10 +26,12 @@ const fixtureView = getVendorDetailsFixture('construct-pro')!;
 const seeded: VendorRequirement[] = fixtureView.documents.map((row) => {
   const catalogId = row.id === 'insurance' ? 'liability' : row.id;
   const type = catalogDocument(catalogId)!;
+  const uploadedDocumentId = row.status === 'missing' ? undefined : ['tax', 'fire', 'registration'].includes(row.id) ? `construct-pro-${row.id}-2024` : `vendor-document:construct-pro:${row.id}`;
+  const record = readDocumentRecords().find((document) => document.id === uploadedDocumentId);
   return {documentTypeSource: 'catalog', catalogDocumentTypeId: catalogId, name: {...type.canonicalName}, description: {...type.description},
     iconKey: type.iconKey, iconColorKey: type.iconColorKey, id: `vendor-requirement:construct-pro:${catalogId}`, companyId: vendorFixtureCompanyId,
-    vendorId: 'construct-pro', required: row.id !== 'iso', sourceTemplateIds: [], sourceTemplateNames: {}, status: row.status, fixtureRow: row,
-    uploadedDocumentId: row.status === 'missing' ? undefined : ['tax', 'fire', 'registration'].includes(row.id) ? `construct-pro-${row.id}-2024` : `vendor-document:construct-pro:${row.id}`,
+    vendorId: 'construct-pro', required: row.id !== 'iso', sourceTemplateIds: [], sourceTemplateNames: {}, status: !record ? 'missing' : record.reviewOutcome === 'pending' ? 'in_review' : 'uploaded', fixtureRow: row,
+    uploadedDocumentId,
     createdAt: '2025-01-15T12:00:00.000Z'};
 });
 const empty: VendorRequirementsWorkspace = {requirements: [], appliedTemplates: []};
@@ -123,8 +128,54 @@ export function associateRequirementUpload(companyId: string, vendorId: string, 
   if (requirementId && !requirement) return false;
   if (document.typeSnapshot.documentTypeSource === 'company' ? !getCompanyDocumentTypes(readRequirementsState(), companyId).some((type) => type.id === document.typeSnapshot?.companyDocumentTypeId) : !catalogDocument(document.typeSnapshot.catalogDocumentTypeId)) return false;
   if (requirement && (documentIdentityKey(requirement) !== documentIdentityKey(document.typeSnapshot) || requirement.uploadedDocumentId)) return false;
-  const next: VendorRequirement = requirement ? {...requirement, fixtureRow: undefined, uploadedDocumentId: document.id, status: document.status}
-    : {...document.typeSnapshot, id: `vendor-requirement-${crypto.randomUUID()}`, companyId, vendorId, required: false, sourceTemplateIds: [], sourceTemplateNames: {}, uploadedDocumentId: document.id, status: document.status, createdAt: document.createdAt};
-  publish(companyId, vendorId, {...workspace, requirements: requirement ? workspace.requirements.map((item) => item.id === requirement.id ? next : item) : [...workspace.requirements, next]});
+  if (document.reviewOutcome !== 'pending' || !readDocumentRecords().some((item) => item.id === document.id && item.reviewOutcome === 'pending')) return false;
+  const next: VendorRequirement = requirement ? {...requirement, fixtureRow: undefined, uploadedDocumentId: document.id, status: 'in_review'}
+    : {...document.typeSnapshot, id: `vendor-requirement-${crypto.randomUUID()}`, companyId, vendorId, required: false, sourceTemplateIds: [], sourceTemplateNames: {}, uploadedDocumentId: document.id, status: 'in_review', createdAt: document.createdAt};
+  updateDocumentRecord(document.id, {vendorRequirementId: next.id}, () => publish(companyId, vendorId, {...workspace, requirements: requirement ? workspace.requirements.map((item) => item.id === requirement.id ? next : item) : [...workspace.requirements, next]}));
   return true;
+}
+
+/** One review transaction; screens only consume projections of these owned domain records. */
+export function resolveDocumentReview(companyId: string, documentId: string, outcome: 'approved' | 'rejected', values?: ReviewValues) {
+  const document = readDocumentRecords().find((item) => item.id === documentId);
+  if (!document || (document.companyId ?? vendorFixtureCompanyId) !== companyId || !vendorBelongsToCompany(companyId, document.vendorId)) return 'unavailable' as const;
+  if (document.reviewOutcome !== 'pending') return 'resolved' as const;
+  const workspace = getVendorRequirements(state, companyId, document.vendorId);
+  const requirement = workspace.requirements.find((item) => item.id === document.vendorRequirementId);
+  if (document.vendorRequirementId && (!requirement || requirement.uploadedDocumentId !== document.id || requirement.status !== 'in_review')) return 'unavailable' as const;
+  const normalized = values && Object.fromEntries(Object.entries(values).map(([key, value]) => [key, value.trim()])) as ReviewValues | undefined;
+  const issuedAt = normalized?.issuedAt ? reviewDateToIso(normalized.issuedAt) : undefined;
+  const expiresAt = normalized?.expiresAt ? reviewDateToIso(normalized.expiresAt) : null;
+  if (outcome === 'approved' && (!normalized?.companyName || !normalized.documentType || (normalized.issuedAt && !issuedAt) || (normalized.expiresAt && !expiresAt) || (issuedAt && expiresAt && expiresAt < issuedAt))) return 'invalid' as const;
+  const now = new Date().toISOString();
+  const complianceStatus = outcome === 'approved' ? approvedCompliance(expiresAt ?? null, requirement?.expiryWarningDays ?? 30, now) : document.complianceStatus;
+  updateDocumentRecord(document.id, {reviewOutcome: outcome, reviewedAt: now, reviewedBy: currentUser.fullName,
+    ...(outcome === 'approved' && {confirmedMetadata: normalized, documentNumber: normalized!.documentNumber || undefined, issuer: normalized!.issuer || undefined, issuedAt: issuedAt ?? undefined, expiresAt: expiresAt ?? null,
+      complianceStatus, status: complianceStatus === 'expiring_soon' ? 'expiring' : complianceStatus === 'needs_review' ? 'review' : complianceStatus, reviewRoute: null})}, () => {
+    if (requirement) publish(companyId, document.vendorId, {...workspace, requirements: workspace.requirements.map((item) => item.id === requirement.id
+      ? {...item, status: outcome === 'approved' ? 'uploaded' : 'missing', uploadedDocumentId: outcome === 'approved' ? document.id : undefined, fixtureRow: undefined} : item)});
+  });
+  recordLocalAuditEvent(companyId, {vendorId: document.vendorId, documentId: document.id, eventType: outcome === 'approved' ? 'document_confirmed' : 'document_rejected',
+    action: outcome === 'approved' ? {ro: 'Document confirmat', en: 'Document confirmed'} : {ro: 'Document respins', en: 'Document rejected'},
+    description: {ro: `${document.documentName.ro} — ${document.filename}`, en: `${document.documentName.en} — ${document.filename}`}, occurredAt: now});
+  return 'saved' as const;
+}
+
+export function supplierVendorDocuments(workspace: VendorRequirementsWorkspace, records: CreatedDocument[], language: 'ro' | 'en' = 'ro'): SupplierRequirementDocument[] {
+  return workspace.requirements.map((requirement) => {
+    const document = records.find((item) => item.id === requirement.uploadedDocumentId && item.reviewOutcome !== 'rejected' && (item.companyId ?? vendorFixtureCompanyId) === requirement.companyId && item.vendorId === requirement.vendorId);
+    return {id: requirement.id, catalogDocumentTypeId: requirement.catalogDocumentTypeId, customName: requirement.documentTypeSource === 'company' ? requirement.name[language] : undefined,
+      customDescription: requirement.description?.[language], iconKey: requirement.iconKey, iconColorKey: requirement.iconColorKey, required: requirement.required, status: document ? requirement.status : 'missing',
+      uploadedFile: document?.filename, uploadedAt: document ? {ro: new Intl.DateTimeFormat('ro-RO', {dateStyle: 'medium', timeZone: 'UTC'}).format(new Date(document.createdAt)), en: new Intl.DateTimeFormat('en-GB', {dateStyle: 'medium', timeZone: 'UTC'}).format(new Date(document.createdAt))} : undefined};
+  });
+}
+
+export function vendorCompliance(workspace: VendorRequirementsWorkspace, records: CreatedDocument[]) {
+  if (!workspace.requirements.length) return null;
+  const status = (requirement: VendorRequirement) => records.find((item) => item.id === requirement.uploadedDocumentId && item.reviewOutcome !== 'rejected' && (item.companyId ?? vendorFixtureCompanyId) === requirement.companyId && item.vendorId === requirement.vendorId)?.complianceStatus;
+  const required = workspace.requirements.filter((requirement) => requirement.required);
+  const noncompliant = required.some((requirement) => requirement.status === 'missing' || !status(requirement) || status(requirement) === 'expired');
+  const attention = !required.length || required.some((requirement) => requirement.status === 'in_review' || status(requirement) === 'needs_review' || status(requirement) === 'expiring_soon');
+  const validCount = workspace.requirements.filter((requirement) => requirement.status === 'uploaded' && ['valid', 'expiring_soon'].includes(status(requirement) ?? '')).length;
+  return {status: noncompliant ? 'noncompliant' as const : attention ? 'attention' as const : 'compliant' as const, validCount, total: workspace.requirements.length};
 }

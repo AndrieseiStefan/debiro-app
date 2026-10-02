@@ -6,7 +6,8 @@ import {vendorsListFixture} from '../src/features/vendors/fixtures';
 
 type Column = 'vendor' | 'category' | 'generalStatus' | 'documents' | 'nextExpiry';
 const columns: Column[] = ['vendor', 'category', 'generalStatus', 'documents', 'nextExpiry'];
-const fixtures = vendorsListFixture.vendors;
+// The shared pending tax review projects Construct Pro as attention (3/5).
+const fixtures = vendorsListFixture.vendors.map((vendor) => vendor.id === 'construct-pro' ? {...vendor, status: 'attention' as const, documentCount: 3} : vendor);
 const ids = (page: Page) => page.locator('tbody tr[data-vendor-id]').evaluateAll((rows) => rows.map((row) => row.getAttribute('data-vendor-id')));
 
 for (const locale of ['ro', 'en'] as const) {
@@ -72,18 +73,18 @@ for (const locale of ['ro', 'en'] as const) {
     expect(await ids(page)).toEqual(['construct-pro', 'alpha-construction', 'delta-construct']);
     await openFilters(page);
     await page.getByRole('combobox', {name: locale === 'ro' ? ro.DataFilters.complianceStatus : en.DataFilters.complianceStatus}).selectOption('compliant');
-    expect(await ids(page)).toEqual(['construct-pro', 'alpha-construction', 'delta-construct']);
+    expect(await ids(page)).toEqual(['alpha-construction', 'delta-construct']);
     await page.getByRole('searchbox', {name: t.searchLabel}).fill('Construct');
-    expect(await ids(page)).toEqual(['construct-pro', 'alpha-construction', 'delta-construct']);
+    expect(await ids(page)).toEqual(['alpha-construction', 'delta-construct']);
     await page.getByRole('searchbox', {name: t.searchLabel}).fill('RO12345678');
+    await expect(table.getByText(t.noResults)).toBeVisible();
+    await openFilters(page);
+    await page.getByRole('combobox', {name: locale === 'ro' ? ro.DataFilters.complianceStatus : en.DataFilters.complianceStatus}).selectOption('attention');
+    expect(await ids(page)).toEqual(['construct-pro']);
+    await table.getByRole('columnheader', {name: t.table.generalStatus}).getByRole('button').click();
     expect(await ids(page)).toEqual(['construct-pro']);
     await openFilters(page);
     await page.getByRole('combobox', {name: locale === 'ro' ? ro.DataFilters.complianceStatus : en.DataFilters.complianceStatus}).selectOption('attention');
-    await expect(table.getByText(t.noResults)).toBeVisible();
-    await table.getByRole('columnheader', {name: t.table.generalStatus}).getByRole('button').click();
-    await expect(table.getByText(t.noResults)).toBeVisible();
-    await openFilters(page);
-    await page.getByRole('combobox', {name: locale === 'ro' ? ro.DataFilters.complianceStatus : en.DataFilters.complianceStatus}).selectOption('compliant');
     await page.keyboard.press('Escape');
     await row.getByRole('button', {name: t.rowAction.replace('{name}', 'Construct Pro SRL')}).click();
     await page.getByRole('menuitem', {name: t.markActive}).click();

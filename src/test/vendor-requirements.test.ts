@@ -95,7 +95,7 @@ describe('vendor template snapshots and local document lifecycle', () => {
     const document = upload(company, supplier.id, missing);
     expect(associateRequirementUpload(company, supplier.id, document, missing.id)).toBe(true);
     const associated = workspace(company, supplier.id).requirements[0];
-    expect(associated).toMatchObject({uploadedDocumentId: document.id, status: 'uploaded'});
+    expect(associated).toMatchObject({uploadedDocumentId: document.id, status: 'in_review'});
     expect(documentIdentityKey(associated)).toBe(documentIdentityKey(missing));
     removeAppliedTemplate(company, supplier.id, a.id);
     expect(workspace(company, supplier.id).requirements[0]).toEqual(associated);

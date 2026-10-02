@@ -77,7 +77,7 @@ test('missing-row upload locks its type, associates the upload, and destructive 
   await expect(upload.getByRole('checkbox')).not.toBeChecked();
   await upload.locator('input[type=file]').setInputFiles({name: 'work-permit.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF local test')});
   await upload.getByRole('button', {name: 'Încarcă și continuă'}).click();
-  await expect(row).toContainText('Încărcat');
+  await expect(row).toContainText('Necesită revizuire');
   await expect(row).toContainText('work-permit.pdf');
   await expect(page.locator('[data-requirement-id]')).toHaveCount(7);
   await row.getByRole('button', {name: 'Acțiuni pentru Autorizație de lucru'}).click();
@@ -157,7 +157,7 @@ test('custom identity is reused across templates and uploads; later template edi
   await upload.locator('input[type=file]').setInputFiles({name: 'site-access.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF test')});
   await upload.getByRole('button', {name: 'Încarcă și continuă'}).click();
   await expect(custom).toContainText('site-access.pdf');
-  await expect(custom).toContainText('Încărcat');
+  await expect(custom).toContainText('Necesită revizuire');
   await expect(custom).toHaveCount(1);
 });
 

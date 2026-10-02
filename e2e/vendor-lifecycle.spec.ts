@@ -1,5 +1,6 @@
 import {expect, test, type Page} from '@playwright/test';
 import {openFilters} from './support/filters';
+import {documentsFixture} from '../src/features/documents/fixtures';
 
 const copy = {
   ro: {prefix: '', title: 'Furnizori', action: 'Acțiuni pentru', open: 'Deschide furnizorul', inactive: 'Marchează ca inactiv', active: 'Marchează ca activ', badge: 'Inactiv',
@@ -32,8 +33,10 @@ for (const locale of ['ro', 'en'] as const) {
       await expect(page).toHaveURL((url) => url.pathname === vendor.href);
       await expect(page.getByRole('heading', {level: 1, name: vendor.name})).toBeVisible();
       if (!vendor.href.endsWith('/construct-pro')) {
-        await expect(page.getByRole('table').getByRole('row')).toHaveCount(1);
-        await expect(page.getByText(locale === 'ro' ? 'Nu există documente încă.' : 'No documents yet.')).toBeVisible();
+        const records = documentsFixture.documents.filter((document) => document.vendorId === vendor.href.split('/').pop());
+        await expect(page.getByRole('table').getByRole('row')).toHaveCount(records.length + 1);
+        if (records.length) for (const document of records) await expect(page.getByRole('table')).toContainText(document.filename);
+        else await expect(page.getByText(locale === 'ro' ? 'Nu există documente încă.' : 'No documents yet.')).toBeVisible();
         await expect(page.locator('a[href^="mailto:"]')).toHaveCount(0);
         await expect(page.locator('a[href^="tel:"]')).toHaveCount(0);
         await expect(page.getByRole('tab', {name: locale === 'ro' ? 'Note' : 'Notes'})).not.toHaveAttribute('aria-disabled');
@@ -60,10 +63,11 @@ for (const locale of ['ro', 'en'] as const) {
     await expect(trigger).toBeFocused();
     await expect(row).toHaveAttribute('data-lifecycle', 'inactive');
     await expect(row.getByText(c.badge, {exact: true})).toBeVisible();
-    await expect(row).toContainText('4/5');
+    await expect(row).toContainText('3/5');
     const summary = page.getByRole('region', {name: c.summary});
     await expect(summary.locator('[data-status="all"]')).toContainText('24');
     await expect(summary.locator('[data-status="compliant"]')).toContainText('15');
+    await expect(summary.locator('[data-status="attention"]')).toContainText('5');
     await trigger.click();
     menu = page.getByRole('menu');
     await expect(menu.getByRole('menuitem')).toHaveCount(2);
@@ -92,7 +96,8 @@ for (const locale of ['ro', 'en'] as const) {
     await page.getByRole('menuitem', {name: c.active}).click();
     await expect(row).toHaveAttribute('data-lifecycle', 'active');
     await expect(row.getByText(c.badge, {exact: true})).toHaveCount(0);
-    await expect(summary.locator('[data-status="compliant"]')).toContainText('16');
+    await expect(summary.locator('[data-status="compliant"]')).toContainText('15');
+    await expect(summary.locator('[data-status="attention"]')).toContainText('6');
     await row.getByRole('link').click();
     await expect(page).toHaveURL((url) => url.pathname === `${c.prefix}/vendors/construct-pro`);
     await expect(page.getByRole('heading', {level: 1, name: 'Construct Pro SRL'})).toBeVisible();
@@ -117,7 +122,7 @@ for (const locale of ['ro', 'en'] as const) {
     await page.getByRole('menuitem', {name: c.inactive}).click();
     await expect(row).toHaveAttribute('data-lifecycle', 'inactive');
     await expect(page.getByRole('region', {name: c.summary}).locator('[data-status="all"]')).toContainText('25');
-    await expect(page.getByRole('region', {name: c.summary}).locator('[data-status="attention"]')).toContainText('5');
+    await expect(page.getByRole('region', {name: c.summary}).locator('[data-status="attention"]')).toContainText('6');
     await row.getByRole('link').click();
     await expect(page).toHaveURL((url) => url.pathname === route);
     await expect(page.locator('[data-vendor-lifecycle]')).toHaveText(c.badge);
@@ -128,7 +133,7 @@ for (const locale of ['ro', 'en'] as const) {
     await row.getByRole('button', {name: `${c.action} Lifecycle Test SRL`}).click();
     await page.getByRole('menuitem', {name: c.active}).click();
     await expect(row).toHaveAttribute('data-lifecycle', 'active');
-    await expect(page.getByRole('region', {name: c.summary}).locator('[data-status="attention"]')).toContainText('6');
+    await expect(page.getByRole('region', {name: c.summary}).locator('[data-status="attention"]')).toContainText('7');
     await row.getByRole('link').click();
     await expect(page.locator('[data-vendor-lifecycle]')).toHaveCount(0);
     await expect(page.getByRole('link', {name: 'local@example.test'})).toBeVisible();
@@ -149,7 +154,7 @@ test('inactive vendors remain searchable/filterable, and pagination is determini
   await page.getByRole('combobox', {name: 'Status conformitate', exact: true}).selectOption('compliant');
   await expect(page.locator('tbody tr')).toHaveCount(1);
   await page.getByRole('searchbox', {name: copy.ro.search}).fill('');
-  await expect(page.locator('tbody tr')).toHaveCount(3);
+  await expect(page.locator('tbody tr')).toHaveCount(2);
   await expect(page.locator('[data-vendor-id="alpha-construction"]')).toHaveAttribute('data-lifecycle', 'inactive');
   await openFilters(page);
   await page.getByRole('combobox', {name: 'Categorie'}).selectOption('all');

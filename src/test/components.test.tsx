@@ -5,6 +5,8 @@ import {Button} from '@/components/ui/Button';
 import {Field} from '@/components/ui/Field';
 import {StatusBadge} from '@/components/ui/StatusBadge';
 
+vi.mock('@/i18n/navigation', () => ({Link: ({href, ...props}: {href: string}) => <a href={href} {...props}/>}));
+
 describe('foundation primitives', () => {
   it('renders button content and activates on click', () => {
     const onClick = vi.fn();

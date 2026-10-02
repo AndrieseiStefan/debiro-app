@@ -10,7 +10,7 @@ import {SelectField} from '@/components/ui/SelectField';
 import {ConfirmationDialog} from '@/components/ui/ConfirmationDialog';
 import {StatusBadge, type StatusTone} from '@/components/ui/StatusBadge';
 import {Surface} from '@/components/ui/Surface';
-import {useCreatedDocuments, toVendorDocumentRow} from '@/features/documents/created-documents';
+import {activeDocuments, useDocumentRecords, toVendorDocumentRow} from '@/features/documents/created-documents';
 import {getRequirementsWorkspace, useRequirementsState} from '@/features/requirements/requirements-state';
 import {AppearanceIcon} from '@/features/requirements/AppearancePicker';
 import {applyVendorTemplates, getVendorRequirements, removeAppliedTemplate, removeVendorRequirement, useVendorRequirements, type VendorRequirement} from './vendor-requirements';
@@ -19,7 +19,7 @@ import {VendorDocumentActions} from './VendorDocumentActions';
 import type {VendorDetailsViewModel, VendorDocumentRow} from './types';
 import styles from './VendorDetailsPage.module.css';
 
-const statusTone: Record<VendorDocumentRow['status'], StatusTone> = {valid: 'success', expiring: 'warning', expired: 'danger', missing: 'neutral', uploaded: 'neutral', review: 'danger'};
+const statusTone: Record<VendorDocumentRow['status'], StatusTone> = {valid: 'success', expiring: 'warning', expired: 'danger', missing: 'neutral', review: 'danger'};
 
 export function VendorDocumentsPanel({view, companyId, language, query, setQuery, onUpload}: {view: VendorDetailsViewModel; companyId: string; language: 'ro' | 'en'; query: string; setQuery: (value: string) => void; onUpload: (requirement: VendorRequirement, trigger: HTMLButtonElement) => void}) {
   const t = useTranslations('VendorDetails');
@@ -35,14 +35,14 @@ export function VendorDocumentsPanel({view, companyId, language, query, setQuery
   const cancelConfirmation = useCallback(() => setConfirmation(null), []);
   const workspace = getVendorRequirements(useVendorRequirements(), companyId, view.vendor.id);
   const templates = getRequirementsWorkspace(useRequirementsState(), companyId).templates;
-  const documents = useCreatedDocuments().filter((document) => document.vendorId === view.vendor.id && (document.companyId ?? 'demo-company') === companyId);
+  const documents = activeDocuments(useDocumentRecords(), companyId).filter((document) => document.vendorId === view.vendor.id);
   const associated = new Set(workspace.requirements.map((item) => item.uploadedDocumentId));
   const rows: {row: VendorDocumentRow; requirement?: VendorRequirement; reviewRoute?: string | null}[] = [
     ...documents.filter((document) => !associated.has(document.id)).map((document) => ({row: toVendorDocumentRow(document, language), reviewRoute: document.reviewRoute})),
     ...workspace.requirements.map((requirement) => {
       const document = documents.find((item) => item.id === requirement.uploadedDocumentId);
       const row = document ? toVendorDocumentRow(document, language) : requirement.fixtureRow ? {...requirement.fixtureRow, name: language === 'ro' ? requirement.fixtureRow.name : requirement.name.en}
-        : {id: requirement.id, name: requirement.name[language], issuer: requirement.issuer ?? '', subtitle: requirement.description?.[language], status: requirement.status, issued: null, expires: null};
+        : {id: requirement.id, name: requirement.name[language], issuer: requirement.issuer ?? '', subtitle: requirement.description?.[language], status: 'missing' as const, issued: null, expires: null};
       return {row, requirement, reviewRoute: document?.reviewRoute};
     })
   ];
@@ -55,7 +55,7 @@ export function VendorDocumentsPanel({view, companyId, language, query, setQuery
       <SearchInput className={styles.documentSearch} label={t('searchLabel')} value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('searchPlaceholder')}/>
       <FilterPanel activeCount={Number(status !== 'all')} onReset={() => setStatus('all')}>
         <SelectField id="vendor-document-status-filter" label={t('table.status')} value={status} onChange={(event) => setStatus((event.target.value || 'all') as VendorDocumentRow['status'] | 'all')}>
-          <option value="all">{filtersT('allStatuses')}</option>{(['valid', 'expiring', 'expired', 'missing', 'uploaded', 'review'] as const).map((item) => <option key={item} value={item}>{t(`status.${item}`)}</option>)}
+          <option value="all">{filtersT('allStatuses')}</option>{(['valid', 'expiring', 'expired', 'missing', 'review'] as const).map((item) => <option key={item} value={item}>{t(`status.${item}`)}</option>)}
         </SelectField>
       </FilterPanel>
       <Button ref={triggerRef} className={styles.templateAction} onClick={() => {setSuccess(null); setPhase('open');}}><AppIcon name="plus" size={18}/>{templatesT('title')}</Button>

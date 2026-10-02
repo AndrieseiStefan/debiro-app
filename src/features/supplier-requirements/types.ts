@@ -5,11 +5,12 @@ import type {LocalizedText} from '@/features/requirements/types';
 export type SupplierRequirementDocument = RequirementDocumentIdentity & {
   id: string;
   required: boolean;
-  status: 'uploaded' | 'pending' | 'missing';
+  status: SupplierRequirementStatus;
   uploadedFile?: string;
   uploadedAt?: LocalizedText;
   selectedLocally?: boolean;
 };
+export type SupplierRequirementStatus = 'missing' | 'in_review' | 'uploaded';
 
 export type SupplierIdentity = {name: string; registrationNumber?: string; tagline?: LocalizedText};
 

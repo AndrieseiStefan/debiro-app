@@ -1,14 +1,15 @@
 'use client';
 
-import {useEffect, useRef, useState, type FormEvent, type ReactNode} from 'react';
+import {useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode} from 'react';
 import {useTranslations} from 'next-intl';
 import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
 import {AuthenticatedBreadcrumbs} from '@/components/layout/AuthenticatedBreadcrumbs';
 import {Button} from '@/components/ui/Button';
 import {EmptyState} from '@/components/ui/EmptyState';
-import {useDeletedDocumentIds} from '@/features/documents/created-documents';
-import {recordLocalAuditEvent} from '@/features/notifications/local-audit';
+import {ConfirmationDialog} from '@/components/ui/ConfirmationDialog';
+import {useDocumentRecords} from '@/features/documents/created-documents';
+import {resolveDocumentReview} from '@/features/vendors/vendor-requirements';
 import {useCompanyState} from '@/features/companies/company-state';
 import {Link} from '@/i18n/navigation';
 import type {DocumentReviewViewModel, ReviewValues} from './types';
@@ -18,7 +19,7 @@ type ReviewState = 'extracted' | 'editing' | 'draft' | 'rejected' | 'confirmed';
 type FieldName = keyof ReviewValues;
 
 function parseDate(value: string): number | null {
-  const match = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(value);
+  const match = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(value.trim());
   if (!match) return null;
   const day = Number(match[1]);
   const month = Number(match[2]);
@@ -27,9 +28,9 @@ function parseDate(value: string): number | null {
   return parsed.getUTCFullYear() === year && parsed.getUTCMonth() === month - 1 && parsed.getUTCDate() === day ? parsed.getTime() : null;
 }
 
-function ReviewField({id, label, icon, error, children}: {id: string; label: string; icon: AppIconName | 'number'; error?: string; children: ReactNode}) {
+function ReviewField({id, label, icon, error, required, children}: {id: string; label: string; icon: AppIconName | 'number'; error?: string; required: boolean; children: ReactNode}) {
   return <div className={styles.field}>
-    <label htmlFor={id}>{label} <span aria-hidden="true">*</span></label>
+    <label htmlFor={id}>{label} {required && <span aria-hidden="true">*</span>}</label>
     <div className={styles.fieldControl} data-invalid={error ? 'true' : undefined}>
       <span className={styles.fieldIcon} aria-hidden="true">{icon === 'number' ? '#' : <AppIcon name={icon} size={19}/>}</span>
       {children}
@@ -50,7 +51,7 @@ function DocumentPreview({view, locale}: {view: DocumentReviewViewModel; locale:
   const scale = fitScale * zoom / 100;
   const renderedWidth = sourceWidth * scale;
   const renderedHeight = sourceHeight * scale;
-  const localSimulation = view.source === 'demo-simulation';
+  const localSimulation = Boolean(view.source);
 
   useEffect(() => {
     const viewer = viewerRef.current;
@@ -101,13 +102,19 @@ export function DocumentReviewPage({locale, view}: {locale: string; view: Docume
   const companyId = useCompanyState().activeCompanyId ?? '';
   const t = useTranslations('DocumentReview');
   const app = useTranslations('AppShell');
-  const [values, setValues] = useState<ReviewValues>(() => ({...view.extraction.values}));
+  const record = useDocumentRecords().find((document) => document.id === view.id && (document.companyId ?? 'demo-company') === companyId);
+  const [values, setValues] = useState<ReviewValues>(() => ({...(record?.confirmedMetadata ?? view.extraction.values)}));
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [reviewState, setReviewState] = useState<ReviewState>('extracted');
   const documentPath = `/documents/${view.id}/review`;
-  const deleted = useDeletedDocumentIds().includes(view.id);
+  const [rejecting, setRejecting] = useState(false);
+  const [actionError, setActionError] = useState(false);
+  const cancelRejection = useCallback(() => setRejecting(false), []);
+  const resolved = record?.reviewOutcome !== 'pending';
+  const visibleState = record?.reviewOutcome === 'approved' ? 'confirmed' : record?.reviewOutcome === 'rejected' ? 'rejected' : reviewState;
 
   function update(field: FieldName, value: string) {
+    if (resolved) return;
     setValues((current) => ({...current, [field]: value}));
     setErrors((current) => ({...current, [field]: undefined}));
     setReviewState('editing');
@@ -115,9 +122,10 @@ export function DocumentReviewPage({locale, view}: {locale: string; view: Docume
 
   function confirm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (resolved) return;
     const nextErrors: Partial<Record<FieldName, string>> = {};
     for (const [field, value] of Object.entries(values) as [FieldName, string][]) {
-      if (!value.trim()) nextErrors[field] = t('requiredError');
+      if (!value.trim() && (view.source !== 'manual-upload' || field === 'documentType' || field === 'companyName')) nextErrors[field] = t('requiredError');
     }
     const issueTime = parseDate(values.issuedAt);
     const expiryTime = parseDate(values.expiresAt);
@@ -126,22 +134,22 @@ export function DocumentReviewPage({locale, view}: {locale: string; view: Docume
     if (issueTime !== null && expiryTime !== null && expiryTime < issueTime) nextErrors.expiresAt = t('expiryError');
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length === 0) {
-      if (reviewState !== 'confirmed') recordLocalAuditEvent(companyId, {vendorId: view.vendor.id, documentId: view.id, eventType: 'document_confirmed',
-        action: {ro: 'Document confirmat', en: 'Document confirmed'}, description: {ro: view.file.name, en: view.file.name}});
-      setReviewState('confirmed');
+      const result = resolveDocumentReview(companyId, view.id, 'approved', values);
+      setActionError(result !== 'saved');
+      if (result === 'saved') {setValues(Object.fromEntries(Object.entries(values).map(([key, value]) => [key, value.trim()])) as ReviewValues); setReviewState('confirmed');}
     }
   }
 
   const control = (field: FieldName, icon: AppIconName | 'number', label: string, select = false) => {
     const id = `review-${field}`;
-    const common = {id, required: true, 'aria-invalid': !!errors[field], 'aria-describedby': errors[field] ? `${id}-error` : undefined};
-    return <ReviewField id={id} icon={icon} label={label} error={errors[field]} key={field}>
-      {select ? <select {...common} value={values[field]} onChange={(event) => update(field, event.target.value)}><option value="tax-certificate">{t('taxCertificate')}</option><option value="registration-certificate">{t('registrationCertificate')}</option></select> :
+    const common = {id, required: view.source !== 'manual-upload' || field === 'documentType' || field === 'companyName', disabled: resolved, 'aria-invalid': !!errors[field], 'aria-describedby': errors[field] ? `${id}-error` : undefined};
+    return <ReviewField id={id} icon={icon} label={label} required={common.required} error={errors[field]} key={field}>
+      {select ? <select {...common} value={values[field]} onChange={(event) => update(field, event.target.value)}>{view.documentTypeOption ? <option value={view.documentTypeOption.id}>{view.documentTypeOption.label}</option> : <><option value="tax-certificate">{t('taxCertificate')}</option><option value="registration-certificate">{t('registrationCertificate')}</option></>}</select> :
         <input {...common} type="text" inputMode={field === 'issuedAt' || field === 'expiresAt' ? 'numeric' : 'text'} value={values[field]} onChange={(event) => update(field, event.target.value)} />}
     </ReviewField>;
   };
 
-  if (deleted) return <AuthenticatedAppShell locale={locale} currentPath={documentPath} organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={view.notificationCount}><EmptyState title={t('localDocumentUnavailable')} action={<Link href="/documents">{t('backToDocuments')}</Link>}/></AuthenticatedAppShell>;
+  if (!record) return <AuthenticatedAppShell locale={locale} currentPath={documentPath} organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={view.notificationCount}><EmptyState title={t('localDocumentUnavailable')} action={<Link href="/documents">{t('backToDocuments')}</Link>}/></AuthenticatedAppShell>;
   return <AuthenticatedAppShell locale={locale} currentPath={documentPath} organizationName={view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={view.notificationCount}>
     <div className={styles.page}>
       <div className={styles.contextRow}>
@@ -149,15 +157,16 @@ export function DocumentReviewPage({locale, view}: {locale: string; view: Docume
         <Link href="/documents" className={styles.backLink}><span aria-hidden="true">←</span>{t('backToDocuments')}</Link>
       </div>
       <header className={styles.pageHeader}>
-        <div className={styles.pageHeading}><div className={styles.eyebrow}><span className={styles.eyebrowIcon}><AppIcon name="file" size={22}/></span>{t('eyebrow')}</div><h1>{t('title')}</h1><p>{t(view.source === 'demo-simulation' ? 'localDescription' : 'description')}</p></div>
-        <div className={styles.aiCallout}><span className={styles.aiCalloutIcon} aria-hidden="true">✧</span><span><strong>{t(view.source === 'demo-simulation' ? 'localCalloutTitle' : 'aiCalloutTitle')}</strong><small><AppIcon name="info" size={15}/>{t(view.source === 'demo-simulation' ? 'localCalloutDescription' : 'aiCalloutDescription')}</small></span></div>
+        <div className={styles.pageHeading}><div className={styles.eyebrow}><span className={styles.eyebrowIcon}><AppIcon name="file" size={22}/></span>{t('eyebrow')}</div><h1>{t('title')}</h1><p>{t(view.source === 'manual-upload' ? 'manualDescription' : view.source ? 'localDescription' : 'description')}</p></div>
+        <div className={styles.aiCallout}><span className={styles.aiCalloutIcon} aria-hidden="true">✧</span><span><strong>{t(view.source === 'manual-upload' ? 'manualCalloutTitle' : view.source ? 'localCalloutTitle' : 'aiCalloutTitle')}</strong><small><AppIcon name="info" size={15}/>{t(view.source ? 'localCalloutDescription' : 'aiCalloutDescription')}</small></span></div>
       </header>
-      {reviewState !== 'extracted' && <p className={styles.reviewStatus} role="status" data-review-state={reviewState}><AppIcon name={reviewState === 'rejected' ? 'close' : reviewState === 'confirmed' ? 'check' : 'info'} size={18}/>{t(`state.${reviewState}`)}</p>}
+      {visibleState !== 'extracted' && <p className={styles.reviewStatus} role="status" data-review-state={visibleState}><AppIcon name={visibleState === 'rejected' ? 'close' : visibleState === 'confirmed' ? 'check' : 'info'} size={18}/>{t(`state.${visibleState}`)}</p>}
+      {actionError && <p role="alert">{t('actionUnavailable')}</p>}
       <div className={styles.reviewGrid}>
         <DocumentPreview view={view} locale={locale}/>
         <section className={styles.extractionCard} aria-labelledby="extraction-heading">
-          <div className={styles.extractionHeading}><h2 id="extraction-heading"><AppIcon name="file" size={25}/>{t(view.source === 'demo-simulation' ? 'localExtractionTitle' : 'extractionTitle')}</h2>{view.source !== 'demo-simulation' && <span className={styles.confidenceBadge}><AppIcon name="check" size={17}/>{t('confidenceBadge', {confidence: view.extraction.confidencePercent})}<AppIcon name="info" size={16}/></span>}</div>
-          <p className={styles.extractionDescription}>{t(view.source === 'demo-simulation' ? 'localExtractionDescription' : 'extractionDescription')}</p>
+          <div className={styles.extractionHeading}><h2 id="extraction-heading"><AppIcon name="file" size={25}/>{t(view.source === 'manual-upload' ? 'manualExtractionTitle' : view.source ? 'localExtractionTitle' : 'extractionTitle')}</h2>{!view.source && <span className={styles.confidenceBadge}><AppIcon name="check" size={17}/>{t('confidenceBadge', {confidence: view.extraction.confidencePercent})}<AppIcon name="info" size={16}/></span>}</div>
+          <p className={styles.extractionDescription}>{t(view.source === 'manual-upload' ? 'manualExtractionDescription' : view.source ? 'localExtractionDescription' : 'extractionDescription')}</p>
           <form noValidate onSubmit={confirm}>
             <div className={styles.fields}>
               {control('documentType', 'file', t('documentType'), true)}
@@ -165,16 +174,17 @@ export function DocumentReviewPage({locale, view}: {locale: string; view: Docume
               <div className={styles.fieldRow}>{control('documentNumber', 'number', t('documentNumber'))}{control('issuedAt', 'calendar', t('issuedAt'))}</div>
               <div className={styles.fieldRow}>{control('expiresAt', 'calendar', t('expiresAt'))}{control('issuer', 'building', t('issuer'))}</div>
             </div>
-            {view.source !== 'demo-simulation' && <div className={styles.confidenceSection}><div className={styles.confidenceTitle}>{t('confidenceLabel')}</div><div className={styles.confidenceTrackRow}><div className={styles.confidenceTrack}><span style={{width: `${view.extraction.confidencePercent}%`}} /></div><strong>{view.extraction.confidencePercent}%</strong></div><p><AppIcon name="info" size={17}/>{t('confidenceExplanation')}</p></div>}
-            <div className={styles.editCallout}><span aria-hidden="true"><AppIcon name="file" size={22}/></span><span><strong>{t('editCalloutTitle')}</strong><small>{t(view.source === 'demo-simulation' ? 'localEditDescription' : 'editCalloutDescription')}</small></span></div>
+            {!view.source && <div className={styles.confidenceSection}><div className={styles.confidenceTitle}>{t('confidenceLabel')}</div><div className={styles.confidenceTrackRow}><div className={styles.confidenceTrack}><span style={{width: `${view.extraction.confidencePercent}%`}} /></div><strong>{view.extraction.confidencePercent}%</strong></div><p><AppIcon name="info" size={17}/>{t('confidenceExplanation')}</p></div>}
+            <div className={styles.editCallout}><span aria-hidden="true"><AppIcon name="file" size={22}/></span><span><strong>{t('editCalloutTitle')}</strong><small>{t(view.source ? 'localEditDescription' : 'editCalloutDescription')}</small></span></div>
             <div className={styles.actions}>
-              <div><Button variant="destructive" className={styles.rejectButton} onClick={() => {setErrors({}); setReviewState('rejected');}}><AppIcon name="close" size={20}/>{t('reject')}</Button><small>{t('rejectHelper')}</small></div>
-              <div><Button variant="secondary" onClick={() => {setErrors({}); setReviewState('draft');}}><AppIcon name="file" size={19}/>{t('saveDraft')}</Button><small>{t('draftHelper')}</small></div>
-              <div><Button type="submit" className={styles.confirmButton}><AppIcon name="check" size={20}/>{t('confirmAndSave')}</Button><small>{t(view.source === 'demo-simulation' ? 'localConfirmHelper' : 'confirmHelper')}</small></div>
+              <div><Button variant="destructive" disabled={resolved} className={styles.rejectButton} onClick={() => setRejecting(true)}><AppIcon name="close" size={20}/>{t('reject')}</Button><small>{t('rejectHelper')}</small></div>
+              <div><Button variant="secondary" disabled={resolved} onClick={() => {setErrors({}); setReviewState('draft');}}><AppIcon name="file" size={19}/>{t('saveDraft')}</Button><small>{t('draftHelper')}</small></div>
+              <div><Button type="submit" disabled={resolved} className={styles.confirmButton}><AppIcon name="check" size={20}/>{t('confirmAndSave')}</Button><small>{t(view.source ? 'localConfirmHelper' : 'confirmHelper')}</small></div>
             </div>
           </form>
         </section>
       </div>
     </div>
+    {rejecting && <ConfirmationDialog icon="warning" title={t('rejectTitle')} description={t('rejectDescription')} cancelLabel={t('cancelRejection')} confirmLabel={t('reject')} onCancel={cancelRejection} onConfirm={() => {const result = resolveDocumentReview(companyId, view.id, 'rejected'); setRejecting(false); setActionError(result !== 'saved'); if (result === 'saved') {setErrors({}); setReviewState('rejected');}}}/>}
   </AuthenticatedAppShell>;
 }

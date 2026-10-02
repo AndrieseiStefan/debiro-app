@@ -36,7 +36,7 @@ describe('vendors list', () => {
     expect(within(navigation).getByRole('link', {name: 'Dashboard'})).not.toHaveAttribute('aria-current');
     expect(screen.getByRole('button', {name: 'Adaugă furnizor'})).toBeEnabled();
     const summary = screen.getByRole('region', {name: 'Rezumat furnizori'});
-    for (const count of ['24', '16', '5', '3']) expect(within(summary).getByText(count)).toBeVisible();
+    for (const count of ['24', '15', '6', '3']) expect(within(summary).getByText(count)).toBeVisible();
 
     const table = screen.getByRole('table');
     expect(within(table).queryByRole('checkbox')).not.toBeInTheDocument();
@@ -47,8 +47,8 @@ describe('vendors list', () => {
     }
     expect(within(table).getByText('Construct Pro SRL')).toBeVisible();
     expect(within(table).getByText('Medical Supplies')).toBeVisible();
-    expect(within(table).getAllByText('În regulă')).toHaveLength(4);
-    expect(within(table).getAllByText('Necesită atenție')).toHaveLength(2);
+    expect(within(table).getAllByText('În regulă')).toHaveLength(3);
+    expect(within(table).getAllByText('Necesită atenție')).toHaveLength(3);
     expect(within(table).getAllByText('Neconform')).toHaveLength(2);
     expect(screen.getByText('Afișez 1 – 8 din 24 furnizori')).toBeVisible();
   });
@@ -84,7 +84,7 @@ describe('vendors list', () => {
     const row = trigger.closest('tr')!;
     expect(row).toHaveAttribute('data-lifecycle', 'inactive');
     expect(within(row).getByText('Inactiv')).toBeVisible();
-    expect(within(row).getByText('În regulă')).toBeVisible();
+    expect(within(row).getByText('Necesită atenție')).toBeVisible();
     const summary = screen.getByRole('region', {name: 'Rezumat furnizori'});
     expect(within(summary).getByText('24')).toBeVisible();
     expect(within(summary).getByText('15')).toBeVisible();
@@ -94,7 +94,7 @@ describe('vendors list', () => {
     fireEvent.click(within(menu).getByRole('menuitem', {name: 'Marchează ca activ'}));
     expect(row).toHaveAttribute('data-lifecycle', 'active');
     expect(within(row).queryByText('Inactiv')).not.toBeInTheDocument();
-    expect(within(summary).getByText('16')).toBeVisible();
+    expect(within(summary).getByText('6')).toBeVisible();
   });
 
   it('uses accessible headers, resets pagination and sorts before slicing filtered results', () => {
@@ -117,7 +117,7 @@ describe('vendors list', () => {
     expect(within(table).getAllByRole('link').map((link) => link.textContent)).toEqual(['Delta Construct SRL', 'Construct Pro SRL', 'Alpha Construction SRL']);
     fireEvent.change(screen.getByRole('searchbox', {name: 'Caută furnizori după nume, CUI sau persoană de contact'}), {target: {value: 'Construct Pro'}});
     expect(firstName()).toBe('Construct Pro SRL');
-    fireEvent.change(screen.getByRole('combobox', {name: 'Status conformitate'}), {target: {value: 'attention'}});
+    fireEvent.change(screen.getByRole('combobox', {name: 'Status conformitate'}), {target: {value: 'compliant'}});
     expect(within(table).getByText('Niciun furnizor nu corespunde filtrelor.')).toBeVisible();
     const documentsHeader = within(table).getByRole('columnheader', {name: 'DOCUMENTE'});
     fireEvent.click(within(documentsHeader).getByRole('button'));

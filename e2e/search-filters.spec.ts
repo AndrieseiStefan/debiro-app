@@ -34,7 +34,7 @@ for (const locale of ['ro', 'en'] as const) {
     await page.getByRole('columnheader', {name: copy.Vendors.table.vendor}).getByRole('button').click();
     await expect(page.locator('tbody tr[data-vendor-id]').first()).toHaveAttribute('data-vendor-id', 'alpha-construction');
     panel = await openFilters(page);
-    await panel.getByRole('combobox', {name: copy.DataFilters.complianceStatus}).selectOption('attention');
+    await panel.getByRole('combobox', {name: copy.DataFilters.complianceStatus}).selectOption('noncompliant');
     await expect(page.getByText(copy.Vendors.noResults)).toBeVisible();
     await panel.getByRole('button', {name: copy.DataFilters.reset, exact: true}).click();
     await expect(search).toHaveValue('  cOnStRuCt  ');

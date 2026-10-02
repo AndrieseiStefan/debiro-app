@@ -3,7 +3,8 @@ import {documentDisplay} from '@/features/requirements/document-presentation';
 import {catalogDocuments} from '@/features/requirements/catalog';
 import {supplierPreviewDocuments} from '@/features/requirements/supplier-preview';
 import type {RequirementTemplateDocument} from '@/features/requirements/types';
-import {getSupplierPortalFixture} from '@/features/supplier-portal/fixtures';
+import {getVendorRequirements, readVendorRequirements, supplierVendorDocuments} from '@/features/vendors/vendor-requirements';
+import {readDocumentRecords} from '@/features/documents/created-documents';
 import {supplierRequirementProgress} from '@/features/supplier-requirements/types';
 
 const rules = {templateId: 'demo-template', required: true, expiryWarningDays: 30 as const, validityMonths: 12 as const};
@@ -20,8 +21,8 @@ describe('supplier requirement presentation', () => {
         appearance: {iconKey: catalog.iconKey, iconColorKey: catalog.iconColorKey}
       });
     }
-    for (const document of getSupplierPortalFixture('demo-construct-pro')!.documents) {
-      expect(documentDisplay(document, 'ro')).toEqual(documentDisplay({catalogDocumentTypeId: document.catalogDocumentTypeId}, 'ro'));
+    for (const document of supplierVendorDocuments(getVendorRequirements(readVendorRequirements(), 'demo-company', 'construct-pro'), readDocumentRecords())) {
+      expect(documentDisplay(document, 'ro').name).toEqual(documentDisplay({catalogDocumentTypeId: document.catalogDocumentTypeId}, 'ro').name);
     }
   });
 
@@ -47,10 +48,10 @@ describe('supplier requirement presentation', () => {
   });
 
   it('counts only uploaded fixtures; review and local selection never complete a request', () => {
-    const documents = getSupplierPortalFixture('demo-construct-pro')!.documents;
-    expect(supplierRequirementProgress(documents)).toEqual({completed: 2, total: 4, percentage: 50});
+    const documents = supplierVendorDocuments(getVendorRequirements(readVendorRequirements(), 'demo-company', 'construct-pro'), readDocumentRecords());
+    expect(supplierRequirementProgress(documents)).toEqual({completed: 3, total: 5, percentage: 60});
     const locallySelected = documents.map((document) => ({...document, selectedLocally: true, uploadedFile: 'local.pdf'}));
-    expect(supplierRequirementProgress(locallySelected)).toEqual({completed: 2, total: 4, percentage: 50});
+    expect(supplierRequirementProgress(locallySelected)).toEqual({completed: 3, total: 5, percentage: 60});
     expect(supplierRequirementProgress([])).toEqual({completed: 0, total: 0, percentage: 0});
     expect(supplierPreviewDocuments([])).toEqual([]);
   });

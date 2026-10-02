@@ -6,7 +6,7 @@ import {AppIcon} from '@/components/layout/AppIcon';
 import {Button} from '@/components/ui/Button';
 import {Drawer, type DrawerPhase} from '@/components/ui/Drawer';
 import {Field} from '@/components/ui/Field';
-import {getSimulatedExtraction, type CreatedDocument} from './created-documents';
+import {getSimulatedExtraction, type NewDocument} from './created-documents';
 import type {DocumentType} from './types';
 import {availableDocumentTypes, uploadTypeValue, type DocumentTypeSnapshot} from '@/features/requirements/document-types';
 import {getCompanyDocumentTypes, useRequirementsState} from '@/features/requirements/requirements-state';
@@ -41,7 +41,7 @@ export function AddDocumentDrawer({phase, onClose, onExited, triggerRef, vendor,
   vendor: {id: string; name: string; registrationNumber: string; registrationCode: string};
   uploadedBy: string;
   requiredType?: DocumentTypeSnapshot;
-  onCreate: (document: Omit<CreatedDocument, 'id' | 'status' | 'reviewRoute' | 'extractionState'> & {reviewRequired: boolean}) => void;
+  onCreate: (document: NewDocument) => void;
 }) {
   const t = useTranslations('AddDocument');
   const documentsT = useTranslations('Documents');

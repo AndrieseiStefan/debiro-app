@@ -23,7 +23,7 @@ test('previews current requirements read-only with safe supplier context in RO a
     await expect(preview.locator('[data-document-id]')).toHaveCount(5);
     await expect(preview).toContainText(english ? 'Company registration certificate (ONRC)' : 'Certificatul de înregistrare al companiei (ONRC)');
     await expect(preview.locator('[data-status="uploaded"]')).toHaveCount(2);
-    await expect(preview.locator('[data-status="pending"]')).toHaveText(english ? 'In review' : 'În review');
+    await expect(preview.locator('[data-status="in_review"]')).toHaveText(english ? 'In review' : 'În review');
     await expect(preview.locator('[data-status="missing"]')).toHaveCount(2);
     await expect(preview.locator('[data-required="true"]')).toHaveCount(4);
     await expect(preview.locator('[data-required="false"]')).toHaveText(english ? 'Optional' : 'Opțional');
@@ -127,14 +127,15 @@ test('shares row identity/appearance with Portal, separates optionality/status a
     await page.goto(`${english ? '/en' : ''}/upload/demo-construct-pro`);
     const portal = page.locator('[data-supplier-requirements]');
     await expect(page.getByRole('heading', {name: english ? 'Supplier preview' : 'Previzualizare pentru furnizor'})).toHaveCount(0);
-    await expect(portal.locator('[data-document-id="registration"] [data-color]')).toHaveAttribute('data-color', color!);
-    expect(await portal.locator('[data-document-id="registration"] [data-color]').innerHTML()).toBe(icon);
-    await expect(portal.locator('[data-document-id="fire"] [data-required]')).toHaveText(english ? 'Optional' : 'Opțional');
-    await expect(portal.locator('[data-document-id="fire"] [data-status]')).toHaveText(english ? 'Uploaded' : 'Încărcat');
-    await expect(portal.locator('[data-document-id="tax"] [data-status]')).toHaveText(english ? 'In review' : 'În review');
-    await expect(portal.locator('[data-document-id="tax"]')).toContainText('certificat_fiscal.pdf');
-    await expect(portal.locator('[data-document-id="tax"]')).toContainText(english ? 'Tax certificate issued by ANAF.' : 'Certificat fiscal emis de ANAF.');
-    const missing = portal.locator('[data-document-id="insurance"]');
+    const document = (id: string) => portal.locator(`[data-document-id="vendor-requirement:construct-pro:${id}"]`);
+    await expect(document('registration').locator('[data-color]')).toHaveAttribute('data-color', color!);
+    expect(await document('registration').locator('[data-color]').innerHTML()).toBe(icon);
+    await expect(document('iso').locator('[data-required]')).toHaveText(english ? 'Optional' : 'Opțional');
+    await expect(document('fire').locator('[data-status]')).toHaveText(english ? 'Uploaded' : 'Încărcat');
+    await expect(document('tax').locator('[data-status]')).toHaveText(english ? 'In review' : 'În review');
+    await expect(document('tax')).toContainText('Certificat_fiscal_CP_2024.pdf');
+    await expect(document('tax')).toContainText(english ? 'Tax certificate issued by ANAF.' : 'Certificat fiscal emis de ANAF.');
+    const missing = document('iso');
     const upload = missing.locator('input[type="file"]');
     await expect(upload).toBeVisible();
     await upload.setInputFiles({name: 'large.pdf', mimeType: 'application/pdf', buffer: Buffer.alloc(10 * 1024 * 1024 + 1)});
@@ -143,12 +144,10 @@ test('shares row identity/appearance with Portal, separates optionality/status a
     await upload.setInputFiles({name: 'local.pdf', mimeType: 'application/pdf', buffer: Buffer.from('local')});
     await expect(missing.getByRole('alert')).toHaveCount(0);
     await expect(missing).toContainText('local.pdf');
-    await expect(missing).toContainText(english ? 'Selected locally' : 'Selectat local');
-    await expect(missing.locator('[data-status]')).toHaveText(english ? 'Missing' : 'Lipsește');
-    await expect(portal.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '50');
-    await expect(missing.locator('input[type="file"]')).toBeVisible();
-    await expect(missing.getByText(english ? 'Upload document' : 'Încarcă document', {exact: true})).toBeVisible();
-    await expect(missing.getByText(english ? 'PDF, JPG or PNG (max. 10 MB)' : 'PDF, JPG sau PNG (max. 10 MB)')).toBeVisible();
+    await expect(missing.locator('[data-status]')).toHaveText(english ? 'In review' : 'În review');
+    await expect(portal.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '60');
+    await expect(missing.locator('input[type="file"]')).toHaveCount(0);
+    await expect(missing.getByText(english ? 'Upload document' : 'Încarcă document', {exact: true})).toHaveCount(0);
   }
 });
 
@@ -156,7 +155,7 @@ test('contains both shared presentations across desktop, reduced and mobile widt
   for (const english of [false, true]) for (const path of ['/requirements', '/upload/demo-construct-pro']) {
     await page.goto(`${english ? '/en' : ''}${path}`);
     if (path === '/requirements') await openPreview(page, english);
-    else await page.locator('[data-document-id="tax"] input[type="file"]').setInputFiles({name: `${'long-file-name-'.repeat(15)}.pdf`, mimeType: 'application/pdf', buffer: Buffer.from('local')});
+    else await page.locator('[data-document-id="vendor-requirement:construct-pro:iso"] input[type="file"]').setInputFiles({name: `${'long-file-name-'.repeat(15)}.pdf`, mimeType: 'application/pdf', buffer: Buffer.from('local')});
     for (const width of [1448, 1200, 1199, 1024, 758, 600, 375, 320]) {
       await page.setViewportSize({width, height: width === 1448 ? 1086 : 812});
       const bounds = await page.evaluate(() => ({

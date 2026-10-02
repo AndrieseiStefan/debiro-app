@@ -70,7 +70,7 @@ for (const english of [false, true]) {
     const row = page.locator('[data-vendor-id="construct-pro"]');
     await expect(row).toContainText('Aardvark Updated SRL');
     await expect(row).toContainText('RO90010002');
-    await expect(row).toContainText('4/5');
+    await expect(row).toContainText('3/5');
     await openFilters(page);
     await page.getByRole('combobox', {name: english ? 'Category' : 'Categorie', exact: true}).selectOption('construction');
     await expect(row).toHaveCount(0);

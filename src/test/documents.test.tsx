@@ -5,6 +5,7 @@ import ro from '../../messages/ro.json';
 import {DocumentsPage} from '@/features/documents/DocumentsPage';
 import {documentsFixture} from '@/features/documents/fixtures';
 import {getDocumentReviewFixture} from '@/features/document-review/fixtures';
+vi.mock('@/features/documents/created-documents', () => ({useDocumentRecords: () => [], activeDocuments: () => []}));
 
 vi.mock('@/i18n/navigation', () => ({
   usePathname: () => '/documents',
@@ -27,7 +28,7 @@ describe('documents fixture and states', () => {
   });
 
   it('shows a distinct empty state when no documents exist', () => {
-    render(<NextIntlClientProvider locale="ro" messages={ro}><DocumentsPage locale="ro" view={{...documentsFixture, documents: [], previousMonthCount: 0}} /></NextIntlClientProvider>);
+    render(<NextIntlClientProvider locale="ro" messages={ro}><DocumentsPage locale="ro" view={documentsFixture} /></NextIntlClientProvider>);
     expect(screen.getByRole('heading', {level: 1, name: 'Documente'})).toBeVisible();
     expect(screen.getByText('Nu există documente')).toBeVisible();
     expect(screen.getByText('Documentele furnizorilor vor apărea aici când vor fi disponibile.')).toBeVisible();

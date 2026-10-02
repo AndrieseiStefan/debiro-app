@@ -27,7 +27,7 @@
 .requirement[data-required='true'] {background: #ffe6eb; color: #c8243c;}
 .status {align-items: center; border-radius: 99px; display: inline-flex; font-size: 14px; gap: 7px; justify-self: start; line-height: 1.2; padding: 7px 11px; white-space: nowrap;}
 .status[data-status='uploaded'] {background: #dff7ec; color: #07825d;}
-.status[data-status='pending'] {background: #fff3d4; color: #bb7500;}
+.status[data-status='in_review'] {background: #fff3d4; color: #bb7500;}
 .status[data-status='missing'] {background: #ffe6eb; color: #c8243c;}
 .file {align-items: center; color: #4169a9; display: flex; gap: 10px; min-width: 0;}
 .file > svg {flex: 0 0 auto;}

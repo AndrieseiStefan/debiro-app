@@ -49,7 +49,7 @@ export type VendorDocumentRow = {
   name: string;
   issuer: string;
   subtitle?: string;
-  status: 'valid' | 'expiring' | 'expired' | 'missing' | 'uploaded' | 'review';
+  status: 'valid' | 'expiring' | 'expired' | 'missing' | 'review';
   issued: {ro: string; en: string} | null;
   expires: {ro: string; en: string} | null;
   countdown?: {ro: string; en: string};

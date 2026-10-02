@@ -13,14 +13,14 @@ test('opens canonical Romanian details from the existing list action and returns
   await page.getByRole('navigation', {name: 'Navigare pe pagină'}).getByRole('link', {name: 'Furnizori'}).click();
   await expect(page).toHaveURL(/\/vendors$/);
   await page.getByRole('link', {name: 'Detalii pentru Construct Pro SRL'}).click();
-  await expect(page.getByText('4 din 5 documente valide')).toBeVisible();
+  await expect(page.getByText('3 din 5 documente valide')).toBeVisible();
 });
 
 test('opens English details and preserves the route on locale switch', async ({page}) => {
   await page.goto('/en/vendors');
   await page.getByRole('link', {name: 'Details for Construct Pro SRL'}).click();
   await expect(page).toHaveURL(/\/en\/vendors\/construct-pro$/);
-  await expect(page.getByText('4 of 5 valid documents')).toBeVisible();
+  await expect(page.getByText('3 of 5 valid documents')).toBeVisible();
   await page.getByRole('link', {name: 'RO', exact: true}).click();
   await expect(page).toHaveURL(new RegExp(`${detailsPath}$`));
 });

@@ -64,15 +64,15 @@ test('validates files and optional dates, then maps a manual upload across both 
   await dialog.getByRole('button', {name: 'Încarcă și continuă'}).click();
   await expect(dialog).not.toBeVisible();
   await expect(page).toHaveURL(/\/vendors\/construct-pro$/);
-  const vendorRow = page.getByRole('row', {name: /Certificat fiscal.*Încărcat/}).first();
+  const vendorRow = page.getByRole('row', {name: /Certificat fiscal.*Necesită revizuire/}).first();
   await expect(vendorRow).toBeVisible();
   await expect(vendorRow).toContainText('02 mar. 2026');
   await expect(vendorRow).toContainText('02 mar. 2027');
   await expect(vendorRow).toContainText('Manual_document_2026.pdf');
-  await expect(page.getByText('4 din 5 documente valide')).toBeVisible();
+  await expect(page.getByText('3 din 5 documente valide')).toBeVisible();
   await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Documente'}).click();
   await expect(page.getByRole('row', {name: /Manual_document_2026.pdf/})).toContainText('Construct Pro SRL');
-  await expect(page.getByRole('row', {name: /Manual_document_2026.pdf/})).toContainText('Încărcat');
+  await expect(page.getByRole('row', {name: /Manual_document_2026.pdf/})).toContainText('Necesită revizuire');
   await expect(page.getByRole('button', {name: 'Toate documentele 25'})).toBeVisible();
 });
 
@@ -151,10 +151,10 @@ test('English manual creation keeps optional metadata empty and maps its own ven
   await dialog.locator('input[type=file]').setInputFiles({name: 'Registration_local.png', mimeType: 'image/png', buffer: Buffer.from('local image demo')});
   await dialog.getByRole('combobox', {name: /Document type/}).selectOption('registration');
   await dialog.getByRole('button', {name: 'Upload and continue'}).click();
-  await expect(page.getByRole('row', {name: /Registration certificate.*Uploaded/}).first()).toContainText('Registration_local.png');
+  await expect(page.getByRole('row', {name: /Registration certificate.*Needs review/}).first()).toContainText('Registration_local.png');
   await page.getByRole('navigation', {name: 'Application navigation'}).getByRole('link', {name: 'Documents'}).click();
   const row = page.getByRole('row', {name: /Registration_local.png/});
   await expect(row).toContainText('Construct Pro SRL');
-  await expect(row).toContainText('Uploaded');
+  await expect(row).toContainText('Needs review');
   await expect(row).toContainText('—');
 });

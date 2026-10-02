@@ -14,15 +14,15 @@ import {SearchInput} from '@/components/ui/SearchInput';
 import {FilterPanel} from '@/components/ui/FilterPanel';
 import {SelectField} from '@/components/ui/SelectField';
 import type {DocumentStatus, DocumentSummary, DocumentType, DocumentsViewModel} from './types';
-import {useCreatedDocuments, useDeletedDocumentIds} from './created-documents';
+import {activeDocuments, useDocumentRecords} from './created-documents';
 import {useCompanyState} from '@/features/companies/company-state';
 import styles from './DocumentsPage.module.css';
 
 const pageSize = 8;
-const statuses: DocumentStatus[] = ['uploaded', 'review', 'valid', 'expiring', 'expired'];
+const statuses: DocumentStatus[] = ['review', 'valid', 'expiring', 'expired'];
 const types: DocumentType[] = ['tax', 'registration', 'fire', 'insurance', 'inspector', 'financial', 'environment', 'safety', 'iso', 'permit', 'custom'];
-const tones: Record<DocumentStatus, StatusTone> = {uploaded: 'neutral', review: 'danger', valid: 'success', expiring: 'warning', expired: 'danger'};
-const icons: Record<DocumentStatus, AppIconName> = {uploaded: 'file', review: 'info', valid: 'check', expiring: 'clock', expired: 'info'};
+const tones: Record<DocumentStatus, StatusTone> = {review: 'danger', valid: 'success', expiring: 'warning', expired: 'danger'};
+const icons: Record<DocumentStatus, AppIconName> = {review: 'info', valid: 'check', expiring: 'clock', expired: 'info'};
 
 function displayDate(value: string, locale: string) {
   return new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'ro-RO', {day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC'}).format(new Date(`${value}T12:00:00Z`));
@@ -57,8 +57,7 @@ function DocumentRow({document, locale}: {document: DocumentSummary; locale: str
 export function DocumentsPage({locale, view}: {locale: string; view: DocumentsViewModel}) {
   const t = useTranslations('Documents');
   const companyId = useCompanyState().activeCompanyId;
-  const deletedIds = useDeletedDocumentIds();
-  const documents = [...useCreatedDocuments().filter((item) => (item.companyId ?? 'demo-company') === companyId), ...view.documents.filter((item) => companyId === 'demo-company' && !deletedIds.includes(item.id))];
+  const documents = activeDocuments(useDocumentRecords(), companyId ?? '', true);
   const [tab, setTab] = useState<'all' | 'review'>('all');
   const [query, setQuery] = useState('');
   const [vendor, setVendor] = useState('all');
@@ -142,7 +141,7 @@ export function DocumentsPage({locale, view}: {locale: string; view: DocumentsVi
                 <SelectField id="document-type-filter" label={t('type')} value={type} onChange={(event) => {setType((event.target.value || 'all') as DocumentType | 'all'); setPage(1);}}>
                   <option value="all">{t('allTypes')}</option>{types.map((item) => <option key={item} value={item}>{t(`documentType.${item}`)}</option>)}
                 </SelectField>
-                <fieldset className={styles.statusFilters}><legend>{t('statusLabel')}</legend>{statuses.filter((status) => status !== 'uploaded' || counts.uploaded > 0).map((status) => <label key={status}><input type="checkbox" checked={selectedStatuses.includes(status)} onChange={() => toggleStatus(status)}/><span className={styles.filterStatusIcon} data-status={status}><AppIcon name={icons[status]} size={14}/></span><span>{t(`status.${status}`)}</span><small>{counts[status]}</small></label>)}</fieldset>
+                <fieldset className={styles.statusFilters}><legend>{t('statusLabel')}</legend>{statuses.map((status) => <label key={status}><input type="checkbox" checked={selectedStatuses.includes(status)} onChange={() => toggleStatus(status)}/><span className={styles.filterStatusIcon} data-status={status}><AppIcon name={icons[status]} size={14}/></span><span>{t(`status.${status}`)}</span><small>{counts[status]}</small></label>)}</fieldset>
                 <SelectField id="document-upload-period-filter" label={t('uploadPeriod')} value={uploadYear} onChange={(event) => {setUploadYear(event.target.value || 'any'); setPage(1);}}>
                   <option value="any">{t('anytime')}</option>{uploadYears.map((year) => <option key={year} value={year}>{t('year', {year})}</option>)}
                 </SelectField>

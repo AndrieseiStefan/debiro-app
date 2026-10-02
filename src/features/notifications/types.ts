@@ -1,7 +1,7 @@
 export type LocalizedText = {ro: string; en: string};
 
 /** Operational, potentially actionable activity. Reusable by the later bell center. */
-export type NotificationActivityType = 'reminder' | 'document_upload' | 'document_confirmed' | 'document_expiring' | 'document_missing' | 'status_changed' | 'vendor_added' | 'other';
+export type NotificationActivityType = 'reminder' | 'document_upload' | 'document_confirmed' | 'document_rejected' | 'document_expiring' | 'document_missing' | 'status_changed' | 'vendor_added' | 'other';
 export type NotificationActivityItem = {
   id: string;
   type: NotificationActivityType;

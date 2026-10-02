@@ -10,7 +10,8 @@ export type ReviewValues = {
 /** Presentation fixture only; it is not a persisted document or verification record. */
 export type DocumentReviewViewModel = {
   id: string;
-  source?: 'demo-simulation';
+  source?: 'demo-simulation' | 'manual-upload';
+  documentTypeOption?: {id: string; label: string};
   vendor: {id: string; name: string; registrationNumber: string; registrationCode: string};
   organization: {name: string};
   user: {fullName: string; initials: string};
