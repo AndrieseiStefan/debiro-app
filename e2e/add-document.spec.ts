@@ -87,7 +87,7 @@ test('exact demo fixture extraction opens review with the newly created document
   const extractionGrid = await metadataGeometry(dialog);
   expect(extractionGrid.fields[0]!.x).toBeCloseTo(extractionGrid.fields[2]!.x, 0);
   expect(extractionGrid.fields[1]!.x).toBeCloseTo(extractionGrid.fields[3]!.x, 0);
-  await expect(dialog.getByRole('textbox', {name: 'Data emiterii'})).toHaveValue('12.03.2024');
+  await expect(dialog.getByRole('textbox', {name: 'Data emiterii'})).toHaveValue('01.10.2026');
   await dialog.getByRole('checkbox', {name: 'Încearcă extragerea automată a datelor'}).uncheck();
   await expect(dialog.getByRole('textbox', {name: 'Număr document'})).toHaveValue('');
   await dialog.getByRole('checkbox', {name: 'Încearcă extragerea automată a datelor'}).check();

@@ -1,5 +1,6 @@
 'use client';
 
+import {fixtureReferenceTime} from '@/lib/fixture-clock';
 import {useSyncExternalStore} from 'react';
 import {catalogDocument} from '@/features/requirements/catalog';
 import {documentIdentityKey, templateDocumentType, type DocumentTypeSnapshot} from '@/features/requirements/document-types';
@@ -32,7 +33,7 @@ const seeded: VendorRequirement[] = fixtureView.documents.map((row) => {
     iconKey: type.iconKey, iconColorKey: type.iconColorKey, id: `vendor-requirement:construct-pro:${catalogId}`, companyId: vendorFixtureCompanyId,
     vendorId: 'construct-pro', required: row.id !== 'iso', sourceTemplateIds: [], sourceTemplateNames: {}, status: !record ? 'missing' : record.reviewOutcome === 'pending' ? 'in_review' : 'uploaded', fixtureRow: row,
     uploadedDocumentId,
-    createdAt: '2025-01-15T12:00:00.000Z'};
+    createdAt: fixtureReferenceTime};
 });
 const empty: VendorRequirementsWorkspace = {requirements: [], appliedTemplates: []};
 const initialState: Record<string, VendorRequirementsWorkspace> = {[`${vendorFixtureCompanyId}:construct-pro`]: {requirements: seeded, appliedTemplates: []}};
@@ -80,7 +81,7 @@ export function applyVendorTemplates(companyId: string, vendorId: string, templa
   const existingSelectedKeys = new Set(selected.flatMap((template) => template.documents.map((document) => documentIdentityKey(templateDocumentType(document)!))).filter((key) => existingKeys.has(key)));
   const requirements = workspace.requirements.map((requirement) => ({...requirement, sourceTemplateIds: [...requirement.sourceTemplateIds], sourceTemplateNames: {...requirement.sourceTemplateNames}}));
   const appliedTemplates = [...workspace.appliedTemplates];
-  const now = new Date().toISOString();
+  const now = fixtureReferenceTime;
   let addedCount = 0;
   for (const template of selected) {
     for (const document of template.documents) {
@@ -147,7 +148,7 @@ export function resolveDocumentReview(companyId: string, documentId: string, out
   const issuedAt = normalized?.issuedAt ? reviewDateToIso(normalized.issuedAt) : undefined;
   const expiresAt = normalized?.expiresAt ? reviewDateToIso(normalized.expiresAt) : null;
   if (outcome === 'approved' && (!normalized?.companyName || !normalized.documentType || (normalized.issuedAt && !issuedAt) || (normalized.expiresAt && !expiresAt) || (issuedAt && expiresAt && expiresAt < issuedAt))) return 'invalid' as const;
-  const now = new Date().toISOString();
+  const now = fixtureReferenceTime;
   const complianceStatus = outcome === 'approved' ? approvedCompliance(expiresAt ?? null, requirement?.expiryWarningDays ?? 30, now) : document.complianceStatus;
   updateDocumentRecord(document.id, {reviewOutcome: outcome, reviewedAt: now, reviewedBy: currentUser.fullName,
     ...(outcome === 'approved' && {confirmedMetadata: normalized, documentNumber: normalized!.documentNumber || undefined, issuer: normalized!.issuer || undefined, issuedAt: issuedAt ?? undefined, expiresAt: expiresAt ?? null,

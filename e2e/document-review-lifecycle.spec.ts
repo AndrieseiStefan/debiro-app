@@ -1,3 +1,4 @@
+import {fixtureReferenceTime} from '../src/lib/fixture-clock';
 import {expect, test, type Page} from '@playwright/test';
 
 async function sidebar(page: Page, english: boolean, section: string) {
@@ -20,11 +21,11 @@ const tax = '[data-document-id="vendor-requirement:construct-pro:tax"]';
 const taxRequirement = '[data-requirement-id="vendor-requirement:construct-pro:tax"]';
 
 for (const {english, expiry, compliance, label} of [
-  {english: false, expiry: '14.01.2025', compliance: 'noncompliant', label: 'Expirat'},
-  {english: true, expiry: '14.02.2025', compliance: 'attention', label: 'Expiring soon'}
+  {english: false, expiry: '01.10.2026', compliance: 'noncompliant', label: 'Expirat'},
+  {english: true, expiry: '01.11.2026', compliance: 'attention', label: 'Expiring soon'}
 ]) {
   test(`${english ? 'EN' : 'RO'} approval derives ${label} while supplier completion remains Uploaded`, async ({page}) => {
-    await page.clock.setFixedTime(new Date('2025-01-15T12:00:00Z'));
+    await page.clock.setFixedTime(new Date(fixtureReferenceTime));
     await page.goto(`${english ? '/en' : ''}/documents/construct-pro-tax-2024/review`);
     await page.locator('#review-expiresAt').fill(expiry);
     await page.getByRole('button', {name: english ? 'Confirm and save' : 'Confirmă și salvează'}).click();

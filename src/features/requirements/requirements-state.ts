@@ -1,5 +1,6 @@
 'use client';
 
+import {fixtureReferenceTime} from '@/lib/fixture-clock';
 import {useSyncExternalStore} from 'react';
 import {vendorCategories, type VendorCategory} from '@/features/vendors/types';
 import {defaultAppearance, starterAppearance, validColorKey, validIconKey, type Appearance} from './appearance';
@@ -20,7 +21,7 @@ const seededTemplates: RequirementTemplate[] = requirementsFixture.templates.map
   id: template.id, companyId: 'demo-company', title: template.title, subtitle: template.subtitle,
   ...starterAppearance(template.icon), categoryId: template.categoryId,
   starterTemplateId: `starter-${template.id}`, starterTemplateVersion: 1,
-  createdAt: '2025-01-15T12:00:00.000Z', updatedAt: '2025-01-15T12:00:00.000Z',
+  createdAt: fixtureReferenceTime, updatedAt: fixtureReferenceTime,
   documents: template.rules.map((rule) => ({
     id: `${template.id}:${rule.id}`, templateId: template.id, catalogDocumentTypeId: rule.id,
     required: rule.mandatory, expiryWarningDays: rule.alertDays, validityMonths: rule.validityMonths
@@ -157,7 +158,7 @@ export function validateExistingRequirementEdit(workspace: RequirementsWorkspace
   return workspace.editDraft ? validateTemplateFields(workspace, workspace.editDraft, workspace.editDraft.templateId) : 'missing' as const;
 }
 
-export function learnCandidates(existing: CatalogCandidate[], documents: RequirementTemplateDocument[], now = new Date().toISOString()): CatalogCandidate[] {
+export function learnCandidates(existing: CatalogCandidate[], documents: RequirementTemplateDocument[], now = fixtureReferenceTime): CatalogCandidate[] {
   return documents.reduce<CatalogCandidate[]>((candidates, document) => {
     if (!document.customName) return candidates;
     const normalizedName = normalizeDocumentName(document.customName);
@@ -175,7 +176,7 @@ export function saveRequirementDraft(companyId: string): ReturnType<typeof valid
   const id = `local-template-${crypto.randomUUID()}`;
   const name = draft.name.trim().replace(/\s+/g, ' ');
   const description = draft.description.trim();
-  const now = new Date().toISOString();
+  const now = fixtureReferenceTime;
   const resolved = resolveCompanyDocumentTypes(companyId, draft.documents, state.companyDocumentTypes, now);
   const template: RequirementTemplate = {
     id, companyId, title: {ro: name, en: name}, subtitle: {ro: description, en: description},
@@ -206,11 +207,11 @@ export function saveExistingRequirementEdit(companyId: string): ValidationError 
     customName: document.customName.trim().replace(/\s+/g, ' '), customDescription: document.customDescription?.trim() || undefined, issuer: document.issuer?.trim() || undefined
   });
   const learned = documents.filter((document) => document.customName && !original.documents.some((previous) => previous.id === document.id && normalizeDocumentName(previous.customName ?? '') === normalizeDocumentName(document.customName ?? '')));
-  const resolved = resolveCompanyDocumentTypes(companyId, documents, state.companyDocumentTypes, new Date().toISOString());
+  const resolved = resolveCompanyDocumentTypes(companyId, documents, state.companyDocumentTypes, fixtureReferenceTime);
   const committed: RequirementTemplate = {...original, title: renamed ? {ro: name, en: name} : original.title,
     subtitle: reworded ? {ro: description, en: description} : original.subtitle,
     categoryId: edit.categoryId as VendorCategory, iconKey: validIconKey(edit.iconKey), iconColorKey: validColorKey(edit.iconColorKey),
-    documents: resolved.documents, updatedAt: new Date().toISOString()};
+    documents: resolved.documents, updatedAt: fixtureReferenceTime};
   publish({byCompany: {...state.byCompany, [companyId]: {...workspace, templates: workspace.templates.map((template) => template.id === original.id ? committed : template), editDraft: null}},
     companyDocumentTypes: resolved.types, candidates: learnCandidates(state.candidates, learned)});
   return 'saved';

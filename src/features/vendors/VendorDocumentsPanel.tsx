@@ -41,7 +41,7 @@ export function VendorDocumentsPanel({view, companyId, language, query, setQuery
     ...documents.filter((document) => !associated.has(document.id)).map((document) => ({row: toVendorDocumentRow(document, language), reviewRoute: document.reviewRoute})),
     ...workspace.requirements.map((requirement) => {
       const document = documents.find((item) => item.id === requirement.uploadedDocumentId);
-      const row = document ? toVendorDocumentRow(document, language) : requirement.fixtureRow ? {...requirement.fixtureRow, name: language === 'ro' ? requirement.fixtureRow.name : requirement.name.en}
+      const row = document ? toVendorDocumentRow(document, language) : requirement.fixtureRow ? {...requirement.fixtureRow, name: language === 'ro' ? requirement.fixtureRow.name : requirement.name.en, status: 'missing' as const, issued: null, expires: null, countdown: undefined, uploadedBy: undefined, uploadedOn: undefined}
         : {id: requirement.id, name: requirement.name[language], issuer: requirement.issuer ?? '', subtitle: requirement.description?.[language], status: 'missing' as const, issued: null, expires: null};
       return {row, requirement, reviewRoute: document?.reviewRoute};
     })

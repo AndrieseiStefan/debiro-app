@@ -1,3 +1,4 @@
+import {fixtureReferenceTime} from '../src/lib/fixture-clock';
 import path from 'node:path';
 import {expect, test} from '@playwright/test';
 import {openFilters} from './support/filters';
@@ -19,7 +20,7 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
     await page.setViewportSize({width: viewportWidth, height: viewportHeight});
   }
 
-  await page.clock.setFixedTime(new Date('2025-01-15T12:00:00Z'));
+  await page.clock.setFixedTime(new Date(fixtureReferenceTime));
   const response = await page.goto(route);
   expect(response?.status()).toBeLessThan(400);
   await page.waitForLoadState('networkidle');

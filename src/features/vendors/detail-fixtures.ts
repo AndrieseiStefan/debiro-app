@@ -1,5 +1,6 @@
 import {vendorsListFixture} from './fixtures';
 import type {VendorDetailsViewModel} from './types';
+import {fixtureReferenceDate} from '@/lib/fixture-clock';
 
 const canonicalVendor = vendorsListFixture.vendors.find((vendor) => vendor.id === 'construct-pro');
 if (!canonicalVendor) throw new Error('Canonical vendor fixture is missing');
@@ -12,8 +13,7 @@ const detailsById: Record<string, VendorDetailsViewModel> = {
     vendor: canonicalVendor,
     registrationCode: 'J40/1234/2018',
     categoryDetail: {ro: 'Construcții și infrastructură', en: 'Construction and infrastructure'},
-    validDocumentCount: 4,
-    invitationPreview: {demoUploadUrl: 'https://debiro.ro/upload/demo-construct-pro', demoUploadPath: '/upload/demo-construct-pro', referenceDate: '2025-02-12'},
+    invitationPreview: {demoUploadUrl: 'https://debiro.ro/upload/demo-construct-pro', demoUploadPath: '/upload/demo-construct-pro', referenceDate: fixtureReferenceDate},
     contact: {
       name: 'Ion Popescu', role: {ro: 'Director General', en: 'General Manager'},
       email: 'ion.popescu@scconstruct.ro', phone: '+40 722 345 678',
@@ -21,10 +21,10 @@ const detailsById: Record<string, VendorDetailsViewModel> = {
       website: 'www.constructpro.ro'
     },
     documents: [
-      {id: 'tax', name: 'Certificat fiscal', issuer: 'ANAF', status: 'valid', issued: {ro: '12 ian. 2024', en: 'Jan 12, 2024'}, expires: {ro: '12 ian. 2025', en: 'Jan 12, 2025'}, countdown: {ro: 'În 132 zile', en: 'In 132 days'}, uploadedBy: 'Andrei Popescu', uploadedOn: {ro: '12 ian. 2024', en: 'Jan 12, 2024'}},
-      {id: 'fire', name: 'Autorizație ISU', issuer: 'Inspectoratul pentru Situații de Urgență', status: 'expiring', issued: {ro: '28 apr. 2023', en: 'Apr 28, 2023'}, expires: {ro: '28 apr. 2025', en: 'Apr 28, 2025'}, countdown: {ro: 'În 25 zile', en: 'In 25 days'}, uploadedBy: 'Maria Ionescu', uploadedOn: {ro: '10 mar. 2024', en: 'Mar 10, 2024'}},
-      {id: 'registration', name: 'Certificat de înregistrare', issuer: 'ONRC', status: 'expired', issued: {ro: '03 mai 2021', en: 'May 3, 2021'}, expires: {ro: '03 mai 2024', en: 'May 3, 2024'}, countdown: {ro: 'Acum 287 zile', en: '287 days ago'}, uploadedBy: 'Andrei Popescu', uploadedOn: {ro: '15 apr. 2021', en: 'Apr 15, 2021'}},
-      {id: 'insurance', name: 'Asigurare Răspundere Civilă', issuer: 'Asigurator ABC', status: 'valid', issued: {ro: '10 feb. 2024', en: 'Feb 10, 2024'}, expires: {ro: '10 feb. 2025', en: 'Feb 10, 2025'}, countdown: {ro: 'În 161 zile', en: 'In 161 days'}, uploadedBy: 'Elena Marin', uploadedOn: {ro: '10 feb. 2024', en: 'Feb 10, 2024'}},
+      {id: 'tax', name: 'Certificat fiscal', issuer: 'ANAF', status: 'review', issued: null, expires: null},
+      {id: 'fire', name: 'Autorizație ISU', issuer: 'Inspectoratul pentru Situații de Urgență', status: 'valid', issued: null, expires: null},
+      {id: 'registration', name: 'Certificat de înregistrare', issuer: 'ONRC', status: 'valid', issued: null, expires: null},
+      {id: 'insurance', name: 'Asigurare Răspundere Civilă', issuer: 'Asigurator ABC', status: 'valid', issued: null, expires: null},
       {id: 'iso', name: 'Certificat ISO 9001', issuer: 'SR EN ISO 9001:2015', status: 'missing', issued: null, expires: null}
     ]
   }

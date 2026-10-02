@@ -31,7 +31,7 @@ for (const locale of ['ro', 'en'] as const) {
     });
 
     it('orders compliance by severity, independent of inactive lifecycle', () => {
-      const rows = [vendor('n', 'Noncompliant', {status: 'noncompliant'}), vendor('z', 'Zulu', {status: 'attention'}), vendor('c', 'Compliant', {lifecycleStatus: 'inactive'}), vendor('a', 'Alpha', {status: 'attention'})];
+      const rows = [vendor('n', 'Noncompliant', {status: 'noncompliant'}), vendor('z', 'Zulu', {status: 'attention'}), vendor('c', 'Compliant', {lifecycleStatus: 'inactive', status: 'compliant'}), vendor('a', 'Alpha', {status: 'attention'})];
       expect(names(sort(rows, 'generalStatus', 'ascending'))).toEqual(['Compliant', 'Alpha', 'Zulu', 'Noncompliant']);
       expect(names(sort(rows, 'generalStatus', 'descending'))).toEqual(['Noncompliant', 'Alpha', 'Zulu', 'Compliant']);
       expect(rows[2]).toMatchObject({status: 'compliant', lifecycleStatus: 'inactive'});
@@ -57,13 +57,9 @@ for (const locale of ['ro', 'en'] as const) {
   });
 }
 
-it('retains fixture date labels while supplying matching ISO dates and null local expiries', () => {
+it('does not invent independent fixture expiries or local expiry values', () => {
   for (const item of vendorsListFixture.vendors) {
-    expect(item.nextExpiry.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    const date = new Date(`${item.nextExpiry.date}T00:00:00Z`);
-    // Keep the approved fixture's "sep." abbreviation rather than CLDR's "sept.".
-    expect(new Intl.DateTimeFormat('ro', {day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC'}).format(date).replace('sept.', 'sep.')).toBe(item.nextExpiry.ro);
-    expect(new Intl.DateTimeFormat('en', {day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'}).format(date)).toBe(item.nextExpiry.en);
+    expect(item.nextExpiry).toEqual({date: null, ro: '—', en: '—', tone: 'neutral'});
   }
   expect(toVendorListItem({id: 'local-sort', name: 'Local', cui: 'RO1234', category: 'software', email: 'local@example.test', lifecycleStatus: 'active'}).nextExpiry.date).toBeNull();
 });

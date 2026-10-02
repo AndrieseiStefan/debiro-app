@@ -1,4 +1,5 @@
 import type {SupplierPortalViewModel} from './types';
+import {fixtureReferenceDate} from '@/lib/fixture-clock';
 
 const demoPortal: SupplierPortalViewModel = {
   token: 'demo-construct-pro',
@@ -7,7 +8,7 @@ const demoPortal: SupplierPortalViewModel = {
   requester: {name: 'Global Clean Services', tagline: {ro: 'Un mediu mai curat, împreună.', en: 'A cleaner environment, together.'}},
   supplier: {name: 'Construct Pro SRL', registrationNumber: 'RO12345678'},
   help: {email: 'achizitii@globalclean.ro', phone: '+40 21 555 0185'},
-  footerYear: 2024
+  footerYear: Number(fixtureReferenceDate.slice(0, 4))
 };
 
 const portalsByToken: Record<string, SupplierPortalViewModel> = {[demoPortal.token]: demoPortal};

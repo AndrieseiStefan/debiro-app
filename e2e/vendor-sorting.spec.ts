@@ -3,11 +3,13 @@ import {openFilters} from './support/filters';
 import en from '../messages/en.json' with {type: 'json'};
 import ro from '../messages/ro.json' with {type: 'json'};
 import {vendorsListFixture} from '../src/features/vendors/fixtures';
+import {readDocumentRecords} from '../src/features/documents/created-documents';
+import {getVendorRequirements, readVendorRequirements} from '../src/features/vendors/vendor-requirements';
+import {projectVendorDocuments} from '../src/features/vendors/projections';
 
 type Column = 'vendor' | 'category' | 'generalStatus' | 'documents' | 'nextExpiry';
 const columns: Column[] = ['vendor', 'category', 'generalStatus', 'documents', 'nextExpiry'];
-// The shared pending tax review projects Construct Pro as attention (3/5).
-const fixtures = vendorsListFixture.vendors.map((vendor) => vendor.id === 'construct-pro' ? {...vendor, status: 'attention' as const, documentCount: 3} : vendor);
+const fixtures = vendorsListFixture.vendors.map((vendor) => projectVendorDocuments(vendor, getVendorRequirements(readVendorRequirements(), 'demo-company', vendor.id), readDocumentRecords(), 'demo-company'));
 const ids = (page: Page) => page.locator('tbody tr[data-vendor-id]').evaluateAll((rows) => rows.map((row) => row.getAttribute('data-vendor-id')));
 
 for (const locale of ['ro', 'en'] as const) {
@@ -19,8 +21,12 @@ for (const locale of ['ro', 'en'] as const) {
     if (column === 'vendor') comparison = byName(a, b);
     if (column === 'category') comparison = t.category[a.category].localeCompare(t.category[b.category], locale, {sensitivity: 'base'});
     if (column === 'generalStatus') comparison = ['compliant', 'attention', 'noncompliant'].indexOf(a.status) - ['compliant', 'attention', 'noncompliant'].indexOf(b.status);
-    if (column === 'documents') comparison = a.documentCount / a.documentTarget - b.documentCount / b.documentTarget;
-    if (column === 'nextExpiry') comparison = Date.parse(a.nextExpiry.date!) - Date.parse(b.nextExpiry.date!);
+    if (column === 'documents') comparison = (a.documentTarget ? a.documentCount / a.documentTarget : 0) - (b.documentTarget ? b.documentCount / b.documentTarget : 0);
+    if (column === 'nextExpiry') {
+      if (!a.nextExpiry.date && b.nextExpiry.date) return 1;
+      if (a.nextExpiry.date && !b.nextExpiry.date) return -1;
+      if (a.nextExpiry.date && b.nextExpiry.date) comparison = Date.parse(a.nextExpiry.date) - Date.parse(b.nextExpiry.date);
+    }
     return comparison * (descending ? -1 : 1) || byName(a, b);
   }).map((row) => row.id);
 
@@ -65,17 +71,17 @@ for (const locale of ['ro', 'en'] as const) {
     await page.getByRole('combobox', {name: t.categoryLabel}).selectOption('construction');
     expect(await ids(page)).toEqual(['alpha-construction', 'construct-pro', 'delta-construct']);
     await table.getByRole('columnheader', {name: t.table.documents}).getByRole('button').click();
-    expect(await ids(page)).toEqual(['construct-pro', 'alpha-construction', 'delta-construct']);
+    expect(await ids(page)).toEqual(['delta-construct', 'construct-pro', 'alpha-construction']);
     const row = page.locator('[data-vendor-id="construct-pro"]');
     await row.getByRole('button', {name: t.rowAction.replace('{name}', 'Construct Pro SRL')}).click();
     await page.getByRole('menuitem', {name: t.markInactive}).click();
     await expect(row).toHaveAttribute('data-lifecycle', 'inactive');
-    expect(await ids(page)).toEqual(['construct-pro', 'alpha-construction', 'delta-construct']);
+    expect(await ids(page)).toEqual(['delta-construct', 'construct-pro', 'alpha-construction']);
     await openFilters(page);
     await page.getByRole('combobox', {name: locale === 'ro' ? ro.DataFilters.complianceStatus : en.DataFilters.complianceStatus}).selectOption('compliant');
-    expect(await ids(page)).toEqual(['alpha-construction', 'delta-construct']);
+    expect(await ids(page)).toEqual([]);
     await page.getByRole('searchbox', {name: t.searchLabel}).fill('Construct');
-    expect(await ids(page)).toEqual(['alpha-construction', 'delta-construct']);
+    expect(await ids(page)).toEqual([]);
     await page.getByRole('searchbox', {name: t.searchLabel}).fill('RO12345678');
     await expect(table.getByText(t.noResults)).toBeVisible();
     await openFilters(page);
@@ -105,8 +111,8 @@ for (const locale of ['ro', 'en'] as const) {
     await expect(page).toHaveURL(new RegExp(`${route}$`));
     const table = page.getByRole('table');
     await table.getByRole('columnheader', {name: t.table.documents}).getByRole('button').click();
-    await expect(page.locator('tbody tr[data-vendor-id]').first()).toContainText('Zulu Local SRL');
-    for (const first of ['clinic-equip', 'steel-supply']) {
+    await expect(page.locator('tbody tr[data-vendor-id]').first()).toContainText('Artisan Food SRL');
+    for (const first of ['terra-materials', 'build-more']) {
       await table.getByRole('columnheader', {name: t.table.nextExpiry}).getByRole('button').click();
       expect((await ids(page))[0]).toBe(first);
       await page.getByRole('navigation', {name: t.paginationLabel}).getByRole('button', {name: '4', exact: true}).click();

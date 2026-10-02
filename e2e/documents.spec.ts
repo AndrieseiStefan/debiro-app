@@ -30,7 +30,7 @@ test('tabs, search, filters, sort, empty recovery and pagination stay local', as
   await expect(table.locator('tbody tr')).toHaveCount(8);
 
   await page.getByRole('combobox', {name: 'Sortează după data încărcării'}).selectOption('oldest');
-  await expect(table.locator('tbody tr').first()).toContainText('Nova Energy SRL');
+  await expect(table.locator('tbody tr').first()).toContainText('Terra Materials SRL');
   await page.getByRole('combobox', {name: 'Sortează după data încărcării'}).selectOption('newest');
   await expect(table.locator('tbody tr').first()).toContainText('Certificat_fiscal_CP_2024.pdf');
   await page.getByRole('button', {name: 'Pagina 2'}).click();
@@ -52,8 +52,8 @@ test('tabs, search, filters, sort, empty recovery and pagination stay local', as
   await page.getByRole('button', {name: 'Resetează căutarea și filtrele'}).click();
   await expect(table.locator('tbody tr')).toHaveCount(8);
   await openFilters(page);
-  await page.getByRole('combobox', {name: 'Perioadă încărcare'}).selectOption('2023');
-  await expect(page.getByText('Se afișează 1-8 din 9 documente')).toBeVisible();
+  await page.getByRole('combobox', {name: 'Perioadă încărcare'}).selectOption('2026');
+  await expect(page.getByText('Se afișează 1-8 din 24 documente')).toBeVisible();
   await page.getByRole('button', {name: 'Resetează', exact: true}).click();
   await expect(page.getByText('Se afișează 1-8 din 24 documente')).toBeVisible();
   await page.getByRole('button', {name: 'Filtrează'}).click();

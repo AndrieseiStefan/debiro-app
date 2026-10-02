@@ -1,5 +1,6 @@
 'use client';
 
+import {fixtureReferenceTime} from '@/lib/fixture-clock';
 import {useRef, useState, type ChangeEvent, type DragEvent, type FormEvent, type RefObject} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
 import {AppIcon} from '@/components/layout/AppIcon';
@@ -132,7 +133,7 @@ export function AddDocumentDrawer({phase, onClose, onExited, triggerRef, vendor,
     const next = validate();
     setErrors(next);
     if (Object.keys(next).length || !file || !type) return;
-    const now = new Date().toISOString();
+    const now = fixtureReferenceTime;
     onCreate({
       vendorId: vendor.id,
       companyId,

@@ -1,3 +1,5 @@
+'use client';
+
 import type {CSSProperties} from 'react';
 import {useTranslations} from 'next-intl';
 import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
@@ -7,6 +9,14 @@ import {StatusBadge, type StatusTone} from '@/components/ui/StatusBadge';
 import {Surface} from '@/components/ui/Surface';
 import type {DashboardActivityKind, DashboardDocumentStatus, DashboardViewModel, LocalizedSample} from './types';
 import styles from './DashboardPage.module.css';
+import {useDocumentRecords} from '@/features/documents/created-documents';
+import {useVendorRequirements} from '@/features/vendors/vendor-requirements';
+import {useVendorState, vendorListItems} from '@/features/vendors/created-vendors';
+import {vendorsListFixture} from '@/features/vendors/fixtures';
+import {notificationsFixture} from '@/features/notifications/fixtures';
+import {useLocalAuditEvents} from '@/features/notifications/local-audit';
+import {useCompanyState} from '@/features/companies/company-state';
+import {projectDashboard} from './projections';
 
 const metricAppearance: Record<'total' | 'compliant' | 'attention' | 'noncompliant', {icon: AppIconName; tone: string}> = {
   total: {icon: 'users', tone: 'blue'},
@@ -95,8 +105,8 @@ function DocumentsAttentionPanel({view, locale}: {view: DashboardViewModel; loca
 function SupplierStatusPanel({view}: {view: DashboardViewModel}) {
   const t = useTranslations('Dashboard');
   const {suppliers} = view;
-  const compliantStop = (suppliers.compliant / suppliers.total) * 100;
-  const attentionStop = ((suppliers.compliant + suppliers.attention) / suppliers.total) * 100;
+  const compliantStop = suppliers.total ? (suppliers.compliant / suppliers.total) * 100 : 0;
+  const attentionStop = suppliers.total ? ((suppliers.compliant + suppliers.attention) / suppliers.total) * 100 : 0;
   const donutStyle = {
     '--compliant-stop': `${compliantStop}%`,
     '--attention-stop': `${attentionStop}%`
@@ -150,8 +160,11 @@ function RecentActivityPanel({view, locale}: {view: DashboardViewModel; locale: 
   );
 }
 
-export function DashboardPage({locale, view}: {locale: string; view: DashboardViewModel}) {
+export function DashboardPage({locale, view: initialView}: {locale: string; view: DashboardViewModel}) {
   const t = useTranslations('Dashboard');
+  const companyId = useCompanyState().activeCompanyId ?? '';
+  const local = useLocalAuditEvents().filter((event) => event.companyId === companyId);
+  const view = projectDashboard(initialView, companyId, vendorListItems(useVendorState(), vendorsListFixture.vendors), useVendorRequirements(), useDocumentRecords(), [...notificationsFixture.auditEvents, ...local]);
   const {suppliers} = view;
 
   return (

@@ -1,5 +1,4 @@
 import {notificationsFixture} from '@/features/notifications/fixtures';
-import {documentsFixture} from '@/features/documents/fixtures';
 import type {AuditEvent, AuditEventType} from '@/features/notifications/types';
 import type {LocalAuditEvent} from '@/features/notifications/local-audit';
 import {vendorFixtureCompanyId, vendorOwnedByCompany} from './created-vendors';
@@ -7,13 +6,7 @@ import {vendorFixtureCompanyId, vendorOwnedByCompany} from './created-vendors';
 /** One audit projection: merge existing audit/notices, without repeating the same event. */
 export function vendorActivity(companyId: string, vendorId: string, local: LocalAuditEvent[]): AuditEvent[] {
   if (!vendorOwnedByCompany(companyId, vendorId)) return [];
-  const fixtures: AuditEvent[] = companyId === vendorFixtureCompanyId ? [
-    ...notificationsFixture.auditEvents,
-    ...notificationsFixture.notifications.map((item) => ({id: item.id, eventType: item.type, actorType: item.actor, actorName: item.actorName,
-      action: item.title, description: item.documentName ?? item.description, vendorId: item.vendorId, documentId: item.documentId, occurredAt: item.occurredAt})),
-    ...documentsFixture.documents.map((document): AuditEvent => ({id: `upload:${document.id}`, vendorId: document.vendorId, documentId: document.id,
-      eventType: 'document_upload', actorType: 'user', action: {ro: 'Document încărcat', en: 'Document uploaded'}, description: document.documentName, occurredAt: `${document.uploadedAt}T00:00:00.000Z`, dateOnly: true}))
-  ] : [];
+  const fixtures: AuditEvent[] = companyId === vendorFixtureCompanyId ? notificationsFixture.auditEvents : [];
   const seen = new Set<string>();
   const uniqueFixtures = fixtures.filter((event) => {
     if (event.vendorId !== vendorId) return false;

@@ -1,5 +1,6 @@
 'use client';
 
+import {fixtureReferenceTime} from '@/lib/fixture-clock';
 import {useRef, useState, type FormEvent, type RefObject} from 'react';
 import {useTranslations} from 'next-intl';
 import {AppIcon} from '@/components/layout/AppIcon';
@@ -55,7 +56,7 @@ export function InviteVendorDrawer({phase, onClose, onExited, triggerRef, vendor
   const [submitNote, setSubmitNote] = useState('');
   const firstFieldRef = useRef<HTMLInputElement>(null);
 
-  const [referenceDate] = useState(() => preview?.referenceDate ?? new Date().toISOString().slice(0, 10));
+  const [referenceDate] = useState(() => preview?.referenceDate ?? fixtureReferenceTime.slice(0, 10));
   const expiry = new Date(`${referenceDate}T00:00:00Z`);
   expiry.setUTCDate(expiry.getUTCDate() + validityDays);
   const expiryText = new Intl.DateTimeFormat(locale === 'en' ? 'en-GB' : 'ro-RO', {day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'}).format(expiry);

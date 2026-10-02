@@ -10,6 +10,9 @@ import {catalogDocument} from '@/features/requirements/catalog';
 import type {VendorDocumentRow} from '@/features/vendors/types';
 import type {DocumentTypeSnapshot} from '@/features/requirements/document-types';
 import {recordLocalAuditEvent} from '@/features/notifications/local-audit';
+import {notificationsFixture} from '@/features/notifications/fixtures';
+import {expiryCountdown, localizedDate} from '@/lib/fixture-clock';
+export {approvedCompliance} from './compliance';
 
 export type CreatedDocument = DocumentSummary & {
   companyId?: string;
@@ -42,20 +45,21 @@ function seededDocument(summary: DocumentSummary): CreatedDocument {
   const extraction = getDocumentReviewFixture(summary.id)?.extraction.values;
   const catalogId = summary.documentType === 'insurance' ? 'liability' : summary.documentType;
   const type = catalogDocument(catalogId);
+  const uploadEvent = notificationsFixture.auditEvents.find((event) => event.eventType === 'document_upload' && event.documentId === summary.id);
   return {...summary, reviewRoute: summary.status === 'review' ? `/documents/${summary.id}/review` : null, companyId: 'demo-company', reviewOutcome: summary.status === 'review' ? 'pending' : 'approved',
     complianceStatus: summary.status === 'review' ? 'needs_review' : summary.status === 'expiring' ? 'expiring_soon' : summary.status,
-    origin: 'fixture', globalVisible: true, fileType: 'application/pdf', fileSize: 0, uploadedBy: view?.user.fullName ?? '',
+    origin: 'fixture', globalVisible: true, fileType: 'application/pdf', fileSize: 0, uploadedBy: uploadEvent?.actorName ?? view?.user.fullName ?? '',
     vendorRegistrationNumber: view?.vendor.registrationNumber ?? '', vendorRegistrationCode: view?.registrationCode ?? '',
     documentNumber: extraction?.documentNumber, issuedAt: extraction ? reviewDateToIso(extraction.issuedAt) ?? undefined : undefined,
     issuer: extraction?.issuer, extractedMetadata: extraction ? {...extraction} : undefined, extractionRequested: Boolean(extraction), extractionState: extraction ? 'simulated' : 'none',
-    createdAt: `${summary.uploadedAt}T12:00:00.000Z`,
+    createdAt: uploadEvent?.occurredAt ?? `${summary.uploadedAt}T12:00:00.000Z`,
     typeSnapshot: type ? {documentTypeSource: 'catalog', catalogDocumentTypeId: type.id, name: type.canonicalName, description: type.description, iconKey: type.iconKey, iconColorKey: type.iconColorKey} : undefined,
     vendorRequirementId: summary.vendorId === 'construct-pro' ? `vendor-requirement:construct-pro:${catalogId}` : undefined};
 }
 // Fixture documents become initial domain records, not disconnected outcome overrides.
 const initialDocuments: CreatedDocument[] = documentsFixture.documents.map(seededDocument);
 initialDocuments.push({...seededDocument({id: 'vendor-document:construct-pro:insurance', vendorId: 'construct-pro', vendorName: 'Construct Pro SRL',
-  documentName: {ro: 'Asigurare Răspundere Civilă', en: 'Liability insurance'}, filename: 'Asigurare_ConstructPro.pdf', documentType: 'insurance', status: 'valid', uploadedAt: '2024-02-10', expiresAt: '2025-02-10', reviewRoute: null}), globalVisible: false});
+  documentName: {ro: 'Asigurare Răspundere Civilă', en: 'Liability insurance'}, filename: 'Asigurare_ConstructPro.pdf', documentType: 'insurance', status: 'valid', uploadedAt: '2026-09-20', expiresAt: '2027-02-10', reviewRoute: null}), globalVisible: false});
 let documents: CreatedDocument[] = initialDocuments;
 const listeners = new Set<() => void>();
 const emptyDeletedIds: string[] = [];
@@ -111,14 +115,6 @@ export function getSimulatedExtraction(vendorId: string, filename: string, type:
   return fixture.extraction.values;
 }
 
-function displayDate(value: string): {ro: string; en: string} {
-  const date = new Date(`${value}T12:00:00Z`);
-  return {
-    ro: new Intl.DateTimeFormat('ro-RO', {day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC'}).format(date),
-    en: new Intl.DateTimeFormat('en-US', {day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC'}).format(date)
-  };
-}
-
 export function toVendorDocumentRow(document: CreatedDocument, locale: 'ro' | 'en'): VendorDocumentRow {
   return {
     id: document.id,
@@ -126,10 +122,11 @@ export function toVendorDocumentRow(document: CreatedDocument, locale: 'ro' | 'e
     issuer: document.issuer ?? '—',
     subtitle: document.issuer ?? document.filename,
     status: document.status,
-    issued: document.issuedAt ? displayDate(document.issuedAt) : null,
-    expires: document.expiresAt ? displayDate(document.expiresAt) : null,
+    issued: document.issuedAt ? localizedDate(document.issuedAt) : null,
+    expires: document.expiresAt ? localizedDate(document.expiresAt) : null,
+    countdown: document.expiresAt ? expiryCountdown(document.expiresAt) : undefined,
     uploadedBy: document.uploadedBy,
-    uploadedOn: displayDate(document.uploadedAt)
+    uploadedOn: localizedDate(document.uploadedAt)
   };
 }
 
@@ -139,12 +136,6 @@ export function reviewDateToIso(value: string): string | null {
   const [, day, month, year] = match;
   const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
   return date.getUTCFullYear() === Number(year) && date.getUTCMonth() === Number(month) - 1 && date.getUTCDate() === Number(day) ? `${year}-${month}-${day}` : null;
-}
-
-export function approvedCompliance(expiresAt: string | null, warningDays: number, now: string): DocumentComplianceStatus {
-  if (!expiresAt) return 'valid';
-  const days = (Date.parse(`${expiresAt}T00:00:00Z`) - Date.parse(`${now.slice(0, 10)}T00:00:00Z`)) / 86_400_000;
-  return days < 0 ? 'expired' : days <= warningDays ? 'expiring_soon' : 'valid';
 }
 
 /** Used only by the requirement/review transaction after ownership/reference validation. */

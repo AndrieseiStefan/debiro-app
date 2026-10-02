@@ -13,7 +13,7 @@ test('renders the canonical Romanian dashboard in the authenticated shell', asyn
   await expect(page.getByRole('heading', {name: 'Documente care necesită atenție'})).toBeVisible();
   await expect(page.getByRole('heading', {name: 'Status furnizori'})).toBeVisible();
   await expect(page.getByRole('heading', {name: 'Activitate recentă'})).toBeVisible();
-  await expect(page.getByRole('table').getByRole('row')).toHaveCount(6);
+  await expect(page.getByRole('table').getByRole('row')).toHaveCount(8);
   await expect(page.getByRole('button', {name: 'Adaugă furnizor'})).toHaveCount(0);
   await expect(page.getByRole('img', {name: 'Status furnizori: 24 furnizori'})).toBeVisible();
   await expect(page.getByRole('banner').getByText('DEBIRO')).toHaveCount(0);
@@ -276,7 +276,7 @@ test('uses fluid app width and keeps badges and KPI content uncut', async ({page
 
       expect(Math.abs(geometry.mainRight - width)).toBeLessThanOrEqual(1);
       if (width === 1920) expect(geometry.contentWidth).toBeGreaterThan(1350);
-      expect(geometry.badges.filter((badge) => badge.text?.includes('Expiră curând'))).toHaveLength(2);
+      expect(geometry.badges.filter((badge) => badge.text?.includes('Expiră curând'))).toHaveLength(4);
       for (const badge of geometry.badges) {
         expect(badge.scrollWidth).toBeLessThanOrEqual(badge.clientWidth + 1);
         expect(badge.right).toBeLessThanOrEqual(badge.cellRight + 1);

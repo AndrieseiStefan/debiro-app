@@ -63,7 +63,7 @@ describe('vendor workspace contracts', () => {
     expect(vendorActivity('other', 'construct-pro', [])).toEqual([]);
     const found = filterVendorActivity(events, '  FISCAL ', {type: 'document_upload', range: 'all', actor: 'all'}, 'ro', '2026-10-02T12:00:00Z');
     expect(found).toHaveLength(1);
-    expect(filterVendorActivity(events, '', {type: 'all', range: 'last7', actor: 'Andrei Popescu'}, 'ro', '2026-09-27T12:00:00Z')).toHaveLength(1);
+    expect(filterVendorActivity(events, '', {type: 'all', range: 'last7', actor: 'Andrei Popescu'}, 'ro', '2026-10-02T12:00:00Z')).toHaveLength(4);
   });
   it('records only successful local lifecycle/edit/template actions by vendor and company', () => {
     const vendor = createLocalVendor({name: 'Events', cui: 'RO-EVENTS', category: 'construction', email: 'events@example.test'});

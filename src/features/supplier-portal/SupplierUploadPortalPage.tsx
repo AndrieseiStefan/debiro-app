@@ -1,5 +1,6 @@
 'use client';
 
+import {fixtureReferenceTime} from '@/lib/fixture-clock';
 import {useState, type ChangeEvent, type ReactNode} from 'react';
 import {useTranslations} from 'next-intl';
 import {BrandWordmark} from '@/components/brand/BrandWordmark';
@@ -45,7 +46,7 @@ export function SupplierUploadPortalPage({locale, view}: {locale: string; view: 
     let error = !extension || !allowedExtensions.includes(extension) || (file.type && !['application/pdf', 'image/jpeg', 'image/png'].includes(file.type)) ? t('fileTypeError') : file.size > maxFileBytes ? t('fileSizeError') : undefined;
     if (!error && (!requirement || requirement.status !== 'missing' || requirement.uploadedDocumentId)) error = t('uploadUnavailable');
     if (!error && requirement) {
-      const now = new Date().toISOString();
+      const now = fixtureReferenceTime;
       const upload = createLocalDocument({companyId: view.companyId, vendorId: view.vendorId, vendorName: view.supplier.name, vendorRegistrationNumber: view.supplier.registrationNumber,
         vendorRegistrationCode: '', documentName: requirement.name, documentType: requirement.catalogDocumentTypeId === 'liability' ? 'insurance' : requirement.documentTypeSource === 'company' ? 'custom' : requirement.catalogDocumentTypeId as DocumentType,
         typeSnapshot: requirement, filename: file.name, fileType: file.type, fileSize: file.size, uploadedAt: now.slice(0, 10), createdAt: now, expiresAt: null,

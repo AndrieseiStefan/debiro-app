@@ -17,7 +17,8 @@ import {AddVendorDrawer} from './AddVendorDrawer';
 import {createLocalVendor, useVendorState, vendorListItems, vendorSummary, type NewVendorInput} from './created-vendors';
 import {VendorRowActions} from './VendorRowActions';
 import {sortVendors, type VendorSort, type VendorSortColumn} from './sorting';
-import {getVendorRequirements, useVendorRequirements, vendorCompliance} from './vendor-requirements';
+import {getVendorRequirements, useVendorRequirements} from './vendor-requirements';
+import {projectVendorDocuments} from './projections';
 import {useDocumentRecords} from '@/features/documents/created-documents';
 import {useCompanyState} from '@/features/companies/company-state';
 import styles from './VendorsListPage.module.css';
@@ -76,8 +77,7 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
   const records = useDocumentRecords();
   const companyId = useCompanyState().activeCompanyId ?? '';
   const allVendors = vendorListItems(vendorState, view.vendors).map((vendor) => {
-    const compliance = vendorCompliance(getVendorRequirements(requirements, companyId, vendor.id), records);
-    return compliance ? {...vendor, status: compliance.status, documentCount: compliance.validCount, documentTarget: compliance.total} : vendor;
+    return projectVendorDocuments(vendor, getVendorRequirements(requirements, companyId, vendor.id), records, companyId);
   });
   const [addPhase, setAddPhase] = useState<'closed' | 'open' | 'closing'>('closed');
   const addTriggerRef = useRef<HTMLButtonElement>(null);

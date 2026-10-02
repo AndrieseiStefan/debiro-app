@@ -38,13 +38,13 @@ test('category and date filters derive counts from fixtures without filtering au
   await expect(recent.locator('tbody tr')).toHaveCount(1);
   await categories.getByRole('button', {name: /Toate/}).click();
   await audit.getByRole('button', {name: 'Vezi toate'}).click();
-  await expect(audit.locator('ol li')).toHaveCount(7);
+  await expect(audit.locator('ol li')).toHaveCount(28);
   await page.getByRole('combobox', {name: 'Perioadă activitate și audit'}).selectOption('last7');
-  await expect(categories.getByRole('button', {name: /Toate 7/})).toBeVisible();
-  await expect(audit.locator('ol li')).toHaveCount(6);
+  await expect(categories.getByRole('button', {name: /Toate 4/})).toBeVisible();
+  await expect(audit.locator('ol li')).toHaveCount(9);
   await page.getByRole('combobox', {name: 'Perioadă activitate și audit'}).selectOption('all');
   await expect(categories.getByRole('button', {name: /Toate 10/})).toBeVisible();
-  await expect(audit.locator('ol li')).toHaveCount(8);
+  await expect(audit.locator('ol li')).toHaveCount(32);
   const dates = await audit.locator('ol li time').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('dateTime')));
   expect(dates).toEqual([...dates].sort().reverse());
 });

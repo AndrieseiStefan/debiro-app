@@ -1,5 +1,6 @@
 'use client';
 
+import {fixtureReferenceTime} from '@/lib/fixture-clock';
 import {useSyncExternalStore} from 'react';
 import {vendorsListFixture} from './fixtures';
 import {getVendorDetailsFixture} from './detail-fixtures';
@@ -17,7 +18,7 @@ export type CreatedVendor = VendorMetadata & {
 export type NewVendorInput = VendorMetadata;
 
 export const vendorFixtureCompanyId = companySettingsFixture.company.id;
-const fixtureDate = '2025-01-15T12:00:00.000Z';
+const fixtureDate = fixtureReferenceTime;
 const initialContacts = Object.fromEntries(vendorsListFixture.vendors.map((vendor) => {
   const contact = getVendorDetailsFixture(vendor.id)!.contact;
   return [`${vendorFixtureCompanyId}:${vendor.id}`, contact.name || contact.email || contact.phone ? [{id: `contact:${vendor.id}:primary`, companyId: vendorFixtureCompanyId, vendorId: vendor.id,
@@ -67,7 +68,7 @@ export function setVendorLifecycle(vendorId: string, lifecycleStatus: VendorLife
 export function createLocalVendor(input: NewVendorInput, companyId = vendorFixtureCompanyId): CreatedVendor {
   const vendor: CreatedVendor = {...input, companyId, id: `local-${crypto.randomUUID()}`, lifecycleStatus: 'active'};
   state = {...state, createdVendors: [vendor, ...state.createdVendors]};
-  const now = new Date().toISOString();
+  const now = fixtureReferenceTime;
   state = {...state, contacts: {...state.contacts, [`${companyId}:${vendor.id}`]: [{id: `contact:${vendor.id}:primary`, companyId, vendorId: vendor.id,
     name: input.contactName, email: input.email.trim(), phone: input.phone, isPrimary: true, createdAt: now, updatedAt: now}]}};
   syncLegacyNote(companyId, vendor.id, input.notes);
@@ -109,7 +110,7 @@ export function updateVendorMetadata(companyId: string, vendorId: string, input:
   if (contacts.some((contact) => contact.id !== primary?.id && contact.email.toLowerCase() === metadata.email.toLowerCase())) return 'duplicate';
   state = created ? {...state, createdVendors: state.createdVendors.map((vendor) => vendor.id === vendorId ? {...vendor, ...metadata} : vendor)}
     : {...state, fixtureVendors: state.fixtureVendors.map((vendor) => vendor.id === vendorId ? {...vendor, ...metadataListPatch(metadata)} : vendor), fixtureMetadata: {...state.fixtureMetadata, [vendorId]: metadata}};
-  const now = new Date().toISOString();
+  const now = fixtureReferenceTime;
   const updatedPrimary: VendorContact = {...primary, id: primary?.id ?? `contact:${vendorId}:primary`, companyId, vendorId, name: metadata.contactName, email: metadata.email, phone: metadata.phone,
     isPrimary: true, createdAt: primary?.createdAt ?? now, updatedAt: now};
   state = {...state, contacts: {...state.contacts, [`${companyId}:${vendorId}`]: primary ? contacts.map((contact) => contact.id === primary.id ? updatedPrimary : contact) : [updatedPrimary, ...contacts]}};
@@ -182,7 +183,7 @@ export function saveVendorContact(companyId: string, vendorId: string, input: Co
   if (Object.values(validateContact(contacts, input, id)).some(Boolean)) return false;
   const previous = contacts.find((contact) => contact.id === id);
   if (id && !previous) return false;
-  const now = new Date().toISOString();
+  const now = fixtureReferenceTime;
   const contact: VendorContact = {id: previous?.id ?? `contact-${crypto.randomUUID()}`, companyId, vendorId, name: input.name.trim(), email: input.email.trim(),
     role: input.role?.trim() || undefined, phone: input.phone?.trim() || undefined, isPrimary: previous?.isPrimary ?? contacts.length === 0, createdAt: previous?.createdAt ?? now, updatedAt: now};
   syncPrimary(companyId, vendorId, previous ? contacts.map((item) => item.id === id ? contact : item) : [...contacts, contact]);
@@ -191,7 +192,7 @@ export function saveVendorContact(companyId: string, vendorId: string, input: Co
 export function makeVendorContactPrimary(companyId: string, vendorId: string, id: string) {
   const contacts = getVendorContacts(state, companyId, vendorId);
   if (!contacts.some((contact) => contact.id === id)) return false;
-  syncPrimary(companyId, vendorId, contacts.map((contact) => ({...contact, isPrimary: contact.id === id, updatedAt: new Date().toISOString()})));
+  syncPrimary(companyId, vendorId, contacts.map((contact) => ({...contact, isPrimary: contact.id === id, updatedAt: fixtureReferenceTime})));
   return true;
 }
 export function deleteVendorContact(companyId: string, vendorId: string, id: string) {
@@ -206,7 +207,7 @@ function syncLegacyNote(companyId: string, vendorId: string, content?: string) {
   const id = `note:${vendorId}:general`;
   const previous = threads.find((thread) => thread.id === id);
   if ((previous?.content ?? '') === (content?.trim() ?? '')) return;
-  const now = new Date().toISOString();
+  const now = fixtureReferenceTime;
   // Clearing the legacy text edits its content; only confirmed thread deletion
   // removes the thread identity from the new workspace.
   state = {...state, threads: {...state.threads, [key]: [
@@ -218,7 +219,7 @@ export function saveVendorNote(companyId: string, vendorId: string, input: {titl
   const threads = getVendorNoteThreads(state, companyId, vendorId);
   const previous = threads.find((thread) => thread.id === id);
   if (id && !previous) return null;
-  const now = new Date().toISOString();
+  const now = fixtureReferenceTime;
   const thread: VendorNoteThread = {...input, title: input.title.trim(), id: id ?? `note-${crypto.randomUUID()}`, companyId, vendorId, createdAt: previous?.createdAt ?? now, updatedAt: now};
   state = {...state, threads: {...state.threads, [`${companyId}:${vendorId}`]: previous ? threads.map((item) => item.id === id ? thread : item) : [...threads, thread]}};
   if (thread.id === `note:${vendorId}:general`) syncLegacyNoteProjection(vendorId, thread.content);

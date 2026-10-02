@@ -34,11 +34,11 @@ describe('new vendor view mapping', () => {
     const inactive = getVendorState().fixtureVendors.find((vendor) => vendor.id === original.id)!;
     expect(inactive).toEqual({...original, lifecycleStatus: 'inactive'});
     const list = vendorListItems(getVendorState(), vendorsListFixture.vendors);
-    expect(vendorSummary(list)).toEqual({all: 24, compliant: 15, attention: 5, noncompliant: 3});
-    expect(list.find((vendor) => vendor.id === original.id)?.status).toBe('compliant');
+    expect(vendorSummary(list)).toEqual({all: 24, compliant: 0, attention: 23, noncompliant: 0});
+    expect(list.find((vendor) => vendor.id === original.id)?.status).toBe('attention');
     setVendorLifecycle(original.id, 'active');
     expect(getVendorState().fixtureVendors.find((vendor) => vendor.id === original.id)).toEqual(original);
-    expect(vendorSummary(vendorListItems(getVendorState(), vendorsListFixture.vendors))).toEqual({all: 24, compliant: 16, attention: 5, noncompliant: 3});
+    expect(vendorSummary(vendorListItems(getVendorState(), vendorsListFixture.vendors))).toEqual({all: 24, compliant: 0, attention: 24, noncompliant: 0});
   });
 
   it('uses the same lifecycle for created vendors without losing supplied optional data', () => {
@@ -49,10 +49,10 @@ describe('new vendor view mapping', () => {
     const inactive = getVendorState().createdVendors.find((item) => item.id === vendor.id)!;
     expect(inactive).toEqual({...vendor, lifecycleStatus: 'inactive'});
     expect(toVendorDetailsView(inactive, vendorsListFixture).vendor.lifecycleStatus).toBe('inactive');
-    expect(vendorSummary(vendorListItems(getVendorState(), vendorsListFixture.vendors))).toEqual({all: 25, compliant: 16, attention: 5, noncompliant: 3});
+    expect(vendorSummary(vendorListItems(getVendorState(), vendorsListFixture.vendors))).toEqual({all: 25, compliant: 0, attention: 24, noncompliant: 0});
     setVendorLifecycle(vendor.id, 'active');
     expect(getVendorState().createdVendors.find((item) => item.id === vendor.id)).toEqual(vendor);
-    expect(vendorSummary(vendorListItems(getVendorState(), vendorsListFixture.vendors)).attention).toBe(6);
+    expect(vendorSummary(vendorListItems(getVendorState(), vendorsListFixture.vendors)).attention).toBe(25);
     const before = getVendorState();
     setVendorLifecycle('unknown', 'inactive');
     setVendorLifecycle(vendor.id, 'active');

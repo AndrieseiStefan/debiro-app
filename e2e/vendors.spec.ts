@@ -83,6 +83,6 @@ test('filters and paginates fixture vendors locally', async ({page}) => {
   await page.getByRole('searchbox', {name: 'Caută furnizori după nume, CUI sau persoană de contact'}).fill('Tech Solutions');
   await expect(page.getByText('Afișez 1 – 1 din 1 furnizori')).toBeVisible();
   await openFilters(page);
-  await page.getByRole('combobox', {name: 'Status conformitate'}).selectOption('attention');
+  await page.getByRole('combobox', {name: 'Status conformitate'}).selectOption('compliant');
   await expect(page.getByText('Niciun furnizor nu corespunde filtrelor.')).toBeVisible();
 });

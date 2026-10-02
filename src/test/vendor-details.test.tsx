@@ -74,8 +74,8 @@ describe('vendor details', () => {
     render(<NextIntlClientProvider locale="ro" messages={ro}><VendorDetailsPage locale="ro" view={view}/></NextIntlClientProvider>);
     expect(screen.getByRole('heading', {name: view.vendor.name})).toBeVisible();
     expect(screen.getByText('Inactiv')).toBeVisible();
-    expect(screen.getByText('În regulă', {exact: true})).toBeVisible();
-    expect(screen.getByText('Detaliile documentelor nu sunt disponibile.')).toBeVisible();
+    expect(screen.getByText('Necesită atenție', {exact: true})).toBeVisible();
+    expect(screen.getByText('1 din 1 documente valide')).toBeVisible();
     expect(screen.getByText('Nu sunt disponibile date de contact.')).toBeVisible();
     expect(screen.getByRole('row', {name: /Certificat fiscal/})).toBeVisible();
     expect(screen.queryByRole('link', {name: /@/})).not.toBeInTheDocument();
@@ -93,7 +93,7 @@ describe('vendor details', () => {
     expect(within(dialog).getByRole('textbox', {name: /Link de încărcare securizat/})).toHaveValue('https://debiro.ro/upload/demo-construct-pro');
     expect(within(dialog).getByRole('link', {name: /Previzualizează pagina de încărcare/})).toHaveAttribute('href', '/upload/demo-construct-pro');
     expect(within(dialog).getByText('140/500')).toBeVisible();
-    expect(within(dialog).getByText('Linkul va expira la 14 mar. 2025.')).toBeVisible();
+    expect(within(dialog).getByText('Linkul va expira la 1 nov. 2026.')).toBeVisible();
     fireEvent.change(within(dialog).getByRole('textbox', {name: /Numele furnizorului/}), {target: {value: ''}});
     fireEvent.change(within(dialog).getByRole('combobox', {name: /Selectează persoana de contact/}), {target: {value: ''}});
     expect(within(dialog).getByRole('button', {name: 'Trimite invitația'})).toBeDisabled();

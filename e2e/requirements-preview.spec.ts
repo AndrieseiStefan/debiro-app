@@ -29,7 +29,7 @@ test('previews current requirements read-only with safe supplier context in RO a
     await expect(preview.locator('[data-required="false"]')).toHaveText(english ? 'Optional' : 'Opțional');
     await expect(preview.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '40');
     await expect(preview).toContainText('certificare_iso.pdf');
-    await expect(preview).toContainText(english ? 'Uploaded on 11 Mar 2024, 16:03' : 'Încărcat pe 11 mar. 2024, 16:03');
+    await expect(preview).toContainText(english ? 'Uploaded on 30 Sept 2026, 16:03' : 'Încărcat pe 30 sept. 2026, 16:03');
     for (const button of await preview.getByRole('button').all()) await expect(button).toBeDisabled();
     await expect(save).toBeDisabled();
     // Keyboard tab activation must work without introducing a dirty edit.

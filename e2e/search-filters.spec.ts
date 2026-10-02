@@ -27,7 +27,7 @@ for (const locale of ['ro', 'en'] as const) {
     await expect(trigger).toHaveText(copy.DataFilters.trigger);
     let panel = await openFilters(page);
     await panel.getByRole('combobox', {name: copy.Vendors.categoryLabel}).selectOption('construction');
-    await panel.getByRole('combobox', {name: copy.DataFilters.complianceStatus}).selectOption('compliant');
+    await panel.getByRole('combobox', {name: copy.DataFilters.complianceStatus}).selectOption('attention');
     await expect(trigger).toHaveText(`${copy.DataFilters.trigger} (2)`);
     await page.keyboard.press('Escape');
     await expect(trigger).toBeFocused();
@@ -78,7 +78,7 @@ for (const locale of ['ro', 'en'] as const) {
     await panel.getByRole('combobox', {name: copy.Documents.type}).selectOption('tax');
     await panel.getByRole('checkbox', {name: new RegExp(copy.Documents.status.review)}).check();
     await panel.getByRole('checkbox', {name: new RegExp(copy.Documents.status.valid)}).check();
-    await panel.getByRole('combobox', {name: copy.Documents.uploadPeriod}).selectOption('2024');
+    await panel.getByRole('combobox', {name: copy.Documents.uploadPeriod}).selectOption('2026');
     await expect(page.getByRole('button', {name: triggerName})).toHaveText(`${copy.DataFilters.trigger} (5)`);
     await expect(page.locator('tbody tr')).toHaveCount(1);
     await panel.getByRole('button', {name: copy.DataFilters.reset, exact: true}).click();
@@ -88,7 +88,7 @@ for (const locale of ['ro', 'en'] as const) {
     await page.keyboard.press('Escape');
     await search.fill('');
     await expect(page.locator('tbody tr')).toHaveCount(8);
-    await expect(page.locator('tbody tr').first()).toContainText('Nova Energy SRL');
+    await expect(page.locator('tbody tr').first()).toContainText('Terra Materials SRL');
   });
 
   test(`${locale}: shared search geometry, filter containment and keyboard dismissal at every target width`, async ({page}) => {

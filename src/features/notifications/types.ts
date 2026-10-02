@@ -49,7 +49,7 @@ export type MissingDocumentSummary = {
   vendorName: string;
   documentName: LocalizedText;
   requirement: LocalizedText;
-  dueAt: string;
+  dueAt: string | null;
   status: 'missing';
 };
 

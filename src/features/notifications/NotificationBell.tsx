@@ -9,6 +9,7 @@ import {markAllNotificationsRead} from './local-state';
 import {activityIcons, activityTones} from './presentation';
 import type {NotificationActivityItem} from './types';
 import styles from './NotificationBell.module.css';
+import {calendarDaysUntil} from '@/lib/fixture-clock';
 
 const PREVIEW_LIMIT = 6;
 
@@ -18,7 +19,7 @@ function relativeTime(value: string, referenceTime: string, locale: string, minu
   if (minutes < 24 * 60) return hoursAgo(Math.floor(minutes / 60));
   const event = new Date(value);
   const time = new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'ro-RO', {hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC'}).format(event);
-  if (minutes < 48 * 60) return yesterday(time);
+  if (calendarDaysUntil(value, referenceTime) === -1) return yesterday(time);
   return new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'ro-RO', {day: '2-digit', month: 'short', timeZone: 'UTC'}).format(event);
 }
 

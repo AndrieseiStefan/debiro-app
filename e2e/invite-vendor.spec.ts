@@ -53,7 +53,7 @@ test('validates locally, updates toggles and counter, and never claims an email 
   await dialog.getByRole('textbox', {name: /Mesaj personalizat/}).fill('x'.repeat(501));
   await expect(dialog.getByText('500/500')).toBeVisible();
   await dialog.getByRole('combobox', {name: /Valabilitate link/}).selectOption('7');
-  await expect(dialog.getByText('Linkul va expira la 19 feb. 2025.')).toBeVisible();
+  await expect(dialog.getByText('Linkul va expira la 9 oct. 2026.')).toBeVisible();
   await dialog.getByRole('checkbox', {name: /Trimite email acum/}).uncheck();
   await dialog.getByRole('checkbox', {name: /Notifică-mă la încărcare/}).uncheck();
   await expect(dialog.getByRole('checkbox', {name: /Trimite email acum/})).not.toBeChecked();

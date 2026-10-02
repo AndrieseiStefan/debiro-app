@@ -38,22 +38,20 @@ describe('dashboard overview', () => {
     expect(screen.queryByRole('button', {name: 'Adaugă furnizor'})).not.toBeInTheDocument();
 
     const summary = screen.getByRole('region', {name: 'Status furnizori'});
-    expect(within(summary).getByText('24')).toBeVisible();
-    expect(within(summary).getByText('16')).toBeVisible();
-    expect(within(summary).getByText('5')).toBeVisible();
-    expect(within(summary).getByText('3')).toBeVisible();
+    expect(within(summary).getAllByText('24')).toHaveLength(2);
+    expect(within(summary).getAllByText('0')).toHaveLength(2);
 
     const table = screen.getByRole('table');
-    expect(within(table).getAllByRole('row')).toHaveLength(6);
+    expect(within(table).getAllByRole('row')).toHaveLength(8);
     expect(within(table).getByText('Construct Pro SRL')).toBeVisible();
-    expect(within(table).getByText('Asigurare Răspundere Civilă')).toBeVisible();
-    expect(within(table).getAllByText('Expiră curând')).toHaveLength(2);
+    expect(within(table).getByText('Certificare ISO 9001')).toBeVisible();
+    expect(within(table).getAllByText('Expiră curând')).toHaveLength(4);
     expect(screen.getByRole('heading', {name: 'Status furnizori'})).toBeVisible();
     expect(screen.getByRole('img', {name: 'Status furnizori: 24 furnizori'})).toBeVisible();
     expect(screen.getByText('Lipsesc documente')).toBeVisible();
     expect(screen.queryByText('Lipsește documente')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', {name: 'Activitate recentă'})).toBeVisible();
-    expect(screen.getByText('Furnizor nou adăugat')).toBeVisible();
+    expect(screen.getAllByText('Document încărcat').length).toBeGreaterThan(0);
   });
 
   it('renders equivalent English text and locale links', () => {
