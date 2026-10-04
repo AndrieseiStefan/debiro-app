@@ -74,7 +74,7 @@ describe('vendor details', () => {
     render(<NextIntlClientProvider locale="ro" messages={ro}><VendorDetailsPage locale="ro" view={view}/></NextIntlClientProvider>);
     expect(screen.getByRole('heading', {name: view.vendor.name})).toBeVisible();
     expect(screen.getByText('Inactiv')).toBeVisible();
-    expect(screen.getByText('Necesită atenție', {exact: true})).toBeVisible();
+    expect(screen.getByText('În regulă', {exact: true})).toBeVisible();
     expect(screen.getByText('1 din 1 documente valide')).toBeVisible();
     expect(screen.getByText('Nu sunt disponibile date de contact.')).toBeVisible();
     expect(screen.getByRole('row', {name: /Certificat fiscal/})).toBeVisible();

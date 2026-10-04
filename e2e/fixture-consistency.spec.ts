@@ -9,7 +9,12 @@ for (const english of [false, true]) {
   test(`${english ? 'EN' : 'RO'} fixture aggregates, expiry labels and review transitions share one current source`, async ({page}) => {
     await page.clock.setFixedTime(new Date(fixtureReferenceTime));
     await page.setViewportSize({width: english ? 375 : 1448, height: english ? 812 : 1086});
-    await page.goto(`${english ? '/en' : ''}/documents`);
+    await page.goto(`${english ? '/en' : ''}/vendors`);
+    const vendorSummary = page.getByRole('region', {name: english ? 'Supplier summary' : 'Rezumat furnizori'});
+    for (const [status, count] of [['all', 24], ['compliant', 23], ['attention', 1], ['noncompliant', 0]] as const) {
+      await expect(vendorSummary.locator(`[data-status="${status}"] strong`)).toHaveText(String(count));
+    }
+    await navigate(page, english, english ? 'Documents' : 'Documente');
     const summary = page.getByRole('region', {name: english ? 'Document summary' : 'Rezumat documente'});
     for (const [status, count] of [['total', 24], ['review', 4], ['valid', 14], ['expiring', 4]] as const) {
       await expect(summary.locator(`[data-status="${status}"] b`)).toHaveText(String(count));
@@ -26,8 +31,12 @@ for (const english of [false, true]) {
     await navigate(page, english, english ? 'Suppliers' : 'Furnizori');
     const vendor = page.locator('[data-vendor-id="construct-pro"]');
     await expect(vendor).toContainText('4/5');
+    await expect(vendor.locator('td').nth(2)).toHaveText(english ? 'Needs attention' : 'Necesită atenție');
+    await expect(vendorSummary.locator('[data-status="compliant"] strong')).toHaveText('23');
+    await expect(vendorSummary.locator('[data-status="attention"] strong')).toHaveText('1');
     await expect(vendor.locator('time')).toHaveAttribute('datetime', '2026-10-07');
     await vendor.getByRole('link').click();
+    await expect(page.locator('[data-vendor-status]')).toHaveAttribute('data-compliance', 'attention');
     const tax = page.locator('[data-requirement-id="vendor-requirement:construct-pro:tax"]');
     await expect(tax).toContainText(english ? 'In 5 days' : 'În 5 zile');
     await navigate(page, english, english ? 'Notifications' : 'Notificări');

@@ -7,7 +7,7 @@ async function openDrawer(page: Page, language: 'ro' | 'en' = 'ro') {
   return dialog;
 }
 
-test('validates required fields and creates a setup-needed vendor without inherited data', async ({page}) => {
+test('validates required fields and creates an unconfigured compliant vendor without inherited data', async ({page}) => {
   await page.goto('/vendors');
   const dialog = await openDrawer(page);
   await dialog.getByRole('button', {name: 'Adaugă furnizor'}).click();
@@ -29,7 +29,8 @@ test('validates required fields and creates a setup-needed vendor without inheri
   await expect(page).toHaveURL(/\/vendors\/local-[a-f0-9-]+$/);
   await expect(page.getByRole('heading', {level: 1, name: 'Atlas Furnizare SRL'})).toBeVisible();
   await expect(page.getByText('CUI RO99001122')).toBeVisible();
-  await expect(page.getByText('Necesită configurare')).toBeVisible();
+  await expect(page.locator('[data-vendor-status]')).toHaveAttribute('data-compliance', 'compliant');
+  await expect(page.locator('[data-vendor-status] strong')).toHaveText('În regulă');
   await expect(page.getByText('Nu sunt cerințe configurate')).toBeVisible();
   await expect(page.getByRole('table').getByRole('row')).toHaveCount(1);
   await expect(page.getByText('Nu există documente încă.')).toBeVisible();
@@ -45,6 +46,7 @@ test('validates required fields and creates a setup-needed vendor without inheri
   await expect(row).toContainText('RO99001122');
   await expect(row).toContainText('IT & Software');
   await expect(row).toContainText('0/0');
+  await expect(row.locator('td').nth(2)).toHaveText('În regulă');
   await expect(row).toContainText('—');
   await row.getByRole('link', {name: 'Detalii pentru Atlas Furnizare SRL'}).click();
   await expect(page.getByRole('heading', {level: 1, name: 'Atlas Furnizare SRL'})).toBeVisible();

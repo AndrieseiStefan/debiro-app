@@ -11,10 +11,10 @@ export function projectVendorDocuments(vendor: VendorListItem, workspace: Vendor
   const dated = accepted.filter((document) => document.expiresAt).sort((a, b) => a.expiresAt!.localeCompare(b.expiresAt!));
   const next = dated[0];
   return {...vendor,
-    // No configured requirements remains Attention; do not invent obligations from uploads.
-    status: compliance?.status ?? 'attention',
-    documentCount: compliance?.validCount ?? accepted.filter((document) => document.complianceStatus !== 'expired').length,
-    documentTarget: compliance?.total ?? documents.length,
+    status: compliance.status,
+    // File ratios remain informational for vendors without configured requirements.
+    documentCount: workspace.requirements.length ? compliance.validCount : accepted.filter((document) => document.complianceStatus !== 'expired').length,
+    documentTarget: workspace.requirements.length ? compliance.total : documents.length,
     nextExpiry: next?.expiresAt ? {date: next.expiresAt, ...localizedDate(next.expiresAt), tone: next.complianceStatus === 'expired' ? 'danger' : next.complianceStatus === 'expiring_soon' ? 'warning' : 'neutral'}
       : {date: null, ro: '—', en: '—', tone: 'neutral'}
   };

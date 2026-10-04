@@ -219,6 +219,7 @@ test('new vendors receive explicit setup and general catalog uploads without aut
   await create.getByRole('button', {name: 'Adaugă furnizor', exact: true}).click();
   await expect(page.locator('[data-requirement-id]')).toHaveCount(0);
   await expect(page.locator('[data-vendor-status]')).toContainText('Nu sunt cerințe configurate');
+  await expect(page.locator('[data-vendor-status]')).toHaveAttribute('data-compliance', 'compliant');
   await page.getByRole('searchbox', {name: 'Caută documente', exact: true}).fill('no-matching-document');
   await page.getByRole('button', {name: 'Adaugă document', exact: true}).click();
   const upload = page.getByRole('dialog', {name: 'Adaugă document', exact: true});
@@ -229,6 +230,7 @@ test('new vendors receive explicit setup and general catalog uploads without aut
   await expect(page.getByRole('searchbox', {name: 'Caută documente', exact: true})).toHaveValue('');
   await applyConstruction(page);
   await expect(page.locator('[data-requirement-id]')).toHaveCount(5);
+  await expect(page.locator('[data-vendor-status]')).toHaveAttribute('data-compliance', 'noncompliant');
   await expect(page.locator('[data-vendor-status]')).not.toContainText('Nu sunt cerințe configurate');
   await expect(page.getByRole('row').filter({hasText: 'Certificare ISO 9001'})).toContainText('iso.pdf');
 });

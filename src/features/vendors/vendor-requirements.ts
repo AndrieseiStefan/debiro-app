@@ -172,11 +172,11 @@ export function supplierVendorDocuments(workspace: VendorRequirementsWorkspace, 
 }
 
 export function vendorCompliance(workspace: VendorRequirementsWorkspace, records: CreatedDocument[]) {
-  if (!workspace.requirements.length) return null;
-  const status = (requirement: VendorRequirement) => records.find((item) => item.id === requirement.uploadedDocumentId && item.reviewOutcome !== 'rejected' && (item.companyId ?? vendorFixtureCompanyId) === requirement.companyId && item.vendorId === requirement.vendorId)?.complianceStatus;
-  const required = workspace.requirements.filter((requirement) => requirement.required);
-  const noncompliant = required.some((requirement) => requirement.status === 'missing' || !status(requirement) || status(requirement) === 'expired');
-  const attention = !required.length || required.some((requirement) => requirement.status === 'in_review' || status(requirement) === 'needs_review' || status(requirement) === 'expiring_soon');
-  const validCount = workspace.requirements.filter((requirement) => requirement.status === 'uploaded' && ['valid', 'expiring_soon'].includes(status(requirement) ?? '')).length;
+  // Only the owned current reference satisfies a requirement; unrelated/history files do not.
+  const current = workspace.requirements.map((requirement) => ({requirement, document: records.find((item) => item.id === requirement.uploadedDocumentId && item.reviewOutcome !== 'rejected' && (item.companyId ?? vendorFixtureCompanyId) === requirement.companyId && item.vendorId === requirement.vendorId)}));
+  const noncompliant = current.some(({requirement, document}) => requirement.required && (requirement.status === 'missing' || !document || document.complianceStatus === 'expired'));
+  const attention = current.some(({requirement, document}) => requirement.status === 'in_review' || document?.complianceStatus === 'needs_review' || document?.complianceStatus === 'expiring_soon');
+  const validCount = current.filter(({requirement, document}) => requirement.status === 'uploaded' && ['valid', 'expiring_soon'].includes(document?.complianceStatus ?? '')).length;
+  // With no configured requirements there is no unsatisfied obligation or warning.
   return {status: noncompliant ? 'noncompliant' as const : attention ? 'attention' as const : 'compliant' as const, validCount, total: workspace.requirements.length};
 }

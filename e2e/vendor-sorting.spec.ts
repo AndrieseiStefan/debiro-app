@@ -79,9 +79,9 @@ for (const locale of ['ro', 'en'] as const) {
     expect(await ids(page)).toEqual(['delta-construct', 'construct-pro', 'alpha-construction']);
     await openFilters(page);
     await page.getByRole('combobox', {name: locale === 'ro' ? ro.DataFilters.complianceStatus : en.DataFilters.complianceStatus}).selectOption('compliant');
-    expect(await ids(page)).toEqual([]);
+    expect(await ids(page)).toEqual(['delta-construct', 'alpha-construction']);
     await page.getByRole('searchbox', {name: t.searchLabel}).fill('Construct');
-    expect(await ids(page)).toEqual([]);
+    expect(await ids(page)).toEqual(['delta-construct', 'alpha-construction']);
     await page.getByRole('searchbox', {name: t.searchLabel}).fill('RO12345678');
     await expect(table.getByText(t.noResults)).toBeVisible();
     await openFilters(page);

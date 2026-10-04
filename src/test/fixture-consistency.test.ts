@@ -56,15 +56,15 @@ describe('coherent E1 fixture timeline and current projections', () => {
     const construct = project();
     expect(construct).toMatchObject({status: 'attention', documentCount: 3, documentTarget: 5, nextExpiry: {date: '2027-02-10'}});
     const tech = project(vendors.find((vendor) => vendor.id === 'tech-solutions')!);
-    expect(tech).toMatchObject({status: 'attention', documentCount: 1, documentTarget: 1, nextExpiry: {date: null}});
+    expect(tech).toMatchObject({status: 'compliant', documentCount: 1, documentTarget: 1, nextExpiry: {date: null}});
     const zero = project(vendors.find((vendor) => vendor.id === 'steel-supply')!);
-    expect(zero).toMatchObject({status: 'attention', documentCount: 0, documentTarget: 0, nextExpiry: {date: null}});
+    expect(zero).toMatchObject({status: 'compliant', documentCount: 0, documentTarget: 0, nextExpiry: {date: null}});
     // Pending expiry metadata and rejected historical uploads cannot become next expiry.
     const excluded = records.map((document) => document.vendorId === 'construct-pro' && document.reviewOutcome === 'approved' ? {...document, reviewOutcome: 'rejected' as const} : document);
     expect(project(vendors[0], excluded).nextExpiry.date).toBeNull();
     const projected = vendors.map((vendor) => project(vendor));
-    expect(vendorSummary(projected)).toEqual({all: 24, compliant: 0, attention: 24, noncompliant: 0});
-    expect(vendorSummary(projected.map((vendor, index) => index === 0 ? {...vendor, lifecycleStatus: 'inactive'} : vendor))).toEqual({all: 24, compliant: 0, attention: 23, noncompliant: 0});
+    expect(vendorSummary(projected)).toEqual({all: 24, compliant: 23, attention: 1, noncompliant: 0});
+    expect(vendorSummary(projected.map((vendor, index) => index === 0 ? {...vendor, lifecycleStatus: 'inactive'} : vendor))).toEqual({all: 24, compliant: 23, attention: 0, noncompliant: 0});
   });
 
   it('shares current expiry/missing sections and audit events across projections and locales', () => {

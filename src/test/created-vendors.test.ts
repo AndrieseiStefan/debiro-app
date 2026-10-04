@@ -1,6 +1,12 @@
 import {describe, expect, it} from 'vitest';
 import {createLocalVendor, getVendorState, setVendorLifecycle, toVendorDetailsView, toVendorListItem, vendorListItems, vendorSummary, type CreatedVendor} from '@/features/vendors/created-vendors';
 import {vendorsListFixture} from '@/features/vendors/fixtures';
+import {readDocumentRecords} from '@/features/documents/created-documents';
+import {getVendorRequirements, readVendorRequirements} from '@/features/vendors/vendor-requirements';
+import {projectVendorDocuments} from '@/features/vendors/projections';
+
+const project = (vendor: ReturnType<typeof toVendorListItem>) => projectVendorDocuments(vendor, getVendorRequirements(readVendorRequirements(), 'demo-company', vendor.id), readDocumentRecords(), 'demo-company');
+const currentVendors = () => vendorListItems(getVendorState(), vendorsListFixture.vendors).map(project);
 
 const requiredOnly: CreatedVendor = {
   id: 'local-test', name: 'Atlas SRL', cui: 'RO12345678', category: 'software', email: 'hello@atlas.example', lifecycleStatus: 'active'
@@ -8,8 +14,8 @@ const requiredOnly: CreatedVendor = {
 
 describe('new vendor view mapping', () => {
   it('starts with zero documents and no fabricated optional or invitation data', () => {
-    const listItem = toVendorListItem(requiredOnly);
-    expect(listItem).toMatchObject({status: 'attention', documentCount: 0, documentTarget: 0, registrationNumber: 'RO12345678', category: 'software'});
+    const listItem = project(toVendorListItem(requiredOnly));
+    expect(listItem).toMatchObject({status: 'compliant', documentCount: 0, documentTarget: 0, registrationNumber: 'RO12345678', category: 'software'});
     expect(listItem.nextExpiry.ro).toBe('—');
     const details = toVendorDetailsView(requiredOnly, vendorsListFixture);
     expect(details.documents).toEqual([]);
@@ -33,12 +39,12 @@ describe('new vendor view mapping', () => {
     setVendorLifecycle(original.id, 'inactive');
     const inactive = getVendorState().fixtureVendors.find((vendor) => vendor.id === original.id)!;
     expect(inactive).toEqual({...original, lifecycleStatus: 'inactive'});
-    const list = vendorListItems(getVendorState(), vendorsListFixture.vendors);
-    expect(vendorSummary(list)).toEqual({all: 24, compliant: 0, attention: 23, noncompliant: 0});
+    const list = currentVendors();
+    expect(vendorSummary(list)).toEqual({all: 24, compliant: 23, attention: 0, noncompliant: 0});
     expect(list.find((vendor) => vendor.id === original.id)?.status).toBe('attention');
     setVendorLifecycle(original.id, 'active');
     expect(getVendorState().fixtureVendors.find((vendor) => vendor.id === original.id)).toEqual(original);
-    expect(vendorSummary(vendorListItems(getVendorState(), vendorsListFixture.vendors))).toEqual({all: 24, compliant: 0, attention: 24, noncompliant: 0});
+    expect(vendorSummary(currentVendors())).toEqual({all: 24, compliant: 23, attention: 1, noncompliant: 0});
   });
 
   it('uses the same lifecycle for created vendors without losing supplied optional data', () => {
@@ -49,10 +55,10 @@ describe('new vendor view mapping', () => {
     const inactive = getVendorState().createdVendors.find((item) => item.id === vendor.id)!;
     expect(inactive).toEqual({...vendor, lifecycleStatus: 'inactive'});
     expect(toVendorDetailsView(inactive, vendorsListFixture).vendor.lifecycleStatus).toBe('inactive');
-    expect(vendorSummary(vendorListItems(getVendorState(), vendorsListFixture.vendors))).toEqual({all: 25, compliant: 0, attention: 24, noncompliant: 0});
+    expect(vendorSummary(currentVendors())).toEqual({all: 25, compliant: 23, attention: 1, noncompliant: 0});
     setVendorLifecycle(vendor.id, 'active');
     expect(getVendorState().createdVendors.find((item) => item.id === vendor.id)).toEqual(vendor);
-    expect(vendorSummary(vendorListItems(getVendorState(), vendorsListFixture.vendors)).attention).toBe(25);
+    expect(vendorSummary(currentVendors())).toEqual({all: 25, compliant: 24, attention: 1, noncompliant: 0});
     const before = getVendorState();
     setVendorLifecycle('unknown', 'inactive');
     setVendorLifecycle(vendor.id, 'active');

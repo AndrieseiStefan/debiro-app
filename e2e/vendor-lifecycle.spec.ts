@@ -22,7 +22,7 @@ for (const locale of ['ro', 'en'] as const) {
     await page.getByRole('combobox', {name: c.pageSize}).selectOption('24');
     const links = await page.locator('tbody tr[data-vendor-id]').evaluateAll((rows) => rows.map((row) => {
       const link = row.querySelector('a')!;
-      return {name: link.textContent!, href: link.getAttribute('href')!};
+      return {name: link.textContent!, href: link.getAttribute('href')!, compliance: row.querySelector('[data-status]')!.getAttribute('data-status')!};
     }));
     expect(links).toHaveLength(24);
     await expect(page.getByRole('table').getByRole('checkbox')).toHaveCount(0);
@@ -32,6 +32,8 @@ for (const locale of ['ro', 'en'] as const) {
       await nameLink.click();
       await expect(page).toHaveURL((url) => url.pathname === vendor.href);
       await expect(page.getByRole('heading', {level: 1, name: vendor.name})).toBeVisible();
+      await expect(page.locator('[data-vendor-status]')).toHaveAttribute('data-compliance', vendor.compliance);
+      await expect(page.locator('[data-vendor-status] strong')).toHaveText(vendor.compliance === 'attention' ? locale === 'ro' ? 'Necesită atenție' : 'Needs attention' : locale === 'ro' ? 'În regulă' : 'In order');
       if (!vendor.href.endsWith('/construct-pro')) {
         const records = documentsFixture.documents.filter((document) => document.vendorId === vendor.href.split('/').pop());
         await expect(page.getByRole('table').getByRole('row')).toHaveCount(records.length + 1);
@@ -66,8 +68,8 @@ for (const locale of ['ro', 'en'] as const) {
     await expect(row).toContainText('3/5');
     const summary = page.getByRole('region', {name: c.summary});
     await expect(summary.locator('[data-status="all"]')).toContainText('24');
-    await expect(summary.locator('[data-status="compliant"]')).toContainText('0');
-    await expect(summary.locator('[data-status="attention"]')).toContainText('23');
+    await expect(summary.locator('[data-status="compliant"]')).toContainText('23');
+    await expect(summary.locator('[data-status="attention"]')).toContainText('0');
     await trigger.click();
     menu = page.getByRole('menu');
     await expect(menu.getByRole('menuitem')).toHaveCount(2);
@@ -96,8 +98,8 @@ for (const locale of ['ro', 'en'] as const) {
     await page.getByRole('menuitem', {name: c.active}).click();
     await expect(row).toHaveAttribute('data-lifecycle', 'active');
     await expect(row.getByText(c.badge, {exact: true})).toHaveCount(0);
-    await expect(summary.locator('[data-status="compliant"]')).toContainText('0');
-    await expect(summary.locator('[data-status="attention"]')).toContainText('24');
+    await expect(summary.locator('[data-status="compliant"]')).toContainText('23');
+    await expect(summary.locator('[data-status="attention"]')).toContainText('1');
     await row.getByRole('link').click();
     await expect(page).toHaveURL((url) => url.pathname === `${c.prefix}/vendors/construct-pro`);
     await expect(page.getByRole('heading', {level: 1, name: 'Construct Pro SRL'})).toBeVisible();
@@ -122,7 +124,8 @@ for (const locale of ['ro', 'en'] as const) {
     await page.getByRole('menuitem', {name: c.inactive}).click();
     await expect(row).toHaveAttribute('data-lifecycle', 'inactive');
     await expect(page.getByRole('region', {name: c.summary}).locator('[data-status="all"]')).toContainText('25');
-    await expect(page.getByRole('region', {name: c.summary}).locator('[data-status="attention"]')).toContainText('24');
+    await expect(page.getByRole('region', {name: c.summary}).locator('[data-status="compliant"]')).toContainText('23');
+    await expect(page.getByRole('region', {name: c.summary}).locator('[data-status="attention"]')).toContainText('1');
     await row.getByRole('link').click();
     await expect(page).toHaveURL((url) => url.pathname === route);
     await expect(page.locator('[data-vendor-lifecycle]')).toHaveText(c.badge);
@@ -133,7 +136,8 @@ for (const locale of ['ro', 'en'] as const) {
     await row.getByRole('button', {name: `${c.action} Lifecycle Test SRL`}).click();
     await page.getByRole('menuitem', {name: c.active}).click();
     await expect(row).toHaveAttribute('data-lifecycle', 'active');
-    await expect(page.getByRole('region', {name: c.summary}).locator('[data-status="attention"]')).toContainText('25');
+    await expect(page.getByRole('region', {name: c.summary}).locator('[data-status="compliant"]')).toContainText('24');
+    await expect(page.getByRole('region', {name: c.summary}).locator('[data-status="attention"]')).toContainText('1');
     await row.getByRole('link').click();
     await expect(page.locator('[data-vendor-lifecycle]')).toHaveCount(0);
     await expect(page.getByRole('link', {name: 'local@example.test'})).toBeVisible();
@@ -151,10 +155,10 @@ test('inactive vendors remain searchable/filterable, and pagination is determini
   await expect(page.locator('tbody tr')).toHaveAttribute('data-lifecycle', 'inactive');
   await openFilters(page);
   await page.getByRole('combobox', {name: 'Categorie'}).selectOption('construction');
-  await page.getByRole('combobox', {name: 'Status conformitate', exact: true}).selectOption('attention');
+  await page.getByRole('combobox', {name: 'Status conformitate', exact: true}).selectOption('compliant');
   await expect(page.locator('tbody tr')).toHaveCount(1);
   await page.getByRole('searchbox', {name: copy.ro.search}).fill('');
-  await expect(page.locator('tbody tr')).toHaveCount(3);
+  await expect(page.locator('tbody tr')).toHaveCount(2);
   await expect(page.locator('[data-vendor-id="alpha-construction"]')).toHaveAttribute('data-lifecycle', 'inactive');
   await openFilters(page);
   await page.getByRole('combobox', {name: 'Categorie'}).selectOption('all');
@@ -198,7 +202,7 @@ test('context menus stay contained and keyboard-accessible in desktop/reduced/mo
 
 test('additional seeded Details routes render directly with recorded compliance and safe empty contacts', async ({page}) => {
   for (const prefix of ['', '/en']) {
-    for (const [id, name, status] of [['global-clean', 'Global Clean Services', 'attention'], ['medical-supplies', 'Medical Supplies', 'attention'], ['alpha-construction', 'Alpha Construction SRL', 'attention']]) {
+    for (const [id, name, status] of [['global-clean', 'Global Clean Services', 'compliant'], ['medical-supplies', 'Medical Supplies', 'compliant'], ['alpha-construction', 'Alpha Construction SRL', 'compliant']]) {
       const response = await page.goto(`${prefix}/vendors/${id}`);
       expect(response?.status()).toBe(200);
       await expect(page.getByRole('heading', {level: 1, name})).toBeVisible();

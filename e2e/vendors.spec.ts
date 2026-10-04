@@ -84,5 +84,7 @@ test('filters and paginates fixture vendors locally', async ({page}) => {
   await expect(page.getByText('Afișez 1 – 1 din 1 furnizori')).toBeVisible();
   await openFilters(page);
   await page.getByRole('combobox', {name: 'Status conformitate'}).selectOption('compliant');
+  await expect(page.locator('[data-vendor-id="tech-solutions"]')).toBeVisible();
+  await page.getByRole('combobox', {name: 'Status conformitate'}).selectOption('attention');
   await expect(page.getByText('Niciun furnizor nu corespunde filtrelor.')).toBeVisible();
 });

@@ -38,8 +38,8 @@ describe('dashboard overview', () => {
     expect(screen.queryByRole('button', {name: 'Adaugă furnizor'})).not.toBeInTheDocument();
 
     const summary = screen.getByRole('region', {name: 'Status furnizori'});
-    expect(within(summary).getAllByText('24')).toHaveLength(2);
-    expect(within(summary).getAllByText('0')).toHaveLength(2);
+    for (const count of ['24', '23', '1']) expect(within(summary).getByText(count)).toBeVisible();
+    expect(within(summary).getByText('0')).toBeVisible();
 
     const table = screen.getByRole('table');
     expect(within(table).getAllByRole('row')).toHaveLength(8);

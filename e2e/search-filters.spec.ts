@@ -27,7 +27,8 @@ for (const locale of ['ro', 'en'] as const) {
     await expect(trigger).toHaveText(copy.DataFilters.trigger);
     let panel = await openFilters(page);
     await panel.getByRole('combobox', {name: copy.Vendors.categoryLabel}).selectOption('construction');
-    await panel.getByRole('combobox', {name: copy.DataFilters.complianceStatus}).selectOption('attention');
+    await panel.getByRole('combobox', {name: copy.DataFilters.complianceStatus}).selectOption('compliant');
+    await expect(page.locator('tbody tr[data-vendor-id]')).toHaveCount(2);
     await expect(trigger).toHaveText(`${copy.DataFilters.trigger} (2)`);
     await page.keyboard.press('Escape');
     await expect(trigger).toBeFocused();

@@ -4,8 +4,15 @@ import {expect, test, type Page} from '@playwright/test';
 async function sidebar(page: Page, english: boolean, section: string) {
   await page.getByRole('navigation', {name: english ? 'Application navigation' : 'Navigare în aplicație'}).getByRole('link', {name: new RegExp(`^${section}(?: \\d+)?$`)}).click();
 }
-async function vendor(page: Page, english: boolean) {
+async function vendor(page: Page, english: boolean, compliance: 'compliant' | 'attention' | 'noncompliant') {
   await sidebar(page, english, english ? 'Suppliers' : 'Furnizori');
+  const row = page.locator('[data-vendor-id="construct-pro"]');
+  const labels = english ? {compliant: 'In order', attention: 'Needs attention', noncompliant: 'Noncompliant'} : {compliant: 'În regulă', attention: 'Necesită atenție', noncompliant: 'Neconform'};
+  await expect(row.locator('td').nth(2)).toHaveText(labels[compliance]);
+  const summary = page.getByRole('region', {name: english ? 'Supplier summary' : 'Rezumat furnizori'});
+  for (const [status, count] of [['all', 24], ['compliant', compliance === 'compliant' ? 24 : 23], ['attention', compliance === 'attention' ? 1 : 0], ['noncompliant', compliance === 'noncompliant' ? 1 : 0]] as const) {
+    await expect(summary.locator(`[data-status="${status}"] strong`)).toHaveText(String(count));
+  }
   await page.getByRole('link', {name: english ? 'Details for Construct Pro SRL' : 'Detalii pentru Construct Pro SRL'}).click();
 }
 async function portal(page: Page, english: boolean) {
@@ -32,7 +39,7 @@ for (const {english, expiry, compliance, label} of [
     await page.getByRole('link', {name: english ? 'Back to documents' : 'Înapoi la documente'}).click();
     await expect(page.getByRole('row', {name: /Certificat_fiscal_CP_2024.pdf/})).toContainText(label);
     await expect(page.getByRole('button', {name: english ? 'Needs review 3' : 'Necesită revizuire 3', exact: true})).toBeVisible();
-    await vendor(page, english);
+    await vendor(page, english, compliance as 'attention' | 'noncompliant');
     await expect(page.locator(taxRequirement)).toContainText(label);
     await expect(page.locator('[data-vendor-status]')).toHaveAttribute('data-compliance', compliance);
     await portal(page, english);
@@ -55,7 +62,7 @@ for (const {english, width} of [{english: false, width: 1448}, {english: true, w
     await expect(page.getByRole('row', {name: /Certificat_fiscal_CP_2024.pdf/})).toContainText(english ? 'Valid' : 'Valid');
     await page.getByRole('button', {name: english ? 'Needs review 3' : 'Necesită revizuire 3', exact: true}).click();
     await expect(page.getByRole('row', {name: /Certificat_fiscal_CP_2024.pdf/})).toHaveCount(0);
-    await vendor(page, english);
+    await vendor(page, english, 'compliant');
     await expect(page.locator(taxRequirement)).toContainText('Valid');
     await expect(page.locator('[data-vendor-status]')).toHaveAttribute('data-compliance', 'compliant');
     await expect(page.locator('[data-vendor-status]')).toContainText(english ? '4 of 5 valid documents' : '4 din 5 documente valide');
@@ -112,7 +119,7 @@ for (const {english, width} of [{english: false, width: 1448}, {english: true, w
     await expect(page.getByRole('button', {name: english ? 'All documents 23' : 'Toate documentele 23'})).toBeVisible();
     await expect(page.getByRole('button', {name: english ? 'Needs review 3' : 'Necesită revizuire 3', exact: true})).toBeVisible();
     await expect(page.getByRole('row', {name: /Certificat_fiscal_CP_2024.pdf/})).toHaveCount(0);
-    await vendor(page, english);
+    await vendor(page, english, 'noncompliant');
     await expect(page.locator(taxRequirement)).toContainText(english ? 'Missing' : 'Lipsește');
     await expect(page.locator('[data-missing-requirements]')).toHaveAttribute('data-missing-requirements', '2');
     await expect(page.locator('[data-vendor-status]')).toHaveAttribute('data-compliance', 'noncompliant');
@@ -141,7 +148,7 @@ for (const {english, width} of [{english: false, width: 1448}, {english: true, w
     await page.getByRole('link', {name: english ? 'Back to documents' : 'Înapoi la documente'}).click();
     await expect(page.getByRole('row', {name: /Replacement_tax.pdf/})).toContainText('Valid');
     await expect(page.getByRole('button', {name: english ? 'Needs review 3' : 'Necesită revizuire 3', exact: true})).toBeVisible();
-    await vendor(page, english);
+    await vendor(page, english, 'compliant');
     await expect(page.locator('[data-vendor-status]')).toHaveAttribute('data-compliance', 'compliant');
     await portal(page, english);
     await expect(page.locator(tax)).toContainText('Replacement_tax.pdf');
