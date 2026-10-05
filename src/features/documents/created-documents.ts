@@ -64,7 +64,17 @@ function seededDocument(summary: DocumentSummary): CreatedDocument {
     vendorRequirementId: summary.vendorId === 'construct-pro' ? `vendor-requirement:construct-pro:${catalogId}` : undefined};
 }
 // Fixture documents become initial domain records, not disconnected outcome overrides.
-const initialDocuments: CreatedDocument[] = documentsFixture.documents.map(seededDocument);
+const initialDocuments: CreatedDocument[] = documentsFixture.documents.flatMap((summary) => {
+  const current = seededDocument(summary);
+  if (current.id !== 'construct-pro-fire-2024') return [current];
+  // Retain the current route/requirement identity; the older fixture is history only.
+  const historicalId = `${current.id}-v1`;
+  return [
+    {...current, version: 2, versionGroupId: historicalId, previousDocumentId: historicalId},
+    {...current, id: historicalId, version: 1, versionGroupId: historicalId, supersededById: current.id,
+      uploadedAt: '2026-02-15', createdAt: '2026-02-15T12:00:00.000Z', expiresAt: '2026-09-15', status: 'expired', complianceStatus: 'expired'}
+  ];
+});
 initialDocuments.push({...seededDocument({id: 'vendor-document:construct-pro:insurance', vendorId: 'construct-pro', vendorName: 'Construct Pro SRL',
   documentName: {ro: 'Asigurare Răspundere Civilă', en: 'Liability insurance'}, filename: 'Asigurare_ConstructPro.pdf', documentType: 'insurance', status: 'valid', uploadedAt: '2026-09-20', expiresAt: '2027-02-10', reviewRoute: null}), globalVisible: false});
 let documents: CreatedDocument[] = initialDocuments;

@@ -26,7 +26,22 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   await page.waitForLoadState('networkidle');
   await page.evaluate(async () => { await document.fonts.ready; });
   if (action) {
-    if (['document-details-current', 'document-details-end', 'document-history-full', 'document-history-menu', 'document-version-details', 'document-history-back'].includes(action)) {
+    if (['document-isu-preview', 'document-isu-history', 'document-isu-menu'].includes(action)) {
+      if (!/^\/(en\/)?(documents|vendors\/construct-pro)$/.test(route)) throw new Error('ISU fixture capture requires Documents or Construct Pro.');
+      const english = route.startsWith('/en');
+      await page.getByRole('link', {name: english ? 'Fire safety authorization' : 'Autorizație ISU', exact: true}).first().click();
+      const drawer = page.getByRole('dialog');
+      await expect(drawer.locator('[data-preview-version]')).toHaveCount(2);
+      if (action === 'document-isu-preview') await drawer.evaluate((element) => {element.scrollTop = element.scrollHeight;});
+      else {
+        await drawer.getByRole('button', {name: english ? 'View all' : 'Vezi toate'}).click();
+        await expect(drawer.locator('[data-version]')).toHaveCount(2);
+        if (action === 'document-isu-menu') {
+          await drawer.locator('[data-version="1"]').getByRole('button').click();
+          await expect(drawer.getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'})).toBeFocused();
+        }
+      }
+    } else if (['document-details-current', 'document-details-end', 'document-history-full', 'document-history-menu', 'document-version-details', 'document-history-back'].includes(action)) {
       if (!/^\/(en\/)?(documents|vendors\/construct-pro)$/.test(route)) throw new Error('Document drawer capture requires Documents or the canonical Vendor Details route.');
       const english = route.startsWith('/en');
       const vendorContext = route.includes('/vendors/');

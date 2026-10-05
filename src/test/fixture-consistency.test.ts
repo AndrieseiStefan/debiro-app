@@ -1,7 +1,8 @@
 import {describe, expect, it} from 'vitest';
 import {fixtureReferenceDate, fixtureReferenceTime, calendarDaysUntil, expiryCountdown, localizedDate} from '@/lib/fixture-clock';
 import {approvedCompliance} from '@/features/documents/compliance';
-import {activeDocuments, readDocumentRecords, toVendorDocumentRow} from '@/features/documents/created-documents';
+import {activeDocuments, documentFile, readDocumentRecords, toVendorDocumentRow} from '@/features/documents/created-documents';
+import {documentHistory} from '@/features/documents/document-management';
 import {documentsFixture} from '@/features/documents/fixtures';
 import {vendorsListFixture} from '@/features/vendors/fixtures';
 import {getVendorRequirements, readVendorRequirements} from '@/features/vendors/vendor-requirements';
@@ -20,6 +21,35 @@ const vendors = vendorsListFixture.vendors;
 const project = (vendor = vendors[0], docs = records) => projectVendorDocuments(vendor, getVendorRequirements(workspaces, companyId, vendor.id), docs, companyId);
 
 describe('coherent E1 fixture timeline and current projections', () => {
+  it('seeds approved ISU v1/v2 history without changing any current projection or supplying fake files', () => {
+    const id = 'construct-pro-fire-2024';
+    const history = documentHistory(records, companyId, id);
+    expect(history).toHaveLength(2);
+    const [current, historical] = history;
+    expect(current).toMatchObject({...documentsFixture.documents.find((document) => document.id === id),
+      version: 2, previousDocumentId: historical.id, versionGroupId: historical.id, reviewOutcome: 'approved', complianceStatus: 'valid', uploadedBy: 'Andrei Popescu'});
+    expect(current.supersededById).toBeUndefined();
+    expect(historical).toMatchObject({id: `${id}-v1`, version: 1, versionGroupId: historical.id, supersededById: id,
+      uploadedAt: '2026-02-15', createdAt: '2026-02-15T12:00:00.000Z', expiresAt: '2026-09-15', uploadedBy: 'Andrei Popescu',
+      reviewOutcome: 'approved', status: 'expired', complianceStatus: 'expired', origin: 'fixture'});
+    expect(documentHistory(records, companyId, historical.id)).toEqual(history);
+    expect(documentHistory(records, 'other-company', id)).toEqual([]);
+    expect(documentHistory(records, companyId, id, 'other-vendor')).toEqual([]);
+    expect(activeDocuments(history, companyId, true)).toEqual([current]);
+    for (const document of history) expect(documentFile(companyId, document.id)).toBeUndefined();
+
+    const withoutHistory = records.filter((document) => document.id !== historical.id);
+    expect(activeDocuments(records, companyId, true)).toEqual(activeDocuments(withoutHistory, companyId, true));
+    expect(getVendorRequirements(workspaces, companyId, current.vendorId).requirements.find((requirement) => requirement.id === current.vendorRequirementId)?.uploadedDocumentId).toBe(id);
+    expect(vendors.map((vendor) => project(vendor))).toEqual(vendors.map((vendor) => project(vendor, withoutHistory)));
+    // The ISU expiry stays 3 May; the vendor's earlier liability expiry stays 10 February.
+    expect(project(vendors[0], history).nextExpiry.date).toBe('2027-05-03');
+    expect(project()).toMatchObject({status: 'attention', documentCount: 3, documentTarget: 5, nextExpiry: {date: '2027-02-10'}});
+    expect(notificationDocuments(companyId, vendors, workspaces, records)).toEqual(notificationDocuments(companyId, vendors, workspaces, withoutHistory));
+    expect(projectDashboard(dashboardFixture, companyId, vendors, workspaces, records, notificationsFixture.auditEvents))
+      .toEqual(projectDashboard(dashboardFixture, companyId, vendors, workspaces, withoutHistory, notificationsFixture.auditEvents));
+  });
+
   it('uses one UTC 2026 reference and preserves the existing warning boundary', () => {
     expect(fixtureReferenceDate).toBe('2026-10-02');
     expect(notificationsFixture.referenceTime).toBe(fixtureReferenceTime);

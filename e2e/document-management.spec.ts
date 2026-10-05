@@ -28,6 +28,89 @@ async function openVersionDetails(page: Page, english: boolean, version: number)
 
 for (const english of [false, true]) {
   const prefix = english ? '/en' : '';
+  for (const width of [1448, 375]) {
+    test(`${english ? 'EN' : 'RO'} seeded ISU history preserves current projections and Back at ${width}px`, async ({page}) => {
+      await page.setViewportSize({width, height: width === 375 ? 812 : 1086});
+      await page.goto(`${prefix}/documents?document=construct-pro-fire-2024`);
+      const drawer = page.getByRole('dialog');
+      const entryURL = page.url();
+      const date = (value: string) => new Intl.DateTimeFormat(english ? 'en-GB' : 'ro-RO', {day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC'}).format(new Date(`${value}T12:00:00Z`));
+      await expect(drawer.getByRole('heading', {name: english ? 'Version history (2)' : 'Istoric versiuni (2)'})).toBeVisible();
+      await expect(drawer.getByRole('term')).toHaveCount(6);
+      await expect(drawer.getByRole('definition').nth(2)).toHaveText('Valid');
+      await expect(drawer.getByRole('definition').nth(3)).toHaveText(date('2027-05-03'));
+      await expect(drawer.getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toBeDisabled();
+      const preview = drawer.locator('[data-preview-version]');
+      await expect(preview).toHaveCount(2);
+      for (const [version, uploadDate] of [[2, '2026-09-29'], [1, '2026-02-15']] as const) {
+        const item = drawer.locator(`[data-preview-version="${version}"]`);
+        await expect(item.locator('time')).toHaveText(date(uploadDate));
+        await expect(item.locator('small')).toHaveText('Andrei Popescu');
+        await expect(item.getByText(english ? 'Current' : 'Curent', {exact: true})).toHaveCount(version === 2 ? 1 : 0);
+        await expect(item).not.toContainText(/Autorizatie_ISU.pdf|2027|2026-09-15|Aprobată|Approved/);
+      }
+      await drawer.getByRole('button', {name: english ? 'View all' : 'Vezi toate'}).click();
+      await expect(drawer.getByRole('heading', {name: english ? 'Document history' : 'Istoric document'})).toBeVisible();
+      const versions = drawer.locator('[data-version]');
+      await expect(versions).toHaveCount(2);
+      await expect(drawer.locator('[data-version-state="current"]')).toHaveCount(1);
+      const current = drawer.locator('[data-version="2"]');
+      const historical = drawer.locator('[data-version="1"]');
+      await expect(current).toHaveAttribute('data-version-state', 'current');
+      await expect(historical).toHaveAttribute('data-version-state', 'superseded');
+      await expect(current).toContainText(english ? 'Current version' : 'Versiune curentă');
+      await expect(historical).toContainText(`${english ? 'Valid until:' : 'Valabilă:'} ${date('2026-09-15')}`);
+      for (const item of [current, historical]) {
+        await expect(item).toContainText(english ? 'Approved' : 'Aprobată');
+        await expect(item).toContainText('Andrei Popescu');
+        await expect(item.locator('[data-tone="success"] svg')).toHaveCount(1);
+      }
+      await expect(current).toHaveCSS('background-color', 'rgb(244, 248, 255)');
+      await expect(drawer.getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toHaveCount(0);
+      await expect(drawer).not.toContainText('Autorizatie_ISU.pdf');
+      const markerColors = await versions.evaluateAll((items) => items.map((item) => getComputedStyle(item, '::before').backgroundColor));
+      expect(markerColors).toEqual(['rgb(0, 92, 237)', 'rgb(255, 255, 255)']);
+      for (const version of [2, 1]) {
+        await drawer.locator(`[data-version="${version}"]`).getByRole('button').click();
+        await expect(drawer.getByRole('menuitem')).toHaveCount(1);
+        await expect(drawer.getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'})).toBeFocused();
+        await page.keyboard.press('Escape');
+      }
+      await openVersionDetails(page, english, 1);
+      await expect(drawer.getByRole('definition').nth(2)).toHaveText(english ? 'Expired' : 'Expirat');
+      await expect(drawer.getByRole('button', {name: english ? 'Replace document' : 'Înlocuiește document', exact: true})).toBeDisabled();
+      await drawer.getByRole('button', {name: english ? 'Back to document history' : 'Înapoi la istoricul documentului'}).click();
+      await expect(versions).toHaveCount(2);
+      await drawer.getByRole('button', {name: english ? 'Back to document details' : 'Înapoi la detalii document'}).click();
+      await expect(preview).toHaveCount(2);
+      await expect(drawer.getByRole('definition').nth(2)).toHaveText('Valid');
+      expect(page.url()).toBe(entryURL);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      await close(page, english);
+      const summary = page.getByRole('region', {name: english ? 'Document summary' : 'Rezumat documente'});
+      for (const [status, count] of [['total', 24], ['review', 4], ['valid', 14], ['expiring', 4]] as const) {
+        await expect(summary.locator(`[data-status="${status}"] b`)).toHaveText(String(count));
+      }
+      const row = page.getByRole('row', {name: /Autorizatie_ISU.pdf/});
+      await expect(row).toHaveCount(1);
+      await expect(row.locator('time[datetime="2027-05-03"]')).toBeVisible();
+      await expect(row.locator('[data-status="valid"]').last()).toBeVisible();
+      await sidebar(page, english, english ? 'Suppliers' : 'Furnizori');
+      const vendor = page.locator('[data-vendor-id="construct-pro"]');
+      await expect(vendor).toContainText('3/5');
+      await expect(vendor.locator('time')).toHaveAttribute('datetime', '2027-02-10');
+      await vendor.getByRole('link').click();
+      await expect(page.locator('[data-vendor-status]')).toHaveAttribute('data-compliance', 'attention');
+      const isu = page.locator('[data-requirement-id="vendor-requirement:construct-pro:fire"]');
+      await expect(isu).toContainText('Valid');
+      await isu.getByRole('link', {name: english ? 'Fire safety authorization' : 'Autorizație ISU', exact: true}).click();
+      await expect(drawer.locator('[data-preview-version]')).toHaveCount(2);
+      await close(page, english);
+      await sidebar(page, english, english ? 'Notifications' : 'Notificări');
+      await expect(page.locator('#expiring-section tbody tr').filter({hasText: 'Construct Pro SRL'})).toHaveCount(0);
+    });
+  }
+
   test(`${english ? 'EN' : 'RO'} direct details retain all compliance states and the pending-review entry point`, async ({page}) => {
     for (const [id, status] of [
       [registration, 'Valid'],
