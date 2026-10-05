@@ -8,14 +8,15 @@ import {Link} from '@/i18n/navigation';
 import {toVendorDetailsView, useCreatedVendors} from './created-vendors';
 import {VendorDetailsPage} from './VendorDetailsPage';
 import type {VendorsListViewModel} from './types';
+import type {DocumentSelection} from '@/features/documents/document-management';
 
 const subscribeToNothing = () => () => {};
 
-export function LocalVendorDetailsPage({locale, vendorId, context}: {
+export function LocalVendorDetailsPage({locale, vendorId, context, ...selection}: {
   locale: string;
   vendorId: string;
   context: Pick<VendorsListViewModel, 'user' | 'organization' | 'notificationCount'>;
-}) {
+} & DocumentSelection) {
   const t = useTranslations('VendorDetails');
   const hydrated = useSyncExternalStore(subscribeToNothing, () => true, () => false);
   const vendor = useCreatedVendors().find((item) => item.id === vendorId);
@@ -23,5 +24,5 @@ export function LocalVendorDetailsPage({locale, vendorId, context}: {
   if (!vendor) return <AuthenticatedAppShell locale={locale} currentPath={`/vendors/${vendorId}`} organizationName={context.organization.name} userName={context.user.fullName} userInitials={context.user.initials} notificationCount={context.notificationCount}>
     <EmptyState title={t('localVendorUnavailable')} action={<Link href="/vendors">{t('backToVendors')}</Link>}/>
   </AuthenticatedAppShell>;
-  return <VendorDetailsPage locale={locale} view={toVendorDetailsView(vendor, context)}/>;
+  return <VendorDetailsPage locale={locale} view={toVendorDetailsView(vendor, context)} {...selection}/>;
 }

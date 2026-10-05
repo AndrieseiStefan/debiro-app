@@ -1,0 +1,68 @@
+.content {padding: 24px; color: #142a4d; font-size: 12px;}
+.header {margin: 0 -24px 18px; padding: 0 52px 18px 24px; border-bottom: 1px solid #e3ecfa;}
+.header h2 {margin: 0; font-size: 18px; line-height: 26px;}
+.header p {margin: 8px 0 0; color: #617ba3; line-height: 1.6;}
+.content h3 {margin: 18px 0 12px; font-size: 13px;}
+.detailsGrid {display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px;}
+.detailsGrid > *, .fileCard > span {min-width: 0;}
+.fileCard {display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 14px; border: 1px solid #e0eafa; border-radius: 8px; background: #f9fbff;}
+.fileCard > svg {flex-shrink: 0; color: #ec3d61;}
+.fileCard > span {flex: 1; display: grid; gap: 4px;}
+.fileCard strong, .filename {overflow-wrap: anywhere; font-size: 11px;}
+.fileCard small, .fileNotice {color: #617ba3; font-size: 10px; line-height: 1.5;}
+.fileCard > button {width: 100%; justify-content: center; background: #eaf3ff;}
+.fileNotice {margin: 8px 0 14px;}
+.metadata {margin: 0; display: grid; gap: 14px;}
+.metadata > div {display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.2fr); gap: 10px; align-items: start; font-size: 11px; line-height: 1.5;}
+.metadata dt {color: #536e96;}
+.metadata dd {margin: 0; overflow-wrap: anywhere;}
+.metadata dd > span {max-width: 100%; white-space: normal;}
+.content a {color: #005ced; text-decoration: none;}
+.actions {padding-left: 12px; border-left: 1px solid #e3ecfa;}
+.actions > h3 {margin-top: 0;}
+.actions > button {width: 100%; min-height: 38px; padding: 8px; font-size: 11px;}
+.smallAction {display: inline-flex; align-items: center; gap: 6px; padding: 7px 9px; border: 1px solid #d7e5fc; border-radius: 6px; color: #005ced; background: white; font: inherit; font-size: 10px; cursor: pointer; text-decoration: none;}
+.smallAction:disabled {color: #75849a; cursor: not-allowed; background: #f5f7fb;}
+.historyHeading {display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-top: 24px;}
+.historyHeading h3 {margin: 0;}
+.miniHistory, .timeline {list-style: none; margin: 12px 0 0; padding: 0;}
+.miniHistory {display: grid; gap: 16px;}
+.miniHistory button {display: flex; gap: 8px; width: 100%; padding: 0; text-align: left; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer;}
+.miniHistory b {display: grid; place-content: center; width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%; background: #eef3fb; font-size: 11px;}
+.miniHistory span {display: grid; gap: 4px; min-width: 0; font-size: 10px; overflow-wrap: anywhere;}
+.miniHistory small {color: #617ba3;}
+.timeline {margin-left: 8px; border-left: 1px solid #cdddF7;}
+.timeline li {position: relative; display: grid; gap: 8px; padding: 14px 12px 20px 20px; margin-bottom: 12px; border-bottom: 1px solid #e3ecfa; overflow-wrap: anywhere;}
+.timeline li::before {position: absolute; content: ''; left: -5px; top: 18px; width: 8px; height: 8px; background: white; border: 1px solid #7990b7; border-radius: 50%;}
+.timeline li[data-version-state="current"] {background: #f4f8ff; border-radius: 8px;}
+.timeline li[data-version-state="current"]::before {background: #005ced; border-color: #005ced;}
+.timeline time, .timeline small {color: #617ba3;}
+.versionHeading {display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px;}
+.form {display: grid; gap: 18px;}
+.info {display: flex; align-items: start; gap: 10px; padding: 14px; background: #fff7e7; border-radius: 8px; color: #a86808; line-height: 1.6;}
+.info svg {flex-shrink: 0;}
+.info > span {display: grid; gap: 4px;}
+.info strong {color: #142a4d;}
+.dropzone {display: grid; justify-items: center; gap: 12px; padding: 24px 16px; border: 1px dashed #a8c7f7; border-radius: 8px; background: #f9fbff; text-align: center;}
+.dropzone > svg {color: #005ced;}
+.dropzone strong {max-width: 100%; overflow-wrap: anywhere;}
+.dropzone small {color: #617ba3;}
+.dropzone button {min-height: 36px; font-size: 12px; padding: 8px 12px;}
+.formGrid {display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;}
+.notes {display: grid; gap: 8px; font-weight: 600;}
+.notes textarea {width: 100%; min-height: 86px; resize: vertical; padding: 10px 12px; border: 1px solid #cdddF7; border-radius: 8px; font: inherit; color: inherit;}
+.notes textarea:focus {outline: 2px solid #005ced; outline-offset: 2px;}
+.formActions {display: flex; justify-content: flex-end; gap: 10px;}
+.formActions button {font-size: 12px; padding: 10px 14px;}
+.error {margin: 0; color: #e52449;}
+.success {display: grid; gap: 20px;}
+.successIcon {display: grid; place-content: center; width: 64px; height: 64px; margin: 0 auto; border-radius: 50%; color: #00a775; background: #ddf8ed;}
+.currentStatus {display: grid; gap: 12px; padding: 16px; background: #f2f8ff; border-radius: 8px;}
+.srOnly {position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;}
+@media (max-width: 480px) {
+  .content {padding: 20px;}
+  .header {margin-inline: -20px; padding-left: 20px;}
+  .detailsGrid, .formGrid {grid-template-columns: minmax(0, 1fr);}
+  .actions {border-left: 0; border-top: 1px solid #e3ecfa; padding: 18px 0 0;}
+  .metadata > div {grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);}
+}

@@ -5,7 +5,7 @@ import ro from '../../messages/ro.json';
 import {DocumentsPage} from '@/features/documents/DocumentsPage';
 import {documentsFixture} from '@/features/documents/fixtures';
 import {getDocumentReviewFixture} from '@/features/document-review/fixtures';
-vi.mock('@/features/documents/created-documents', () => ({useDocumentRecords: () => [], activeDocuments: () => []}));
+vi.mock('@/features/documents/created-documents', async (original) => ({...await original<typeof import('@/features/documents/created-documents')>(), useDocumentRecords: () => [], activeDocuments: () => []}));
 
 vi.mock('@/i18n/navigation', () => ({
   usePathname: () => '/documents',

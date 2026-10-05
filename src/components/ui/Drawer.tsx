@@ -13,7 +13,7 @@ export function Drawer({phase, onClose, onExited, triggerRef, titleId, descripti
   phase: DrawerPhase;
   onClose: () => void;
   onExited: () => void;
-  triggerRef: RefObject<HTMLButtonElement | null>;
+  triggerRef: RefObject<HTMLElement | null>;
   titleId: string;
   descriptionId: string;
   closeLabel: string;

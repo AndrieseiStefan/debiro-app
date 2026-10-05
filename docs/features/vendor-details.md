@@ -20,6 +20,8 @@ Created vendors display only submitted optional contact/registration data and an
 
 E1-027 adds the shared two-step template-application Drawer, source/required table columns, removable provenance chips, company custom document types, missing-requirement upload and explicit requirement/document removal. Configuration is company/vendor-owned and snapshot-based; template deletion/editing and category changes never silently propagate. E1-028 replaces configured-vendor compliance snapshots with the shared current requirement/document projection. See [vendor requirements](vendor-requirements.md) for the local lifecycle and canonical mockup 24.
 
+E1-029 adds clickable uploaded-document names, a shared document menu and [details/renewal/history](document-management.md) drawers without redesigning this page. Pending names/Open details use the existing Review route. Requirement removal stays in a separate shield/menu control; missing rows retain Upload without nonexistent-file actions. Current counts, compliance and next expiry exclude superseded/rejected history. Successful internal renewal records a traceable `document_replaced` event in the existing Activity/Audit source.
+
 ## Contacts, Activity and Notes (E1-027B)
 
 [Canonical mockup 25](../design/mockups/25-vendor-details-contacts-activity-notes.png) defines the three additional workspaces. Contacts and note threads live in the existing vendor store, keyed by company ID and stable vendor ID; selectors and mutations reject another company's vendor. Company switching unmounts the previous workspace. These records survive client navigation and locale changes, not reload.

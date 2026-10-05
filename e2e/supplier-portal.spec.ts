@@ -34,7 +34,7 @@ test('validates and selects files only in the browser', async ({page}) => {
   await input.setInputFiles({name: 'tax.pdf', mimeType: 'application/pdf', buffer: Buffer.from('fixture')});
   await expect(page.locator('[data-document-id="vendor-requirement:construct-pro:iso"]')).toContainText('În review');
   await expect(page.locator('[data-document-id="vendor-requirement:construct-pro:iso"]')).toContainText('tax.pdf');
-  await expect(page.getByText('Încărcarea este înregistrată doar în memoria acestui browser. Fișierul nu este stocat sau trimis.')).toBeVisible();
+  await expect(page.getByText('Încărcarea este înregistrată doar în memoria acestui browser. Fișierul nu este stocat pe server sau trimis.')).toBeVisible();
   await expect(page.getByRole('progressbar', {name: 'Progresul documentelor'})).toHaveAttribute('aria-valuenow', '60');
   await page.reload();
   await expect(page.locator('[data-document-id="vendor-requirement:construct-pro:iso"]')).toContainText('Lipsește');

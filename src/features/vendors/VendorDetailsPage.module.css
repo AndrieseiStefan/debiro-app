@@ -1,3 +1,6 @@
+.documentNameLink {color: inherit; font-weight: 700; text-decoration: none;}
+.documentNameLink:hover {color: #005ced;}
+.documentRowActions {display: inline-flex; align-items: center; white-space: nowrap;}
 .pageContent {min-width: 0;}
 .vendorHeader {align-items: center; display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) 252px max-content; min-width: 0;}
 .identityBlock {align-self: stretch; min-width: 0;}

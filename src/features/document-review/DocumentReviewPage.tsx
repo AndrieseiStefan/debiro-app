@@ -11,6 +11,8 @@ import {ConfirmationDialog} from '@/components/ui/ConfirmationDialog';
 import {useDocumentRecords} from '@/features/documents/created-documents';
 import {resolveDocumentReview} from '@/features/vendors/vendor-requirements';
 import {useCompanyState} from '@/features/companies/company-state';
+import {documentAccess} from '@/features/documents/document-access';
+import {accessibleDocument} from '@/features/documents/document-management';
 import {Link} from '@/i18n/navigation';
 import type {DocumentReviewViewModel, ReviewValues} from './types';
 import styles from './DocumentReviewPage.module.css';
@@ -102,7 +104,7 @@ export function DocumentReviewPage({locale, view}: {locale: string; view: Docume
   const companyId = useCompanyState().activeCompanyId ?? '';
   const t = useTranslations('DocumentReview');
   const app = useTranslations('AppShell');
-  const record = useDocumentRecords().find((document) => document.id === view.id && (document.companyId ?? 'demo-company') === companyId);
+  const record = accessibleDocument(useDocumentRecords(), companyId, view.id);
   const [values, setValues] = useState<ReviewValues>(() => ({...(record?.confirmedMetadata ?? view.extraction.values)}));
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [reviewState, setReviewState] = useState<ReviewState>('extracted');
@@ -110,7 +112,7 @@ export function DocumentReviewPage({locale, view}: {locale: string; view: Docume
   const [rejecting, setRejecting] = useState(false);
   const [actionError, setActionError] = useState(false);
   const cancelRejection = useCallback(() => setRejecting(false), []);
-  const resolved = record?.reviewOutcome !== 'pending';
+  const resolved = record?.reviewOutcome !== 'pending' || Boolean(record?.supersededById) || !documentAccess(companyId).review;
   const visibleState = record?.reviewOutcome === 'approved' ? 'confirmed' : record?.reviewOutcome === 'rejected' ? 'rejected' : reviewState;
 
   function update(field: FieldName, value: string) {

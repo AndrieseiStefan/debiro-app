@@ -10,11 +10,11 @@
 
 **Domain strategy:** Single domain
 
-**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and all twenty-eight approved fixture/browser-local canonical mockup states are implemented; backend/auth integrations are not.
+**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and all twenty-nine approved fixture/browser-local canonical mockup states are implemented; backend/auth integrations are not.
 
 ## Design state
 
-Twenty-eight approved product mockups are tracked in `docs/design/mockups/`. They are canonical contracts requiring:
+Twenty-nine approved product mockups are tracked in `docs/design/mockups/`. They are canonical contracts requiring:
 
 - UI fidelity as close to 1:1 as technically practical
 - Interaction fidelity as close to 1:1 as technically practical
@@ -46,8 +46,9 @@ The final logo is not yet designed and must not be invented.
 - E1-028 shared document review lifecycle — company/vendor-owned approve/reject transactions, retained rejected-upload history, replacement identities, separate supplier requirement/internal compliance states, live Documents and configured Vendor compliance/counts, Supplier Portal progress and one shared Activity/Audit resolution event; tab-local browser memory only; see [vendor requirements](../features/vendor-requirements.md#shared-review-lifecycle-e1-028)
 - E1-028A coherent fixture dates and derived aggregates — one 2026-10-02 demo reference, UTC expiry/countdown labels, current Documents/Vendors/Dashboard metrics, actual completion and next-expiry values, shared Notifications expiry/missing and Activity/Audit projections; existing lifecycle/optionality rules preserved, no invented requirements or backend behavior; see [fixture data](fixture-data.md)
 - E1-028A1 requirement-driven vendor compliance — shared List/Details/Dashboard projection, Noncompliant → Attention → Compliant precedence, owned current requirement references only, optional missing/expired exclusions and Compliant for zero configured requirements; file ratios remain informational and inactive summary rules unchanged; see [vendor requirements](../features/vendor-requirements.md#shared-review-lifecycle-e1-028)
+- E1-029 shared document details/actions, internal renewal with new current identities and retained version history, current-only projections, role/company checks and traceable Activity/Audit; supplier uploads still require review and actual selected bytes are tab-memory only; see [document management](../features/document-management.md)
 - E1-007 canonical Invite Vendor drawer from Vendor Details, with local form validation and a deterministic demo link but no email delivery; see [invite vendor](../features/invite-vendor.md)
-- E1-008 canonical Supplier Upload Portal at `/upload/demo-construct-pro` and `/en/upload/demo-construct-pro`, with an external-supplier layout, typed token fixture, shared Preview/Portal requirement presentation and local upload metadata feeding the E1-028 review lifecycle; file bytes are not stored or sent; see [supplier upload portal](../features/supplier-upload-portal.md)
+- E1-008 canonical Supplier Upload Portal at `/upload/demo-construct-pro` and `/en/upload/demo-construct-pro`, with an external-supplier layout, typed token fixture, shared Preview/Portal requirement presentation and local upload metadata feeding the E1-028 review lifecycle; file bytes are retained only in private tab memory, never sent or stored on a server; see [supplier upload portal](../features/supplier-upload-portal.md)
 - E1-009 canonical Document Review at `/documents/construct-pro-tax-2024/review` and `/en/documents/construct-pro-tax-2024/review`, with typed document/extraction fixtures and browser-local human review only; see [document review](../features/document-review.md)
 - E1-010 canonical Notifications and Audit Activity at `/notifications` and `/en/notifications`, with separate typed operational/audit fixtures, local filters, timeline, and CSV export; see [notifications and audit](../features/notifications-audit.md)
 - E1-011 canonical Documents page at `/documents` and `/en/documents`, with a shared seeded/current document dataset, derived counts, local list controls and Review routes for every pending record; see [documents](../features/documents.md)
@@ -78,4 +79,4 @@ TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to
 
 ## Next
 
-All twenty-eight tracked canonical mockup states have fixture/browser-local implementations; product-owner visual approval remains pending. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).
+All twenty-nine tracked canonical mockup states have fixture/browser-local implementations; product-owner visual approval remains pending. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).

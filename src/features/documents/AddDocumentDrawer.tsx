@@ -51,7 +51,7 @@ export function AddDocumentDrawer({phase, onClose, onExited, triggerRef, vendor,
   const options = availableDocumentTypes(companyId, getCompanyDocumentTypes(useRequirementsState(), companyId));
   const inputRef = useRef<HTMLInputElement>(null);
   const autoFilled = useRef<Partial<Details>>({});
-  const [file, setFile] = useState<{name: string; type: string; size: number} | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState('');
   const [type, setType] = useState(requiredType ? uploadTypeValue(requiredType) : '');
   const selectedType = requiredType ?? options.find((option) => uploadTypeValue(option) === type);
@@ -93,7 +93,7 @@ export function AddDocumentDrawer({phase, onClose, onExited, triggerRef, vendor,
     const error = !expectedMime || (selected.type && selected.type !== expectedMime) ? t('fileTypeError') : selected.size > maxBytes ? t('fileSizeError') : '';
     setFileError(error);
     setErrors((current) => ({...current, file: error || undefined}));
-    setFile(error ? null : {name: selected.name, type: selected.type || expectedMime, size: selected.size});
+    setFile(error ? null : selected);
     if (!error && extract) prefillSample(selected.name, type as DocumentType);
   }
 
@@ -143,7 +143,8 @@ export function AddDocumentDrawer({phase, onClose, onExited, triggerRef, vendor,
       vendorRegistrationCode: vendor.registrationCode,
       documentName: selectedType?.name ?? documentNames[type as keyof typeof documentNames],
       filename: file.name,
-      fileType: file.type,
+      file,
+      fileType: file.type || fileTypes[file.name.split('.').pop()!.toLowerCase()],
       fileSize: file.size,
       documentType: selectedType?.documentTypeSource === 'company' ? 'custom' : type as DocumentType,
       documentNumber: details.number.trim() || undefined,

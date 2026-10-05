@@ -26,7 +26,30 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   await page.waitForLoadState('networkidle');
   await page.evaluate(async () => { await document.fonts.ready; });
   if (action) {
-    if (['review-confirmed', 'review-reject-confirmation', 'review-rejected-vendor', 'review-rejected-portal', 'review-reupload-portal', 'review-replacement'].includes(action)) {
+    if (['document-details', 'document-replace', 'document-history', 'document-success', 'document-menu'].includes(action)) {
+      if (!/^\/(en\/)?documents$/.test(route)) throw new Error('Document management capture requires the Documents route.');
+      const english = route.startsWith('/en');
+      const row = page.getByRole('row', {name: /ONRC_2024.pdf/});
+      await row.getByRole('button').click();
+      if (action !== 'document-menu') {
+        await page.getByRole('menuitem', {name: action === 'document-details' ? english ? 'Open details' : 'Deschide detalii' : english ? 'Replace / renew' : 'Înlocuiește / reînnoiește'}).click();
+        await expect(page.getByRole('dialog')).toBeVisible();
+        if (action === 'document-history' || action === 'document-success') {
+          await page.getByRole('dialog').locator('input[type=file]').setInputFiles({name: 'ONRC_renewed.pdf', mimeType: 'application/pdf', buffer: Buffer.from('local renewal fixture')});
+          await page.locator('#replace-issuedAt').fill('02.10.2026');
+          await page.locator('#replace-expiresAt').fill('02.10.2027');
+          await page.getByRole('dialog').getByRole('button', {name: english ? 'Upload document' : 'Încarcă document', exact: true}).click();
+          await expect(page.getByRole('dialog', {name: english ? 'Document uploaded successfully' : 'Document încărcat cu succes'})).toBeVisible();
+          if (action === 'document-history') {
+            await page.getByRole('dialog').getByRole('button', {name: english ? 'Close' : 'Închide', exact: true}).first().click();
+            await expect(page.getByRole('dialog')).toHaveCount(0);
+            await page.getByRole('row', {name: /ONRC_renewed.pdf/}).getByRole('button').click();
+            await page.getByRole('menuitem', {name: english ? 'View history' : 'Vezi istoricul'}).click();
+            await expect(page.locator('[data-version]')).toHaveCount(2);
+          }
+        }
+      }
+    } else if (['review-confirmed', 'review-reject-confirmation', 'review-rejected-vendor', 'review-rejected-portal', 'review-reupload-portal', 'review-replacement'].includes(action)) {
       if (!/^\/(en\/)?documents\/construct-pro-tax-2024\/review$/.test(route)) throw new Error('Review lifecycle capture requires the canonical Review route.');
       const english = route.startsWith('/en');
       if (action === 'review-confirmed') {
@@ -56,8 +79,8 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
               if (action === 'review-replacement') {
                 await page.goBack();
                 const row = page.locator('[data-requirement-id="vendor-requirement:construct-pro:tax"]');
-                await row.getByRole('button', {name: english ? 'Actions for Tax certificate' : 'Acțiuni pentru Certificat fiscal'}).click();
-                await page.getByRole('menuitem', {name: english ? 'Review document' : 'Revizuiește documentul'}).click();
+                await row.getByRole('button', {name: english ? 'Document actions for Tax certificate — Construct Pro SRL' : 'Acțiuni document pentru Certificat fiscal — Construct Pro SRL'}).click();
+                await page.getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'}).click();
                 await expect(page.getByRole('heading', {name: english ? 'Details to review' : 'Date de revizuit'})).toBeVisible();
               }
             }
@@ -192,7 +215,7 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
             await expect(page.getByRole('alertdialog')).toBeVisible();
           } else if (action === 'template-remove-uploaded') {
             const row = page.getByRole('row').filter({hasText: english ? 'Tax certificate' : 'Certificat fiscal'});
-            await row.getByRole('button', {name: english ? 'Actions for Tax certificate' : 'Acțiuni pentru Certificat fiscal'}).click();
+            await row.getByRole('button', {name: english ? 'Requirement actions for Tax certificate' : 'Acțiuni cerință pentru Certificat fiscal'}).click();
             await page.getByRole('menuitem', {name: english ? 'Remove requirement' : 'Elimină cerința'}).click();
             await expect(page.getByRole('alertdialog')).toBeVisible();
           }

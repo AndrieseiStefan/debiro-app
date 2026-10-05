@@ -1,4 +1,4 @@
-import type {CreatedDocument} from '@/features/documents/created-documents';
+import {activeDocuments, type CreatedDocument} from '@/features/documents/created-documents';
 import {notificationDocuments} from '@/features/notifications/document-projections';
 import type {AuditEvent} from '@/features/notifications/types';
 import {vendorSummary} from '@/features/vendors/created-vendors';
@@ -13,7 +13,7 @@ export function projectDashboard(view: DashboardViewModel, companyId: string, ve
   const counts = vendorSummary(projected);
   const percent = (value: number) => counts.all ? Math.round(value / counts.all * 100) : 0;
   const {missingDocuments, expiringDocuments} = notificationDocuments(companyId, vendors, workspaces, records);
-  const expired = records.filter((document) => (document.companyId ?? 'demo-company') === companyId && document.reviewOutcome === 'approved' && document.complianceStatus === 'expired');
+  const expired = activeDocuments(records, companyId).filter((document) => document.reviewOutcome === 'approved' && document.complianceStatus === 'expired');
   const attention = [...expired.map((document) => ({id: document.id, supplier: document.vendorName, document: document.documentName, status: 'expired' as const, expiry: localizedDate(document.expiresAt!)})),
     ...expiringDocuments.map((document) => ({id: document.id, supplier: document.vendorName, document: document.documentName, status: 'expiring' as const, expiry: localizedDate(document.expiresAt)})),
     ...missingDocuments.map((document) => ({id: document.id, supplier: document.vendorName, document: document.documentName, status: 'missing' as const, expiry: {ro: '—', en: '—'}}))];

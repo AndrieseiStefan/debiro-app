@@ -61,7 +61,7 @@ describe('supplier upload portal', () => {
     fireEvent.change(fileInput, {target: {files: [new File(['demo'], 'tax.pdf', {type: 'application/pdf'})]}});
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(screen.getByText('tax.pdf')).toBeVisible();
-    expect(screen.getByText('Încărcarea este înregistrată doar în memoria acestui browser. Fișierul nu este stocat sau trimis.')).toBeVisible();
+    expect(screen.getByText('Încărcarea este înregistrată doar în memoria acestui browser. Fișierul nu este stocat pe server sau trimis.')).toBeVisible();
     expect(screen.getByRole('progressbar', {name: 'Progresul documentelor'})).toHaveAttribute('aria-valuenow', '60');
     expect(screen.getAllByText('În review')).toHaveLength(2);
     expect(screen.queryByLabelText('Încarcă document pentru Certificare ISO 9001')).not.toBeInTheDocument();

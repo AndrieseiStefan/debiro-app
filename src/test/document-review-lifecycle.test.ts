@@ -7,9 +7,12 @@ import {readLocalAuditEvents} from '@/features/notifications/local-audit';
 import {vendorActivity} from '@/features/vendors/vendor-activity';
 import {supplierRequirementProgress} from '@/features/supplier-requirements/types';
 import {supplierPreviewDocuments} from '@/features/requirements/supplier-preview';
+import {createCompany} from '@/features/companies/company-state';
 
 function context() {
-  const companyId = `review-${crypto.randomUUID()}`;
+  const created = createCompany({name: `Review ${crypto.randomUUID()}`, taxId: `RO${crypto.randomUUID()}`, country: 'RO', industry: 'construction'});
+  if (!created.ok) throw new Error('Company fixture setup failed');
+  const companyId = created.id;
   const vendor = createLocalVendor({name: 'Review Vendor', cui: 'RO123', category: 'construction', email: 'test@example.com'}, companyId);
   const type = availableDocumentTypes(companyId, []).find((item) => item.catalogDocumentTypeId === 'tax')!;
   const upload = () => createLocalDocument({companyId, vendorId: vendor.id, vendorName: vendor.name, vendorRegistrationNumber: vendor.cui, vendorRegistrationCode: '',

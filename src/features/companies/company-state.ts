@@ -45,6 +45,7 @@ function publish(next: CompanyState) {
 export function useCompanyState() {
   return useSyncExternalStore(subscribe, () => state, () => initialState);
 }
+export function readCompanyState() {return state;}
 
 export function getActiveCompany(snapshot: CompanyState) {
   return snapshot.companies.find(({company}) => company.id === snapshot.activeCompanyId) ?? null;

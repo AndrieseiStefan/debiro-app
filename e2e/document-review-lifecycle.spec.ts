@@ -137,8 +137,8 @@ for (const {english, width} of [{english: false, width: 1448}, {english: true, w
     const row = page.locator(taxRequirement);
     await expect(row).toContainText(english ? 'Needs review' : 'Necesită revizuire');
     await expect(page.locator('[data-missing-requirements]')).toHaveAttribute('data-missing-requirements', '1');
-    await row.getByRole('button', {name: english ? 'Actions for Tax certificate' : 'Acțiuni pentru Certificat fiscal'}).click();
-    const review = page.getByRole('menuitem', {name: english ? 'Review document' : 'Revizuiește documentul'});
+    await row.getByRole('button', {name: english ? 'Document actions for Tax certificate — Construct Pro SRL' : 'Acțiuni document pentru Certificat fiscal — Construct Pro SRL'}).click();
+    const review = page.getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'});
     const href = await review.getAttribute('href');
     expect(href).toMatch(/\/documents\/local-document-[\w-]+\/review$/);
     await review.click();

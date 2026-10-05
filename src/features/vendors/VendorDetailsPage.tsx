@@ -13,6 +13,8 @@ import {EmptyState} from '@/components/ui/EmptyState';
 import type {VendorDetailsViewModel} from './types';
 import {InviteVendorDrawer} from './InviteVendorDrawer';
 import {AddDocumentDrawer} from '@/features/documents/AddDocumentDrawer';
+import {DocumentManagementDrawer} from '@/features/documents/DocumentManagementDrawer';
+import type {DocumentSelection} from '@/features/documents/document-management';
 import {createLocalDocument, useDocumentRecords} from '@/features/documents/created-documents';
 import {associateRequirementUpload, getVendorRequirements, useVendorRequirements, type VendorRequirement} from './vendor-requirements';
 import {projectVendorDocuments} from './projections';
@@ -38,17 +40,17 @@ function ContactItem({icon, label, children}: {icon: 'users' | 'mail' | 'phone' 
   </div>;
 }
 
-export function VendorDetailsPage({locale, view: initialView}: {locale: string; view: VendorDetailsViewModel}) {
+export function VendorDetailsPage({locale, view: initialView, ...selection}: {locale: string; view: VendorDetailsViewModel} & DocumentSelection) {
   const company = useCompanyState();
   const companyId = company.activeCompanyId ?? '';
   const companyName = getActiveCompany(company)?.company.name ?? initialView.organization.name;
   useVendorState();
   const app = useTranslations('AppShell');
   if (!vendorOwnedByCompany(companyId, initialView.vendor.id)) return <AuthenticatedAppShell locale={locale} currentPath={`/vendors/${initialView.vendor.id}`} organizationName={companyName} userName={initialView.user.fullName} userInitials={initialView.user.initials} scope="company-aware"><EmptyState title={app('workspaceEmptyTitle')} description={app('workspaceEmptyDescription', {company: companyName})}/></AuthenticatedAppShell>;
-  return <VendorDetailsWorkspace key={`${companyId}:${initialView.vendor.id}`} locale={locale} initialView={initialView} companyId={companyId}/>;
+  return <VendorDetailsWorkspace key={`${companyId}:${initialView.vendor.id}`} locale={locale} initialView={initialView} companyId={companyId} {...selection}/>;
 }
 
-function VendorDetailsWorkspace({locale, initialView, companyId}: {locale: string; initialView: VendorDetailsViewModel; companyId: string}) {
+function VendorDetailsWorkspace({locale, initialView, companyId, ...selection}: {locale: string; initialView: VendorDetailsViewModel; companyId: string} & DocumentSelection) {
   const t = useTranslations('VendorDetails');
   const vendorsT = useTranslations('Vendors');
   const vendorState = useVendorState();
@@ -130,5 +132,6 @@ function VendorDetailsWorkspace({locale, initialView, companyId}: {locale: strin
     {editPhase !== 'closed' && metadata && <VendorFormDrawer mode="edit" phase={editPhase} onClose={closeEdit} onExited={finishEdit} triggerRef={editTriggerRef} initialValues={metadata} companyId={companyId} vendorId={vendor.id} onSubmit={(input) => {const result = updateVendorMetadata(companyId, vendor.id, input); if (result === 'saved') {setEditPhase('closed'); setUpdated(true);} return result;}}/>}
     {invitePhase !== 'closed' && <InviteVendorDrawer phase={invitePhase} onClose={closeInvite} onExited={finishInvite} triggerRef={inviteTriggerRef} vendorName={vendor.name} contacts={contacts} companyId={companyId} vendorId={vendor.id} preview={view.invitationPreview} locale={locale} onAddContact={() => {setInvitePhase('closed'); setActiveTab('contacts');}}/>}
     {addDocumentPhase !== 'closed' && <AddDocumentDrawer phase={addDocumentPhase} onClose={() => setAddDocumentPhase('closing')} onExited={() => setAddDocumentPhase('closed')} triggerRef={uploadRequirement ? uploadTriggerRef : addDocumentTriggerRef} requiredType={uploadRequirement} vendor={{id: vendor.id, name: vendor.name, registrationNumber: vendor.registrationNumber, registrationCode: view.registrationCode ?? ''}} uploadedBy={view.user.fullName} onCreate={(input) => {const document = createLocalDocument(input); associateRequirementUpload(companyId, vendor.id, document, uploadRequirement?.id); setAddDocumentPhase('closed'); setActiveTab('documents'); setQuery(''); if (input.reviewRequired && document.reviewRoute) router.push(document.reviewRoute);}}/>}
+    <DocumentManagementDrawer {...selection} contextPath={`/vendors/${vendor.id}`} vendorId={vendor.id}/>
   </AuthenticatedAppShell>;
 }

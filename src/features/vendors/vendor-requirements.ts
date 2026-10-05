@@ -6,7 +6,9 @@ import {catalogDocument} from '@/features/requirements/catalog';
 import {documentIdentityKey, templateDocumentType, type DocumentTypeSnapshot} from '@/features/requirements/document-types';
 import {getCompanyDocumentTypes, getRequirementsWorkspace, readRequirementsState} from '@/features/requirements/requirements-state';
 import type {ExpiryWarningDays, LocalizedText, RequirementTemplate, ValidityMonths} from '@/features/requirements/types';
-import {approvedCompliance, deleteLocalDocument, readDocumentRecords, reviewDateToIso, updateDocumentRecord, type CreatedDocument} from '@/features/documents/created-documents';
+import {activeDocuments, approvedCompliance, commitDocumentVersion, deleteLocalDocument, readDocumentRecords, reviewDateToIso, updateDocumentRecord, type CreatedDocument} from '@/features/documents/created-documents';
+import {documentAccess} from '@/features/documents/document-access';
+import {uploadFileError} from '@/features/documents/upload-file';
 import type {ReviewValues} from '@/features/document-review/types';
 import type {SupplierRequirementDocument, SupplierRequirementStatus} from '@/features/supplier-requirements/types';
 import {getVendorDetailsFixture} from './detail-fixtures';
@@ -132,14 +134,16 @@ export function associateRequirementUpload(companyId: string, vendorId: string, 
   if (document.reviewOutcome !== 'pending' || !readDocumentRecords().some((item) => item.id === document.id && item.reviewOutcome === 'pending')) return false;
   const next: VendorRequirement = requirement ? {...requirement, fixtureRow: undefined, uploadedDocumentId: document.id, status: 'in_review'}
     : {...document.typeSnapshot, id: `vendor-requirement-${crypto.randomUUID()}`, companyId, vendorId, required: false, sourceTemplateIds: [], sourceTemplateNames: {}, uploadedDocumentId: document.id, status: 'in_review', createdAt: document.createdAt};
-  updateDocumentRecord(document.id, {vendorRequirementId: next.id}, () => publish(companyId, vendorId, {...workspace, requirements: requirement ? workspace.requirements.map((item) => item.id === requirement.id ? next : item) : [...workspace.requirements, next]}));
+  const previous = readDocumentRecords().filter((item) => item.id !== document.id && item.vendorRequirementId === next.id && item.vendorId === vendorId && (item.companyId ?? vendorFixtureCompanyId) === companyId).sort((a, b) => (b.version ?? 1) - (a.version ?? 1))[0];
+  updateDocumentRecord(document.id, {vendorRequirementId: next.id, ...(previous && {versionGroupId: previous.versionGroupId ?? previous.id, version: (previous.version ?? 1) + 1, previousDocumentId: previous.id})}, () => publish(companyId, vendorId, {...workspace, requirements: requirement ? workspace.requirements.map((item) => item.id === requirement.id ? next : item) : [...workspace.requirements, next]}));
   return true;
 }
 
 /** One review transaction; screens only consume projections of these owned domain records. */
 export function resolveDocumentReview(companyId: string, documentId: string, outcome: 'approved' | 'rejected', values?: ReviewValues) {
+  if (!documentAccess(companyId).review) return 'unavailable' as const;
   const document = readDocumentRecords().find((item) => item.id === documentId);
-  if (!document || (document.companyId ?? vendorFixtureCompanyId) !== companyId || !vendorBelongsToCompany(companyId, document.vendorId)) return 'unavailable' as const;
+  if (!document || document.supersededById || (document.companyId ?? vendorFixtureCompanyId) !== companyId || !vendorBelongsToCompany(companyId, document.vendorId)) return 'unavailable' as const;
   if (document.reviewOutcome !== 'pending') return 'resolved' as const;
   const workspace = getVendorRequirements(state, companyId, document.vendorId);
   const requirement = workspace.requirements.find((item) => item.id === document.vendorRequirementId);
@@ -162,9 +166,39 @@ export function resolveDocumentReview(companyId: string, documentId: string, out
   return 'saved' as const;
 }
 
+export type InternalReplacement = {file: File; documentNumber: string; issuedAt: string; expiresAt: string; issuer: string; notes: string};
+/** Internal trusted update: new identity, preserved history, no supplier review transition. */
+export function replaceInternalDocument(companyId: string, documentId: string, input: InternalReplacement) {
+  const access = documentAccess(companyId);
+  if (!access.replace) return {ok: false, reason: 'access'} as const;
+  const previous = activeDocuments(readDocumentRecords(), companyId).find((item) => item.id === documentId);
+  if (!previous || !vendorBelongsToCompany(companyId, previous.vendorId)) return {ok: false, reason: 'unavailable'} as const;
+  const workspace = getVendorRequirements(state, companyId, previous.vendorId);
+  const requirement = workspace.requirements.find((item) => item.id === previous.vendorRequirementId);
+  if (previous.vendorRequirementId && (!requirement || requirement.uploadedDocumentId !== previous.id)) return {ok: false, reason: 'unavailable'} as const;
+  const issuedAt = input.issuedAt.trim() ? reviewDateToIso(input.issuedAt) : undefined;
+  const expiresAt = input.expiresAt.trim() ? reviewDateToIso(input.expiresAt) : null;
+  if (uploadFileError(input.file) || (input.issuedAt.trim() && !issuedAt) || (input.expiresAt.trim() && !expiresAt) || (issuedAt && expiresAt && expiresAt < issuedAt)) return {ok: false, reason: 'invalid'} as const;
+  const now = fixtureReferenceTime;
+  const complianceStatus = approvedCompliance(expiresAt ?? null, requirement?.expiryWarningDays ?? 30, now);
+  const replacement: CreatedDocument = {...previous, id: `local-document-${crypto.randomUUID()}`, companyId,
+    versionGroupId: previous.versionGroupId ?? previous.id, version: (previous.version ?? 1) + 1, previousDocumentId: previous.id, supersededById: undefined,
+    filename: input.file.name, fileType: input.file.type, fileSize: input.file.size, uploadedAt: now.slice(0, 10), createdAt: now, uploadedBy: access.member!.fullName,
+    issuedAt: issuedAt ?? undefined, expiresAt: expiresAt ?? null, documentNumber: input.documentNumber.trim() || undefined, issuer: input.issuer.trim() || undefined, notes: input.notes.trim() || undefined,
+    origin: 'local', updateSource: 'internal', extractionRequested: false, extractionState: 'none', extractedMetadata: undefined, confirmedMetadata: undefined,
+    reviewOutcome: 'approved', reviewedAt: undefined, reviewedBy: undefined, reviewRoute: null, complianceStatus, status: complianceStatus === 'expiring_soon' ? 'expiring' : complianceStatus};
+  commitDocumentVersion(previous, replacement, input.file, () => {
+    if (requirement) publish(companyId, previous.vendorId, {...workspace, requirements: workspace.requirements.map((item) => item.id === requirement.id ? {...item, status: 'uploaded', uploadedDocumentId: replacement.id, fixtureRow: undefined} : item)});
+  });
+  recordLocalAuditEvent(companyId, {eventType: 'document_replaced', actorId: access.member!.userId, actorName: access.member!.fullName, vendorId: previous.vendorId,
+    requirementId: requirement?.id, documentId: replacement.id, previousDocumentId: previous.id, documentVersion: replacement.version, previousDocumentVersion: previous.version ?? 1,
+    occurredAt: now, action: {ro: 'Document înlocuit / reînnoit', en: 'Document replaced / renewed'}, description: {ro: `${replacement.documentName.ro} — ${replacement.filename}`, en: `${replacement.documentName.en} — ${replacement.filename}`}});
+  return {ok: true, document: replacement} as const;
+}
+
 export function supplierVendorDocuments(workspace: VendorRequirementsWorkspace, records: CreatedDocument[], language: 'ro' | 'en' = 'ro'): SupplierRequirementDocument[] {
   return workspace.requirements.map((requirement) => {
-    const document = records.find((item) => item.id === requirement.uploadedDocumentId && item.reviewOutcome !== 'rejected' && (item.companyId ?? vendorFixtureCompanyId) === requirement.companyId && item.vendorId === requirement.vendorId);
+    const document = records.find((item) => item.id === requirement.uploadedDocumentId && !item.supersededById && item.reviewOutcome !== 'rejected' && (item.companyId ?? vendorFixtureCompanyId) === requirement.companyId && item.vendorId === requirement.vendorId);
     return {id: requirement.id, catalogDocumentTypeId: requirement.catalogDocumentTypeId, customName: requirement.documentTypeSource === 'company' ? requirement.name[language] : undefined,
       customDescription: requirement.description?.[language], iconKey: requirement.iconKey, iconColorKey: requirement.iconColorKey, required: requirement.required, status: document ? requirement.status : 'missing',
       uploadedFile: document?.filename, uploadedAt: document ? {ro: new Intl.DateTimeFormat('ro-RO', {dateStyle: 'medium', timeZone: 'UTC'}).format(new Date(document.createdAt)), en: new Intl.DateTimeFormat('en-GB', {dateStyle: 'medium', timeZone: 'UTC'}).format(new Date(document.createdAt))} : undefined};
@@ -173,7 +207,7 @@ export function supplierVendorDocuments(workspace: VendorRequirementsWorkspace, 
 
 export function vendorCompliance(workspace: VendorRequirementsWorkspace, records: CreatedDocument[]) {
   // Only the owned current reference satisfies a requirement; unrelated/history files do not.
-  const current = workspace.requirements.map((requirement) => ({requirement, document: records.find((item) => item.id === requirement.uploadedDocumentId && item.reviewOutcome !== 'rejected' && (item.companyId ?? vendorFixtureCompanyId) === requirement.companyId && item.vendorId === requirement.vendorId)}));
+  const current = workspace.requirements.map((requirement) => ({requirement, document: records.find((item) => item.id === requirement.uploadedDocumentId && !item.supersededById && item.reviewOutcome !== 'rejected' && (item.companyId ?? vendorFixtureCompanyId) === requirement.companyId && item.vendorId === requirement.vendorId)}));
   const noncompliant = current.some(({requirement, document}) => requirement.required && (requirement.status === 'missing' || !document || document.complianceStatus === 'expired'));
   const attention = current.some(({requirement, document}) => requirement.status === 'in_review' || document?.complianceStatus === 'needs_review' || document?.complianceStatus === 'expiring_soon');
   const validCount = current.filter(({requirement, document}) => requirement.status === 'uploaded' && ['valid', 'expiring_soon'].includes(document?.complianceStatus ?? '')).length;

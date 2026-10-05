@@ -13,8 +13,11 @@ import {Surface} from '@/components/ui/Surface';
 import {SearchInput} from '@/components/ui/SearchInput';
 import {FilterPanel} from '@/components/ui/FilterPanel';
 import {SelectField} from '@/components/ui/SelectField';
-import type {DocumentStatus, DocumentSummary, DocumentType, DocumentsViewModel} from './types';
-import {activeDocuments, useDocumentRecords} from './created-documents';
+import type {DocumentStatus, DocumentType, DocumentsViewModel} from './types';
+import {activeDocuments, useDocumentRecords, type CreatedDocument} from './created-documents';
+import {documentDetailsHref, type DocumentSelection} from './document-management';
+import {DocumentActions} from './DocumentActions';
+import {DocumentManagementDrawer} from './DocumentManagementDrawer';
 import {useCompanyState} from '@/features/companies/company-state';
 import styles from './DocumentsPage.module.css';
 
@@ -33,7 +36,7 @@ function DocumentStatusBadge({status}: {status: DocumentStatus}) {
   return <StatusBadge tone={tones[status]} className={styles.statusBadge} data-status={status}><AppIcon name={icons[status]} size={13} />{t(`status.${status}`)}</StatusBadge>;
 }
 
-function DocumentRow({document, locale}: {document: DocumentSummary; locale: string}) {
+function DocumentRow({document, locale}: {document: CreatedDocument; locale: string}) {
   const t = useTranslations('Documents');
   const name = document.documentName[locale === 'en' ? 'en' : 'ro'];
   const actionLabel = t('reviewDocument', {name, vendor: document.vendorName});
@@ -41,7 +44,7 @@ function DocumentRow({document, locale}: {document: DocumentSummary; locale: str
     <td><div className={styles.documentIdentity}>
       <span className={styles.documentIcon} data-status={document.status}><AppIcon name="file" size={21} /></span>
       <span className={styles.documentText}>
-        {document.reviewRoute ? <Link href={document.reviewRoute} aria-label={actionLabel}>{name}</Link> : <strong>{name}</strong>}
+        <Link href={documentDetailsHref(document, '/documents')} aria-label={document.reviewRoute ? actionLabel : undefined}>{name}</Link>
         <small title={document.filename}>{document.filename}</small>
       </span>
     </div></td>
@@ -50,11 +53,11 @@ function DocumentRow({document, locale}: {document: DocumentSummary; locale: str
     <td><DocumentStatusBadge status={document.status} /></td>
     <td><time dateTime={document.uploadedAt}>{displayDate(document.uploadedAt, locale)}</time></td>
     <td>{document.expiresAt ? <time dateTime={document.expiresAt} className={styles.expiry} data-status={document.status}>{displayDate(document.expiresAt, locale)}</time> : '—'}</td>
-    <td className={styles.actionsCell}>{document.reviewRoute ? <Link href={document.reviewRoute} aria-label={actionLabel} className={styles.rowAction}><AppIcon name="more" size={20} /></Link> : <button type="button" aria-disabled="true" aria-label={t('unavailableAction', {name})} title={t('unavailableAction', {name})} className={styles.rowAction}><AppIcon name="more" size={20} /></button>}</td>
+    <td className={styles.actionsCell}><DocumentActions document={document} contextPath="/documents" includeVendor className={styles.rowAction}/></td>
   </tr>;
 }
 
-export function DocumentsPage({locale, view}: {locale: string; view: DocumentsViewModel}) {
+export function DocumentsPage({locale, view, documentId, documentAction}: {locale: string; view: DocumentsViewModel} & DocumentSelection) {
   const t = useTranslations('Documents');
   const companyId = useCompanyState().activeCompanyId;
   const documents = activeDocuments(useDocumentRecords(), companyId ?? '', true);
@@ -163,5 +166,6 @@ export function DocumentsPage({locale, view}: {locale: string; view: DocumentsVi
         </section>
       </div>
     </div>
+    <DocumentManagementDrawer documentId={documentId} documentAction={documentAction} contextPath="/documents"/>
   </AuthenticatedAppShell>;
 }

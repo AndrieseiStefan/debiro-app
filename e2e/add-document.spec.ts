@@ -95,7 +95,7 @@ test('exact demo fixture extraction opens review with the newly created document
   await dialog.getByRole('button', {name: 'Încarcă și continuă'}).click();
   await expect(page).toHaveURL(/\/documents\/local-document-[a-f0-9-]+\/review$/);
   await expect(page.getByText('Simulare locală, fără AI')).toBeVisible();
-  await expect(page.getByText('Fișierul nu este stocat.', {exact: false})).toBeVisible();
+  await expect(page.getByText('Fișierul nu este stocat pe server.', {exact: false})).toBeVisible();
   await expect(page.getByRole('textbox', {name: /Număr document/})).toHaveValue('123456');
   await page.getByRole('link', {name: 'Înapoi la documente'}).click();
   await expect(page.getByRole('row', {name: /Certificat_fiscal_CP_2024.pdf/}).first()).toContainText('Necesită revizuire');

@@ -50,7 +50,7 @@ export function SupplierUploadPortalPage({locale, view}: {locale: string; view: 
       const upload = createLocalDocument({companyId: view.companyId, vendorId: view.vendorId, vendorName: view.supplier.name, vendorRegistrationNumber: view.supplier.registrationNumber,
         vendorRegistrationCode: '', documentName: requirement.name, documentType: requirement.catalogDocumentTypeId === 'liability' ? 'insurance' : requirement.documentTypeSource === 'company' ? 'custom' : requirement.catalogDocumentTypeId as DocumentType,
         typeSnapshot: requirement, filename: file.name, fileType: file.type, fileSize: file.size, uploadedAt: now.slice(0, 10), createdAt: now, expiresAt: null,
-        uploadedBy: view.supplier.name, extractionRequested: false, reviewRequired: false});
+        uploadedBy: view.supplier.name, file, extractionRequested: false, reviewRequired: false});
       associateRequirementUpload(view.companyId, view.vendorId, upload, requirement.id);
     }
     setLocalFiles((previous) => ({...previous, [document.id]: error ? {error} : {name: file.name}}));

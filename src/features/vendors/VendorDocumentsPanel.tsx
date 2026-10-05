@@ -2,6 +2,7 @@
 
 import {useCallback, useRef, useState} from 'react';
 import {useTranslations} from 'next-intl';
+import {Link} from '@/i18n/navigation';
 import {AppIcon} from '@/components/layout/AppIcon';
 import {Button} from '@/components/ui/Button';
 import {SearchInput} from '@/components/ui/SearchInput';
@@ -10,7 +11,9 @@ import {SelectField} from '@/components/ui/SelectField';
 import {ConfirmationDialog} from '@/components/ui/ConfirmationDialog';
 import {StatusBadge, type StatusTone} from '@/components/ui/StatusBadge';
 import {Surface} from '@/components/ui/Surface';
-import {activeDocuments, useDocumentRecords, toVendorDocumentRow} from '@/features/documents/created-documents';
+import {activeDocuments, useDocumentRecords, toVendorDocumentRow, type CreatedDocument} from '@/features/documents/created-documents';
+import {DocumentActions} from '@/features/documents/DocumentActions';
+import {documentDetailsHref} from '@/features/documents/document-management';
 import {getRequirementsWorkspace, useRequirementsState} from '@/features/requirements/requirements-state';
 import {AppearanceIcon} from '@/features/requirements/AppearancePicker';
 import {applyVendorTemplates, getVendorRequirements, removeAppliedTemplate, removeVendorRequirement, useVendorRequirements, type VendorRequirement} from './vendor-requirements';
@@ -24,6 +27,7 @@ const statusTone: Record<VendorDocumentRow['status'], StatusTone> = {valid: 'suc
 export function VendorDocumentsPanel({view, companyId, language, query, setQuery, onUpload}: {view: VendorDetailsViewModel; companyId: string; language: 'ro' | 'en'; query: string; setQuery: (value: string) => void; onUpload: (requirement: VendorRequirement, trigger: HTMLButtonElement) => void}) {
   const t = useTranslations('VendorDetails');
   const templatesT = useTranslations('VendorTemplates');
+  const managementT = useTranslations('DocumentManagement');
   const filtersT = useTranslations('DataFilters');
   const [status, setStatus] = useState<VendorDocumentRow['status'] | 'all'>('all');
   const [phase, setPhase] = useState<'closed' | 'open' | 'closing'>('closed');
@@ -37,13 +41,13 @@ export function VendorDocumentsPanel({view, companyId, language, query, setQuery
   const templates = getRequirementsWorkspace(useRequirementsState(), companyId).templates;
   const documents = activeDocuments(useDocumentRecords(), companyId).filter((document) => document.vendorId === view.vendor.id);
   const associated = new Set(workspace.requirements.map((item) => item.uploadedDocumentId));
-  const rows: {row: VendorDocumentRow; requirement?: VendorRequirement; reviewRoute?: string | null}[] = [
-    ...documents.filter((document) => !associated.has(document.id)).map((document) => ({row: toVendorDocumentRow(document, language), reviewRoute: document.reviewRoute})),
+  const rows: {row: VendorDocumentRow; requirement?: VendorRequirement; record?: CreatedDocument}[] = [
+    ...documents.filter((document) => !associated.has(document.id)).map((document) => ({row: toVendorDocumentRow(document, language), record: document})),
     ...workspace.requirements.map((requirement) => {
       const document = documents.find((item) => item.id === requirement.uploadedDocumentId);
       const row = document ? toVendorDocumentRow(document, language) : requirement.fixtureRow ? {...requirement.fixtureRow, name: language === 'ro' ? requirement.fixtureRow.name : requirement.name.en, status: 'missing' as const, issued: null, expires: null, countdown: undefined, uploadedBy: undefined, uploadedOn: undefined}
         : {id: requirement.id, name: requirement.name[language], issuer: requirement.issuer ?? '', subtitle: requirement.description?.[language], status: 'missing' as const, issued: null, expires: null};
-      return {row, requirement, reviewRoute: document?.reviewRoute};
+      return {row, requirement, record: document};
     })
   ];
   const visible = rows.filter(({row}) => (status === 'all' || row.status === status) && `${row.name} ${row.issuer} ${row.subtitle ?? ''}`.toLocaleLowerCase(language).includes(query.trim().toLocaleLowerCase(language)));
@@ -62,11 +66,11 @@ export function VendorDocumentsPanel({view, companyId, language, query, setQuery
     </div></div>
     {workspace.appliedTemplates.length > 0 && <div className={styles.appliedTemplates}><span>{templatesT('appliedLabel')}</span>{workspace.appliedTemplates.map((template) => <span key={template.templateId} className={styles.appliedChip}>{template.title[language]}<button type="button" aria-label={templatesT('removeAssociation', {name: template.title[language]})} onClick={() => setConfirmation({templateId: template.templateId})}><AppIcon name="close" size={14}/></button></span>)}</div>}
     {success && <div role="status" className={styles.templateSuccess}><AppIcon name="check" size={20}/><span><strong>{templatesT('successTitle')}</strong><span>{templatesT('successDescription', {added: success.addedCount, count: success.templateCount, existing: success.existingCount})}</span></span></div>}
-    <div className={styles.tableScroll} role="region" aria-label={t('tableRegion')} tabIndex={0}><table className={styles.documentsTable}><thead><tr><th scope="col">{t('table.type')}</th><th scope="col">{templatesT('source')}</th><th scope="col">{templatesT('required')}</th><th scope="col">{t('table.status')}</th><th scope="col">{t('table.issued')}</th><th scope="col">{t('table.expires')}</th><th scope="col">{t('table.uploadedBy')}</th><th scope="col">{t('table.actions')}</th></tr></thead><tbody>{visible.map(({row: document, requirement, reviewRoute}) => <tr key={requirement?.id ?? document.id} data-requirement-id={requirement?.id}>
-      <td><span className={styles.documentIdentity}>{requirement && !requirement.fixtureRow ? <AppearanceIcon appearance={requirement} size="small"/> : <span className={styles.documentIcon} data-status={document.status}><AppIcon name={document.status === 'missing' ? 'fileX' : 'file'} size={19}/></span>}<span><strong>{document.name}</strong><small>{document.subtitle ?? document.issuer}</small></span></span></td>
+    <div className={styles.tableScroll} role="region" aria-label={t('tableRegion')} tabIndex={0}><table className={styles.documentsTable}><thead><tr><th scope="col">{t('table.type')}</th><th scope="col">{templatesT('source')}</th><th scope="col">{templatesT('required')}</th><th scope="col">{t('table.status')}</th><th scope="col">{t('table.issued')}</th><th scope="col">{t('table.expires')}</th><th scope="col">{t('table.uploadedBy')}</th><th scope="col">{t('table.actions')}</th></tr></thead><tbody>{visible.map(({row: document, requirement, record}) => <tr key={requirement?.id ?? document.id} data-requirement-id={requirement?.id}>
+      <td><span className={styles.documentIdentity}>{requirement && !requirement.fixtureRow ? <AppearanceIcon appearance={requirement} size="small"/> : <span className={styles.documentIcon} data-status={document.status}><AppIcon name={document.status === 'missing' ? 'fileX' : 'file'} size={19}/></span>}<span>{record ? <Link className={styles.documentNameLink} href={documentDetailsHref(record, `/vendors/${view.vendor.id}`)}>{document.name}</Link> : <strong>{document.name}</strong>}<small>{document.subtitle ?? document.issuer}</small></span></span></td>
       <td><span className={styles.sourceList}>{requirement?.sourceTemplateIds.length ? requirement.sourceTemplateIds.map((id) => <span key={id} className={styles.sourceChip}>{templatesT('templateSource', {name: requirement.sourceTemplateNames[id]?.[language] ?? id})}</span>) : <span className={styles.manualSource}>{templatesT('manualSource')}</span>}</span></td>
       <td>{requirement ? templatesT(requirement.required ? 'yes' : 'no') : '—'}</td>
-      <td><StatusBadge tone={statusTone[document.status]} className={styles.documentStatus}><AppIcon name={document.status === 'valid' ? 'check' : document.status === 'expiring' ? 'clock' : document.status === 'expired' ? 'close' : document.status === 'review' ? 'info' : 'file'} size={16}/>{t(`status.${document.status}`)}</StatusBadge></td><td>{document.issued?.[language] ?? '—'}</td><td>{document.expires ? <span className={styles.dateCell}>{document.expires[language]}<small data-status={document.status}>{document.countdown?.[language]}</small></span> : '—'}</td><td>{document.uploadedBy ? <span className={styles.dateCell}>{document.uploadedBy}<small>{document.uploadedOn?.[language]}</small></span> : '—'}</td><td>{requirement && document.status === 'missing' && <button type="button" className={styles.uploadAction} onClick={(event) => onUpload(requirement, event.currentTarget)}>{t('upload')}</button>}<VendorDocumentActions name={document.name} reviewRoute={reviewRoute} onRemove={requirement ? () => setConfirmation({requirement}) : undefined}/></td>
+      <td><StatusBadge tone={statusTone[document.status]} className={styles.documentStatus}><AppIcon name={document.status === 'valid' ? 'check' : document.status === 'expiring' ? 'clock' : document.status === 'expired' ? 'close' : document.status === 'review' ? 'info' : 'file'} size={16}/>{t(`status.${document.status}`)}</StatusBadge></td><td>{document.issued?.[language] ?? '—'}</td><td>{document.expires ? <span className={styles.dateCell}>{document.expires[language]}<small data-status={document.status}>{document.countdown?.[language]}</small></span> : '—'}</td><td>{document.uploadedBy ? <span className={styles.dateCell}>{document.uploadedBy}<small>{document.uploadedOn?.[language]}</small></span> : '—'}</td><td><span className={styles.documentRowActions}>{requirement && document.status === 'missing' && <button type="button" className={styles.uploadAction} onClick={(event) => onUpload(requirement, event.currentTarget)}>{t('upload')}</button>}{record && <DocumentActions document={record} contextPath={`/vendors/${view.vendor.id}`}/>} {requirement && <VendorDocumentActions name={document.name} icon="shield" actionLabel={managementT('requirementActions', {name: document.name})} onRemove={() => setConfirmation({requirement})}/>}</span></td>
     </tr>)}</tbody></table>{visible.length === 0 && <p className={styles.noResults}>{rows.length === 0 ? t('emptyDocuments') : t('noDocuments')}{status !== 'all' && <button type="button" onClick={() => setStatus('all')}>{filtersT('reset')}</button>}</p>}</div>
     {missingRequirements > 0 && <div className={styles.notice} data-missing-requirements={missingRequirements} aria-live="polite"><AppIcon name="info" size={21}/><span>{t('missingNotice', {count: missingRequirements})}</span></div>}
   </Surface>

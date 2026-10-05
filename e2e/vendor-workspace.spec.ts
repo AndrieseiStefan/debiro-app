@@ -231,7 +231,7 @@ for (const english of [false, true]) {
       await expect(drawer).toHaveCount(0);
     };
     const removeMissing = async (name: string) => {
-      await page.getByRole('row').filter({hasText: name}).getByRole('button', {name: english ? `Actions for ${name}` : `Acțiuni pentru ${name}`, exact: true}).click();
+      await page.getByRole('row').filter({hasText: name}).getByRole('button', {name: english ? `Requirement actions for ${name}` : `Acțiuni cerință pentru ${name}`, exact: true}).click();
       await page.getByRole('menuitem', {name: english ? 'Remove requirement' : 'Elimină cerința'}).click();
       await page.getByRole('alertdialog').getByRole('button', {name: english ? 'Remove requirement' : 'Elimină cerința', exact: true}).click();
     };

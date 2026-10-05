@@ -15,8 +15,8 @@ export function useLocalAuditEvents() {return useSyncExternalStore(subscribe, ()
 export function readLocalAuditEvents() {return events;}
 
 /** Record successful local actions only; these are not delivered notices or server audit records. */
-export function recordLocalAuditEvent(companyId: string, event: Omit<AuditEvent, 'id' | 'occurredAt' | 'actorType'> & {actorType?: AuditEvent['actorType']; occurredAt?: string}) {
+export function recordLocalAuditEvent(companyId: string, event: Omit<AuditEvent, 'id' | 'occurredAt' | 'actorType'> & {actorId?: string; actorType?: AuditEvent['actorType']; occurredAt?: string}) {
   events = [{...event, companyId, id: `local-audit-${crypto.randomUUID()}`, occurredAt: event.occurredAt ?? fixtureReferenceTime,
-    actorType: event.actorType ?? 'user', actorId: companySettingsFixture.members.find((member) => member.isCurrentUser)?.userId, actorName: event.actorName ?? currentUser.fullName}, ...events];
+    actorType: event.actorType ?? 'user', actorId: event.actorId ?? companySettingsFixture.members.find((member) => member.isCurrentUser)?.userId, actorName: event.actorName ?? currentUser.fullName}, ...events];
   listeners.forEach((listener) => listener());
 }
