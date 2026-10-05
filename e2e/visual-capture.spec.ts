@@ -26,7 +26,39 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   await page.waitForLoadState('networkidle');
   await page.evaluate(async () => { await document.fonts.ready; });
   if (action) {
-    if (['document-details', 'document-replace', 'document-history', 'document-success', 'document-menu'].includes(action)) {
+    if (['document-details-current', 'document-details-end', 'document-history-full', 'document-version-details', 'document-history-back'].includes(action)) {
+      if (!/^\/(en\/)?(documents|vendors\/construct-pro)$/.test(route)) throw new Error('Document drawer capture requires Documents or the canonical Vendor Details route.');
+      const english = route.startsWith('/en');
+      const vendorContext = route.includes('/vendors/');
+      let filename = 'ONRC_2024.pdf';
+      for (const version of [2, 3]) {
+        const row = page.getByRole('row', {name: new RegExp(filename)});
+        await row.getByRole('button', {name: vendorContext ? english ? /^Document actions/ : /^Acțiuni document/ : undefined}).click();
+        await page.getByRole('menuitem', {name: english ? 'Replace / renew' : 'Înlocuiește / reînnoiește'}).click();
+        const drawer = page.getByRole('dialog');
+        filename = `certificate-v${version}.pdf`;
+        await drawer.locator('input[type=file]').setInputFiles({name: filename, mimeType: 'application/pdf', buffer: Buffer.from('local renewal fixture')});
+        await drawer.locator('#replace-issuedAt').fill('02.10.2026');
+        await drawer.locator('#replace-expiresAt').fill('12.12.2026');
+        await drawer.getByRole('button', {name: english ? 'Upload document' : 'Încarcă document', exact: true}).click();
+        await expect(page.getByRole('dialog', {name: english ? 'Document uploaded successfully' : 'Document încărcat cu succes'})).toBeVisible();
+        await drawer.getByRole('button', {name: english ? 'Close' : 'Închide', exact: true}).first().click();
+        await expect(drawer).toHaveCount(0);
+      }
+      await page.getByRole('row', {name: new RegExp(filename)}).getByRole('link', {name: english ? 'Registration certificate' : 'Certificat de înregistrare', exact: true}).click();
+      const drawer = page.getByRole('dialog');
+      await expect(drawer.locator('[data-preview-version]')).toHaveCount(3);
+      if (action === 'document-details-end') await drawer.evaluate((element) => {element.scrollTop = element.scrollHeight;});
+      if (action === 'document-history-full' || action === 'document-version-details' || action === 'document-history-back') {
+        await drawer.getByRole('button', {name: english ? 'View all' : 'Vezi toate'}).click();
+        await expect(drawer.locator('[data-version]')).toHaveCount(3);
+        if (action === 'document-version-details') await drawer.locator('[data-version="1"]').getByRole('button', {name: english ? 'Open details' : 'Deschide detalii'}).click();
+        if (action === 'document-history-back') {
+          await drawer.getByRole('button', {name: english ? 'Back to document details' : 'Înapoi la detalii document'}).click();
+          await expect(drawer.locator('[data-preview-version]')).toHaveCount(3);
+        }
+      }
+    } else if (['document-details', 'document-replace', 'document-history', 'document-success', 'document-menu'].includes(action)) {
       if (!/^\/(en\/)?documents$/.test(route)) throw new Error('Document management capture requires the Documents route.');
       const english = route.startsWith('/en');
       const row = page.getByRole('row', {name: /ONRC_2024.pdf/});
@@ -278,6 +310,7 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   const name = route === '/' ? 'root' : route.replace(/^\/+|\/+$/g, '').replace(/[^a-zA-Z0-9_-]+/g, '-');
   const output = path.join(process.cwd(), 'artifacts', 'visual', `${name}${action ? `-${action}` : ''}${viewportWidth ? `-${viewportWidth}x${viewportHeight}` : ''}.png`);
   await page.screenshot({path: output, fullPage: !action || action === 'requirement-edit' || action === 'requirement-preview' || action.startsWith('vendor-') || action.startsWith('review-') && action !== 'review-reject-confirmation', animations: 'disabled'});
+  if (action?.startsWith('document-') && action !== 'document-menu') await page.getByRole('dialog').screenshot({path: output.replace(/\.png$/, '-drawer.png'), animations: 'disabled'});
   if (action === 'review-reject-confirmation') await page.getByRole('alertdialog').screenshot({path: output.replace(/\.png$/, '-dialog.png'), animations: 'disabled'});
   if (action === 'review-rejected-portal' || action === 'review-reupload-portal') await page.locator('[data-supplier-requirements]').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});
   if (action === 'vendor-menu') await page.getByRole('menu').screenshot({path: output.replace(/\.png$/, '-menu.png'), animations: 'disabled'});

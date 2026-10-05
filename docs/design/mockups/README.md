@@ -1,6 +1,6 @@
 # Approved Mockups
 
-This repository tracks twenty-nine approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
+This repository tracks thirty approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
 
 ## Expected initial mapping
 
@@ -35,6 +35,7 @@ This repository tracks twenty-nine approved product mockup images listed below. 
 | `24-vendor-requirement-template-assignment.png` | E1-027 template assignment, snapshot provenance, requirement removal and category-change warning |
 | `25-vendor-details-contacts-activity-notes.png` | E1-027B vendor Contacts, Activity and threaded Notes; the task removes the redundant Documents CTA and retains shared immediate filters/plain-text notes |
 | `29-document-actions-and-details-entrypoints.png` | E1-029 shared document details, replacement and history; the brief preserves current tables and overrides internal-upload review, expire/delete actions and invented metadata |
+| `document-details.png` | E1-029A dedicated Document Details composition, seven information rows, action card and compact history preview; supersedes mockup 29's Details presentation only. Unsupported manual-expire/general-delete controls remain disabled; unsupported external file-open is omitted. |
 
 ## Contract
 

@@ -6,10 +6,13 @@ export type AppIconName =
   | 'check' | 'clock' | 'close' | 'more' | 'calendar' | 'info'
   | 'building' | 'arrowRight' | 'userPlus' | 'fileX' | 'filter' | 'upload'
   | 'crown' | 'eye' | 'mail' | 'send' | 'creditCard' | 'edit' | 'download' | 'sort'
-  | 'user' | 'external' | 'logout'
+  | 'user' | 'external' | 'logout' | 'clipboard' | 'trash' | 'filePdf'
   | 'box' | 'construction' | 'tools' | 'safety' | 'truck' | 'computer' | 'briefcase' | 'layers' | 'warning';
 
 const paths: Record<AppIconName, ReactNode> = {
+  clipboard: <><rect x="5" y="4" width="14" height="18" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1" fill="white"/></>,
+  trash: <><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></>,
+  filePdf: <><path d="M5 2h9l5 5v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Z" fill="currentColor"/><path d="M14 2v6h5" stroke="white" strokeWidth="1"/><text x="11.5" y="18" textAnchor="middle" fill="white" stroke="none" fontSize="6" fontWeight="700">PDF</text></>,
   layers: <><path d="m12 2 10 5-10 5L2 7l10-5ZM2 12l10 5 10-5M2 17l10 5 10-5"/></>,
   warning: <><path d="m12 3 10 18H2L12 3Z"/><path d="M12 9v5M12 17h.01"/></>,
   home: <><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10Z" /><path d="M9 21v-7h6v7" /></>,

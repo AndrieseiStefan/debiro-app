@@ -23,6 +23,25 @@ async function sidebar(page: Page, english: boolean, section: string) {
 
 for (const english of [false, true]) {
   const prefix = english ? '/en' : '';
+  test(`${english ? 'EN' : 'RO'} direct details retain all compliance states and the pending-review entry point`, async ({page}) => {
+    for (const [id, status] of [
+      [registration, 'Valid'],
+      ['global-clean-insurance-2024', english ? 'Expiring soon' : 'Expiră curând'],
+      ['logistics-expert-tax-2023', english ? 'Expired' : 'Expirat'],
+      ['construct-pro-tax-2024', english ? 'Needs review' : 'Necesită revizuire']
+    ]) {
+      await page.goto(`${prefix}/documents?document=${id}`);
+      const drawer = page.getByRole('dialog', {name: english ? 'Document details' : 'Detalii document'});
+      await expect(drawer.getByRole('term')).toHaveCount(7);
+      await expect(drawer.getByRole('definition').nth(2)).toHaveText(status);
+      await expect(drawer.getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toBeDisabled();
+      await expect(drawer.getByRole('link', {name: english ? 'Review document' : 'Revizuiește documentul'})).toHaveCount(id === 'construct-pro-tax-2024' ? 1 : 0);
+    }
+    await page.getByRole('dialog').getByRole('link', {name: english ? 'Review document' : 'Revizuiește documentul'}).click();
+    await expect(page).toHaveURL(new RegExp(`${prefix}/documents/construct-pro-tax-2024/review$`));
+    await expect(page.getByRole('button', {name: english ? 'Confirm and save' : 'Confirmă și salvează'})).toBeEnabled();
+  });
+
   test(`${english ? 'EN' : 'RO'} names and menus share details and review, with separate requirement actions`, async ({page}) => {
     await page.goto(`${prefix}/documents`);
     const row = page.getByRole('row', {name: /ONRC_2024.pdf/});
@@ -93,8 +112,12 @@ for (const english of [false, true]) {
     await expect(page.locator('[data-version-state="superseded"]')).toContainText('ONRC_2024.pdf');
     await page.locator('[data-version="1"]').getByRole('button', {name: english ? 'Open details' : 'Deschide detalii'}).click();
     await expect(page.getByRole('dialog', {name: english ? 'Document details' : 'Detalii document'})).toBeVisible();
-    await expect(page.getByRole('dialog')).toContainText(english ? 'Superseded version' : 'Versiune înlocuită');
-    await expect(page.getByRole('dialog').getByRole('button', {name: english ? 'Replace / renew' : 'Înlocuiește / reînnoiește'})).toHaveCount(0);
+    await expect(page.getByRole('dialog')).toContainText('ONRC_2024.pdf');
+    await expect(page.getByRole('dialog').getByRole('button', {name: english ? 'Replace document' : 'Înlocuiește document', exact: true})).toBeDisabled();
+    await page.getByRole('dialog').getByRole('button', {name: english ? 'Back to document history' : 'Înapoi la istoricul documentului'}).click();
+    await expect(page.locator('[data-version-state="superseded"]')).toContainText('ONRC_2024.pdf');
+    await page.getByRole('dialog').getByRole('button', {name: english ? 'Back to document details' : 'Înapoi la detalii document'}).click();
+    await expect(page.getByRole('dialog')).toContainText('renewed.pdf');
     await close(page, english);
     await sidebar(page, english, english ? 'Suppliers' : 'Furnizori');
     await page.getByRole('link', {name: english ? 'Details for Construct Pro SRL' : 'Detalii pentru Construct Pro SRL'}).click();
@@ -114,6 +137,71 @@ for (const english of [false, true]) {
     await sidebar(page, english, 'Dashboard');
     await expect(page.getByRole('row', {name: english ? /Construct Pro SRL Registration certificate Expired/ : /Construct Pro SRL Certificat de înregistrare Expirat/})).toHaveCount(1);
   });
+
+  for (const vendorContext of [false, true]) {
+    test(`${english ? 'EN' : 'RO'} canonical details and historical Back preserve the ${vendorContext ? 'Vendor Details' : 'Documents'} context`, async ({page}) => {
+      const width = vendorContext ? 375 : 1448;
+      await page.setViewportSize({width, height: vendorContext ? 812 : 1086});
+      await page.goto(`${prefix}/documents`);
+      let filename = 'ONRC_2024.pdf';
+      let currentId = registration;
+      for (const version of [2, 3, 4]) {
+        await page.getByRole('row', {name: new RegExp(filename)}).getByRole('button').click();
+        await page.getByRole('menuitem', {name: english ? 'Replace / renew' : 'Înlocuiește / reînnoiește'}).click();
+        filename = `certificate-v${version}.pdf`;
+        await renew(page, english, '01.01.2099', filename);
+        currentId = new URL(page.url()).searchParams.get('document')!;
+        await close(page, english);
+      }
+      if (vendorContext) {
+        await sidebar(page, english, english ? 'Suppliers' : 'Furnizori');
+        await page.getByRole('link', {name: english ? 'Details for Construct Pro SRL' : 'Detalii pentru Construct Pro SRL'}).click();
+      }
+      const row = page.getByRole('row', {name: /certificate-v4.pdf/});
+      const trigger = row.getByRole('link', {name: english ? 'Registration certificate' : 'Certificat de înregistrare', exact: true});
+      await trigger.click();
+      const drawer = page.getByRole('dialog');
+      await expect(drawer).toBeVisible();
+      await expect(page).toHaveURL(new RegExp(`document=${currentId}$`));
+      const selectedUrl = page.url();
+      const originalDrawer = await drawer.elementHandle();
+      expect(await drawer.getByRole('term').allTextContents()).toEqual(english
+        ? ['Name', 'Requirement', 'Compliance status', 'Expiry date', 'Uploaded at', 'Uploaded by', 'Notes']
+        : ['Nume', 'Cerință', 'Status conformitate', 'Dată expirare', 'Încărcat la', 'Încărcat de', 'Notițe']);
+      await expect(drawer).not.toContainText('Renewal-42');
+      await expect(drawer.locator('[data-preview-version]')).toHaveCount(3);
+      await expect(drawer.getByText(english ? 'Current' : 'Curent', {exact: true})).toHaveCount(1);
+      await expect(drawer.getByRole('button', {name: english ? 'Mark as expired' : 'Marchează ca expirată'})).toBeDisabled();
+      await expect(drawer.getByRole('button', {name: english ? 'Delete document' : 'Șterge document'})).toBeDisabled();
+      expect((await drawer.boundingBox())?.width).toBe(width === 1448 ? 804 : width);
+      await drawer.getByRole('button', {name: english ? 'View all' : 'Vezi toate'}).click();
+      await expect(drawer.getByRole('heading', {name: english ? 'Document history' : 'Istoric document'})).toBeFocused();
+      await expect(drawer.locator('[data-version]')).toHaveCount(4);
+      expect(await drawer.evaluate((element, original) => element === original, originalDrawer)).toBe(true);
+      await expect(page).toHaveURL(selectedUrl);
+      await drawer.locator('[data-version="1"]').getByRole('button', {name: english ? 'Open details' : 'Deschide detalii'}).click();
+      await expect(drawer).toContainText('ONRC_2024.pdf');
+      const historicalBack = drawer.getByRole('button', {name: english ? 'Back to document history' : 'Înapoi la istoricul documentului'});
+      await page.keyboard.press('Shift+Tab');
+      await expect(historicalBack).toBeFocused();
+      await expect(historicalBack).toHaveCSS('outline-width', '3px');
+      await page.keyboard.press('Enter');
+      await expect(drawer.locator('[data-version-state="current"]')).toContainText('certificate-v4.pdf');
+      await drawer.getByRole('button', {name: english ? 'Back to document details' : 'Înapoi la detalii document'}).click();
+      await expect(drawer).toContainText('certificate-v4.pdf');
+      await expect(drawer.getByRole('button', {name: english ? 'Replace document' : 'Înlocuiește document', exact: true})).toBeEnabled();
+      await expect(drawer.getByRole('button', {name: /Back|Înapoi/})).toHaveCount(0);
+      await expect(page).toHaveURL(selectedUrl);
+      expect(await drawer.evaluate((element, original) => element === original, originalDrawer)).toBe(true);
+      expect(await page.locator('main').evaluate((element) => element.parentElement!.inert)).toBe(true);
+      await drawer.getByRole('button', {name: english ? 'View all' : 'Vezi toate'}).click();
+      if (!vendorContext) await drawer.locator('[data-version="1"]').getByRole('button', {name: english ? 'Open details' : 'Deschide detalii'}).click();
+      await close(page, english);
+      await expect(trigger).toBeFocused();
+      expect(new URL(page.url()).pathname).toBe(`${prefix}${vendorContext ? '/vendors/construct-pro' : '/documents'}`);
+      expect(await page.locator('main').evaluate((element) => element.parentElement!.inert)).toBe(false);
+    });
+  }
 }
 
 test('renews an expiring file and removes only its previous version from next expiry and Notifications', async ({page}) => {
@@ -134,21 +222,22 @@ test('direct, unknown, mismatched vendor, stale company and history URLs fail sa
   await page.goto('/documents?document=unknown&documentAction=history');
   await expect(page.getByRole('dialog', {name: 'Document indisponibil'})).toBeVisible();
   await close(page, false);
-  await page.goto(`/documents?document=${registration}&documentAction=history`);
+  const pendingId = 'construct-pro-tax-2024';
+  await page.goto(`/documents?document=${pendingId}&documentAction=history`);
   await expect(page.locator('[data-version]')).toHaveCount(1);
   await page.locator('[data-version]').getByRole('button', {name: 'Deschide detalii'}).click();
   await expect(page.getByRole('dialog', {name: 'Detalii document'})).toBeVisible();
-  await page.getByRole('dialog').getByRole('link', {name: 'Construct Pro SRL'}).click();
+  await page.getByRole('dialog').getByRole('link', {name: 'Revizuiește documentul'}).click();
   await page.getByRole('button', {name: 'Demo Company SRL', exact: true}).click();
   await page.getByRole('dialog', {name: 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
   // A client Back restores the former URL, not a new independent fixture session.
   await page.goBack();
-  await expect(page).toHaveURL(new RegExp(`/documents\\?document=${registration}$`));
+  await expect(page).toHaveURL(new RegExp(`/documents\\?document=${pendingId}&documentAction=history$`));
   await expect(page.getByText('Nu există date pentru această companie în demonstrația locală.')).toBeVisible();
   await expect(page.getByRole('dialog')).toHaveCount(0);
-  await expect(page.getByText('ONRC_2024.pdf')).toHaveCount(0);
+  await expect(page.getByText('Certificat_fiscal_CP_2024.pdf')).toHaveCount(0);
   await page.goForward();
-  await expect(page.getByText('ONRC_2024.pdf')).toHaveCount(0);
+  await expect(page.getByText('Certificat_fiscal_CP_2024.pdf')).toHaveCount(0);
 });
 
 for (const width of [1448, 1024, 758, 600, 375, 320]) {
@@ -156,7 +245,7 @@ for (const width of [1448, 1024, 758, 600, 375, 320]) {
     await page.setViewportSize({width, height: width === 1448 ? 1086 : 812});
     await page.goto(`/documents?document=${registration}`);
     await expect(page.getByRole('dialog', {name: 'Detalii document'})).toBeVisible();
-    await page.getByRole('dialog').getByRole('button', {name: 'Înlocuiește / reînnoiește'}).click();
+    await page.getByRole('dialog').getByRole('button', {name: 'Înlocuiește document', exact: true}).click();
     await page.getByRole('dialog').getByRole('button', {name: 'Încarcă document', exact: true}).click();
     await expect(page.getByRole('dialog').getByRole('alert')).toHaveText('Selectează un fișier.');
     await page.locator('#replace-expiresAt').fill('31.02.2027');
@@ -170,6 +259,8 @@ for (const width of [1448, 1024, 758, 600, 375, 320]) {
     const geometry = await page.getByRole('dialog').evaluate((element) => ({width: element.clientWidth, scroll: element.scrollWidth, page: document.documentElement.scrollWidth}));
     expect(geometry.scroll).toBeLessThanOrEqual(geometry.width);
     expect(geometry.page).toBeLessThanOrEqual(width);
+    await page.getByRole('dialog').getByRole('button', {name: 'Înapoi la detalii document'}).click();
+    await expect(page.getByRole('dialog', {name: 'Detalii document'})).toContainText('renewed.pdf');
     await page.keyboard.press('Escape'); await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.getByRole('row', {name: /renewed.pdf/}).getByRole('button')).toBeFocused();
   });

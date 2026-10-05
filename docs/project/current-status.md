@@ -10,11 +10,11 @@
 
 **Domain strategy:** Single domain
 
-**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and all twenty-nine approved fixture/browser-local canonical mockup states are implemented; backend/auth integrations are not.
+**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and the experiences represented by all thirty approved mockups have fixture/browser-local implementations, with documented unsupported actions; backend/auth integrations are not.
 
 ## Design state
 
-Twenty-nine approved product mockups are tracked in `docs/design/mockups/`. They are canonical contracts requiring:
+Thirty approved product mockups are tracked in `docs/design/mockups/`. They are canonical contracts requiring:
 
 - UI fidelity as close to 1:1 as technically practical
 - Interaction fidelity as close to 1:1 as technically practical
@@ -47,6 +47,7 @@ The final logo is not yet designed and must not be invented.
 - E1-028A coherent fixture dates and derived aggregates — one 2026-10-02 demo reference, UTC expiry/countdown labels, current Documents/Vendors/Dashboard metrics, actual completion and next-expiry values, shared Notifications expiry/missing and Activity/Audit projections; existing lifecycle/optionality rules preserved, no invented requirements or backend behavior; see [fixture data](fixture-data.md)
 - E1-028A1 requirement-driven vendor compliance — shared List/Details/Dashboard projection, Noncompliant → Attention → Compliant precedence, owned current requirement references only, optional missing/expired exclusions and Compliant for zero configured requirements; file ratios remain informational and inactive summary rules unchanged; see [vendor requirements](../features/vendor-requirements.md#shared-review-lifecycle-e1-028)
 - E1-029 shared document details/actions, internal renewal with new current identities and retained version history, current-only projections, role/company checks and traceable Activity/Audit; supplier uploads still require review and actual selected bytes are tab-memory only; see [document management](../features/document-management.md)
+- E1-029A canonical wide Document Details with seven information rows, file/actions cards and a three-version compact preview; History and historical Details use same-drawer Back navigation with selected context and focus preserved. Manual expire/general deletion remain visibly disabled without approved contracts; see [document management](../features/document-management.md#canonical-details-and-drawer-navigation-e1-029a)
 - E1-007 canonical Invite Vendor drawer from Vendor Details, with local form validation and a deterministic demo link but no email delivery; see [invite vendor](../features/invite-vendor.md)
 - E1-008 canonical Supplier Upload Portal at `/upload/demo-construct-pro` and `/en/upload/demo-construct-pro`, with an external-supplier layout, typed token fixture, shared Preview/Portal requirement presentation and local upload metadata feeding the E1-028 review lifecycle; file bytes are retained only in private tab memory, never sent or stored on a server; see [supplier upload portal](../features/supplier-upload-portal.md)
 - E1-009 canonical Document Review at `/documents/construct-pro-tax-2024/review` and `/en/documents/construct-pro-tax-2024/review`, with typed document/extraction fixtures and browser-local human review only; see [document review](../features/document-review.md)
@@ -79,4 +80,4 @@ TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to
 
 ## Next
 
-All twenty-nine tracked canonical mockup states have fixture/browser-local implementations; product-owner visual approval remains pending. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).
+The experiences represented by all thirty tracked canonical mockups have fixture/browser-local implementations with documented unsupported actions; product-owner visual approval remains pending. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).
