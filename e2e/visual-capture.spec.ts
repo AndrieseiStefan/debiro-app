@@ -26,7 +26,7 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   await page.waitForLoadState('networkidle');
   await page.evaluate(async () => { await document.fonts.ready; });
   if (action) {
-    if (['document-details-current', 'document-details-end', 'document-history-full', 'document-version-details', 'document-history-back'].includes(action)) {
+    if (['document-details-current', 'document-details-end', 'document-history-full', 'document-history-menu', 'document-version-details', 'document-history-back'].includes(action)) {
       if (!/^\/(en\/)?(documents|vendors\/construct-pro)$/.test(route)) throw new Error('Document drawer capture requires Documents or the canonical Vendor Details route.');
       const english = route.startsWith('/en');
       const vendorContext = route.includes('/vendors/');
@@ -49,10 +49,17 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
       const drawer = page.getByRole('dialog');
       await expect(drawer.locator('[data-preview-version]')).toHaveCount(3);
       if (action === 'document-details-end') await drawer.evaluate((element) => {element.scrollTop = element.scrollHeight;});
-      if (action === 'document-history-full' || action === 'document-version-details' || action === 'document-history-back') {
+      if (action === 'document-history-full' || action === 'document-history-menu' || action === 'document-version-details' || action === 'document-history-back') {
         await drawer.getByRole('button', {name: english ? 'View all' : 'Vezi toate'}).click();
         await expect(drawer.locator('[data-version]')).toHaveCount(3);
-        if (action === 'document-version-details') await drawer.locator('[data-version="1"]').getByRole('button', {name: english ? 'Open details' : 'Deschide detalii'}).click();
+        if (action === 'document-history-menu') {
+          await drawer.locator('[data-version="1"]').getByRole('button', {name: english ? 'Actions for version 1' : 'Acțiuni pentru versiunea 1'}).click();
+          await expect(drawer.getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'})).toBeFocused();
+        }
+        if (action === 'document-version-details') {
+          await drawer.locator('[data-version="1"]').getByRole('button', {name: english ? 'Actions for version 1' : 'Acțiuni pentru versiunea 1'}).click();
+          await drawer.getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'}).click();
+        }
         if (action === 'document-history-back') {
           await drawer.getByRole('button', {name: english ? 'Back to document details' : 'Înapoi la detalii document'}).click();
           await expect(drawer.locator('[data-preview-version]')).toHaveCount(3);
@@ -81,7 +88,7 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
           }
         }
       }
-    } else if (['review-confirmed', 'review-reject-confirmation', 'review-rejected-vendor', 'review-rejected-portal', 'review-reupload-portal', 'review-replacement'].includes(action)) {
+    } else if (['review-confirmed', 'review-reject-confirmation', 'review-rejected-vendor', 'review-rejected-portal', 'review-reupload-portal', 'review-replacement', 'document-history-review'].includes(action)) {
       if (!/^\/(en\/)?documents\/construct-pro-tax-2024\/review$/.test(route)) throw new Error('Review lifecycle capture requires the canonical Review route.');
       const english = route.startsWith('/en');
       if (action === 'review-confirmed') {
@@ -105,15 +112,16 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
             await preview.click();
             const tax = page.locator('[data-document-id="vendor-requirement:construct-pro:tax"]');
             await expect(tax.locator('input[type=file]')).toBeVisible();
-            if (action === 'review-reupload-portal' || action === 'review-replacement') {
+            if (action === 'review-reupload-portal' || action === 'review-replacement' || action === 'document-history-review') {
               await tax.locator('input[type=file]').setInputFiles({name: 'Replacement_tax.pdf', mimeType: 'application/pdf', buffer: Buffer.from('local metadata only')});
               await expect(tax.locator('[data-status="in_review"]')).toBeVisible();
-              if (action === 'review-replacement') {
+              if (action === 'review-replacement' || action === 'document-history-review') {
                 await page.goBack();
                 const row = page.locator('[data-requirement-id="vendor-requirement:construct-pro:tax"]');
                 await row.getByRole('button', {name: english ? 'Document actions for Tax certificate — Construct Pro SRL' : 'Acțiuni document pentru Certificat fiscal — Construct Pro SRL'}).click();
-                await page.getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'}).click();
-                await expect(page.getByRole('heading', {name: english ? 'Details to review' : 'Date de revizuit'})).toBeVisible();
+                await page.getByRole('menuitem', {name: action === 'document-history-review' ? english ? 'View history' : 'Vezi istoricul' : english ? 'Open details' : 'Deschide detalii'}).click();
+                if (action === 'document-history-review') await expect(page.getByRole('dialog').locator('[data-version]')).toHaveCount(2);
+                else await expect(page.getByRole('heading', {name: english ? 'Details to review' : 'Date de revizuit'})).toBeVisible();
               }
             }
           }

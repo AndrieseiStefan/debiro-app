@@ -20,6 +20,11 @@ async function close(page: Page, english: boolean) {
 async function sidebar(page: Page, english: boolean, section: string) {
   await page.getByRole('navigation', {name: english ? 'Application navigation' : 'Navigare în aplicație'}).getByRole('link', {name: new RegExp(`^${section}(?: \\d+)?$`)}).click();
 }
+async function openVersionDetails(page: Page, english: boolean, version: number) {
+  const drawer = page.getByRole('dialog');
+  await drawer.locator(`[data-version="${version}"]`).getByRole('button', {name: english ? `Actions for version ${version}` : `Acțiuni pentru versiunea ${version}`}).click();
+  await drawer.getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'}).click();
+}
 
 for (const english of [false, true]) {
   const prefix = english ? '/en' : '';
@@ -32,8 +37,10 @@ for (const english of [false, true]) {
     ]) {
       await page.goto(`${prefix}/documents?document=${id}`);
       const drawer = page.getByRole('dialog', {name: english ? 'Document details' : 'Detalii document'});
-      await expect(drawer.getByRole('term')).toHaveCount(7);
+      await expect(drawer.getByRole('term')).toHaveCount(6);
       await expect(drawer.getByRole('definition').nth(2)).toHaveText(status);
+      await expect(drawer.getByRole('definition').nth(2).locator('svg')).toHaveCount(1);
+      await expect(drawer.getByRole('definition').nth(2).locator('span[aria-hidden]')).toHaveCount(0);
       await expect(drawer.getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toBeDisabled();
       await expect(drawer.getByRole('link', {name: english ? 'Review document' : 'Revizuiește documentul'})).toHaveCount(id === 'construct-pro-tax-2024' ? 1 : 0);
     }
@@ -108,14 +115,16 @@ for (const english of [false, true]) {
     await renewedRow.getByRole('button').click();
     await page.getByRole('menuitem', {name: english ? 'View history' : 'Vezi istoricul'}).click();
     await expect(page.locator('[data-version]')).toHaveCount(2);
-    await expect(page.locator('[data-version-state="current"]')).toContainText('renewed.pdf');
-    await expect(page.locator('[data-version-state="superseded"]')).toContainText('ONRC_2024.pdf');
-    await page.locator('[data-version="1"]').getByRole('button', {name: english ? 'Open details' : 'Deschide detalii'}).click();
+    await expect(page.locator('[data-version-state="current"]')).toContainText(english ? 'Internal update — no review' : 'Actualizare internă — fără revizuire');
+    await expect(page.locator('[data-version-state="superseded"]')).toContainText(english ? 'Approved' : 'Aprobată');
+    await expect(page.locator('[data-version-state="superseded"]')).not.toContainText(english ? 'Valid until:' : 'Valabilă:');
+    await expect(page.getByRole('dialog')).not.toContainText(/renewed.pdf|ONRC_2024.pdf/);
+    await openVersionDetails(page, english, 1);
     await expect(page.getByRole('dialog', {name: english ? 'Document details' : 'Detalii document'})).toBeVisible();
     await expect(page.getByRole('dialog')).toContainText('ONRC_2024.pdf');
     await expect(page.getByRole('dialog').getByRole('button', {name: english ? 'Replace document' : 'Înlocuiește document', exact: true})).toBeDisabled();
     await page.getByRole('dialog').getByRole('button', {name: english ? 'Back to document history' : 'Înapoi la istoricul documentului'}).click();
-    await expect(page.locator('[data-version-state="superseded"]')).toContainText('ONRC_2024.pdf');
+    await expect(page.locator('[data-version-state="superseded"]')).toContainText(english ? 'Approved' : 'Aprobată');
     await page.getByRole('dialog').getByRole('button', {name: english ? 'Back to document details' : 'Înapoi la detalii document'}).click();
     await expect(page.getByRole('dialog')).toContainText('renewed.pdf');
     await close(page, english);
@@ -166,8 +175,8 @@ for (const english of [false, true]) {
       const selectedUrl = page.url();
       const originalDrawer = await drawer.elementHandle();
       expect(await drawer.getByRole('term').allTextContents()).toEqual(english
-        ? ['Name', 'Requirement', 'Compliance status', 'Expiry date', 'Uploaded at', 'Uploaded by', 'Notes']
-        : ['Nume', 'Cerință', 'Status conformitate', 'Dată expirare', 'Încărcat la', 'Încărcat de', 'Notițe']);
+        ? ['Name', 'Requirement', 'Compliance status', 'Expiry date', 'Uploaded at', 'Uploaded by']
+        : ['Nume', 'Cerință', 'Status conformitate', 'Dată expirare', 'Încărcat la', 'Încărcat de']);
       await expect(drawer).not.toContainText('Renewal-42');
       await expect(drawer.locator('[data-preview-version]')).toHaveCount(3);
       await expect(drawer.getByText(english ? 'Current' : 'Curent', {exact: true})).toHaveCount(1);
@@ -177,16 +186,36 @@ for (const english of [false, true]) {
       await drawer.getByRole('button', {name: english ? 'View all' : 'Vezi toate'}).click();
       await expect(drawer.getByRole('heading', {name: english ? 'Document history' : 'Istoric document'})).toBeFocused();
       await expect(drawer.locator('[data-version]')).toHaveCount(4);
+      const historical = drawer.locator('[data-version="3"]');
+      await expect(historical).toContainText(english ? 'Valid until: 01 Jan 2099' : 'Valabilă: 01 ian. 2099');
+      const historicalDownload = page.waitForEvent('download');
+      await historical.getByRole('button', {name: english ? 'Download' : 'Descarcă', exact: true}).click();
+      const downloaded = await historicalDownload;
+      expect(downloaded.suggestedFilename()).toBe('certificate-v3.pdf');
+      expect(await readFile((await downloaded.path())!, 'utf8')).toBe(file.buffer.toString());
       expect(await drawer.evaluate((element, original) => element === original, originalDrawer)).toBe(true);
       await expect(page).toHaveURL(selectedUrl);
-      await drawer.locator('[data-version="1"]').getByRole('button', {name: english ? 'Open details' : 'Deschide detalii'}).click();
+      await expect(drawer).not.toContainText(/certificate-v\d.pdf|ONRC_2024.pdf/);
+      if (vendorContext) await page.setViewportSize({width, height: 400});
+      const versionMenu = drawer.locator('[data-version="1"]').getByRole('button', {name: english ? 'Actions for version 1' : 'Acțiuni pentru versiunea 1'});
+      await versionMenu.scrollIntoViewIfNeeded(); await versionMenu.focus();
+      const historyScroll = await drawer.evaluate((element) => element.scrollTop);
+      if (vendorContext) expect(historyScroll).toBeGreaterThan(0);
+      await page.keyboard.press('ArrowDown');
+      await expect(drawer.getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'})).toBeFocused();
+      expect(await drawer.evaluate((element) => element.scrollTop)).toBe(historyScroll);
+      await page.keyboard.press('Escape');
+      await expect(drawer.getByRole('menu')).toHaveCount(0);
+      await expect(drawer).toHaveAttribute('data-phase', 'open');
+      await expect(versionMenu).toBeFocused();
+      await openVersionDetails(page, english, 1);
       await expect(drawer).toContainText('ONRC_2024.pdf');
       const historicalBack = drawer.getByRole('button', {name: english ? 'Back to document history' : 'Înapoi la istoricul documentului'});
       await page.keyboard.press('Shift+Tab');
       await expect(historicalBack).toBeFocused();
       await expect(historicalBack).toHaveCSS('outline-width', '3px');
       await page.keyboard.press('Enter');
-      await expect(drawer.locator('[data-version-state="current"]')).toContainText('certificate-v4.pdf');
+      await expect(drawer.locator('[data-version-state="current"]')).toContainText(english ? 'Current version' : 'Versiune curentă');
       await drawer.getByRole('button', {name: english ? 'Back to document details' : 'Înapoi la detalii document'}).click();
       await expect(drawer).toContainText('certificate-v4.pdf');
       await expect(drawer.getByRole('button', {name: english ? 'Replace document' : 'Înlocuiește document', exact: true})).toBeEnabled();
@@ -195,7 +224,7 @@ for (const english of [false, true]) {
       expect(await drawer.evaluate((element, original) => element === original, originalDrawer)).toBe(true);
       expect(await page.locator('main').evaluate((element) => element.parentElement!.inert)).toBe(true);
       await drawer.getByRole('button', {name: english ? 'View all' : 'Vezi toate'}).click();
-      if (!vendorContext) await drawer.locator('[data-version="1"]').getByRole('button', {name: english ? 'Open details' : 'Deschide detalii'}).click();
+      if (!vendorContext) await openVersionDetails(page, english, 1);
       await close(page, english);
       await expect(trigger).toBeFocused();
       expect(new URL(page.url()).pathname).toBe(`${prefix}${vendorContext ? '/vendors/construct-pro' : '/documents'}`);
@@ -225,7 +254,7 @@ test('direct, unknown, mismatched vendor, stale company and history URLs fail sa
   const pendingId = 'construct-pro-tax-2024';
   await page.goto(`/documents?document=${pendingId}&documentAction=history`);
   await expect(page.locator('[data-version]')).toHaveCount(1);
-  await page.locator('[data-version]').getByRole('button', {name: 'Deschide detalii'}).click();
+  await openVersionDetails(page, false, 1);
   await expect(page.getByRole('dialog', {name: 'Detalii document'})).toBeVisible();
   await page.getByRole('dialog').getByRole('link', {name: 'Revizuiește documentul'}).click();
   await page.getByRole('button', {name: 'Demo Company SRL', exact: true}).click();

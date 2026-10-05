@@ -34,8 +34,8 @@ This repository tracks thirty approved product mockup images listed below. They 
 | `supplier-upload-portal-new.png` | E1-025D supplier context and requested-document section only; the existing Portal shell remains canonical |
 | `24-vendor-requirement-template-assignment.png` | E1-027 template assignment, snapshot provenance, requirement removal and category-change warning |
 | `25-vendor-details-contacts-activity-notes.png` | E1-027B vendor Contacts, Activity and threaded Notes; the task removes the redundant Documents CTA and retains shared immediate filters/plain-text notes |
-| `29-document-actions-and-details-entrypoints.png` | E1-029 shared document details, replacement and history; the brief preserves current tables and overrides internal-upload review, expire/delete actions and invented metadata |
-| `document-details.png` | E1-029A dedicated Document Details composition, seven information rows, action card and compact history preview; supersedes mockup 29's Details presentation only. Unsupported manual-expire/general-delete controls remain disabled; unsupported external file-open is omitted. |
+| `29-document-actions-and-details-entrypoints.png` | E1-029 shared document details, replacement and history; E1-029B restores section 6's compact timeline. Briefs preserve current tables and override internal-upload review, expire/delete actions and invented metadata; unavailable downloads/rejection reasons are not fabricated. |
+| `document-details.png` | E1-029A/B dedicated Document Details composition, six information rows, action card and compact history preview; supersedes mockup 29's Details presentation only. E1-029B removes the Notes row and duplicate badge dot. Unsupported manual-expire/general-delete controls remain disabled; unsupported external file-open is omitted. |
 
 ## Contract
 

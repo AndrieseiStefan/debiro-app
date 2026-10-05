@@ -138,6 +138,18 @@ for (const {english, width} of [{english: false, width: 1448}, {english: true, w
     await expect(row).toContainText(english ? 'Needs review' : 'Necesită revizuire');
     await expect(page.locator('[data-missing-requirements]')).toHaveAttribute('data-missing-requirements', '1');
     await row.getByRole('button', {name: english ? 'Document actions for Tax certificate — Construct Pro SRL' : 'Acțiuni document pentru Certificat fiscal — Construct Pro SRL'}).click();
+    await page.getByRole('menuitem', {name: english ? 'View history' : 'Vezi istoricul'}).click();
+    const history = page.getByRole('dialog', {name: english ? 'Document history' : 'Istoric document'});
+    await expect(history.locator('[data-version="2"][data-version-state="current"]')).toContainText(english ? 'In review' : 'În review');
+    await expect(history.locator('[data-version="1"][data-version-state="rejected"]')).toContainText(english ? 'Rejected' : 'Respinsă');
+    await expect(history.locator('[data-version="1"]')).not.toContainText(/Valid until:|Valabilă:|Reason:|Motiv:/);
+    await expect(history).not.toContainText(/Certificat_fiscal_CP_2024.pdf|Replacement_tax.pdf|not available to download|nu este disponibil pentru descărcare/);
+    await expect(history.getByRole('button', {name: english ? 'Download' : 'Descarcă', exact: true})).toHaveCount(0);
+    await history.getByRole('button', {name: english ? 'Back to document details' : 'Înapoi la detalii document'}).click();
+    await expect(page.getByRole('dialog', {name: english ? 'Document details' : 'Detalii document'})).toContainText('Replacement_tax.pdf');
+    await page.getByRole('dialog').getByRole('button', {name: english ? 'Close' : 'Închide', exact: true}).first().click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await row.getByRole('button', {name: english ? 'Document actions for Tax certificate — Construct Pro SRL' : 'Acțiuni document pentru Certificat fiscal — Construct Pro SRL'}).click();
     const review = page.getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'});
     const href = await review.getAttribute('href');
     expect(href).toMatch(/\/documents\/local-document-[\w-]+\/review$/);

@@ -61,5 +61,12 @@ describe('foundation primitives', () => {
   it('exposes the requested visual status category alongside text', () => {
     render(<StatusBadge tone="warning">Expiră curând</StatusBadge>);
     expect(screen.getByText('Expiră curând')).toHaveAttribute('data-tone', 'warning');
+    expect(screen.getByText('Expiră curând').querySelector('span[aria-hidden]')).not.toBeNull();
+  });
+
+  it('allows an explicit semantic icon without duplicating the default dot', () => {
+    render(<StatusBadge tone="success" indicator="none"><svg aria-hidden="true"/>Valid</StatusBadge>);
+    expect(screen.getByText('Valid').querySelectorAll('svg')).toHaveLength(1);
+    expect(screen.getByText('Valid').querySelector('span[aria-hidden]')).toBeNull();
   });
 });

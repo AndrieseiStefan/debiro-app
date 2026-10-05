@@ -5,16 +5,17 @@ export type StatusTone = 'success' | 'warning' | 'danger' | 'neutral' | 'info';
 
 export type StatusBadgeProps = HTMLAttributes<HTMLSpanElement> & {
   tone: StatusTone;
+  indicator?: 'dot' | 'none';
 };
 
-export function StatusBadge({tone, className, children, ...props}: StatusBadgeProps) {
+export function StatusBadge({tone, indicator = 'dot', className, children, ...props}: StatusBadgeProps) {
   return (
     <span
       {...props}
       className={[styles.badge, styles[tone], className].filter(Boolean).join(' ')}
       data-tone={tone}
     >
-      <span aria-hidden="true" className={styles.dot} />
+      {indicator === 'dot' && <span aria-hidden="true" className={styles.dot} />}
       {children}
     </span>
   );

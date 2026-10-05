@@ -11,6 +11,7 @@ import {StatusBadge} from '@/components/ui/StatusBadge';
 import {useCompanyState} from '@/features/companies/company-state';
 import {notificationsFixture} from '@/features/notifications/fixtures';
 import {getVendorRequirements, replaceInternalDocument, useVendorRequirements} from '@/features/vendors/vendor-requirements';
+import {VendorDocumentActions} from '@/features/vendors/VendorDocumentActions';
 import {documentAccess} from './document-access';
 import {documentFile, reviewDateToIso, useDocumentRecords, type CreatedDocument} from './created-documents';
 import {accessibleDocument, documentHistory, documentManagementHref, downloadDocument, type DocumentSelection} from './document-management';
@@ -29,7 +30,7 @@ export function DocumentManagementDrawer({documentId, documentAction, contextPat
 
 function ComplianceBadge({document}: {document: CreatedDocument}) {
   const t = useTranslations('Documents');
-  return <StatusBadge tone={document.status === 'valid' ? 'success' : document.status === 'expiring' ? 'warning' : 'danger'}><AppIcon name={document.status === 'valid' ? 'check' : document.status === 'expiring' ? 'clock' : 'info'} size={13}/>{t(`status.${document.status}`)}</StatusBadge>;
+  return <StatusBadge indicator="none" tone={document.status === 'valid' ? 'success' : document.status === 'expiring' ? 'warning' : 'danger'}><AppIcon name={document.status === 'valid' ? 'check' : document.status === 'expiring' ? 'clock' : 'info'} size={13}/>{t(`status.${document.status}`)}</StatusBadge>;
 }
 
 type DrawerScreen = {type: 'details' | 'versionDetails' | 'history' | 'replace' | 'success'; documentId: string};
@@ -86,15 +87,33 @@ function DocumentDrawer({documentId, action, contextPath, vendorId, triggerRef}:
     return `${date(item.createdAt)}, ${time}`;
   }
   function download(item: CreatedDocument) {return <button className={styles.smallAction} type="button" disabled={!documentFile(companyId, item.id)} onClick={() => downloadDocument(companyId, item.id)}><AppIcon name="download" size={15}/>{t('download')}</button>;}
-  function versionState(item: CreatedDocument) {return t(item.reviewOutcome === 'rejected' ? 'rejected' : item.supersededById ? 'superseded' : 'current');}
-  function reviewLabel(item: CreatedDocument) {return item.updateSource === 'internal' ? t('internalOutcome') : t(`outcome.${item.reviewOutcome}`);}
+  function historyTimeline() {
+    return <ol className={styles.timeline}>{history.map((item) => {
+      const isCurrent = !item.supersededById && item.reviewOutcome !== 'rejected';
+      const hasFile = Boolean(documentFile(companyId, item.id));
+      const internal = item.updateSource === 'internal';
+      const outcome = item.reviewOutcome;
+      return <li key={item.id} data-version={item.version ?? 1} data-version-state={outcome === 'rejected' ? 'rejected' : isCurrent ? 'current' : 'superseded'}>
+        <div className={styles.versionProvenance}><strong>v{item.version ?? 1}</strong><time dateTime={item.createdAt}>{uploadedDate(item)}</time><span>{item.uploadedBy || '—'}</span></div>
+        <div className={styles.versionSummary}><div className={styles.versionActions}>
+          <StatusBadge indicator="none" tone={internal || outcome === 'pending' ? 'info' : outcome === 'approved' ? 'success' : 'danger'} className={styles.historyOutcome}><AppIcon name={internal ? 'clipboard' : outcome === 'approved' ? 'check' : outcome === 'rejected' ? 'close' : 'info'} size={13}/>{t(internal ? 'internalOutcome' : outcome === 'pending' ? 'historyPending' : `outcome.${outcome}`)}</StatusBadge>
+          {!isCurrent && hasFile && download(item)}
+        </div>
+          <VendorDocumentActions withinDialog name={`v${item.version ?? 1}`} actionLabel={t('versionActions', {version: item.version ?? 1})} className={styles.versionMenu} actions={[
+            {label: t('openDetails'), onClick: () => navigate(item, 'versionDetails')},
+            ...(hasFile ? [{label: t('download'), onClick: () => downloadDocument(companyId, item.id)}] : [])
+          ]}/>
+        {isCurrent ? <span className={styles.currentVersion}>{t('current')}</span> : outcome === 'approved' && item.expiresAt ? <small className={styles.versionContext}>{t('validUntil', {date: date(item.expiresAt)})}</small> : null}</div>
+      </li>;
+    })}</ol>;
+  }
   function fileCard(item: CreatedDocument) {
     const type = ({'application/pdf': 'PDF', 'image/jpeg': 'JPG', 'image/png': 'PNG'} as Record<string, string>)[item.fileType] ?? (item.fileType || '—');
     return <div className={styles.fileCard}><AppIcon name={wide && type === 'PDF' ? 'filePdf' : 'file'} size={wide ? 50 : 32}/><span><strong>{item.filename}</strong><small>{wide ? type : item.fileType || '—'}{item.fileSize > 0 ? ` · ${Math.ceil(item.fileSize / 1024)} KB` : ''}</small></span>{wide ? <Button variant="secondary" className={styles.fileDownload} disabled={!documentFile(companyId, item.id)} onClick={() => downloadDocument(companyId, item.id)}><AppIcon name="download" size={18}/>{t('download')}</Button> : download(item)}</div>;
   }
   return <Drawer phase={phase} onClose={close} onExited={exited} triggerRef={triggerRef} titleId="document-management-title" descriptionId="document-management-description" closeLabel={t('close')} contentClassName={[styles.content, wide && styles.detailsContent].filter(Boolean).join(' ')} panelClassName={wide ? styles.panel : undefined}>
     <header className={styles.header}><div className={styles.headerTitle}>{screens.length > 1 && <button type="button" className={styles.back} onClick={back} aria-label={t(screens[screens.length - 2]?.type === 'history' ? 'backToHistory' : 'backToDetails')}><AppIcon name="arrowRight" size={21}/></button>}<h2 ref={headingRef} tabIndex={-1} id="document-management-title">{t(!available ? 'unavailableTitle' : mode === 'replace' ? 'replaceTitle' : mode === 'history' ? 'historyTitle' : mode === 'success' ? 'successTitle' : 'detailsTitle')}</h2></div><p id="document-management-description" className={available && wide ? styles.srOnly : undefined}>{t(!available ? 'unavailableDescription' : mode === 'replace' ? 'replaceDescription' : mode === 'history' ? 'historyDescription' : mode === 'success' ? 'successDescription' : 'detailsDescription')}</p></header>
-    {!available || !record ? <Button variant="secondary" onClick={close}>{t('close')}</Button> : mode === 'replace' ? <ReplacementForm key={record.id} document={record} companyId={companyId} onCancel={close} onSuccess={(replacement) => router.replace(documentManagementHref(replacement, contextPath, 'success'), {scroll: false})}/> : mode === 'success' ? <div className={styles.success} role="status"><span className={styles.successIcon}><AppIcon name="check" size={32}/></span>{fileCard(record)}<section className={styles.currentStatus}><strong>{t('currentStatus')}</strong><ComplianceBadge document={record}/></section><Button onClick={close}>{t('close')}</Button></div> : mode === 'history' ? <ol className={styles.timeline}>{history.map((item) => <li key={item.id} data-version={item.version ?? 1} data-version-state={item.reviewOutcome === 'rejected' ? 'rejected' : item.supersededById ? 'superseded' : 'current'}><div className={styles.versionHeading}><span className={styles.versionFile}><strong>v{item.version ?? 1}</strong><strong className={styles.filename}>{item.filename}</strong></span><StatusBadge tone={item.reviewOutcome === 'rejected' ? 'danger' : item.supersededById ? 'neutral' : 'success'}>{versionState(item)}</StatusBadge></div><div className={styles.versionProvenance}><time dateTime={item.createdAt}>{uploadedDate(item)}</time><span>{item.uploadedBy || '—'}</span></div><div className={styles.versionHeading}><ComplianceBadge document={item}/><span>{reviewLabel(item)}</span></div>{item.expiresAt && <small>{t('expiresAt')}: {date(item.expiresAt)}</small>}{item.reviewedBy && <small>{t('reviewedBy')}: {item.reviewedBy} · {date(item.reviewedAt)}</small>}<div className={styles.versionHeading}><button className={styles.smallAction} type="button" onClick={() => navigate(item, 'versionDetails')}>{t('openDetails')}</button>{download(item)}</div>{!documentFile(companyId, item.id) && <small>{t('downloadUnavailable')}</small>}</li>)}</ol> : <div className={styles.detailsGrid}>
+    {!available || !record ? <Button variant="secondary" onClick={close}>{t('close')}</Button> : mode === 'replace' ? <ReplacementForm key={record.id} document={record} companyId={companyId} onCancel={close} onSuccess={(replacement) => router.replace(documentManagementHref(replacement, contextPath, 'success'), {scroll: false})}/> : mode === 'success' ? <div className={styles.success} role="status"><span className={styles.successIcon}><AppIcon name="check" size={32}/></span>{fileCard(record)}<section className={styles.currentStatus}><strong>{t('currentStatus')}</strong><ComplianceBadge document={record}/></section><Button onClick={close}>{t('close')}</Button></div> : mode === 'history' ? historyTimeline() : <div className={styles.detailsGrid}>
       <section>{fileCard(record)}{!documentFile(companyId, record.id) && <p className={styles.fileNotice}>{t('downloadUnavailable')}</p>}<h3>{t('information')}</h3><dl className={styles.metadata}>
         {([
           [t('name'), record.documentName[language]],
@@ -102,8 +121,7 @@ function DocumentDrawer({documentId, action, contextPath, vendorId, triggerRef}:
           [t('complianceStatus'), <ComplianceBadge key="status" document={record}/>],
           [t('expiryDate'), record.expiresAt ? <span className={styles.expiryDate} key="expiry">{date(record.expiresAt)}<AppIcon name="calendar" size={20}/></span> : '—'],
           [t('uploadedAt'), uploadedDate(record)],
-          [t('uploadedBy'), record.uploadedBy || '—'],
-          [t('notes'), record.notes || '—']
+          [t('uploadedBy'), record.uploadedBy || '—']
         ] as const).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
       </dl></section>
       <aside className={styles.actions}><section className={styles.actionCard} aria-label={t('actions')}><h3>{t('actions')}</h3><Button disabled={!replaceAllowed} onClick={() => navigate(record, 'replace')}><AppIcon name="clipboard" size={19}/>{t('replaceTitle')}</Button><Button variant="secondary" disabled title={t('unsupportedActions')} aria-describedby="document-unsupported-actions"><AppIcon name="info" size={19}/>{t('markExpired')}</Button><Button variant="secondary" disabled className={styles.deleteAction} title={t('unsupportedActions')} aria-describedby="document-unsupported-actions"><AppIcon name="trash" size={19}/>{t('deleteDocument')}</Button><span id="document-unsupported-actions" className={styles.srOnly}>{t('unsupportedActions')}</span>{record.complianceStatus === 'needs_review' && current && <Link className={styles.smallAction} href={record.reviewRoute ?? `/documents/${record.id}/review`}>{t('reviewAction')}</Link>}</section><div className={styles.historyHeading}><h3>{t('versions', {count: history.length})}</h3><button type="button" className={styles.viewAll} onClick={() => navigate(record, 'history')}>{t('viewAll')}</button></div><ol className={styles.miniHistory}>{history.slice(0, 3).map((item) => <li key={item.id} data-preview-version={item.version ?? 1}><b>v{item.version ?? 1}</b><span><time dateTime={item.createdAt}>{uploadedDate(item)}</time><small>{item.uploadedBy || '—'}</small></span>{!item.supersededById && item.reviewOutcome !== 'rejected' && <StatusBadge tone="success">{t('currentShort')}</StatusBadge>}</li>)}</ol></aside>
