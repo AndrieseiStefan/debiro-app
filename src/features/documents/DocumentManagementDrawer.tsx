@@ -33,7 +33,7 @@ function ComplianceBadge({document}: {document: CreatedDocument}) {
   return <StatusBadge indicator="none" tone={document.status === 'valid' ? 'success' : document.status === 'expiring' ? 'warning' : 'danger'}><AppIcon name={document.status === 'valid' ? 'check' : document.status === 'expiring' ? 'clock' : 'info'} size={13}/>{t(`status.${document.status}`)}</StatusBadge>;
 }
 
-type DrawerScreen = {type: 'details' | 'versionDetails' | 'history' | 'replace' | 'success'; documentId: string};
+type DrawerScreen = {type: 'details' | 'history' | 'replace' | 'success'; documentId: string};
 function initialScreens(documentId: string, action?: string): DrawerScreen[] {
   const details: DrawerScreen = {type: 'details', documentId};
   if (action === 'history') return [details, {type: 'history', documentId}];
@@ -66,7 +66,7 @@ function DocumentDrawer({documentId, action, contextPath, vendorId, triggerRef}:
   const current = record && !record.supersededById && record.reviewOutcome !== 'rejected';
   const replaceAllowed = current && documentAccess(companyId).replace;
   const mode = screen.type;
-  const details = mode === 'details' || mode === 'versionDetails';
+  const details = mode === 'details';
   const wide = details || mode === 'history';
   const available = Boolean(record && (mode !== 'replace' || replaceAllowed));
   const [phase, setPhase] = useState<'open' | 'closing'>('open');
@@ -99,10 +99,10 @@ function DocumentDrawer({documentId, action, contextPath, vendorId, triggerRef}:
           <StatusBadge indicator="none" tone={internal || outcome === 'pending' ? 'info' : outcome === 'approved' ? 'success' : 'danger'} className={styles.historyOutcome}><AppIcon name={internal ? 'clipboard' : outcome === 'approved' ? 'check' : outcome === 'rejected' ? 'close' : 'info'} size={13}/>{t(internal ? 'internalOutcome' : outcome === 'pending' ? 'historyPending' : `outcome.${outcome}`)}</StatusBadge>
           {!isCurrent && hasFile && download(item)}
         </div>
-          <VendorDocumentActions withinDialog name={`v${item.version ?? 1}`} actionLabel={t('versionActions', {version: item.version ?? 1})} className={styles.versionMenu} actions={[
-            {label: t('openDetails'), onClick: () => navigate(item, 'versionDetails')},
+          {isCurrent && <VendorDocumentActions withinDialog name={`v${item.version ?? 1}`} actionLabel={t('versionActions', {version: item.version ?? 1})} className={styles.versionMenu} actions={[
+            {label: t('openDetails'), onClick: () => navigate(item, 'details')},
             ...(hasFile ? [{label: t('download'), onClick: () => downloadDocument(companyId, item.id)}] : [])
-          ]}/>
+          ]}/>}
         {isCurrent ? <span className={styles.currentVersion}>{t('current')}</span> : outcome === 'approved' && item.expiresAt ? <small className={styles.versionContext}>{t('validUntil', {date: date(item.expiresAt)})}</small> : null}</div>
       </li>;
     })}</ol>;

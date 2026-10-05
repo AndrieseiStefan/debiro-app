@@ -20,9 +20,9 @@ async function close(page: Page, english: boolean) {
 async function sidebar(page: Page, english: boolean, section: string) {
   await page.getByRole('navigation', {name: english ? 'Application navigation' : 'Navigare în aplicație'}).getByRole('link', {name: new RegExp(`^${section}(?: \\d+)?$`)}).click();
 }
-async function openVersionDetails(page: Page, english: boolean, version: number) {
+async function openCurrentDetails(page: Page, english: boolean) {
   const drawer = page.getByRole('dialog');
-  await drawer.locator(`[data-version="${version}"]`).getByRole('button', {name: english ? `Actions for version ${version}` : `Acțiuni pentru versiunea ${version}`}).click();
+  await drawer.locator('[data-version-state="current"]').getByRole('button', {name: /Actions for version|Acțiuni pentru versiunea/}).click();
   await drawer.getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'}).click();
 }
 
@@ -70,15 +70,16 @@ for (const english of [false, true]) {
       await expect(drawer).not.toContainText('Autorizatie_ISU.pdf');
       const markerColors = await versions.evaluateAll((items) => items.map((item) => getComputedStyle(item, '::before').backgroundColor));
       expect(markerColors).toEqual(['rgb(0, 92, 237)', 'rgb(255, 255, 255)']);
-      for (const version of [2, 1]) {
-        await drawer.locator(`[data-version="${version}"]`).getByRole('button').click();
-        await expect(drawer.getByRole('menuitem')).toHaveCount(1);
-        await expect(drawer.getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'})).toBeFocused();
-        await page.keyboard.press('Escape');
-      }
-      await openVersionDetails(page, english, 1);
-      await expect(drawer.getByRole('definition').nth(2)).toHaveText(english ? 'Expired' : 'Expirat');
-      await expect(drawer.getByRole('button', {name: english ? 'Replace document' : 'Înlocuiește document', exact: true})).toBeDisabled();
+      await expect(historical.getByRole('button')).toHaveCount(0);
+      await expect(historical.getByRole('link')).toHaveCount(0);
+      await expect(versions.getByRole('button')).toHaveCount(1);
+      await current.getByRole('button').click();
+      await expect(drawer.getByRole('menuitem')).toHaveCount(1);
+      await expect(drawer.getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'})).toBeFocused();
+      await page.keyboard.press('Escape');
+      await openCurrentDetails(page, english);
+      await expect(drawer.getByRole('definition').nth(2)).toHaveText('Valid');
+      await expect(drawer.getByRole('button', {name: english ? 'Replace document' : 'Înlocuiește document', exact: true})).toBeEnabled();
       await drawer.getByRole('button', {name: english ? 'Back to document history' : 'Înapoi la istoricul documentului'}).click();
       await expect(versions).toHaveCount(2);
       await drawer.getByRole('button', {name: english ? 'Back to document details' : 'Înapoi la detalii document'}).click();
@@ -110,6 +111,83 @@ for (const english of [false, true]) {
       await expect(page.locator('#expiring-section tbody tr').filter({hasText: 'Construct Pro SRL'})).toHaveCount(0);
     });
   }
+
+  test(`${english ? 'EN' : 'RO'} approved and rejected historical uploads expose only their actual-file Download`, async ({page}) => {
+    await page.setViewportSize({width: english ? 375 : 1448, height: english ? 812 : 1086});
+    async function reject() {
+      const label = english ? 'Reject' : 'Respinge';
+      await page.getByRole('button', {name: label, exact: true}).click();
+      await page.getByRole('alertdialog').getByRole('button', {name: label, exact: true}).click();
+      await page.getByRole('link', {name: english ? 'Back to documents' : 'Înapoi la documente'}).click();
+    }
+    async function supplierUpload(name: string) {
+      await sidebar(page, english, english ? 'Suppliers' : 'Furnizori');
+      await page.getByRole('link', {name: english ? 'Details for Construct Pro SRL' : 'Detalii pentru Construct Pro SRL'}).click();
+      await page.getByRole('button', {name: english ? 'Invite supplier' : 'Invită furnizor', exact: true}).click();
+      const preview = page.getByRole('dialog').getByRole('link', {name: english ? /Preview upload page/ : /Previzualizează pagina de încărcare/});
+      await preview.evaluate((element) => element.removeAttribute('target'));
+      await preview.click();
+      const tax = page.locator('[data-document-id="vendor-requirement:construct-pro:tax"]');
+      await tax.locator('input[type=file]').setInputFiles({...file, name});
+      await expect(tax.locator('[data-status="in_review"]')).toBeVisible();
+      await page.goBack();
+    }
+    await page.goto(`${prefix}/documents/construct-pro-tax-2024/review`);
+    await reject();
+    await supplierUpload('rejected-tax.pdf');
+    const row = page.locator('[data-requirement-id="vendor-requirement:construct-pro:tax"]');
+    await row.getByRole('link', {name: english ? 'Tax certificate' : 'Certificat fiscal', exact: true}).click();
+    await reject();
+    await supplierUpload('current-tax.pdf');
+    await row.getByRole('button', {name: english ? /^Document actions/ : /^Acțiuni document/}).click();
+    await page.getByRole('menuitem', {name: english ? 'View history' : 'Vezi istoricul'}).click();
+    const drawer = page.getByRole('dialog');
+    await expect(drawer.locator('[data-version]')).toHaveCount(3);
+    const rejected = drawer.locator('[data-version="2"]');
+    await expect(rejected).toHaveAttribute('data-version-state', 'rejected');
+    await expect(rejected).toContainText(english ? 'Rejected' : 'Respinsă');
+    await expect(rejected).not.toContainText(/Valid until:|Valabilă:|Reason:|Motiv:/);
+    await expect(rejected.getByRole('button')).toHaveCount(1);
+    await expect(rejected.getByRole('link')).toHaveCount(0);
+    await expect(drawer.locator('[data-version="1"]').getByRole('button')).toHaveCount(0);
+    await expect(drawer.locator('[data-version] button[aria-haspopup="menu"]')).toHaveCount(1);
+    await drawer.screenshot({path: `artifacts/visual/document-history-rejected-file-${english ? 'en-375x812' : 'ro-1448x1086'}-drawer.png`, animations: 'disabled'});
+    const downloadPromise = page.waitForEvent('download');
+    await rejected.getByRole('button', {name: english ? 'Download' : 'Descarcă', exact: true}).click();
+    const downloaded = await downloadPromise;
+    expect(downloaded.suggestedFilename()).toBe('rejected-tax.pdf');
+    expect(await readFile((await downloaded.path())!, 'utf8')).toBe(file.buffer.toString());
+    await openCurrentDetails(page, english);
+    await expect(drawer).toContainText('current-tax.pdf');
+    await expect(drawer.getByRole('link', {name: english ? 'Review document' : 'Revizuiește documentul'})).toBeVisible();
+    await drawer.getByRole('button', {name: english ? 'Back to document history' : 'Înapoi la istoricul documentului'}).click();
+    await expect(drawer.locator('[data-version-state="current"]')).toContainText(english ? 'In review' : 'În review');
+    await drawer.getByRole('button', {name: english ? 'Back to document details' : 'Înapoi la detalii document'}).click();
+    await expect(drawer).toContainText('current-tax.pdf');
+    await drawer.getByRole('link', {name: english ? 'Review document' : 'Revizuiește documentul'}).click();
+    await page.locator('#review-issuedAt').fill('01.09.2026');
+    await page.locator('#review-expiresAt').fill('12.12.2026');
+    await page.getByRole('button', {name: english ? 'Confirm and save' : 'Confirmă și salvează'}).click();
+    await page.getByRole('link', {name: english ? 'Back to documents' : 'Înapoi la documente'}).click();
+    await page.getByRole('row', {name: /current-tax.pdf/}).getByRole('button').click();
+    await page.getByRole('menuitem', {name: english ? 'Replace / renew' : 'Înlocuiește / reînnoiește'}).click();
+    await renew(page, english, '01.01.2099', 'renewed-tax.pdf');
+    await close(page, english);
+    await page.getByRole('row', {name: /renewed-tax.pdf/}).getByRole('button').click();
+    await page.getByRole('menuitem', {name: english ? 'View history' : 'Vezi istoricul'}).click();
+    await expect(drawer.locator('[data-version]')).toHaveCount(4);
+    const approved = drawer.locator('[data-version="3"]');
+    await expect(approved).toContainText(english ? 'Approved' : 'Aprobată');
+    await expect(approved).toContainText(english ? 'Valid until: 12 Dec 2026' : 'Valabilă: 12 dec. 2026');
+    await expect(approved.getByRole('button')).toHaveCount(1);
+    await expect(drawer.locator('[data-version]:not([data-version-state="current"]) button[aria-haspopup="menu"]')).toHaveCount(0);
+    await drawer.screenshot({path: `artifacts/visual/document-history-actions-${english ? 'en-375x812' : 'ro-1448x1086'}-drawer.png`, animations: 'disabled'});
+    const approvedDownload = page.waitForEvent('download');
+    await approved.getByRole('button', {name: english ? 'Download' : 'Descarcă', exact: true}).click();
+    const approvedFile = await approvedDownload;
+    expect(approvedFile.suggestedFilename()).toBe('current-tax.pdf');
+    expect(await readFile((await approvedFile.path())!, 'utf8')).toBe(file.buffer.toString());
+  });
 
   test(`${english ? 'EN' : 'RO'} direct details retain all compliance states and the pending-review entry point`, async ({page}) => {
     for (const [id, status] of [
@@ -202,10 +280,11 @@ for (const english of [false, true]) {
     await expect(page.locator('[data-version-state="superseded"]')).toContainText(english ? 'Approved' : 'Aprobată');
     await expect(page.locator('[data-version-state="superseded"]')).not.toContainText(english ? 'Valid until:' : 'Valabilă:');
     await expect(page.getByRole('dialog')).not.toContainText(/renewed.pdf|ONRC_2024.pdf/);
-    await openVersionDetails(page, english, 1);
+    await expect(page.locator('[data-version-state="superseded"]').getByRole('button')).toHaveCount(0);
+    await openCurrentDetails(page, english);
     await expect(page.getByRole('dialog', {name: english ? 'Document details' : 'Detalii document'})).toBeVisible();
-    await expect(page.getByRole('dialog')).toContainText('ONRC_2024.pdf');
-    await expect(page.getByRole('dialog').getByRole('button', {name: english ? 'Replace document' : 'Înlocuiește document', exact: true})).toBeDisabled();
+    await expect(page.getByRole('dialog')).toContainText('renewed.pdf');
+    await expect(page.getByRole('dialog').getByRole('button', {name: english ? 'Replace document' : 'Înlocuiește document', exact: true})).toBeEnabled();
     await page.getByRole('dialog').getByRole('button', {name: english ? 'Back to document history' : 'Înapoi la istoricul documentului'}).click();
     await expect(page.locator('[data-version-state="superseded"]')).toContainText(english ? 'Approved' : 'Aprobată');
     await page.getByRole('dialog').getByRole('button', {name: english ? 'Back to document details' : 'Înapoi la detalii document'}).click();
@@ -231,7 +310,7 @@ for (const english of [false, true]) {
   });
 
   for (const vendorContext of [false, true]) {
-    test(`${english ? 'EN' : 'RO'} canonical details and historical Back preserve the ${vendorContext ? 'Vendor Details' : 'Documents'} context`, async ({page}) => {
+    test(`${english ? 'EN' : 'RO'} current-only history actions and Back preserve the ${vendorContext ? 'Vendor Details' : 'Documents'} context`, async ({page}) => {
       const width = vendorContext ? 375 : 1448;
       await page.setViewportSize({width, height: vendorContext ? 812 : 1086});
       await page.goto(`${prefix}/documents`);
@@ -269,6 +348,9 @@ for (const english of [false, true]) {
       await drawer.getByRole('button', {name: english ? 'View all' : 'Vezi toate'}).click();
       await expect(drawer.getByRole('heading', {name: english ? 'Document history' : 'Istoric document'})).toBeFocused();
       await expect(drawer.locator('[data-version]')).toHaveCount(4);
+      await expect(drawer.locator('[data-version]:not([data-version-state="current"])').getByRole('button', {name: /Actions for version|Acțiuni pentru versiunea/})).toHaveCount(0);
+      await expect(drawer.locator('[data-version]:not([data-version-state="current"])').getByRole('link')).toHaveCount(0);
+      await expect(drawer.locator('[data-version="1"]').getByRole('button')).toHaveCount(0);
       const historical = drawer.locator('[data-version="3"]');
       await expect(historical).toContainText(english ? 'Valid until: 01 Jan 2099' : 'Valabilă: 01 ian. 2099');
       const historicalDownload = page.waitForEvent('download');
@@ -279,8 +361,8 @@ for (const english of [false, true]) {
       expect(await drawer.evaluate((element, original) => element === original, originalDrawer)).toBe(true);
       await expect(page).toHaveURL(selectedUrl);
       await expect(drawer).not.toContainText(/certificate-v\d.pdf|ONRC_2024.pdf/);
-      if (vendorContext) await page.setViewportSize({width, height: 400});
-      const versionMenu = drawer.locator('[data-version="1"]').getByRole('button', {name: english ? 'Actions for version 1' : 'Acțiuni pentru versiunea 1'});
+      if (vendorContext) await page.setViewportSize({width, height: 220});
+      const versionMenu = drawer.locator('[data-version-state="current"]').getByRole('button', {name: english ? 'Actions for version 4' : 'Acțiuni pentru versiunea 4'});
       await versionMenu.scrollIntoViewIfNeeded(); await versionMenu.focus();
       const historyScroll = await drawer.evaluate((element) => element.scrollTop);
       if (vendorContext) expect(historyScroll).toBeGreaterThan(0);
@@ -291,12 +373,12 @@ for (const english of [false, true]) {
       await expect(drawer.getByRole('menu')).toHaveCount(0);
       await expect(drawer).toHaveAttribute('data-phase', 'open');
       await expect(versionMenu).toBeFocused();
-      await openVersionDetails(page, english, 1);
-      await expect(drawer).toContainText('ONRC_2024.pdf');
-      const historicalBack = drawer.getByRole('button', {name: english ? 'Back to document history' : 'Înapoi la istoricul documentului'});
+      await openCurrentDetails(page, english);
+      await expect(drawer).toContainText('certificate-v4.pdf');
+      const currentBack = drawer.getByRole('button', {name: english ? 'Back to document history' : 'Înapoi la istoricul documentului'});
       await page.keyboard.press('Shift+Tab');
-      await expect(historicalBack).toBeFocused();
-      await expect(historicalBack).toHaveCSS('outline-width', '3px');
+      await expect(currentBack).toBeFocused();
+      await expect(currentBack).toHaveCSS('outline-width', '3px');
       await page.keyboard.press('Enter');
       await expect(drawer.locator('[data-version-state="current"]')).toContainText(english ? 'Current version' : 'Versiune curentă');
       await drawer.getByRole('button', {name: english ? 'Back to document details' : 'Înapoi la detalii document'}).click();
@@ -307,7 +389,7 @@ for (const english of [false, true]) {
       expect(await drawer.evaluate((element, original) => element === original, originalDrawer)).toBe(true);
       expect(await page.locator('main').evaluate((element) => element.parentElement!.inert)).toBe(true);
       await drawer.getByRole('button', {name: english ? 'View all' : 'Vezi toate'}).click();
-      if (!vendorContext) await openVersionDetails(page, english, 1);
+      if (!vendorContext) await openCurrentDetails(page, english);
       await close(page, english);
       await expect(trigger).toBeFocused();
       expect(new URL(page.url()).pathname).toBe(`${prefix}${vendorContext ? '/vendors/construct-pro' : '/documents'}`);
@@ -337,7 +419,7 @@ test('direct, unknown, mismatched vendor, stale company and history URLs fail sa
   const pendingId = 'construct-pro-tax-2024';
   await page.goto(`/documents?document=${pendingId}&documentAction=history`);
   await expect(page.locator('[data-version]')).toHaveCount(1);
-  await openVersionDetails(page, false, 1);
+  await openCurrentDetails(page, false);
   await expect(page.getByRole('dialog', {name: 'Detalii document'})).toBeVisible();
   await page.getByRole('dialog').getByRole('link', {name: 'Revizuiește documentul'}).click();
   await page.getByRole('button', {name: 'Demo Company SRL', exact: true}).click();

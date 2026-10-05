@@ -36,12 +36,13 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
       else {
         await drawer.getByRole('button', {name: english ? 'View all' : 'Vezi toate'}).click();
         await expect(drawer.locator('[data-version]')).toHaveCount(2);
+        await expect(drawer.locator('[data-version="1"]').getByRole('button')).toHaveCount(0);
         if (action === 'document-isu-menu') {
-          await drawer.locator('[data-version="1"]').getByRole('button').click();
+          await drawer.locator('[data-version-state="current"]').getByRole('button').click();
           await expect(drawer.getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'})).toBeFocused();
         }
       }
-    } else if (['document-details-current', 'document-details-end', 'document-history-full', 'document-history-menu', 'document-version-details', 'document-history-back'].includes(action)) {
+    } else if (['document-details-current', 'document-details-end', 'document-history-full', 'document-history-menu', 'document-current-details', 'document-history-back'].includes(action)) {
       if (!/^\/(en\/)?(documents|vendors\/construct-pro)$/.test(route)) throw new Error('Document drawer capture requires Documents or the canonical Vendor Details route.');
       const english = route.startsWith('/en');
       const vendorContext = route.includes('/vendors/');
@@ -64,15 +65,15 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
       const drawer = page.getByRole('dialog');
       await expect(drawer.locator('[data-preview-version]')).toHaveCount(3);
       if (action === 'document-details-end') await drawer.evaluate((element) => {element.scrollTop = element.scrollHeight;});
-      if (action === 'document-history-full' || action === 'document-history-menu' || action === 'document-version-details' || action === 'document-history-back') {
+      if (action === 'document-history-full' || action === 'document-history-menu' || action === 'document-current-details' || action === 'document-history-back') {
         await drawer.getByRole('button', {name: english ? 'View all' : 'Vezi toate'}).click();
         await expect(drawer.locator('[data-version]')).toHaveCount(3);
         if (action === 'document-history-menu') {
-          await drawer.locator('[data-version="1"]').getByRole('button', {name: english ? 'Actions for version 1' : 'Acțiuni pentru versiunea 1'}).click();
+          await drawer.locator('[data-version-state="current"]').getByRole('button', {name: english ? 'Actions for version 3' : 'Acțiuni pentru versiunea 3'}).click();
           await expect(drawer.getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'})).toBeFocused();
         }
-        if (action === 'document-version-details') {
-          await drawer.locator('[data-version="1"]').getByRole('button', {name: english ? 'Actions for version 1' : 'Acțiuni pentru versiunea 1'}).click();
+        if (action === 'document-current-details') {
+          await drawer.locator('[data-version-state="current"]').getByRole('button', {name: english ? 'Actions for version 3' : 'Acțiuni pentru versiunea 3'}).click();
           await drawer.getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'}).click();
         }
         if (action === 'document-history-back') {

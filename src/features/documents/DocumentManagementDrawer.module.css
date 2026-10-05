@@ -66,6 +66,8 @@
 .versionProvenance > span {color: #617ba3;}
 .versionSummary {grid-template-columns: minmax(0, 1fr) 32px; column-gap: 8px; justify-items: start;}
 .versionActions {display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: 100%;}
+.timeline li:not([data-version-state="current"]) .versionSummary {grid-template-columns: minmax(0, 1fr);}
+.timeline li:not([data-version-state="current"]) .versionActions > .smallAction {margin-inline-start: auto;}
 .historyOutcome {max-width: 100%; white-space: normal; font-size: 12px; min-height: 28px; padding: 4px 8px; gap: 6px;}
 .historyOutcome svg {flex-shrink: 0;}
 .versionMenu {display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; border-radius: 6px; padding: 0; color: #345681; background: transparent; cursor: pointer;}

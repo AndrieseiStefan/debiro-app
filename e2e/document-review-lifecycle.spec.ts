@@ -142,6 +142,9 @@ for (const {english, width} of [{english: false, width: 1448}, {english: true, w
     const history = page.getByRole('dialog', {name: english ? 'Document history' : 'Istoric document'});
     await expect(history.locator('[data-version="2"][data-version-state="current"]')).toContainText(english ? 'In review' : 'În review');
     await expect(history.locator('[data-version="1"][data-version-state="rejected"]')).toContainText(english ? 'Rejected' : 'Respinsă');
+    await expect(history.locator('[data-version="1"]').getByRole('button')).toHaveCount(0);
+    await expect(history.locator('[data-version="1"]').getByRole('link')).toHaveCount(0);
+    await expect(history.locator('[data-version="2"]').getByRole('button', {name: /Actions for version|Acțiuni pentru versiunea/})).toHaveCount(1);
     await expect(history.locator('[data-version="1"]')).not.toContainText(/Valid until:|Valabilă:|Reason:|Motiv:/);
     await expect(history).not.toContainText(/Certificat_fiscal_CP_2024.pdf|Replacement_tax.pdf|not available to download|nu este disponibil pentru descărcare/);
     await expect(history.getByRole('button', {name: english ? 'Download' : 'Descarcă', exact: true})).toHaveCount(0);
