@@ -21,7 +21,7 @@ const vendors = vendorsListFixture.vendors;
 const project = (vendor = vendors[0], docs = records) => projectVendorDocuments(vendor, getVendorRequirements(workspaces, companyId, vendor.id), docs, companyId);
 
 describe('coherent E1 fixture timeline and current projections', () => {
-  it('seeds approved ISU v1/v2 history without changing any current projection or supplying fake files', () => {
+  it('seeds approved ISU v1/v2 history with independent demo PDFs without changing any current projection', () => {
     const id = 'construct-pro-fire-2024';
     const history = documentHistory(records, companyId, id);
     expect(history).toHaveLength(2);
@@ -36,7 +36,14 @@ describe('coherent E1 fixture timeline and current projections', () => {
     expect(documentHistory(records, 'other-company', id)).toEqual([]);
     expect(documentHistory(records, companyId, id, 'other-vendor')).toEqual([]);
     expect(activeDocuments(history, companyId, true)).toEqual([current]);
-    for (const document of history) expect(documentFile(companyId, document.id)).toBeUndefined();
+    for (const document of history) {
+      const file = documentFile(companyId, document.id)!;
+      expect(file.type).toBe('application/pdf');
+      expect(document.fileSize).toBe(file.size);
+      expect(file.size).toBeGreaterThan(0);
+    }
+    expect(documentFile(companyId, current.id)).not.toBe(documentFile(companyId, historical.id));
+    expect(historical.filename).toBe('Autorizatie_ISU_v1.pdf');
 
     const withoutHistory = records.filter((document) => document.id !== historical.id);
     expect(activeDocuments(records, companyId, true)).toEqual(activeDocuments(withoutHistory, companyId, true));

@@ -70,12 +70,14 @@ function DocumentDrawer({documentId, action, contextPath, vendorId, triggerRef}:
   const wide = details || mode === 'history';
   const available = Boolean(record && (mode !== 'replace' || replaceAllowed));
   const [phase, setPhase] = useState<'open' | 'closing'>('open');
+  const [downloadFailed, setDownloadFailed] = useState(false);
   const close = useCallback(() => setPhase('closing'), []);
   const exited = useCallback(() => router.replace(contextPath, {scroll: false}), [router, contextPath]);
   function navigate(document: CreatedDocument, type: DrawerScreen['type']) {
+    setDownloadFailed(false);
     setNavigation((previous) => ({...previous, screens: [...previous.screens, {type, documentId: document.id}]}));
   }
-  function back() {setNavigation((previous) => ({...previous, screens: previous.screens.slice(0, -1)}));}
+  function back() {setDownloadFailed(false); setNavigation((previous) => ({...previous, screens: previous.screens.slice(0, -1)}));}
   function date(value?: string | null) {
     return value ? new Intl.DateTimeFormat(language === 'en' ? 'en-GB' : 'ro-RO', {day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC'}).format(new Date(value.length === 10 ? `${value}T12:00:00Z` : value)) : '—';
   }
@@ -86,7 +88,8 @@ function DocumentDrawer({documentId, action, contextPath, vendorId, triggerRef}:
     const time = new Intl.DateTimeFormat(language === 'en' ? 'en-GB' : 'ro-RO', {hour: '2-digit', minute: '2-digit', timeZone: 'UTC'}).format(new Date(item.createdAt));
     return `${date(item.createdAt)}, ${time}`;
   }
-  function download(item: CreatedDocument) {return <button className={styles.smallAction} type="button" disabled={!documentFile(companyId, item.id)} onClick={() => downloadDocument(companyId, item.id)}><AppIcon name="download" size={15}/>{t('download')}</button>;}
+  function startDownload(item: CreatedDocument) {setDownloadFailed(!downloadDocument(companyId, item.id, vendorId ?? item.vendorId));}
+  function download(item: CreatedDocument) {return <button className={styles.smallAction} type="button" disabled={!documentFile(companyId, item.id)} onClick={() => startDownload(item)}><AppIcon name="download" size={15}/>{t('download')}</button>;}
   function historyTimeline() {
     return <ol className={styles.timeline}>{history.map((item) => {
       const isCurrent = !item.supersededById && item.reviewOutcome !== 'rejected';
@@ -101,7 +104,7 @@ function DocumentDrawer({documentId, action, contextPath, vendorId, triggerRef}:
         </div>
           {isCurrent && <VendorDocumentActions withinDialog name={`v${item.version ?? 1}`} actionLabel={t('versionActions', {version: item.version ?? 1})} className={styles.versionMenu} actions={[
             {label: t('openDetails'), onClick: () => navigate(item, 'details')},
-            ...(hasFile ? [{label: t('download'), onClick: () => downloadDocument(companyId, item.id)}] : [])
+            ...(hasFile ? [{label: t('download'), onClick: () => startDownload(item)}] : [])
           ]}/>}
         {isCurrent ? <span className={styles.currentVersion}>{t('current')}</span> : outcome === 'approved' && item.expiresAt ? <small className={styles.versionContext}>{t('validUntil', {date: date(item.expiresAt)})}</small> : null}</div>
       </li>;
@@ -109,7 +112,7 @@ function DocumentDrawer({documentId, action, contextPath, vendorId, triggerRef}:
   }
   function fileCard(item: CreatedDocument) {
     const type = ({'application/pdf': 'PDF', 'image/jpeg': 'JPG', 'image/png': 'PNG'} as Record<string, string>)[item.fileType] ?? (item.fileType || '—');
-    return <div className={styles.fileCard}><AppIcon name={wide && type === 'PDF' ? 'filePdf' : 'file'} size={wide ? 50 : 32}/><span><strong>{item.filename}</strong><small>{wide ? type : item.fileType || '—'}{item.fileSize > 0 ? ` · ${Math.ceil(item.fileSize / 1024)} KB` : ''}</small></span>{wide ? <Button variant="secondary" className={styles.fileDownload} disabled={!documentFile(companyId, item.id)} onClick={() => downloadDocument(companyId, item.id)}><AppIcon name="download" size={18}/>{t('download')}</Button> : download(item)}</div>;
+    return <div className={styles.fileCard}><AppIcon name={wide && type === 'PDF' ? 'filePdf' : 'file'} size={wide ? 50 : 32}/><span><strong>{item.filename}</strong><small>{wide ? type : item.fileType || '—'}{item.fileSize > 0 ? ` · ${Math.ceil(item.fileSize / 1024)} KB` : ''}</small></span>{wide ? <Button variant="secondary" className={styles.fileDownload} disabled={!documentFile(companyId, item.id)} onClick={() => startDownload(item)}><AppIcon name="download" size={18}/>{t('download')}</Button> : download(item)}</div>;
   }
   return <Drawer phase={phase} onClose={close} onExited={exited} triggerRef={triggerRef} titleId="document-management-title" descriptionId="document-management-description" closeLabel={t('close')} contentClassName={[styles.content, wide && styles.detailsContent].filter(Boolean).join(' ')} panelClassName={wide ? styles.panel : undefined}>
     <header className={styles.header}><div className={styles.headerTitle}>{screens.length > 1 && <button type="button" className={styles.back} onClick={back} aria-label={t(screens[screens.length - 2]?.type === 'history' ? 'backToHistory' : 'backToDetails')}><AppIcon name="arrowRight" size={21}/></button>}<h2 ref={headingRef} tabIndex={-1} id="document-management-title">{t(!available ? 'unavailableTitle' : mode === 'replace' ? 'replaceTitle' : mode === 'history' ? 'historyTitle' : mode === 'success' ? 'successTitle' : 'detailsTitle')}</h2></div><p id="document-management-description" className={available && wide ? styles.srOnly : undefined}>{t(!available ? 'unavailableDescription' : mode === 'replace' ? 'replaceDescription' : mode === 'history' ? 'historyDescription' : mode === 'success' ? 'successDescription' : 'detailsDescription')}</p></header>
@@ -126,6 +129,7 @@ function DocumentDrawer({documentId, action, contextPath, vendorId, triggerRef}:
       </dl></section>
       <aside className={styles.actions}><section className={styles.actionCard} aria-label={t('actions')}><h3>{t('actions')}</h3><Button disabled={!replaceAllowed} onClick={() => navigate(record, 'replace')}><AppIcon name="clipboard" size={19}/>{t('replaceTitle')}</Button><Button variant="secondary" disabled title={t('unsupportedActions')} aria-describedby="document-unsupported-actions"><AppIcon name="info" size={19}/>{t('markExpired')}</Button><Button variant="secondary" disabled className={styles.deleteAction} title={t('unsupportedActions')} aria-describedby="document-unsupported-actions"><AppIcon name="trash" size={19}/>{t('deleteDocument')}</Button><span id="document-unsupported-actions" className={styles.srOnly}>{t('unsupportedActions')}</span>{record.complianceStatus === 'needs_review' && current && <Link className={styles.smallAction} href={record.reviewRoute ?? `/documents/${record.id}/review`}>{t('reviewAction')}</Link>}</section><div className={styles.historyHeading}><h3>{t('versions', {count: history.length})}</h3><button type="button" className={styles.viewAll} onClick={() => navigate(record, 'history')}>{t('viewAll')}</button></div><ol className={styles.miniHistory}>{history.slice(0, 3).map((item) => <li key={item.id} data-preview-version={item.version ?? 1}><b>v{item.version ?? 1}</b><span><time dateTime={item.createdAt}>{uploadedDate(item)}</time><small>{item.uploadedBy || '—'}</small></span>{!item.supersededById && item.reviewOutcome !== 'rejected' && <StatusBadge tone="success">{t('currentShort')}</StatusBadge>}</li>)}</ol></aside>
     </div>}
+    {available && downloadFailed && <p role="alert" className={styles.error}>{t('downloadUnavailable')}</p>}
   </Drawer>;
 }
 

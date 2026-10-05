@@ -21,7 +21,7 @@ vi.mock('@/features/documents/created-documents', async (original) => {
 });
 vi.mock('@/i18n/navigation', () => ({useRouter: () => ({replace: vi.fn()}), Link: ({href, ...props}: {href: string; children: React.ReactNode}) => <a href={href} {...props}/> }));
 
-beforeEach(() => {access.replace = true; access.outcomes = false; access.downloadable = false; download.mockClear();});
+beforeEach(() => {access.replace = true; access.outcomes = false; access.downloadable = false; download.mockReset().mockReturnValue(true);});
 function open(english = false, documentAction?: string) {
   render(<NextIntlClientProvider locale={english ? 'en' : 'ro'} messages={english ? en : ro}>
     <DocumentManagementDrawer documentId="version-4" documentAction={documentAction} contextPath="/documents"/>
@@ -96,7 +96,7 @@ describe('canonical document details and internal drawer navigation', () => {
     }
     fireEvent.click(version(3).getByRole('button', {name: english ? 'Download' : 'Descarcă'}));
     fireEvent.click(version(2).getByRole('button', {name: english ? 'Download' : 'Descarcă'}));
-    expect(download.mock.calls).toEqual([['demo-company', 'version-3'], ['demo-company', 'version-2']]);
+    expect(download.mock.calls).toEqual([['demo-company', 'version-3', 'construct-pro'], ['demo-company', 'version-2', 'construct-pro']]);
     const trigger = version(4).getByRole('button', {name: english ? 'Actions for version 4' : 'Acțiuni pentru versiunea 4'});
     fireEvent.keyDown(trigger, {key: 'ArrowDown'});
     const menu = within(drawer).getByRole('menu');
@@ -106,5 +106,18 @@ describe('canonical document details and internal drawer navigation', () => {
     expect(within(drawer).queryByRole('menu')).not.toBeInTheDocument();
     expect(trigger).toHaveFocus();
     expect(drawer).toHaveAttribute('data-phase', 'open');
+  });
+
+  it.each([false, true])('reports an unavailable/stale historical file safely and clears feedback on a successful retry (EN=%s)', (english) => {
+    access.outcomes = true; access.downloadable = true;
+    download.mockReturnValueOnce(false);
+    const drawer = open(english, 'history');
+    const button = within(drawer.querySelector('[data-version="2"]') as HTMLElement).getByRole('button', {name: english ? 'Download' : 'Descarcă'});
+    fireEvent.click(button);
+    expect(within(drawer).getByRole('alert')).toHaveTextContent(english ? en.DocumentManagement.downloadUnavailable : ro.DocumentManagement.downloadUnavailable);
+    expect(drawer.querySelectorAll('[data-version]')).toHaveLength(4);
+    expect(within(drawer.querySelector('[data-version="2"]') as HTMLElement).getAllByRole('button')).toEqual([button]);
+    fireEvent.click(button);
+    expect(within(drawer).queryByRole('alert')).not.toBeInTheDocument();
   });
 });

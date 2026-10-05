@@ -13,6 +13,8 @@ import {recordLocalAuditEvent} from '@/features/notifications/local-audit';
 import {notificationsFixture} from '@/features/notifications/fixtures';
 import {expiryCountdown, localizedDate} from '@/lib/fixture-clock';
 import {documentAccess} from './document-access';
+import {createDocumentFixtureFile} from './fixture-files';
+import {vendorOwnedByCompany} from '@/features/vendors/created-vendors';
 export {approvedCompliance} from './compliance';
 
 export type CreatedDocument = DocumentSummary & {
@@ -64,22 +66,26 @@ function seededDocument(summary: DocumentSummary): CreatedDocument {
     vendorRequirementId: summary.vendorId === 'construct-pro' ? `vendor-requirement:construct-pro:${catalogId}` : undefined};
 }
 // Fixture documents become initial domain records, not disconnected outcome overrides.
-const initialDocuments: CreatedDocument[] = documentsFixture.documents.flatMap((summary) => {
+const seededDocuments: CreatedDocument[] = documentsFixture.documents.flatMap<CreatedDocument>((summary) => {
   const current = seededDocument(summary);
   if (current.id !== 'construct-pro-fire-2024') return [current];
   // Retain the current route/requirement identity; the older fixture is history only.
   const historicalId = `${current.id}-v1`;
   return [
     {...current, version: 2, versionGroupId: historicalId, previousDocumentId: historicalId},
-    {...current, id: historicalId, version: 1, versionGroupId: historicalId, supersededById: current.id,
+    {...current, id: historicalId, filename: 'Autorizatie_ISU_v1.pdf', version: 1, versionGroupId: historicalId, supersededById: current.id,
       uploadedAt: '2026-02-15', createdAt: '2026-02-15T12:00:00.000Z', expiresAt: '2026-09-15', status: 'expired', complianceStatus: 'expired'}
   ];
 });
-initialDocuments.push({...seededDocument({id: 'vendor-document:construct-pro:insurance', vendorId: 'construct-pro', vendorName: 'Construct Pro SRL',
+seededDocuments.push({...seededDocument({id: 'vendor-document:construct-pro:insurance', vendorId: 'construct-pro', vendorName: 'Construct Pro SRL',
   documentName: {ro: 'Asigurare Răspundere Civilă', en: 'Liability insurance'}, filename: 'Asigurare_ConstructPro.pdf', documentType: 'insurance', status: 'valid', uploadedAt: '2026-09-20', expiresAt: '2027-02-10', reviewRoute: null}), globalVisible: false});
+// Immutable bytes per version ID, private to this tab. Renewal adds a key; it never overwrites the old file.
+const files = new Map<string, Blob>(seededDocuments.map((document) => [document.id, createDocumentFixtureFile(document)]));
+const initialDocuments = seededDocuments.map((document) => {
+  const file = files.get(document.id)!;
+  return {...document, fileType: file.type, fileSize: file.size};
+});
 let documents: CreatedDocument[] = initialDocuments;
-// Actual selected bytes only, private to this tab. Fixture files have no invented download.
-const files = new Map<string, Blob>();
 const listeners = new Set<() => void>();
 const emptyDeletedIds: string[] = [];
 let deletedIds = emptyDeletedIds;
@@ -116,6 +122,7 @@ export function createLocalDocument(input: NewDocument): CreatedDocument {
   const extraction = reviewRequired ? getSimulatedExtraction(input.vendorId, input.filename, input.documentType) : null;
   const document: CreatedDocument = {
     ...data,
+    ...(file ? {filename: file.name, fileType: file.type, fileSize: file.size} : {}),
     id,
     status: 'review', complianceStatus: 'needs_review', reviewOutcome: 'pending', origin: 'local', globalVisible: true,
     reviewRoute: `/documents/${id}/review`,
@@ -130,12 +137,14 @@ export function createLocalDocument(input: NewDocument): CreatedDocument {
   return document;
 }
 
-export function documentFile(companyId: string, id: string) {
-  return documentAccess(companyId).visible && documents.some((item) => item.id === id && (item.companyId ?? 'demo-company') === companyId) ? files.get(id) : undefined;
+export function documentFile(companyId: string, id: string, vendorId?: string) {
+  const record = documents.find((item) => item.id === id && (item.companyId ?? 'demo-company') === companyId && (!vendorId || item.vendorId === vendorId));
+  return documentAccess(companyId).visible && record && vendorOwnedByCompany(companyId, record.vendorId) ? files.get(id) : undefined;
 }
 
 /** The guarded domain transaction owns validation and requirement synchronization. */
 export function commitDocumentVersion(previous: CreatedDocument, replacement: CreatedDocument, file: File, synchronize: () => void) {
+  // The previous version keeps its exact File/Blob and metadata, including rejected supplier uploads.
   files.set(replacement.id, file);
   documents = [replacement, ...documents.map((item) => item.id === previous.id ? {...item, supersededById: replacement.id} : item)];
   synchronize();

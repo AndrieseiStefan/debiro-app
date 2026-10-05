@@ -1,11 +1,13 @@
 import {expect, test, type Page} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
+import {createDocumentFixtureFile} from '../src/features/documents/fixture-files';
 
 const registration = 'construct-pro-registration-2024';
 const file = {name: 'renewed.pdf', mimeType: 'application/pdf', buffer: Buffer.from('actual local renewal bytes')};
-async function renew(page: Page, english: boolean, expiry: string, name = file.name) {
+const seededIsuFile = (version: number) => createDocumentFixtureFile({id: `construct-pro-fire-2024${version === 1 ? '-v1' : ''}`, filename: version === 1 ? 'Autorizatie_ISU_v1.pdf' : 'Autorizatie_ISU.pdf', createdAt: version === 1 ? '2026-02-15T12:00:00Z' : '2026-09-29T12:00:00Z', version});
+async function renew(page: Page, english: boolean, expiry: string, name = file.name, buffer = file.buffer) {
   const drawer = page.getByRole('dialog');
-  await drawer.locator('input[type=file]').setInputFiles({...file, name});
+  await drawer.locator('input[type=file]').setInputFiles({...file, name, buffer});
   await drawer.locator('#replace-issuedAt').fill('01.09.2026');
   await drawer.locator('#replace-expiresAt').fill(expiry);
   await drawer.locator('#replace-documentNumber').fill('Renewal-42');
@@ -39,7 +41,7 @@ for (const english of [false, true]) {
       await expect(drawer.getByRole('term')).toHaveCount(6);
       await expect(drawer.getByRole('definition').nth(2)).toHaveText('Valid');
       await expect(drawer.getByRole('definition').nth(3)).toHaveText(date('2027-05-03'));
-      await expect(drawer.getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toBeDisabled();
+      await expect(drawer.getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toBeEnabled();
       const preview = drawer.locator('[data-preview-version]');
       await expect(preview).toHaveCount(2);
       for (const [version, uploadDate] of [[2, '2026-09-29'], [1, '2026-02-15']] as const) {
@@ -66,17 +68,30 @@ for (const english of [false, true]) {
         await expect(item.locator('[data-tone="success"] svg')).toHaveCount(1);
       }
       await expect(current).toHaveCSS('background-color', 'rgb(244, 248, 255)');
-      await expect(drawer.getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toHaveCount(0);
+      await expect(drawer.getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toHaveCount(1);
       await expect(drawer).not.toContainText('Autorizatie_ISU.pdf');
       const markerColors = await versions.evaluateAll((items) => items.map((item) => getComputedStyle(item, '::before').backgroundColor));
       expect(markerColors).toEqual(['rgb(0, 92, 237)', 'rgb(255, 255, 255)']);
-      await expect(historical.getByRole('button')).toHaveCount(0);
+      await expect(historical.getByRole('button')).toHaveCount(1);
       await expect(historical.getByRole('link')).toHaveCount(0);
-      await expect(versions.getByRole('button')).toHaveCount(1);
+      await expect(historical.getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toBeEnabled();
+      const oldDownload = page.waitForEvent('download');
+      await historical.getByRole('button').focus(); await page.keyboard.press('Enter');
+      const oldFile = await oldDownload;
+      expect(oldFile.suggestedFilename()).toBe('Autorizatie_ISU_v1.pdf');
+      const oldBytes = await readFile((await oldFile.path())!);
+      expect(oldBytes).toEqual(Buffer.from(await seededIsuFile(1).arrayBuffer()));
+      await expect(versions.getByRole('button')).toHaveCount(2);
       await current.getByRole('button').click();
-      await expect(drawer.getByRole('menuitem')).toHaveCount(1);
+      await expect(drawer.getByRole('menuitem')).toHaveCount(2);
       await expect(drawer.getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'})).toBeFocused();
-      await page.keyboard.press('Escape');
+      const currentDownload = page.waitForEvent('download');
+      await drawer.getByRole('menuitem', {name: english ? 'Download' : 'Descarcă'}).click();
+      const currentFile = await currentDownload;
+      expect(currentFile.suggestedFilename()).toBe('Autorizatie_ISU.pdf');
+      const currentBytes = await readFile((await currentFile.path())!);
+      expect(currentBytes).toEqual(Buffer.from(await seededIsuFile(2).arrayBuffer()));
+      expect(currentBytes).not.toEqual(oldBytes);
       await openCurrentDetails(page, english);
       await expect(drawer.getByRole('definition').nth(2)).toHaveText('Valid');
       await expect(drawer.getByRole('button', {name: english ? 'Replace document' : 'Înlocuiește document', exact: true})).toBeEnabled();
@@ -111,6 +126,76 @@ for (const english of [false, true]) {
       await expect(page.locator('#expiring-section tbody tr').filter({hasText: 'Construct Pro SRL'})).toHaveCount(0);
     });
   }
+
+  test(`${english ? 'EN' : 'RO'} seeded and uploaded version files survive repeated renewal with identical filenames`, async ({page}) => {
+    await page.setViewportSize({width: english ? 375 : 1448, height: english ? 812 : 1086});
+    await page.goto(`${prefix}/documents`);
+    await page.getByRole('link', {name: english ? 'Fire safety authorization' : 'Autorizație ISU', exact: true}).first().click();
+    const drawer = page.getByRole('dialog');
+    const third = Buffer.from('exact first same-name renewal bytes');
+    const fourth = Buffer.from('different second same-name renewal bytes');
+    for (const payload of [third, fourth]) {
+      await drawer.getByRole('button', {name: english ? 'Replace document' : 'Înlocuiește document', exact: true}).click();
+      await renew(page, english, '01.01.2099', 'same.pdf', payload);
+      await close(page, english);
+      await page.getByRole('row', {name: /same.pdf/}).getByRole('link', {name: english ? 'Fire safety authorization' : 'Autorizație ISU', exact: true}).click();
+    }
+    await drawer.getByRole('button', {name: english ? 'View all' : 'Vezi toate'}).click();
+    await expect(drawer.locator('[data-version]')).toHaveCount(4);
+    await expect(drawer.locator('[data-version-state="current"]')).toHaveAttribute('data-version', '4');
+    const historical = drawer.locator('[data-version]:not([data-version-state="current"])');
+    await expect(historical.getByRole('link')).toHaveCount(0);
+    await expect(historical.locator('button[aria-haspopup="menu"]')).toHaveCount(0);
+    await expect(historical.getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toHaveCount(3);
+    await drawer.screenshot({path: `artifacts/visual/document-history-retained-files-${english ? 'en-375x812' : 'ro-1448x1086'}-drawer.png`, animations: 'disabled'});
+    for (const [version, filename, expected] of [
+      [1, 'Autorizatie_ISU_v1.pdf', Buffer.from(await seededIsuFile(1).arrayBuffer())],
+      [2, 'Autorizatie_ISU.pdf', Buffer.from(await seededIsuFile(2).arrayBuffer())],
+      [3, 'same.pdf', third], [4, 'same.pdf', fourth]
+    ] as const) {
+      const download = page.waitForEvent('download');
+      if (version === 4) {
+        await drawer.locator('[data-version="4"]').getByRole('button').click();
+        await drawer.getByRole('menuitem', {name: english ? 'Download' : 'Descarcă'}).click();
+      } else await drawer.locator(`[data-version="${version}"]`).getByRole('button', {name: english ? 'Download' : 'Descarcă'}).click();
+      const saved = await download;
+      expect(saved.suggestedFilename()).toBe(filename);
+      expect(await readFile((await saved.path())!)).toEqual(expected);
+    }
+    await drawer.getByRole('button', {name: english ? 'Back to document details' : 'Înapoi la detalii document'}).click();
+    await expect(drawer).toContainText('same.pdf');
+    await expect(drawer.locator('[data-preview-version]')).toHaveCount(3);
+    await close(page, english);
+    await expect(page.getByRole('row', {name: /same.pdf/})).toHaveCount(1);
+    await expect(page.getByRole('row', {name: /Autorizatie_ISU/})).toHaveCount(0);
+    const summary = page.getByRole('region', {name: english ? 'Document summary' : 'Rezumat documente'});
+    await expect(summary.locator('[data-status="total"] b')).toHaveText('24');
+    await expect(summary.locator('[data-status="review"] b')).toHaveText('4');
+  });
+
+  test(`${english ? 'EN' : 'RO'} a stale historical file reference gives safe feedback without starting a download`, async ({page}) => {
+    await page.setViewportSize({width: english ? 375 : 1448, height: english ? 812 : 1086});
+    await page.goto(`${prefix}/documents?document=construct-pro-fire-2024&documentAction=history`);
+    const drawer = page.getByRole('dialog');
+    let downloads = 0; page.on('download', () => {downloads++;});
+    await page.evaluate(() => {URL.createObjectURL = () => {throw new Error('stale file reference');};});
+    await drawer.locator('[data-version="1"]').getByRole('button').click();
+    await expect(drawer.getByRole('alert')).toHaveText(english ? 'This file is not available to download in this local session.' : 'Fișierul nu este disponibil pentru descărcare în această sesiune locală.');
+    expect(downloads).toBe(0);
+    await expect(drawer.locator('[data-version]')).toHaveCount(2);
+    await expect(drawer.locator('[data-version="1"]').getByRole('button')).toHaveCount(1);
+    await expect(drawer.locator('[data-version="1"]').getByRole('link')).toHaveCount(0);
+    await drawer.getByRole('button', {name: english ? 'Back to document details' : 'Înapoi la detalii document'}).click();
+    await expect(drawer.getByRole('alert')).toHaveCount(0);
+    await drawer.getByRole('button', {name: english ? 'Download' : 'Descarcă'}).click();
+    await expect(drawer.getByRole('alert')).toBeVisible();
+    await close(page, english);
+    const row = page.getByRole('row', {name: /Autorizatie_ISU.pdf/});
+    await row.getByRole('button').click();
+    await page.getByRole('menuitem', {name: english ? 'Download' : 'Descarcă'}).click();
+    await expect(row.getByRole('alert')).toHaveText(english ? 'This file is not available to download in this local session.' : 'Fișierul nu este disponibil pentru descărcare în această sesiune locală.');
+    expect(downloads).toBe(0);
+  });
 
   test(`${english ? 'EN' : 'RO'} approved and rejected historical uploads expose only their actual-file Download`, async ({page}) => {
     await page.setViewportSize({width: english ? 375 : 1448, height: english ? 812 : 1086});
@@ -149,7 +234,7 @@ for (const english of [false, true]) {
     await expect(rejected).not.toContainText(/Valid until:|Valabilă:|Reason:|Motiv:/);
     await expect(rejected.getByRole('button')).toHaveCount(1);
     await expect(rejected.getByRole('link')).toHaveCount(0);
-    await expect(drawer.locator('[data-version="1"]').getByRole('button')).toHaveCount(0);
+    await expect(drawer.locator('[data-version="1"]').getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toBeEnabled();
     await expect(drawer.locator('[data-version] button[aria-haspopup="menu"]')).toHaveCount(1);
     await drawer.screenshot({path: `artifacts/visual/document-history-rejected-file-${english ? 'en-375x812' : 'ro-1448x1086'}-drawer.png`, animations: 'disabled'});
     const downloadPromise = page.waitForEvent('download');
@@ -202,7 +287,7 @@ for (const english of [false, true]) {
       await expect(drawer.getByRole('definition').nth(2)).toHaveText(status);
       await expect(drawer.getByRole('definition').nth(2).locator('svg')).toHaveCount(1);
       await expect(drawer.getByRole('definition').nth(2).locator('span[aria-hidden]')).toHaveCount(0);
-      await expect(drawer.getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toBeDisabled();
+      await expect(drawer.getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toBeEnabled();
       await expect(drawer.getByRole('link', {name: english ? 'Review document' : 'Revizuiește documentul'})).toHaveCount(id === 'construct-pro-tax-2024' ? 1 : 0);
     }
     await page.getByRole('dialog').getByRole('link', {name: english ? 'Review document' : 'Revizuiește documentul'}).click();
@@ -216,17 +301,20 @@ for (const english of [false, true]) {
     const name = row.getByRole('link', {name: english ? 'Registration certificate' : 'Certificat de înregistrare', exact: true});
     await name.focus(); await page.keyboard.press('Enter');
     await expect(page.getByRole('dialog', {name: english ? 'Document details' : 'Detalii document'})).toContainText('ONRC_2024.pdf');
-    await expect(page.getByRole('dialog').getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toBeDisabled();
+    await expect(page.getByRole('dialog').getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toBeEnabled();
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(name).toBeFocused();
     await row.getByRole('button').click();
     await expect(page.getByRole('menuitem')).toHaveCount(5);
-    const unavailableDownload = page.getByRole('menuitem', {name: english ? 'Download' : 'Descarcă'});
-    await expect(unavailableDownload).toBeDisabled();
-    await expect(unavailableDownload).toHaveCSS('color', 'rgb(107, 125, 155)');
-    await unavailableDownload.hover();
-    await expect(unavailableDownload).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    const fixtureDownload = page.getByRole('menuitem', {name: english ? 'Download' : 'Descarcă'});
+    await expect(fixtureDownload).toBeEnabled();
+    const download = page.waitForEvent('download');
+    await fixtureDownload.click();
+    const saved = await download;
+    expect(saved.suggestedFilename()).toBe('ONRC_2024.pdf');
+    expect(await readFile((await saved.path())!, 'utf8')).toContain(registration);
+    await row.getByRole('button').click();
     await expect(page.getByRole('menuitem', {name: english ? 'Open vendor' : 'Deschide furnizor'})).toHaveAttribute('href', `${prefix}/vendors/construct-pro`);
     await page.getByRole('menuitem', {name: english ? 'Open vendor' : 'Deschide furnizor'}).click();
     const pending = page.locator('[data-requirement-id="vendor-requirement:construct-pro:tax"]');
@@ -280,7 +368,7 @@ for (const english of [false, true]) {
     await expect(page.locator('[data-version-state="superseded"]')).toContainText(english ? 'Approved' : 'Aprobată');
     await expect(page.locator('[data-version-state="superseded"]')).not.toContainText(english ? 'Valid until:' : 'Valabilă:');
     await expect(page.getByRole('dialog')).not.toContainText(/renewed.pdf|ONRC_2024.pdf/);
-    await expect(page.locator('[data-version-state="superseded"]').getByRole('button')).toHaveCount(0);
+    await expect(page.locator('[data-version-state="superseded"]').getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toBeEnabled();
     await openCurrentDetails(page, english);
     await expect(page.getByRole('dialog', {name: english ? 'Document details' : 'Detalii document'})).toBeVisible();
     await expect(page.getByRole('dialog')).toContainText('renewed.pdf');
@@ -350,7 +438,7 @@ for (const english of [false, true]) {
       await expect(drawer.locator('[data-version]')).toHaveCount(4);
       await expect(drawer.locator('[data-version]:not([data-version-state="current"])').getByRole('button', {name: /Actions for version|Acțiuni pentru versiunea/})).toHaveCount(0);
       await expect(drawer.locator('[data-version]:not([data-version-state="current"])').getByRole('link')).toHaveCount(0);
-      await expect(drawer.locator('[data-version="1"]').getByRole('button')).toHaveCount(0);
+      await expect(drawer.locator('[data-version="1"]').getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toBeEnabled();
       const historical = drawer.locator('[data-version="3"]');
       await expect(historical).toContainText(english ? 'Valid until: 01 Jan 2099' : 'Valabilă: 01 ian. 2099');
       const historicalDownload = page.waitForEvent('download');

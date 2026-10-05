@@ -36,7 +36,8 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
       else {
         await drawer.getByRole('button', {name: english ? 'View all' : 'Vezi toate'}).click();
         await expect(drawer.locator('[data-version]')).toHaveCount(2);
-        await expect(drawer.locator('[data-version="1"]').getByRole('button')).toHaveCount(0);
+        await expect(drawer.locator('[data-version="1"]').getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toBeEnabled();
+        await expect(drawer.locator('[data-version="1"] button[aria-haspopup="menu"]')).toHaveCount(0);
         if (action === 'document-isu-menu') {
           await drawer.locator('[data-version-state="current"]').getByRole('button').click();
           await expect(drawer.getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'})).toBeFocused();

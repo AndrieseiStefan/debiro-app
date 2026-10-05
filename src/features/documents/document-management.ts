@@ -29,14 +29,24 @@ export function documentDetailsHref(document: CreatedDocument, contextPath: stri
     ? document.reviewRoute ?? `/documents/${document.id}/review` : documentManagementHref(document, contextPath);
 }
 
-export function downloadDocument(companyId: string, id: string) {
-  const record = accessibleDocument(readDocumentRecords(), companyId, id);
-  const file = record && documentFile(companyId, id);
+export function downloadDocument(companyId: string, id: string, vendorId?: string) {
+  const record = accessibleDocument(readDocumentRecords(), companyId, id, vendorId);
+  const file = record && documentFile(companyId, id, record.vendorId);
   if (!record || !file) return false;
-  const url = URL.createObjectURL(file);
-  const anchor = document.createElement('a');
-  anchor.href = url; anchor.download = record.filename;
-  anchor.click();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-  return true;
+  let url: string | undefined;
+  try {
+    url = URL.createObjectURL(file);
+    const anchor = document.createElement('a');
+    anchor.href = url; anchor.download = record.filename;
+    anchor.click();
+    return true;
+  } catch {
+    // Missing/stale bytes or a browser download failure must not become fake success.
+    return false;
+  } finally {
+    const downloadUrl = url;
+    if (downloadUrl) window.setTimeout(() => {
+      try {URL.revokeObjectURL(downloadUrl);} catch { /* The browser may already have invalidated this temporary reference. */ }
+    }, 1000);
+  }
 }
