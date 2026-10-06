@@ -15,6 +15,7 @@ import {expiryCountdown, localizedDate} from '@/lib/fixture-clock';
 import {documentAccess} from './document-access';
 import {createDocumentFixtureFile} from './fixture-files';
 import {vendorOwnedByCompany} from '@/features/vendors/created-vendors';
+import {browserSession} from '@/lib/browser-session';
 export {approvedCompliance} from './compliance';
 
 export type CreatedDocument = DocumentSummary & {
@@ -79,40 +80,40 @@ const seededDocuments: CreatedDocument[] = documentsFixture.documents.flatMap<Cr
 });
 seededDocuments.push({...seededDocument({id: 'vendor-document:construct-pro:insurance', vendorId: 'construct-pro', vendorName: 'Construct Pro SRL',
   documentName: {ro: 'Asigurare Răspundere Civilă', en: 'Liability insurance'}, filename: 'Asigurare_ConstructPro.pdf', documentType: 'insurance', status: 'valid', uploadedAt: '2026-09-20', expiresAt: '2027-02-10', reviewRoute: null}), globalVisible: false});
-// Immutable bytes per version ID, private to this tab. Renewal adds a key; it never overwrites the old file.
-const files = new Map<string, Blob>(seededDocuments.map((document) => [document.id, createDocumentFixtureFile(document)]));
-const initialDocuments = seededDocuments.map((document) => {
-  const file = files.get(document.id)!;
-  return {...document, fileType: file.type, fileSize: file.size};
+// Reuse the same records, exact bytes and subscriptions across route/module lifetimes in this tab.
+const session = browserSession(Symbol.for('debiro.document-session'), () => {
+  const files = new Map<string, Blob>(seededDocuments.map((document) => [document.id, createDocumentFixtureFile(document)]));
+  const initialDocuments = seededDocuments.map((document) => {
+    const file = files.get(document.id)!;
+    return {...document, fileType: file.type, fileSize: file.size};
+  });
+  return {initialDocuments, documents: initialDocuments as CreatedDocument[], files, deletedIds: [] as string[], listeners: new Set<() => void>()};
 });
-let documents: CreatedDocument[] = initialDocuments;
-const listeners = new Set<() => void>();
 const emptyDeletedIds: string[] = [];
-let deletedIds = emptyDeletedIds;
 
 function subscribe(listener: () => void) {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
+  session.listeners.add(listener);
+  return () => session.listeners.delete(listener);
 }
 
 export function useCreatedDocuments() {
   return useDocumentRecords().filter((document) => document.origin === 'local');
 }
-export function useDocumentRecords() {return useSyncExternalStore(subscribe, () => documents, () => initialDocuments);}
-export function readDocumentRecords() {return documents;}
-export function readCreatedDocuments() {return documents.filter((document) => document.origin === 'local');}
+export function useDocumentRecords() {return useSyncExternalStore(subscribe, () => session.documents, () => session.initialDocuments);}
+export function readDocumentRecords() {return session.documents;}
+export function readCreatedDocuments() {return session.documents.filter((document) => document.origin === 'local');}
 export function activeDocuments(records: CreatedDocument[], companyId: string, globalOnly = false) {
   return records.filter((document) => (document.companyId ?? 'demo-company') === companyId && !document.supersededById && document.reviewOutcome !== 'rejected' && (!globalOnly || document.globalVisible));
 }
-export function useDeletedDocumentIds() {return useSyncExternalStore(subscribe, () => deletedIds, () => emptyDeletedIds);}
+export function useDeletedDocumentIds() {return useSyncExternalStore(subscribe, () => session.deletedIds, () => emptyDeletedIds);}
 export function deleteLocalDocument(companyId: string, id: string) {
-  const found = documents.find((document) => document.id === id);
+  const found = session.documents.find((document) => document.id === id);
   if (found && (found.companyId ?? 'demo-company') !== companyId) return false;
   if (!found && companyId !== 'demo-company') return false;
-  documents = documents.filter((document) => document.id !== id);
-  files.delete(id);
-  deletedIds = [...new Set([...deletedIds, id])];
-  listeners.forEach((listener) => listener());
+  session.documents = session.documents.filter((document) => document.id !== id);
+  session.files.delete(id);
+  session.deletedIds = [...new Set([...session.deletedIds, id])];
+  session.listeners.forEach((listener) => listener());
   return true;
 }
 
@@ -129,26 +130,26 @@ export function createLocalDocument(input: NewDocument): CreatedDocument {
     extractionState: extraction ? 'simulated' : 'none',
     extractedMetadata: extraction ? {...extraction} : undefined
   };
-  documents = [document, ...documents];
-  if (file) files.set(id, file);
+  session.documents = [document, ...session.documents];
+  if (file) session.files.set(id, file);
   recordLocalAuditEvent(document.companyId ?? 'demo-company', {vendorId: document.vendorId, documentId: document.id, actorName: document.uploadedBy,
     eventType: 'document_upload', action: {ro: 'Document încărcat', en: 'Document uploaded'}, description: document.documentName, occurredAt: document.createdAt});
-  listeners.forEach((listener) => listener());
+  session.listeners.forEach((listener) => listener());
   return document;
 }
 
 export function documentFile(companyId: string, id: string, vendorId?: string) {
-  const record = documents.find((item) => item.id === id && (item.companyId ?? 'demo-company') === companyId && (!vendorId || item.vendorId === vendorId));
-  return documentAccess(companyId).visible && record && vendorOwnedByCompany(companyId, record.vendorId) ? files.get(id) : undefined;
+  const record = session.documents.find((item) => item.id === id && (item.companyId ?? 'demo-company') === companyId && (!vendorId || item.vendorId === vendorId));
+  return documentAccess(companyId).visible && record && vendorOwnedByCompany(companyId, record.vendorId) ? session.files.get(id) : undefined;
 }
 
 /** The guarded domain transaction owns validation and requirement synchronization. */
 export function commitDocumentVersion(previous: CreatedDocument, replacement: CreatedDocument, file: File, synchronize: () => void) {
   // The previous version keeps its exact File/Blob and metadata, including rejected supplier uploads.
-  files.set(replacement.id, file);
-  documents = [replacement, ...documents.map((item) => item.id === previous.id ? {...item, supersededById: replacement.id} : item)];
+  session.files.set(replacement.id, file);
+  session.documents = [replacement, ...session.documents.map((item) => item.id === previous.id ? {...item, supersededById: replacement.id} : item)];
   synchronize();
-  listeners.forEach((listener) => listener());
+  session.listeners.forEach((listener) => listener());
 }
 
 export function getSimulatedExtraction(vendorId: string, filename: string, type: DocumentType | '') {
@@ -182,9 +183,9 @@ export function reviewDateToIso(value: string): string | null {
 
 /** Used only by the requirement/review transaction after ownership/reference validation. */
 export function updateDocumentRecord(id: string, patch: Partial<CreatedDocument>, synchronize?: () => void) {
-  documents = documents.map((document) => document.id === id ? {...document, ...patch} : document);
+  session.documents = session.documents.map((document) => document.id === id ? {...document, ...patch} : document);
   synchronize?.();
-  listeners.forEach((listener) => listener());
+  session.listeners.forEach((listener) => listener());
 }
 
 export function isoToReviewDate(value?: string | null): string {

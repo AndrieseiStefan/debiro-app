@@ -9,7 +9,7 @@ export type DrawerPhase = 'open' | 'closing';
 
 const focusableSelector = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
 
-export function Drawer({phase, onClose, onExited, triggerRef, titleId, descriptionId, closeLabel, contentClassName, panelClassName, children}: {
+export function Drawer({phase, onClose, onExited, triggerRef, titleId, descriptionId, closeLabel, size = 'standard', contentClassName, panelClassName, children}: {
   phase: DrawerPhase;
   onClose: () => void;
   onExited: () => void;
@@ -17,6 +17,7 @@ export function Drawer({phase, onClose, onExited, triggerRef, titleId, descripti
   titleId: string;
   descriptionId: string;
   closeLabel: string;
+  size?: 'standard' | 'wide';
   contentClassName?: string;
   panelClassName?: string;
   children: ReactNode;
@@ -71,11 +72,19 @@ export function Drawer({phase, onClose, onExited, triggerRef, titleId, descripti
   }, [onClose, triggerRef]);
 
   return createPortal(<div className={styles.backdrop} data-phase={phase} onMouseDown={(event) => {if (event.target === event.currentTarget) {event.preventDefault(); onClose();}}}>
-    <aside ref={panelRef} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} tabIndex={-1} className={[styles.drawer, panelClassName].filter(Boolean).join(' ')} data-phase={phase}>
+    <aside ref={panelRef} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} tabIndex={-1} className={[styles.drawer, panelClassName].filter(Boolean).join(' ')} data-phase={phase} data-size={size}>
       <div className={[styles.content, contentClassName].filter(Boolean).join(' ')}>
         <button type="button" className={styles.close} aria-label={closeLabel} onClick={onClose}><AppIcon name="close" size={23}/></button>
         {children}
       </div>
     </aside>
   </div>, document.body);
+}
+
+/** Opt-in title bar: existing drawers keep their current headers until explicitly migrated. */
+export function DrawerHeader({title, titleId, titleRef, backLabel, onBack}: {title: string; titleId: string; titleRef?: RefObject<HTMLHeadingElement | null>; backLabel?: string; onBack?: () => void}) {
+  return <header className={styles.header}>
+    {onBack && <button type="button" className={styles.back} onClick={onBack} aria-label={backLabel}><AppIcon name="arrowRight" size={23}/></button>}
+    <h2 ref={titleRef} tabIndex={-1} id={titleId}>{title}</h2>
+  </header>;
 }

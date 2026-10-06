@@ -71,7 +71,7 @@ for (const english of [false, true]) {
       await expect(drawer.getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toHaveCount(1);
       await expect(drawer).not.toContainText('Autorizatie_ISU.pdf');
       const markerColors = await versions.evaluateAll((items) => items.map((item) => getComputedStyle(item, '::before').backgroundColor));
-      expect(markerColors).toEqual(['rgb(0, 92, 237)', 'rgb(255, 255, 255)']);
+      expect(markerColors).toEqual(['rgb(7, 94, 233)', 'rgb(255, 255, 255)']);
       await expect(historical.getByRole('button')).toHaveCount(1);
       await expect(historical.getByRole('link')).toHaveCount(0);
       await expect(historical.getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toBeEnabled();
@@ -449,7 +449,8 @@ for (const english of [false, true]) {
       expect(await drawer.evaluate((element, original) => element === original, originalDrawer)).toBe(true);
       await expect(page).toHaveURL(selectedUrl);
       await expect(drawer).not.toContainText(/certificate-v\d.pdf|ONRC_2024.pdf/);
-      if (vendorContext) await page.setViewportSize({width, height: 220});
+      // The normalized timeline is shorter; use a genuinely short viewport to exercise menu scrolling.
+      if (vendorContext) await page.setViewportSize({width, height: 160});
       const versionMenu = drawer.locator('[data-version-state="current"]').getByRole('button', {name: english ? 'Actions for version 4' : 'Acțiuni pentru versiunea 4'});
       await versionMenu.scrollIntoViewIfNeeded(); await versionMenu.focus();
       const historyScroll = await drawer.evaluate((element) => element.scrollTop);
@@ -527,7 +528,9 @@ for (const width of [1448, 1024, 758, 600, 375, 320]) {
     await page.setViewportSize({width, height: width === 1448 ? 1086 : 812});
     await page.goto(`/documents?document=${registration}`);
     await expect(page.getByRole('dialog', {name: 'Detalii document'})).toBeVisible();
+    await expect(page.getByRole('dialog')).toHaveCSS('width', `${Math.min(width, 804)}px`);
     await page.getByRole('dialog').getByRole('button', {name: 'Înlocuiește document', exact: true}).click();
+    await expect(page.getByRole('dialog')).toHaveCSS('width', `${width <= 600 ? width : 502}px`);
     await page.getByRole('dialog').getByRole('button', {name: 'Încarcă document', exact: true}).click();
     await expect(page.getByRole('dialog').getByRole('alert')).toHaveText('Selectează un fișier.');
     await page.locator('#replace-expiresAt').fill('31.02.2027');
@@ -538,6 +541,7 @@ for (const width of [1448, 1024, 758, 600, 375, 320]) {
     await page.getByRole('row', {name: /renewed.pdf/}).getByRole('button').click();
     await page.getByRole('menuitem', {name: 'Vezi istoricul'}).click();
     await expect(page.locator('[data-version]')).toHaveCount(2);
+    await expect(page.getByRole('dialog')).toHaveCSS('width', `${width <= 600 ? width : 502}px`);
     const geometry = await page.getByRole('dialog').evaluate((element) => ({width: element.clientWidth, scroll: element.scrollWidth, page: document.documentElement.scrollWidth}));
     expect(geometry.scroll).toBeLessThanOrEqual(geometry.width);
     expect(geometry.page).toBeLessThanOrEqual(width);

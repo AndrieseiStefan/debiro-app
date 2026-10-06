@@ -26,14 +26,15 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   await page.waitForLoadState('networkidle');
   await page.evaluate(async () => { await document.fonts.ready; });
   if (action) {
-    if (['document-isu-preview', 'document-isu-history', 'document-isu-menu'].includes(action)) {
+    if (['document-isu-details', 'document-isu-replace', 'document-isu-preview', 'document-isu-history', 'document-isu-menu'].includes(action)) {
       if (!/^\/(en\/)?(documents|vendors\/construct-pro)$/.test(route)) throw new Error('ISU fixture capture requires Documents or Construct Pro.');
       const english = route.startsWith('/en');
       await page.getByRole('link', {name: english ? 'Fire safety authorization' : 'Autorizație ISU', exact: true}).first().click();
       const drawer = page.getByRole('dialog');
       await expect(drawer.locator('[data-preview-version]')).toHaveCount(2);
       if (action === 'document-isu-preview') await drawer.evaluate((element) => {element.scrollTop = element.scrollHeight;});
-      else {
+      else if (action === 'document-isu-replace') await drawer.getByRole('button', {name: english ? 'Replace document' : 'Înlocuiește document', exact: true}).click();
+      else if (action !== 'document-isu-details') {
         await drawer.getByRole('button', {name: english ? 'View all' : 'Vezi toate'}).click();
         await expect(drawer.locator('[data-version]')).toHaveCount(2);
         await expect(drawer.locator('[data-version="1"]').getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toBeEnabled();

@@ -16,6 +16,7 @@ import {getVendorMetadata, getVendorState, vendorFixtureCompanyId} from './creat
 import type {VendorDocumentRow} from './types';
 import {recordLocalAuditEvent} from '@/features/notifications/local-audit';
 import {currentUser} from '@/features/companies/company-state';
+import {browserSession} from '@/lib/browser-session';
 
 export type VendorRequirement = DocumentTypeSnapshot & {
   id: string; companyId: string; vendorId: string; required: boolean; expiryWarningDays?: ExpiryWarningDays; validityMonths?: ValidityMonths;
@@ -38,22 +39,23 @@ const seeded: VendorRequirement[] = fixtureView.documents.map((row) => {
     createdAt: fixtureReferenceTime};
 });
 const empty: VendorRequirementsWorkspace = {requirements: [], appliedTemplates: []};
-const initialState: Record<string, VendorRequirementsWorkspace> = {[`${vendorFixtureCompanyId}:construct-pro`]: {requirements: seeded, appliedTemplates: []}};
-let state = initialState;
-const listeners = new Set<() => void>();
-const subscribe = (listener: () => void) => {listeners.add(listener); return () => {listeners.delete(listener);};};
-export function useVendorRequirements() {return useSyncExternalStore(subscribe, () => state, () => initialState);}
-export function readVendorRequirements() {return state;}
+type VendorRequirementsState = Record<string, VendorRequirementsWorkspace>;
+const initialState: VendorRequirementsState = {[`${vendorFixtureCompanyId}:construct-pro`]: {requirements: seeded, appliedTemplates: []}};
+// Current upload references must have the same session lifetime as their document versions.
+const session = browserSession(Symbol.for('debiro.vendor-requirements-session'), () => ({state: initialState, initialState, listeners: new Set<() => void>()}));
+const subscribe = (listener: () => void) => {session.listeners.add(listener); return () => {session.listeners.delete(listener);};};
+export function useVendorRequirements() {return useSyncExternalStore(subscribe, () => session.state, () => session.initialState);}
+export function readVendorRequirements() {return session.state;}
 export function vendorBelongsToCompany(companyId: string, vendorId: string) {
   const vendors = getVendorState();
   const local = vendors.createdVendors.find((vendor) => vendor.id === vendorId);
   return local ? (local.companyId ?? vendorFixtureCompanyId) === companyId : companyId === vendorFixtureCompanyId && vendors.fixtureVendors.some((vendor) => vendor.id === vendorId);
 }
-export function getVendorRequirements(snapshot: typeof state, companyId: string, vendorId: string) {
+export function getVendorRequirements(snapshot: VendorRequirementsState, companyId: string, vendorId: string) {
   return vendorBelongsToCompany(companyId, vendorId) ? snapshot[`${companyId}:${vendorId}`] ?? empty : empty;
 }
 function publish(companyId: string, vendorId: string, workspace: VendorRequirementsWorkspace) {
-  state = {...state, [`${companyId}:${vendorId}`]: workspace}; listeners.forEach((listener) => listener());
+  session.state = {...session.state, [`${companyId}:${vendorId}`]: workspace}; session.listeners.forEach((listener) => listener());
 }
 
 /** Ordered union: first new snapshot wins; existing rules/upload state are never overwritten. */
@@ -78,7 +80,7 @@ export function applyVendorTemplates(companyId: string, vendorId: string, templa
   const templates = [...new Set(templateIds)].map((id) => available.find((template) => template.id === id));
   if (!templates.length || templates.some((template) => !template || template.companyId !== companyId || template.categoryId !== vendor?.category || template.documents.some((document) => !templateDocumentType(document)))) return null;
   const selected = templates as RequirementTemplate[];
-  const workspace = getVendorRequirements(state, companyId, vendorId);
+  const workspace = getVendorRequirements(session.state, companyId, vendorId);
   const existingKeys = new Set(workspace.requirements.map(documentIdentityKey));
   const existingSelectedKeys = new Set(selected.flatMap((template) => template.documents.map((document) => documentIdentityKey(templateDocumentType(document)!))).filter((key) => existingKeys.has(key)));
   const requirements = workspace.requirements.map((requirement) => ({...requirement, sourceTemplateIds: [...requirement.sourceTemplateIds], sourceTemplateNames: {...requirement.sourceTemplateNames}}));
@@ -110,13 +112,13 @@ export function applyVendorTemplates(companyId: string, vendorId: string, templa
 
 export function removeAppliedTemplate(companyId: string, vendorId: string, templateId: string) {
   if (!vendorBelongsToCompany(companyId, vendorId)) return;
-  const workspace = getVendorRequirements(state, companyId, vendorId);
+  const workspace = getVendorRequirements(session.state, companyId, vendorId);
   publish(companyId, vendorId, {...workspace, appliedTemplates: workspace.appliedTemplates.filter((item) => item.templateId !== templateId)});
 }
 
 export function removeVendorRequirement(companyId: string, vendorId: string, requirementId: string) {
   if (!vendorBelongsToCompany(companyId, vendorId)) return false;
-  const workspace = getVendorRequirements(state, companyId, vendorId);
+  const workspace = getVendorRequirements(session.state, companyId, vendorId);
   const requirement = workspace.requirements.find((item) => item.id === requirementId);
   if (!requirement || (requirement.uploadedDocumentId && !deleteLocalDocument(companyId, requirement.uploadedDocumentId))) return false;
   publish(companyId, vendorId, {...workspace, requirements: workspace.requirements.filter((item) => item.id !== requirementId)});
@@ -126,7 +128,7 @@ export function removeVendorRequirement(companyId: string, vendorId: string, req
 
 export function associateRequirementUpload(companyId: string, vendorId: string, document: CreatedDocument, requirementId?: string) {
   if (!vendorBelongsToCompany(companyId, vendorId) || document.vendorId !== vendorId || (document.companyId ?? vendorFixtureCompanyId) !== companyId || !document.typeSnapshot) return false;
-  const workspace = getVendorRequirements(state, companyId, vendorId);
+  const workspace = getVendorRequirements(session.state, companyId, vendorId);
   const requirement = workspace.requirements.find((item) => requirementId ? item.id === requirementId : documentIdentityKey(item) === documentIdentityKey(document.typeSnapshot!));
   if (requirementId && !requirement) return false;
   if (document.typeSnapshot.documentTypeSource === 'company' ? !getCompanyDocumentTypes(readRequirementsState(), companyId).some((type) => type.id === document.typeSnapshot?.companyDocumentTypeId) : !catalogDocument(document.typeSnapshot.catalogDocumentTypeId)) return false;
@@ -145,7 +147,7 @@ export function resolveDocumentReview(companyId: string, documentId: string, out
   const document = readDocumentRecords().find((item) => item.id === documentId);
   if (!document || document.supersededById || (document.companyId ?? vendorFixtureCompanyId) !== companyId || !vendorBelongsToCompany(companyId, document.vendorId)) return 'unavailable' as const;
   if (document.reviewOutcome !== 'pending') return 'resolved' as const;
-  const workspace = getVendorRequirements(state, companyId, document.vendorId);
+  const workspace = getVendorRequirements(session.state, companyId, document.vendorId);
   const requirement = workspace.requirements.find((item) => item.id === document.vendorRequirementId);
   if (document.vendorRequirementId && (!requirement || requirement.uploadedDocumentId !== document.id || requirement.status !== 'in_review')) return 'unavailable' as const;
   const normalized = values && Object.fromEntries(Object.entries(values).map(([key, value]) => [key, value.trim()])) as ReviewValues | undefined;
@@ -173,7 +175,7 @@ export function replaceInternalDocument(companyId: string, documentId: string, i
   if (!access.replace) return {ok: false, reason: 'access'} as const;
   const previous = activeDocuments(readDocumentRecords(), companyId).find((item) => item.id === documentId);
   if (!previous || !vendorBelongsToCompany(companyId, previous.vendorId)) return {ok: false, reason: 'unavailable'} as const;
-  const workspace = getVendorRequirements(state, companyId, previous.vendorId);
+  const workspace = getVendorRequirements(session.state, companyId, previous.vendorId);
   const requirement = workspace.requirements.find((item) => item.id === previous.vendorRequirementId);
   if (previous.vendorRequirementId && (!requirement || requirement.uploadedDocumentId !== previous.id)) return {ok: false, reason: 'unavailable'} as const;
   const issuedAt = input.issuedAt.trim() ? reviewDateToIso(input.issuedAt) : undefined;

@@ -18,6 +18,8 @@ The dense eight-column table scrolls within its existing focusable region at red
 
 ## Shared review lifecycle (E1-028)
 
+E1-029F gives existing requirement snapshots/current-upload references the same browser-session lifetime as document versions. Client module reinitialization reuses them rather than reconstructing fixture pointers. Existing hooks, company/vendor keys, transaction ordering, permissions and lifecycle semantics remain unchanged; reload/new tabs still start fresh. See [document session ownership](document-management.md#current-versions-and-internal-updates).
+
 Supplier requirement status is only `missing` / `in_review` / `uploaded`. Internal document compliance is separately `needs_review` / `valid` / `expiring_soon` / `expired`; existing UI aliases `review`/`expiring` map from that domain. Review outcome is separately `pending` / `approved` / `rejected`, never a fourth supplier badge. Upload association uses stable company/vendor/requirement/type IDs, with at most one active document reference per requirement.
 
 Confirm persists trimmed confirmed metadata, actor/time and an approved outcome; extracted metadata remains unchanged. It retains the active association, changes the supplier status to Uploaded and derives expiry compliance using the requirement's snapshotted warning days (existing 30-day default if absent). UTC calendar days are used: before today is Expired; today through the warning boundary is Expiring Soon; later/no expiry is Valid. Initial approved fixture compliance derives from coherent dates against the shared 2026 reference; pending review retains precedence. There is no renewal job.

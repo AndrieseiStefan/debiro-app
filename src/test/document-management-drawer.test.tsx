@@ -40,6 +40,8 @@ describe('canonical document details and internal drawer navigation', () => {
     expect(within(drawer).queryByText('Retained underlying note')).not.toBeInTheDocument();
     expect(drawer.querySelectorAll('[data-preview-version]')).toHaveLength(3);
     expect(within(drawer).getAllByText(english ? 'Current' : 'Curent')).toHaveLength(1);
+    expect(within(drawer).getByText(english ? 'Current' : 'Curent')).toHaveAttribute('data-tone', 'info');
+    expect(drawer).toHaveAttribute('data-size', 'wide');
     expect(within(drawer).getByRole('button', {name: english ? 'Mark as expired' : 'Marchează ca expirată'})).toBeDisabled();
     expect(within(drawer).getByRole('button', {name: english ? 'Delete document' : 'Șterge document'})).toBeDisabled();
     expect(within(drawer).getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toBeDisabled();
@@ -50,6 +52,7 @@ describe('canonical document details and internal drawer navigation', () => {
     const drawer = open(english);
     fireEvent.click(within(drawer).getByRole('button', {name: english ? 'View all' : 'Vezi toate'}));
     expect(screen.getByRole('dialog')).toBe(drawer);
+    expect(drawer).toHaveAttribute('data-size', 'standard');
     expect(drawer.querySelectorAll('[data-version]')).toHaveLength(4);
     expect(drawer.querySelectorAll('[data-version] button')).toHaveLength(1);
     expect(drawer.querySelectorAll('[data-version]:not([data-version-state="current"]) button')).toHaveLength(0);
@@ -57,11 +60,14 @@ describe('canonical document details and internal drawer navigation', () => {
     expect(within(drawer).getAllByRole('menuitem')).toHaveLength(1);
     fireEvent.click(within(drawer).getByRole('menuitem', {name: english ? 'Open details' : 'Deschide detalii'}));
     expect(within(drawer).getByText('certificate-v4.pdf')).toBeVisible();
+    expect(drawer).toHaveAttribute('data-size', 'wide');
     expect(within(drawer).getByRole('button', {name: english ? 'Replace document' : 'Înlocuiește document'})).toBeEnabled();
     fireEvent.click(within(drawer).getByRole('button', {name: english ? 'Back to document history' : 'Înapoi la istoricul documentului'}));
     expect(drawer.querySelectorAll('[data-version]')).toHaveLength(4);
+    expect(drawer).toHaveAttribute('data-size', 'standard');
     fireEvent.click(within(drawer).getByRole('button', {name: english ? 'Back to document details' : 'Înapoi la detalii document'}));
     expect(within(drawer).getByText('certificate-v4.pdf')).toBeVisible();
+    expect(drawer).toHaveAttribute('data-size', 'wide');
     expect(screen.getAllByRole('dialog')).toEqual([drawer]);
   });
 
@@ -71,6 +77,18 @@ describe('canonical document details and internal drawer navigation', () => {
     fireEvent.click(within(drawer).getByRole('button', {name: 'Înapoi la detalii document'}));
     expect(within(drawer).getByText('certificate-v4.pdf')).toBeVisible();
     expect(within(drawer).getByRole('button', {name: 'Înlocuiește document'})).toBeDisabled();
+  });
+
+  it('resizes Details → Replace → Back using the current view and the same title bar', () => {
+    const drawer = open();
+    const heading = within(drawer).getByRole('heading', {name: 'Detalii document'});
+    const header = heading.closest('header');
+    fireEvent.click(within(drawer).getByRole('button', {name: 'Înlocuiește document'}));
+    expect(drawer).toHaveAttribute('data-size', 'standard');
+    expect(within(drawer).getByRole('heading', {name: 'Înlocuiește document'}).closest('header')).toBe(header);
+    fireEvent.click(within(drawer).getByRole('button', {name: 'Înapoi la detalii document'}));
+    expect(drawer).toHaveAttribute('data-size', 'wide');
+    expect(within(drawer).getByRole('heading', {name: 'Detalii document'}).closest('header')).toBe(header);
   });
 
   it.each([false, true])('keeps history essential and truthful for pending, approved and rejected versions (EN=%s)', (english) => {
