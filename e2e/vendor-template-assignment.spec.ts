@@ -66,7 +66,7 @@ test('preview is non-mutating; multi-template union, provenance-only removal and
   await expect(page.getByRole('button', {name: /^Elimină asocierea cu/})).toHaveCount(2);
 });
 
-test('missing-row upload locks its type, associates the upload, and destructive removal deletes it everywhere', async ({page}) => {
+test('missing-row upload locks its type; requirement removal preserves the uploaded evidence', async ({page}) => {
   await page.goto('/vendors/construct-pro');
   await applyConstruction(page);
   const row = page.getByRole('row').filter({hasText: 'Autorizație de lucru'});
@@ -83,17 +83,18 @@ test('missing-row upload locks its type, associates the upload, and destructive 
   await row.getByRole('button', {name: 'Acțiuni cerință pentru Autorizație de lucru'}).click();
   await page.getByRole('menuitem', {name: 'Elimină cerința'}).click();
   const confirm = page.getByRole('alertdialog');
-  await expect(confirm).toHaveAccessibleName('Ștergi această cerință și documentul asociat?');
-  await expect(confirm).toContainText('Această acțiune va elimina cerința și documentul încărcat asociat.');
+  await expect(confirm).toHaveAccessibleName('Elimini această cerință?');
+  await expect(confirm).toContainText('Documentul încărcat și istoricul său vor rămâne disponibile.');
   await confirm.getByRole('button', {name: 'Renunță'}).click();
   await expect(row).toContainText('work-permit.pdf');
   await row.getByRole('button', {name: 'Acțiuni cerință pentru Autorizație de lucru'}).click();
   await page.getByRole('menuitem', {name: 'Elimină cerința'}).click();
-  await confirm.getByRole('button', {name: 'Șterge documentul'}).click();
-  await expect(row).toHaveCount(0);
+  await confirm.getByRole('button', {name: 'Elimină cerința'}).click();
+  await expect(row).toContainText('work-permit.pdf');
+  await expect(row).not.toHaveAttribute('data-requirement-id', /.+/);
   await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Documente', exact: true}).click();
   await expect(page).toHaveURL(/\/documents$/);
-  await expect(page.getByRole('row').filter({hasText: 'work-permit.pdf'})).toHaveCount(0);
+  await expect(page.getByRole('row').filter({hasText: 'work-permit.pdf'})).toHaveCount(1);
 });
 
 test('empty requirement removal confirms, keyboard focus is retained, and category Save preserves configuration', async ({page}) => {
@@ -235,21 +236,23 @@ test('new vendors receive explicit setup and general catalog uploads without aut
   await expect(page.getByRole('row').filter({hasText: 'Certificare ISO 9001'})).toContainText('iso.pdf');
 });
 
-test('deleting a seeded uploaded requirement removes its summary and prevents stale Review access on client Back', async ({page}) => {
+test('removing a seeded requirement keeps its document and existing Review entry on client Back', async ({page}) => {
   await page.goto('/documents/construct-pro-tax-2024/review');
   await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Furnizori', exact: true}).click();
   await page.getByRole('link', {name: 'Detalii pentru Construct Pro SRL'}).click();
   const tax = page.getByRole('row').filter({hasText: 'Certificat fiscal'});
   await tax.getByRole('button', {name: 'Acțiuni cerință pentru Certificat fiscal'}).click();
   await page.getByRole('menuitem', {name: 'Elimină cerința'}).click();
-  await page.getByRole('alertdialog').getByRole('button', {name: 'Șterge documentul'}).click();
-  await expect(tax).toHaveCount(0);
+  await page.getByRole('alertdialog').getByRole('button', {name: 'Elimină cerința'}).click();
+  await expect(tax).toHaveCount(1);
+  await expect(tax).not.toHaveAttribute('data-requirement-id', /.+/);
   await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Documente', exact: true}).click();
   await expect(page).toHaveURL(/\/documents$/);
-  await expect(page.getByRole('row').filter({hasText: 'Certificat_fiscal_CP_2024.pdf'})).toHaveCount(0);
+  await expect(page.getByRole('row').filter({hasText: 'Certificat_fiscal_CP_2024.pdf'})).toHaveCount(1);
   await page.goBack(); await expect(page).toHaveURL(/\/vendors\/construct-pro$/);
   await page.goBack(); await expect(page).toHaveURL(/\/vendors$/);
   await page.goBack();
   await expect(page).toHaveURL(/\/documents\/construct-pro-tax-2024\/review$/);
-  await expect(page.getByText('Documentul local nu mai este disponibil.', {exact: false})).toBeVisible();
+  await expect(page.getByText('Documentul local nu mai este disponibil.', {exact: false})).toHaveCount(0);
+  await expect(page.getByRole('button', {name: 'Respinge', exact: true})).toBeEnabled();
 });

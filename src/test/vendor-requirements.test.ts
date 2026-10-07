@@ -87,7 +87,7 @@ describe('vendor template snapshots and local document lifecycle', () => {
     expect(applyVendorTemplates(company, supplier.id, [a.id])).toBeNull();
   });
 
-  it('associates missing requirements by identity, and deletes the requirement and its actual local upload together', () => {
+  it('associates missing requirements by identity, and removes configuration without deleting its upload', () => {
     const company = 'assignment-upload'; const supplier = vendor(company);
     const a = template(company, 'A', [{...rules, customName: 'Special permit'}, {...rules, catalogDocumentTypeId: 'tax'}]);
     applyVendorTemplates(company, supplier.id, [a.id]);
@@ -101,7 +101,7 @@ describe('vendor template snapshots and local document lifecycle', () => {
     expect(workspace(company, supplier.id).requirements[0]).toEqual(associated);
     expect(readCreatedDocuments().some((item) => item.id === document.id)).toBe(true);
     expect(removeVendorRequirement(company, supplier.id, missing.id)).toBe(true);
-    expect(readCreatedDocuments().some((item) => item.id === document.id)).toBe(false);
+    expect(readCreatedDocuments().find((item) => item.id === document.id)).toMatchObject({filename: document.filename, vendorRequirementId: undefined});
     expect(workspace(company, supplier.id).requirements).toHaveLength(1);
     expect(removeVendorRequirement(company, supplier.id, workspace(company, supplier.id).requirements[0].id)).toBe(true);
     expect(workspace(company, supplier.id).requirements).toHaveLength(0);

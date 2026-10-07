@@ -24,11 +24,11 @@ import styles from './NotificationsPage.module.css';
 
 const categories: ActivityCategory[] = ['all', 'unread', 'reminders', 'uploads', 'status'];
 const activityIcons: Record<AuditEventType, AppIconName> = {
-  reminder: 'bell', document_upload: 'file', document_replaced: 'upload', document_confirmed: 'check', document_rejected: 'close', document_expiring: 'clock',
+  reminder: 'bell', document_upload: 'file', document_replaced: 'upload', document_marked_expired: 'clock', document_confirmed: 'check', document_rejected: 'close', document_expiring: 'clock',
   document_missing: 'fileX', status_changed: 'clock', vendor_added: 'users', other: 'info', template_applied: 'file', vendor_invited: 'send', vendor_edited: 'edit', vendor_active: 'check', vendor_inactive: 'close', requirement_removed: 'fileX'
 };
 const activityTones: Record<AuditEventType, string> = {
-  reminder: 'blue', document_upload: 'green', document_replaced: 'blue', document_confirmed: 'green', document_rejected: 'red', document_expiring: 'amber',
+  reminder: 'blue', document_upload: 'green', document_replaced: 'blue', document_marked_expired: 'red', document_confirmed: 'green', document_rejected: 'red', document_expiring: 'amber',
   document_missing: 'red', status_changed: 'blue', vendor_added: 'blue', other: 'blue', template_applied: 'blue', vendor_invited: 'blue', vendor_edited: 'amber', vendor_active: 'green', vendor_inactive: 'red', requirement_removed: 'red'
 };
 
@@ -53,7 +53,7 @@ export function NotificationsPage({locale, view: initialView}: {locale: string; 
   const view = {...initialView, ...notificationDocuments(companyId ?? '', vendors, useVendorRequirements(), useDocumentRecords())};
   const notifications = useNotificationItems(view.notifications);
   // Existing successful local audit events are activity rows, not new delivered/unread notices.
-  const activity = [...notifications, ...localAudit.map((event) => ({id: event.id, type: event.eventType === 'template_applied' || event.eventType === 'vendor_invited' || event.eventType === 'vendor_edited' || event.eventType === 'vendor_active' || event.eventType === 'vendor_inactive' || event.eventType === 'requirement_removed' ? 'other' as const : event.eventType,
+  const activity = [...notifications, ...localAudit.map((event) => ({id: event.id, type: event.eventType === 'document_marked_expired' ? 'status_changed' as const : event.eventType === 'template_applied' || event.eventType === 'vendor_invited' || event.eventType === 'vendor_edited' || event.eventType === 'vendor_active' || event.eventType === 'vendor_inactive' || event.eventType === 'requirement_removed' ? 'other' as const : event.eventType,
     title: event.action, description: event.description, vendorId: event.vendorId, vendorName: vendors.find((vendor) => vendor.id === event.vendorId)?.name,
     documentName: event.description, occurredAt: event.occurredAt, isUnread: false, actor: event.actorType, actorName: event.actorName}))];
   const visibleNotifications = filterNotifications(activity, category, range, view.referenceTime);

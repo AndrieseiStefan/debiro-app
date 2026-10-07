@@ -46,10 +46,12 @@ export type CreatedDocument = DocumentSummary & {
   previousDocumentId?: string;
   supersededById?: string;
   updateSource?: 'internal';
+  manuallyExpiredAt?: string;
+  manuallyExpiredBy?: string;
   notes?: string;
 };
 
-export type NewDocument = Omit<CreatedDocument, 'id' | 'status' | 'reviewRoute' | 'extractionState' | 'reviewOutcome' | 'complianceStatus' | 'vendorRequirementId' | 'extractedMetadata' | 'confirmedMetadata' | 'reviewedAt' | 'reviewedBy' | 'origin' | 'globalVisible' | 'versionGroupId' | 'version' | 'previousDocumentId' | 'supersededById' | 'updateSource'> & {reviewRequired: boolean; file?: File};
+export type NewDocument = Omit<CreatedDocument, 'id' | 'status' | 'reviewRoute' | 'extractionState' | 'reviewOutcome' | 'complianceStatus' | 'vendorRequirementId' | 'extractedMetadata' | 'confirmedMetadata' | 'reviewedAt' | 'reviewedBy' | 'origin' | 'globalVisible' | 'versionGroupId' | 'version' | 'previousDocumentId' | 'supersededById' | 'updateSource' | 'manuallyExpiredAt' | 'manuallyExpiredBy'> & {reviewRequired: boolean; file?: File};
 function seededDocument(summary: DocumentSummary): CreatedDocument {
   const view = getVendorDetailsFixture(summary.vendorId);
   const extraction = getDocumentReviewFixture(summary.id)?.extraction.values;
@@ -87,9 +89,8 @@ const session = browserSession(Symbol.for('debiro.document-session'), () => {
     const file = files.get(document.id)!;
     return {...document, fileType: file.type, fileSize: file.size};
   });
-  return {initialDocuments, documents: initialDocuments as CreatedDocument[], files, deletedIds: [] as string[], listeners: new Set<() => void>()};
+  return {initialDocuments, documents: initialDocuments as CreatedDocument[], files, listeners: new Set<() => void>()};
 });
-const emptyDeletedIds: string[] = [];
 
 function subscribe(listener: () => void) {
   session.listeners.add(listener);
@@ -104,17 +105,6 @@ export function readDocumentRecords() {return session.documents;}
 export function readCreatedDocuments() {return session.documents.filter((document) => document.origin === 'local');}
 export function activeDocuments(records: CreatedDocument[], companyId: string, globalOnly = false) {
   return records.filter((document) => (document.companyId ?? 'demo-company') === companyId && !document.supersededById && document.reviewOutcome !== 'rejected' && (!globalOnly || document.globalVisible));
-}
-export function useDeletedDocumentIds() {return useSyncExternalStore(subscribe, () => session.deletedIds, () => emptyDeletedIds);}
-export function deleteLocalDocument(companyId: string, id: string) {
-  const found = session.documents.find((document) => document.id === id);
-  if (found && (found.companyId ?? 'demo-company') !== companyId) return false;
-  if (!found && companyId !== 'demo-company') return false;
-  session.documents = session.documents.filter((document) => document.id !== id);
-  session.files.delete(id);
-  session.deletedIds = [...new Set([...session.deletedIds, id])];
-  session.listeners.forEach((listener) => listener());
-  return true;
 }
 
 export function createLocalDocument(input: NewDocument): CreatedDocument {

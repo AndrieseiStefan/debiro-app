@@ -26,13 +26,21 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   await page.waitForLoadState('networkidle');
   await page.evaluate(async () => { await document.fonts.ready; });
   if (action) {
-    if (['document-isu-details', 'document-isu-replace', 'document-isu-preview', 'document-isu-history', 'document-isu-menu'].includes(action)) {
+    if (['document-expiry-confirmation', 'document-manually-expired', 'document-expired-history', 'document-isu-details', 'document-isu-replace', 'document-isu-preview', 'document-isu-history', 'document-isu-menu'].includes(action)) {
       if (!/^\/(en\/)?(documents|vendors\/construct-pro)$/.test(route)) throw new Error('ISU fixture capture requires Documents or Construct Pro.');
       const english = route.startsWith('/en');
       await page.getByRole('link', {name: english ? 'Fire safety authorization' : 'Autorizație ISU', exact: true}).first().click();
       const drawer = page.getByRole('dialog');
       await expect(drawer.locator('[data-preview-version]')).toHaveCount(2);
-      if (action === 'document-isu-preview') await drawer.evaluate((element) => {element.scrollTop = element.scrollHeight;});
+      if (action.startsWith('document-expir') || action === 'document-manually-expired') {
+        await drawer.getByRole('button', {name: english ? 'Mark as expired' : 'Marchează ca expirat'}).click();
+        await expect(page.getByRole('alertdialog')).toBeVisible();
+        if (action !== 'document-expiry-confirmation') {
+          await page.getByRole('alertdialog').getByRole('button', {name: english ? 'Mark as expired' : 'Marchează ca expirat'}).click();
+          await expect(drawer.getByRole('definition').nth(2)).toHaveText(english ? 'Expired' : 'Expirat');
+          if (action === 'document-expired-history') await drawer.getByRole('button', {name: english ? 'View all' : 'Vezi toate'}).click();
+        }
+      } else if (action === 'document-isu-preview') await drawer.evaluate((element) => {element.scrollTop = element.scrollHeight;});
       else if (action === 'document-isu-replace') await drawer.getByRole('button', {name: english ? 'Replace document' : 'Înlocuiește document', exact: true}).click();
       else if (action !== 'document-isu-details') {
         await drawer.getByRole('button', {name: english ? 'View all' : 'Vezi toate'}).click();
@@ -336,8 +344,8 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   const name = route === '/' ? 'root' : route.replace(/^\/+|\/+$/g, '').replace(/[^a-zA-Z0-9_-]+/g, '-');
   const output = path.join(process.cwd(), 'artifacts', 'visual', `${name}${action ? `-${action}` : ''}${viewportWidth ? `-${viewportWidth}x${viewportHeight}` : ''}.png`);
   await page.screenshot({path: output, fullPage: !action || action === 'requirement-edit' || action === 'requirement-preview' || action.startsWith('vendor-') || action.startsWith('review-') && action !== 'review-reject-confirmation', animations: 'disabled'});
-  if (action?.startsWith('document-') && action !== 'document-menu') await page.getByRole('dialog').screenshot({path: output.replace(/\.png$/, '-drawer.png'), animations: 'disabled'});
-  if (action === 'review-reject-confirmation') await page.getByRole('alertdialog').screenshot({path: output.replace(/\.png$/, '-dialog.png'), animations: 'disabled'});
+  if (action?.startsWith('document-') && action !== 'document-menu' && action !== 'document-expiry-confirmation') await page.getByRole('dialog').screenshot({path: output.replace(/\.png$/, '-drawer.png'), animations: 'disabled'});
+  if (action === 'review-reject-confirmation' || action === 'document-expiry-confirmation') await page.getByRole('alertdialog').screenshot({path: output.replace(/\.png$/, '-dialog.png'), animations: 'disabled'});
   if (action === 'review-rejected-portal' || action === 'review-reupload-portal') await page.locator('[data-supplier-requirements]').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});
   if (action === 'vendor-menu') await page.getByRole('menu').screenshot({path: output.replace(/\.png$/, '-menu.png'), animations: 'disabled'});
   if (action === 'vendor-documents' || action === 'vendor-contacts' || action === 'vendor-activity' || action === 'vendor-notes' || action === 'vendor-notes-empty' || action === 'vendor-notes-new') await page.getByRole('tabpanel').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});

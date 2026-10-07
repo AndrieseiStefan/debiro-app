@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {activeDocuments, approvedCompliance, createLocalDocument, deleteLocalDocument, readDocumentRecords} from '@/features/documents/created-documents';
+import {activeDocuments, approvedCompliance, createLocalDocument, readDocumentRecords} from '@/features/documents/created-documents';
 import {availableDocumentTypes} from '@/features/requirements/document-types';
 import {createLocalVendor} from '@/features/vendors/created-vendors';
 import {associateRequirementUpload, getVendorRequirements, readVendorRequirements, removeVendorRequirement, resolveDocumentReview, supplierVendorDocuments, vendorCompliance} from '@/features/vendors/vendor-requirements';
@@ -78,7 +78,7 @@ describe('shared document review lifecycle', () => {
     expect(c.workspace().requirements[0].status).toBe('uploaded');
   });
 
-  it('rejects invalid, foreign, removed and missing actions without extra events', () => {
+  it('rejects invalid, foreign and missing actions; removing configuration preserves reviewable evidence', () => {
     const c = context(); const upload = c.upload(); associateRequirementUpload(c.companyId, c.vendor.id, upload);
     const before = readLocalAuditEvents().length;
     expect(resolveDocumentReview('foreign-company', upload.id, 'approved', values)).toBe('unavailable');
@@ -87,9 +87,9 @@ describe('shared document review lifecycle', () => {
     expect(readLocalAuditEvents()).toHaveLength(before);
     expect(getVendorRequirements(readVendorRequirements(), 'foreign-company', c.vendor.id).requirements).toHaveLength(0);
     removeVendorRequirement(c.companyId, c.vendor.id, c.workspace().requirements[0].id);
-    expect(resolveDocumentReview(c.companyId, upload.id, 'rejected')).toBe('unavailable');
-    const unlinked = c.upload(); deleteLocalDocument(c.companyId, unlinked.id);
-    expect(resolveDocumentReview(c.companyId, unlinked.id, 'approved', values)).toBe('unavailable');
+    expect(readDocumentRecords().find((item) => item.id === upload.id)?.vendorRequirementId).toBeUndefined();
+    expect(resolveDocumentReview(c.companyId, upload.id, 'rejected')).toBe('saved');
+    expect(resolveDocumentReview(c.companyId, 'missing-id', 'approved', values)).toBe('unavailable');
   });
 
   it('required rejection downgrades compliance while optional rejection does not, and preview is independent', () => {

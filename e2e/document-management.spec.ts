@@ -430,8 +430,8 @@ for (const english of [false, true]) {
       await expect(drawer).not.toContainText('Renewal-42');
       await expect(drawer.locator('[data-preview-version]')).toHaveCount(3);
       await expect(drawer.getByText(english ? 'Current' : 'Curent', {exact: true})).toHaveCount(1);
-      await expect(drawer.getByRole('button', {name: english ? 'Mark as expired' : 'Marchează ca expirată'})).toBeDisabled();
-      await expect(drawer.getByRole('button', {name: english ? 'Delete document' : 'Șterge document'})).toBeDisabled();
+      await expect(drawer.getByRole('button', {name: english ? 'Mark as expired' : 'Marchează ca expirat'})).toBeEnabled();
+      await expect(drawer.getByRole('button', {name: english ? 'Delete document' : 'Șterge document'})).toHaveCount(0);
       expect((await drawer.boundingBox())?.width).toBe(width === 1448 ? 804 : width);
       await drawer.getByRole('button', {name: english ? 'View all' : 'Vezi toate'}).click();
       await expect(drawer.getByRole('heading', {name: english ? 'Document history' : 'Istoric document'})).toBeFocused();

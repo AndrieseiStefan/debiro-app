@@ -23,7 +23,6 @@
 .actionCard {display: grid; gap: var(--space-2); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-card); padding: var(--space-4); background: #fbfcff;}
 .actionCard h3 {margin: 0 0 var(--space-1);}
 .actionCard > button {width: 100%; white-space: normal;}
-.actionCard > button.deleteAction {color: var(--color-danger);}
 .smallAction {display: inline-flex; align-items: center; gap: var(--space-1); min-height: 32px; padding: var(--space-1) var(--space-2); border: 1px solid var(--color-border); border-radius: var(--radius-field); color: var(--color-action-primary); background: var(--color-surface); font: inherit; font-size: var(--text-caption); cursor: pointer; text-decoration: none;}
 .smallAction:disabled {color: var(--color-text-muted); cursor: not-allowed; background: var(--color-neutral-soft);}
 .historyHeading {display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; justify-content: space-between; margin-top: var(--space-5);}

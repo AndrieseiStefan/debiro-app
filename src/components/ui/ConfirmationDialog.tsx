@@ -41,7 +41,7 @@ export function ConfirmationDialog({onCancel, onConfirm, title, description, can
       }
       document.body.style.overflow = previousOverflow;
       if (previousFocus?.isConnected) previousFocus.focus({preventScroll: true});
-      else (document.querySelector<HTMLElement>('[data-template-id][data-selected="true"]') ?? document.querySelector<HTMLElement>('[data-page-primary-action]'))?.focus({preventScroll: true});
+      else (background?.querySelector<HTMLElement>('h2[tabindex="-1"]') ?? document.querySelector<HTMLElement>('[data-template-id][data-selected="true"]') ?? document.querySelector<HTMLElement>('[data-page-primary-action]'))?.focus({preventScroll: true});
     };
   }, [onCancel, backgroundSelector]);
   return createPortal(<div className={styles.backdrop}>

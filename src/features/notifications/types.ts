@@ -35,7 +35,7 @@ export type AuditEvent = {
   occurredAt: string;
   dateOnly?: boolean;
 };
-export type AuditEventType = NotificationActivityType | 'template_applied' | 'vendor_invited' | 'vendor_edited' | 'vendor_active' | 'vendor_inactive' | 'requirement_removed';
+export type AuditEventType = NotificationActivityType | 'document_marked_expired' | 'template_applied' | 'vendor_invited' | 'vendor_edited' | 'vendor_active' | 'vendor_inactive' | 'requirement_removed';
 
 export type ExpiringDocumentSummary = {
   id: string;

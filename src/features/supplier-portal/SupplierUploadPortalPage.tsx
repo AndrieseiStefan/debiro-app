@@ -9,7 +9,7 @@ import {PortalContainer} from '@/components/layout/PortalContainer';
 import {Link} from '@/i18n/navigation';
 import {documentDisplay} from '@/features/requirements/document-presentation';
 import type {DocumentType} from '@/features/documents/types';
-import {createLocalDocument, useDocumentRecords} from '@/features/documents/created-documents';
+import {createLocalDocument, readDocumentRecords, useDocumentRecords} from '@/features/documents/created-documents';
 import {associateRequirementUpload, getVendorRequirements, readVendorRequirements, supplierVendorDocuments, useVendorRequirements} from '@/features/vendors/vendor-requirements';
 import {SupplierRequirementContext, SupplierRequirementList, UploadGlyph} from '@/features/supplier-requirements/SupplierRequirements';
 import shared from '@/features/supplier-requirements/SupplierRequirements.module.css';
@@ -44,7 +44,8 @@ export function SupplierUploadPortalPage({locale, view}: {locale: string; view: 
     const extension = file.name.split('.').pop()?.toLowerCase();
     const requirement = getVendorRequirements(readVendorRequirements(), view.companyId, view.vendorId).requirements.find((item) => item.id === document.id);
     let error = !extension || !allowedExtensions.includes(extension) || (file.type && !['application/pdf', 'image/jpeg', 'image/png'].includes(file.type)) ? t('fileTypeError') : file.size > maxFileBytes ? t('fileSizeError') : undefined;
-    if (!error && (!requirement || requirement.status !== 'missing' || requirement.uploadedDocumentId)) error = t('uploadUnavailable');
+    const current = supplierVendorDocuments(getVendorRequirements(readVendorRequirements(), view.companyId, view.vendorId), readDocumentRecords(), lang).find((item) => item.id === document.id);
+    if (!error && (!requirement || current?.status !== 'missing')) error = t('uploadUnavailable');
     if (!error && requirement) {
       const now = fixtureReferenceTime;
       const upload = createLocalDocument({companyId: view.companyId, vendorId: view.vendorId, vendorName: view.supplier.name, vendorRegistrationNumber: view.supplier.registrationNumber,

@@ -6,7 +6,8 @@ import {catalogDocument} from '@/features/requirements/catalog';
 import {documentIdentityKey, templateDocumentType, type DocumentTypeSnapshot} from '@/features/requirements/document-types';
 import {getCompanyDocumentTypes, getRequirementsWorkspace, readRequirementsState} from '@/features/requirements/requirements-state';
 import type {ExpiryWarningDays, LocalizedText, RequirementTemplate, ValidityMonths} from '@/features/requirements/types';
-import {activeDocuments, approvedCompliance, commitDocumentVersion, deleteLocalDocument, readDocumentRecords, reviewDateToIso, updateDocumentRecord, type CreatedDocument} from '@/features/documents/created-documents';
+import {activeDocuments, approvedCompliance, commitDocumentVersion, readDocumentRecords, reviewDateToIso, updateDocumentRecord, type CreatedDocument} from '@/features/documents/created-documents';
+import {canManuallyExpire} from '@/features/documents/compliance';
 import {documentAccess} from '@/features/documents/document-access';
 import {uploadFileError} from '@/features/documents/upload-file';
 import type {ReviewValues} from '@/features/document-review/types';
@@ -120,9 +121,13 @@ export function removeVendorRequirement(companyId: string, vendorId: string, req
   if (!vendorBelongsToCompany(companyId, vendorId)) return false;
   const workspace = getVendorRequirements(session.state, companyId, vendorId);
   const requirement = workspace.requirements.find((item) => item.id === requirementId);
-  if (!requirement || (requirement.uploadedDocumentId && !deleteLocalDocument(companyId, requirement.uploadedDocumentId))) return false;
+  if (!requirement) return false;
+  // Removing configuration never deletes evidence. The current file becomes unassociated.
+  const document = readDocumentRecords().find((item) => item.id === requirement.uploadedDocumentId && (item.companyId ?? vendorFixtureCompanyId) === companyId && item.vendorId === vendorId);
+  if (requirement.uploadedDocumentId && !document) return false;
+  if (document) updateDocumentRecord(document.id, {vendorRequirementId: undefined});
   publish(companyId, vendorId, {...workspace, requirements: workspace.requirements.filter((item) => item.id !== requirementId)});
-  recordLocalAuditEvent(companyId, {vendorId, documentId: requirement.uploadedDocumentId, eventType: 'requirement_removed', action: {ro: 'Cerință eliminată', en: 'Requirement removed'}, description: requirement.name});
+  recordLocalAuditEvent(companyId, {vendorId, requirementId, documentId: requirement.uploadedDocumentId, eventType: 'requirement_removed', action: {ro: 'Cerință eliminată', en: 'Requirement removed'}, description: requirement.name});
   return true;
 }
 
@@ -132,11 +137,13 @@ export function associateRequirementUpload(companyId: string, vendorId: string, 
   const requirement = workspace.requirements.find((item) => requirementId ? item.id === requirementId : documentIdentityKey(item) === documentIdentityKey(document.typeSnapshot!));
   if (requirementId && !requirement) return false;
   if (document.typeSnapshot.documentTypeSource === 'company' ? !getCompanyDocumentTypes(readRequirementsState(), companyId).some((type) => type.id === document.typeSnapshot?.companyDocumentTypeId) : !catalogDocument(document.typeSnapshot.catalogDocumentTypeId)) return false;
-  if (requirement && (documentIdentityKey(requirement) !== documentIdentityKey(document.typeSnapshot) || requirement.uploadedDocumentId)) return false;
+  const invalidated = requirement?.uploadedDocumentId ? readDocumentRecords().find((item) => item.id === requirement.uploadedDocumentId && item.vendorId === vendorId && (item.companyId ?? vendorFixtureCompanyId) === companyId && !item.supersededById && item.manuallyExpiredAt) : undefined;
+  if (requirement && (documentIdentityKey(requirement) !== documentIdentityKey(document.typeSnapshot) || (requirement.uploadedDocumentId && !invalidated))) return false;
   if (document.reviewOutcome !== 'pending' || !readDocumentRecords().some((item) => item.id === document.id && item.reviewOutcome === 'pending')) return false;
   const next: VendorRequirement = requirement ? {...requirement, fixtureRow: undefined, uploadedDocumentId: document.id, status: 'in_review'}
     : {...document.typeSnapshot, id: `vendor-requirement-${crypto.randomUUID()}`, companyId, vendorId, required: false, sourceTemplateIds: [], sourceTemplateNames: {}, uploadedDocumentId: document.id, status: 'in_review', createdAt: document.createdAt};
   const previous = readDocumentRecords().filter((item) => item.id !== document.id && item.vendorRequirementId === next.id && item.vendorId === vendorId && (item.companyId ?? vendorFixtureCompanyId) === companyId).sort((a, b) => (b.version ?? 1) - (a.version ?? 1))[0];
+  if (invalidated) updateDocumentRecord(invalidated.id, {supersededById: document.id});
   updateDocumentRecord(document.id, {vendorRequirementId: next.id, ...(previous && {versionGroupId: previous.versionGroupId ?? previous.id, version: (previous.version ?? 1) + 1, previousDocumentId: previous.id})}, () => publish(companyId, vendorId, {...workspace, requirements: requirement ? workspace.requirements.map((item) => item.id === requirement.id ? next : item) : [...workspace.requirements, next]}));
   return true;
 }
@@ -169,6 +176,23 @@ export function resolveDocumentReview(companyId: string, documentId: string, out
 }
 
 export type InternalReplacement = {file: File; documentNumber: string; issuedAt: string; expiresAt: string; issuer: string; notes: string};
+
+/** Explicit invalidation of the owned current version, never a metadata rewrite or new version. */
+export function markDocumentExpired(companyId: string, documentId: string) {
+  const access = documentAccess(companyId);
+  if (!access.replace) return false;
+  const document = activeDocuments(readDocumentRecords(), companyId).find((item) => item.id === documentId);
+  if (!document || !vendorBelongsToCompany(companyId, document.vendorId) || !canManuallyExpire(document)) return false;
+  const requirement = getVendorRequirements(session.state, companyId, document.vendorId).requirements.find((item) => item.id === document.vendorRequirementId);
+  if (document.vendorRequirementId && (!requirement || requirement.uploadedDocumentId !== document.id)) return false;
+  const now = fixtureReferenceTime;
+  updateDocumentRecord(document.id, {manuallyExpiredAt: now, manuallyExpiredBy: access.member!.userId,
+    complianceStatus: approvedCompliance(document.expiresAt, requirement?.expiryWarningDays ?? 30, now, now), status: 'expired'});
+  recordLocalAuditEvent(companyId, {eventType: 'document_marked_expired', actorId: access.member!.userId, actorName: access.member!.fullName,
+    vendorId: document.vendorId, requirementId: requirement?.id, documentId: document.id, documentVersion: document.version ?? 1, occurredAt: now,
+    action: {ro: 'Document marcat ca expirat', en: 'Document marked as expired'}, description: {ro: `${document.documentName.ro} — ${document.filename}`, en: `${document.documentName.en} — ${document.filename}`}});
+  return true;
+}
 /** Internal trusted update: new identity, preserved history, no supplier review transition. */
 export function replaceInternalDocument(companyId: string, documentId: string, input: InternalReplacement) {
   const access = documentAccess(companyId);
@@ -187,7 +211,7 @@ export function replaceInternalDocument(companyId: string, documentId: string, i
     versionGroupId: previous.versionGroupId ?? previous.id, version: (previous.version ?? 1) + 1, previousDocumentId: previous.id, supersededById: undefined,
     filename: input.file.name, fileType: input.file.type, fileSize: input.file.size, uploadedAt: now.slice(0, 10), createdAt: now, uploadedBy: access.member!.fullName,
     issuedAt: issuedAt ?? undefined, expiresAt: expiresAt ?? null, documentNumber: input.documentNumber.trim() || undefined, issuer: input.issuer.trim() || undefined, notes: input.notes.trim() || undefined,
-    origin: 'local', updateSource: 'internal', extractionRequested: false, extractionState: 'none', extractedMetadata: undefined, confirmedMetadata: undefined,
+    origin: 'local', updateSource: 'internal', manuallyExpiredAt: undefined, manuallyExpiredBy: undefined, extractionRequested: false, extractionState: 'none', extractedMetadata: undefined, confirmedMetadata: undefined,
     reviewOutcome: 'approved', reviewedAt: undefined, reviewedBy: undefined, reviewRoute: null, complianceStatus, status: complianceStatus === 'expiring_soon' ? 'expiring' : complianceStatus};
   commitDocumentVersion(previous, replacement, input.file, () => {
     if (requirement) publish(companyId, previous.vendorId, {...workspace, requirements: workspace.requirements.map((item) => item.id === requirement.id ? {...item, status: 'uploaded', uploadedDocumentId: replacement.id, fixtureRow: undefined} : item)});
@@ -202,8 +226,8 @@ export function supplierVendorDocuments(workspace: VendorRequirementsWorkspace, 
   return workspace.requirements.map((requirement) => {
     const document = records.find((item) => item.id === requirement.uploadedDocumentId && !item.supersededById && item.reviewOutcome !== 'rejected' && (item.companyId ?? vendorFixtureCompanyId) === requirement.companyId && item.vendorId === requirement.vendorId);
     return {id: requirement.id, catalogDocumentTypeId: requirement.catalogDocumentTypeId, customName: requirement.documentTypeSource === 'company' ? requirement.name[language] : undefined,
-      customDescription: requirement.description?.[language], iconKey: requirement.iconKey, iconColorKey: requirement.iconColorKey, required: requirement.required, status: document ? requirement.status : 'missing',
-      uploadedFile: document?.filename, uploadedAt: document ? {ro: new Intl.DateTimeFormat('ro-RO', {dateStyle: 'medium', timeZone: 'UTC'}).format(new Date(document.createdAt)), en: new Intl.DateTimeFormat('en-GB', {dateStyle: 'medium', timeZone: 'UTC'}).format(new Date(document.createdAt))} : undefined};
+      customDescription: requirement.description?.[language], iconKey: requirement.iconKey, iconColorKey: requirement.iconColorKey, required: requirement.required, status: document && !document.manuallyExpiredAt ? requirement.status : 'missing',
+      uploadedFile: document && !document.manuallyExpiredAt ? document.filename : undefined, uploadedAt: document && !document.manuallyExpiredAt ? {ro: new Intl.DateTimeFormat('ro-RO', {dateStyle: 'medium', timeZone: 'UTC'}).format(new Date(document.createdAt)), en: new Intl.DateTimeFormat('en-GB', {dateStyle: 'medium', timeZone: 'UTC'}).format(new Date(document.createdAt))} : undefined};
   });
 }
 

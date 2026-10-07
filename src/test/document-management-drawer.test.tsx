@@ -42,8 +42,8 @@ describe('canonical document details and internal drawer navigation', () => {
     expect(within(drawer).getAllByText(english ? 'Current' : 'Curent')).toHaveLength(1);
     expect(within(drawer).getByText(english ? 'Current' : 'Curent')).toHaveAttribute('data-tone', 'info');
     expect(drawer).toHaveAttribute('data-size', 'wide');
-    expect(within(drawer).getByRole('button', {name: english ? 'Mark as expired' : 'Marchează ca expirată'})).toBeDisabled();
-    expect(within(drawer).getByRole('button', {name: english ? 'Delete document' : 'Șterge document'})).toBeDisabled();
+    expect(within(drawer).getByRole('button', {name: english ? 'Mark as expired' : 'Marchează ca expirat'})).toBeEnabled();
+    expect(within(drawer).queryByRole('button', {name: english ? 'Delete document' : 'Șterge document'})).not.toBeInTheDocument();
     expect(within(drawer).getByRole('button', {name: english ? 'Download' : 'Descarcă'})).toBeDisabled();
     expect(within(drawer).queryByText('application/pdf')).not.toBeInTheDocument();
   });
@@ -77,6 +77,9 @@ describe('canonical document details and internal drawer navigation', () => {
     fireEvent.click(within(drawer).getByRole('button', {name: 'Înapoi la detalii document'}));
     expect(within(drawer).getByText('certificate-v4.pdf')).toBeVisible();
     expect(within(drawer).getByRole('button', {name: 'Înlocuiește document'})).toBeDisabled();
+    expect(within(drawer).getByRole('button', {name: 'Marchează ca expirat'})).toBeDisabled();
+    fireEvent.click(within(drawer).getByRole('button', {name: 'Marchează ca expirat'}));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
   it('resizes Details → Replace → Back using the current view and the same title bar', () => {
