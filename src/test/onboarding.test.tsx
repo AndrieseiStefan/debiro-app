@@ -5,6 +5,8 @@ import en from '../../messages/en.json';
 import ro from '../../messages/ro.json';
 import {OnboardingPage} from '@/features/onboarding/OnboardingPage';
 import {onboardingFixture} from '@/features/onboarding/fixtures';
+import {getActiveCompany, readCompanyState} from '@/features/companies/company-state';
+import {companyCountries, companyIndustries, companySizes} from '@/features/companies/company-options';
 
 vi.mock('@/i18n/navigation', () => ({
   useRouter: () => ({push: vi.fn()}),
@@ -21,6 +23,27 @@ function renderOnboarding(locale: 'ro' | 'en') {
 }
 
 describe('onboarding page', () => {
+  it('binds company fields from the form on completion, excluding personal and temporary configuration', () => {
+    const before = readCompanyState();
+    renderOnboarding('ro');
+    fireEvent.change(screen.getByLabelText(/^Numele companiei/), {target: {value: 'Onboard SRL'}});
+    fireEvent.change(screen.getByLabelText(/^CUI \/ Cod fiscal/), {target: {value: `RO${crypto.randomUUID()}`}});
+    fireEvent.change(screen.getByLabelText(/^Industria/), {target: {value: 'construction'}});
+    fireEvent.change(screen.getByLabelText(/^Țara/), {target: {value: 'FR'}});
+    expect(screen.getByLabelText(/^Industria/).querySelectorAll('option')).toHaveLength(Object.keys(companyIndustries).length);
+    expect(screen.getByLabelText(/^Mărimea companiei/).querySelectorAll('option')).toHaveLength(Object.keys(companySizes).length);
+    expect(screen.getByLabelText(/^Țara/).querySelectorAll('option')).toHaveLength(Object.keys(companyCountries).length);
+    fireEvent.click(screen.getByRole('button', {name: 'Continuă'}));
+    expect(readCompanyState()).toBe(before);
+    fireEvent.click(screen.getByRole('button', {name: 'Configurează mai târziu'}));
+    fireEvent.click(screen.getByRole('button', {name: 'Intră în Dashboard'}));
+    const company = getActiveCompany(readCompanyState())!.company;
+    expect(company).toMatchObject({name: 'Onboard SRL', industry: 'construction', companySize: '11-50', country: 'FR'});
+    expect(company).not.toHaveProperty('administratorName');
+    expect(company).not.toHaveProperty('email');
+    expect(company).not.toHaveProperty('password');
+    expect(company).not.toHaveProperty('selectedRequirements');
+  });
   it('renders the canonical Romanian first step with text-only DEBIRO branding', () => {
     renderOnboarding('ro');
     expect(screen.getByRole('heading', {level: 1})).toHaveTextContent('Hai să configurăm contul companiei tale');

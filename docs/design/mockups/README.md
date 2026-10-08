@@ -1,6 +1,6 @@
 # Approved Mockups
 
-This repository tracks thirty approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
+This repository tracks thirty-one approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
 
 ## Expected initial mapping
 
@@ -35,7 +35,8 @@ This repository tracks thirty approved product mockup images listed below. They 
 | `24-vendor-requirement-template-assignment.png` | E1-027 template assignment, snapshot provenance, requirement removal and category-change warning |
 | `25-vendor-details-contacts-activity-notes.png` | E1-027B vendor Contacts, Activity and threaded Notes; the task removes the redundant Documents CTA and retains shared immediate filters/plain-text notes |
 | `29-document-actions-and-details-entrypoints.png` | E1-029 shared document details, replacement and history; E1-029B restores section 6's compact timeline. Briefs preserve current tables and override internal-upload review, expire/delete actions and invented metadata; unavailable downloads/rejection reasons are not fabricated. |
-| `document-details.png` | E1-029A/B dedicated Document Details composition, six information rows, action card and compact history preview; supersedes mockup 29's Details presentation only. E1-029B removes the Notes row and duplicate badge dot. Unsupported manual-expire/general-delete controls remain disabled; unsupported external file-open is omitted. |
+| `document-details.png` | E1-029A/B dedicated Document Details composition, six information rows, action card and compact history preview; supersedes mockup 29's Details presentation only. E1-029B removes the Notes row and duplicate badge dot. E1-029G enables confirmed manual expiry and removes general document Delete; unsupported external file-open is omitted. |
+| `30-company-settings-profile.png` | E1-030 active Company Profile; adds existing onboarding company size, retains optional fields per business rules and uses free-text County/Region with the shared form scale. |
 
 ## Contract
 

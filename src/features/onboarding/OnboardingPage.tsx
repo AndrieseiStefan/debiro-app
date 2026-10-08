@@ -11,6 +11,9 @@ import {Field} from '@/components/ui/Field';
 import {Surface} from '@/components/ui/Surface';
 import {OnboardingIcon} from './OnboardingIcon';
 import type {OnboardingFixture} from './fixtures';
+import {companyCountries, companyIndustries, companySizes} from '@/features/companies/company-options';
+import {initializeOnboardingCompany, duplicateCompanyTaxId, getCurrentMembership, normalizeCompanyTaxId, readCompanyState, type NewCompanyInput} from '@/features/companies/company-state';
+import {validEmail} from '@/lib/field-validation';
 import styles from './OnboardingPage.module.css';
 
 const stepIds = ['company', 'requirements', 'suppliers'] as const;
@@ -18,10 +21,6 @@ const requirementIds = ['registration', 'tax', 'insurance', 'fireSafety', 'iso']
 type RequirementId = (typeof requirementIds)[number];
 type RequirementTemplate = 'construction' | 'general';
 type SupplierRow = {id: number; name: string; email: string};
-
-function validEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-}
 
 function RequirementsStep({template, onTemplateChange, selected, onToggle, onSkip, onContinue}: {
   template: RequirementTemplate | null;
@@ -128,14 +127,15 @@ function SuppliersStep({rows, attemptedExit, onAdd, onUpdate, onRemove, onBack, 
   </>;
 }
 
-function SelectionField({id, label, value, icon}: {id: string; label: string; value: string; icon?: ReactNode}) {
+function SelectionField({id, label, value, options, language, icon}: {id: string; label: string; value: string; options: Record<string, {ro: string; en: string}>; language: 'ro' | 'en'; icon?: ReactNode}) {
+  const [selected, setSelected] = useState(value);
   return (
     <div className={styles.selectField}>
       <label htmlFor={id}>{label}<span aria-hidden="true" className={styles.required}> *</span></label>
       <div className={styles.selectWrap}>
-        {icon && <span className={styles.selectLeading} aria-hidden="true">{icon}</span>}
-        <select id={id} name={id} defaultValue={value} required>
-          <option value={value}>{value}</option>
+        {icon && <span className={styles.selectLeading} aria-hidden="true">{id === 'country' ? <span className={styles.countryFlag}>{({RO: '🇷🇴', DE: '🇩🇪', FR: '🇫🇷'} as Record<string, string>)[selected]}</span> : icon}</span>}
+        <select id={id} name={id} value={selected} onChange={(event) => setSelected(event.target.value)} required>
+          {Object.entries(options).map(([key, text]) => <option key={key} value={key}>{text[language]}</option>)}
         </select>
         <OnboardingIcon name="chevron" size={16} />
       </div>
@@ -146,6 +146,10 @@ function SelectionField({id, label, value, icon}: {id: string; label: string; va
 export function OnboardingPage({locale, fixture}: {locale: string; fixture: OnboardingFixture}) {
   const t = useTranslations('Onboarding');
   const router = useRouter();
+  const language = locale === 'en' ? 'en' : 'ro';
+  const companiesT = useTranslations('Companies');
+  const [companyInput, setCompanyInput] = useState<NewCompanyInput | null>(null);
+  const [companyError, setCompanyError] = useState<'required' | 'duplicate' | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [template, setTemplate] = useState<RequirementTemplate | null>(null);
   const [selectedRequirements, setSelectedRequirements] = useState<RequirementId[]>([]);
@@ -169,6 +173,13 @@ export function OnboardingPage({locale, fixture}: {locale: string; fixture: Onbo
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!event.currentTarget.checkValidity()) return;
+    const data = new FormData(event.currentTarget);
+    const input: NewCompanyInput = {name: String(data.get('companyName')), taxId: String(data.get('taxId')), industry: String(data.get('industry')) as NewCompanyInput['industry'], companySize: String(data.get('company-size')) as NewCompanyInput['companySize'], country: String(data.get('country'))};
+    if (!input.name.trim() || !input.taxId.trim()) {setCompanyError('required'); return;}
+    const demo = readCompanyState().companies.find(({company}) => company.id === 'demo-company' && normalizeCompanyTaxId(company.taxId) === normalizeCompanyTaxId(input.taxId));
+    if (duplicateCompanyTaxId(input.taxId, demo && getCurrentMembership(demo)?.role === 'administrator' ? demo.company.id : undefined)) {setCompanyError('duplicate'); return;}
+    setCompanyInput(input);
+    setCompanyError(null);
     setStep(2);
   }
 
@@ -202,6 +213,9 @@ export function OnboardingPage({locale, fixture}: {locale: string; fixture: Onbo
   function finishOnboarding(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!suppliersAreValid()) return;
+    if (!companyInput) return;
+    const result = initializeOnboardingCompany(companyInput);
+    if (!result.ok) {setCompanyError(result.reason); setStep(1); return;}
     router.push('/dashboard');
   }
 
@@ -241,7 +255,7 @@ export function OnboardingPage({locale, fixture}: {locale: string; fixture: Onbo
                 <h1 id="onboarding-heading">{t('heading')}</h1>
                 <p className={styles.lead}>{t('lead')}</p>
 
-                <form onSubmit={handleSubmit} onChange={(event) => setStepOneValid(event.currentTarget.checkValidity())} className={styles.form}>
+                <form onSubmit={handleSubmit} onChange={(event) => {setStepOneValid(event.currentTarget.checkValidity()); setCompanyError(null);}} className={styles.form}>
                   <Surface className={styles.formCard}>
                     <div className={styles.cardHeading}>
                       <span className={styles.cardIcon}><OnboardingIcon name="file" size={23} /></span>
@@ -249,13 +263,13 @@ export function OnboardingPage({locale, fixture}: {locale: string; fixture: Onbo
                     </div>
                     <div className={styles.fieldsGrid}>
                       <div className={styles.fullField}>
-                        <Field id="company-name" name="companyName" label={t('companyName')} defaultValue={fixture.companyName} required className={styles.onboardingField} />
+                        <Field id="company-name" name="companyName" label={t('companyName')} defaultValue={companyInput?.name ?? fixture.companyName} required className={styles.onboardingField} />
                         <span className={styles.example}>{t('companyExample')}</span>
                       </div>
-                      <SelectionField id="industry" label={t('industry')} value={t('industryValue')} icon={<OnboardingIcon name="user" size={18} />} />
-                      <SelectionField id="company-size" label={t('companySize')} value={t('companySizeValue')} icon={<OnboardingIcon name="users" size={18} />} />
-                      <Field id="tax-id" name="taxId" label={t('taxId')} defaultValue={fixture.taxId} required className={styles.onboardingField} />
-                      <SelectionField id="country" label={t('country')} value={t('countryValue')} icon={<span className={styles.countryFlag}>🇷🇴</span>} />
+                      <SelectionField id="industry" label={t('industry')} value={companyInput?.industry ?? fixture.industry} options={companyIndustries} language={language} icon={<OnboardingIcon name="user" size={18} />} />
+                      <SelectionField id="company-size" label={t('companySize')} value={companyInput?.companySize ?? fixture.companySize} options={companySizes} language={language} icon={<OnboardingIcon name="users" size={18} />} />
+                      <Field id="tax-id" name="taxId" label={t('taxId')} defaultValue={companyInput?.taxId ?? fixture.taxId} error={companyError ? companiesT(companyError) : undefined} required className={styles.onboardingField} />
+                      <SelectionField id="country" label={t('country')} value={companyInput?.country ?? fixture.country} options={companyCountries} language={language} icon={<span className={styles.countryFlag}>🇷🇴</span>} />
                     </div>
                   </Surface>
 

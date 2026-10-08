@@ -1,3 +1,5 @@
+import type {CompanyIndustry, CompanySize} from '@/features/companies/company-options';
+
 export type CompanyRole = 'administrator' | 'reviewer' | 'viewer';
 export const companyRoles = ['administrator', 'reviewer', 'viewer'] as const satisfies readonly CompanyRole[];
 export type MembershipStatus = 'active' | 'invited';
@@ -32,7 +34,18 @@ export type CompanySettingsViewModel = {
     name: string;
     taxId: string;
     country: string;
-    industry: {ro: string; en: string};
+    industry: CompanyIndustry;
+    companySize?: CompanySize;
+    registrationNumber?: string;
+    website?: string;
+    contactEmail?: string;
+    contactPhone?: string;
+    contactPersonName?: string;
+    contactPersonRole?: string;
+    addressLine?: string;
+    city?: string;
+    countyRegion?: string;
+    postalCode?: string;
     subscription: CompanySubscription;
   };
   currentUser: {fullName: string; initials: string; email: string};

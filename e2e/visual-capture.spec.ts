@@ -26,7 +26,21 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   await page.waitForLoadState('networkidle');
   await page.evaluate(async () => { await document.fonts.ready; });
   if (action) {
-    if (['document-expiry-confirmation', 'document-manually-expired', 'document-expired-history', 'document-isu-details', 'document-isu-replace', 'document-isu-preview', 'document-isu-history', 'document-isu-menu'].includes(action)) {
+    if (['company-profile-dirty', 'company-profile-invalid', 'company-profile-readonly'].includes(action)) {
+      if (!/^\/(en\/)?company\/settings\/profile$/.test(route)) throw new Error('Company Profile capture requires its settings route.');
+      const english = route.startsWith('/en');
+      if (action === 'company-profile-readonly') {
+        await page.getByRole('button', {name: 'Demo Company SRL', exact: true}).click();
+        await page.getByRole('dialog', {name: english ? 'Switch company' : 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
+        await expect(page.locator('#profile-name')).toBeDisabled();
+      } else {
+        await page.locator('#profile-name').fill(action === 'company-profile-invalid' ? ' ' : 'Unsaved company');
+        if (action === 'company-profile-dirty') {
+          await page.getByRole('link', {name: english ? 'RO' : 'EN', exact: true}).click();
+          await expect(page.getByRole('alertdialog')).toBeVisible();
+        }
+      }
+    } else if (['document-expiry-confirmation', 'document-manually-expired', 'document-expired-history', 'document-isu-details', 'document-isu-replace', 'document-isu-preview', 'document-isu-history', 'document-isu-menu'].includes(action)) {
       if (!/^\/(en\/)?(documents|vendors\/construct-pro)$/.test(route)) throw new Error('ISU fixture capture requires Documents or Construct Pro.');
       const english = route.startsWith('/en');
       await page.getByRole('link', {name: english ? 'Fire safety authorization' : 'Autorizație ISU', exact: true}).first().click();

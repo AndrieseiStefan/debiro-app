@@ -36,8 +36,8 @@ export function CompanyBillingPage({locale, view: initialView}: {locale: string;
   const {subscription} = company;
   const {billingProfile, paymentMethod} = subscription;
   const billingRows = [
-    {label: t('billing.legalName'), value: billingProfile.legalName},
-    {label: t('billing.taxId'), value: billingProfile.taxId},
+    {label: t('billing.legalName'), value: company.name},
+    {label: t('billing.taxId'), value: company.taxId},
     {label: t('billing.email'), value: billingProfile.email},
     {label: t('billing.address'), value: billingProfile.address},
     {label: t('billing.contact'), value: billingProfile.contactName}

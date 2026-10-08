@@ -282,12 +282,9 @@
     "companyName": "Numele companiei",
     "companyExample": "Ex: Global Clean Services SRL",
     "industry": "Industria",
-    "industryValue": "Servicii profesionale",
     "companySize": "Mărimea companiei",
-    "companySizeValue": "11 - 50 angajați",
     "taxId": "CUI / Cod fiscal",
     "country": "Țara",
-    "countryValue": "România",
     "administratorSectionTitle": "Primul utilizator (administrator)",
     "administratorSectionDescription": "Vei fi administratorul contului și vei putea adăuga ulterior alți membri din echipă.",
     "fullName": "Nume complet",
@@ -464,8 +461,6 @@
     "duplicate": "Există deja o companie accesibilă cu acest CUI.",
     "chooseIndustry": "Selectează industria",
     "chooseCountry": "Selectează țara",
-    "industries": {"professional": "Servicii profesionale", "construction": "Construcții și instalații", "cleaning": "Servicii de curățenie", "other": "Altă industrie"},
-    "countries": {"RO": "România", "DE": "Germania", "FR": "Franța"},
     "createNotice": "La creare, compania nouă devine compania activă.",
     "cancel": "Anulează",
     "create": "Creează compania",
@@ -486,6 +481,25 @@
     "minutesAgo": "acum {count} min",
     "hoursAgo": "acum {count} h",
     "yesterday": "ieri, {time}"
+  },
+  "CompanyProfile": {
+    "breadcrumbLabel": "Navigare profil companie",
+    "title": "Profil companie",
+    "description": "Gestionează informațiile companiei tale. Aceste detalii au fost furnizate la înregistrare și sunt folosite în întreaga platformă DEBIRO, inclusiv în documente, invitații și rapoarte.",
+    "information": {"title": "Informații companie", "description": "Datele de identificare și informațiile generale ale companiei."},
+    "contact": {"title": "Date de contact", "description": "Datele de contact principale ale companiei."},
+    "address": {"title": "Adresă companie", "description": "Adresa sediului social al companiei."},
+    "fields": {
+      "name": "Denumire companie", "taxId": "CUI", "registrationNumber": "Nr. Registrul Comerțului", "website": "Website", "industry": "Industrie", "companySize": "Dimensiunea companiei",
+      "contactEmail": "Email companie", "contactPhone": "Telefon companie", "contactPersonName": "Persoană de contact", "contactPersonRole": "Funcție",
+      "addressLine": "Adresă", "city": "Localitate", "countyRegion": "Județ / Regiune", "postalCode": "Cod poștal", "country": "Țară"
+    },
+    "selectPlaceholder": "Selectează",
+    "cancel": "Anulează", "save": "Salvează modificările", "saved": "Modificările au fost salvate.",
+    "readOnly": "Doar administratorii pot modifica profilul companiei. Ai acces doar pentru citire.",
+    "accessDenied": "Nu poți modifica profilul acestei companii. Verifică firma activă și rolul tău.",
+    "discardTitle": "Renunți la modificările nesalvate?", "discardDescription": "Modificările profilului companiei nu au fost salvate. Dacă pleci acum, acestea vor fi pierdute.", "continueEditing": "Continuă editarea", "discardChanges": "Renunță la modificări",
+    "validation": {"nameRequired": "Introdu denumirea companiei.", "taxIdRequired": "Introdu CUI-ul companiei.", "duplicate": "Există deja o companie accesibilă cu acest CUI.", "industryRequired": "Selectează industria.", "countryRequired": "Selectează țara.", "invalidOption": "Selectează o opțiune validă.", "invalidEmail": "Introdu o adresă de email validă.", "invalidUrl": "Introdu o adresă web validă."}
   },
   "CompanyMembers": {
     "breadcrumbLabel": "Navigare pe pagină",

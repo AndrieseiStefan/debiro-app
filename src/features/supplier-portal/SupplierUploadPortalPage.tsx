@@ -12,6 +12,7 @@ import type {DocumentType} from '@/features/documents/types';
 import {createLocalDocument, readDocumentRecords, useDocumentRecords} from '@/features/documents/created-documents';
 import {associateRequirementUpload, getVendorRequirements, readVendorRequirements, supplierVendorDocuments, useVendorRequirements} from '@/features/vendors/vendor-requirements';
 import {SupplierRequirementContext, SupplierRequirementList, UploadGlyph} from '@/features/supplier-requirements/SupplierRequirements';
+import {useCompanyState} from '@/features/companies/company-state';
 import shared from '@/features/supplier-requirements/SupplierRequirements.module.css';
 import type {SupplierDocument, SupplierPortalViewModel} from './types';
 import styles from './SupplierUploadPortalPage.module.css';
@@ -34,6 +35,9 @@ function PortalIcon({name, size = 21}: {name: 'lock' | 'eyeOff' | 'mail' | 'phon
 export function SupplierUploadPortalPage({locale, view}: {locale: string; view: SupplierPortalViewModel}) {
   const t = useTranslations('SupplierPortal');
   const lang = locale === 'en' ? 'en' : 'ro';
+  const company = useCompanyState().companies.find((record) => record.company.id === view.companyId)?.company;
+  // The external token owns its requester, independently of the active authenticated workspace.
+  const requester = {...view.requester, name: company?.name ?? view.requester.name};
   const [localFiles, setLocalFiles] = useState<LocalFileState>({});
   const workspace = getVendorRequirements(useVendorRequirements(), view.companyId, view.vendorId);
   const documents = supplierVendorDocuments(workspace, useDocumentRecords(), lang);
@@ -88,7 +92,7 @@ export function SupplierUploadPortalPage({locale, view}: {locale: string; view: 
       <div className={styles.contentColumn}>
         <div className={styles.intro}><p className={styles.eyebrow}>{t('eyebrow')}</p><h1>{t('title')}</h1><p>{t('description')}</p></div>
 
-        <SupplierRequirementContext locale={locale} requester={view.requester} supplier={view.supplier}/>
+        <SupplierRequirementContext locale={locale} requester={requester} supplier={view.supplier}/>
         <SupplierRequirementList locale={locale} documents={documents} renderUpload={(document) => renderUpload(document)} renderFileAction={(document) => <button type="button" aria-label={t('documentActions', {name: documentDisplay(document, lang).name})} aria-disabled="true" className={styles.moreAction}><AppIcon name="more" size={23}/></button>}
           renderFeedback={(document) => localFiles[document.id]?.error ? <span className={styles.fileError} role="alert" id={`upload-error-${document.id}`}>{localFiles[document.id].error}</span> : null}/>
 
@@ -97,7 +101,7 @@ export function SupplierUploadPortalPage({locale, view}: {locale: string; view: 
       </div>
 
       <div className={styles.sideColumn}>
-        <aside className={styles.securityCard} aria-labelledby="security-title"><div className={styles.sideHeading}><span className={styles.securityHero}><AppIcon name="shield" size={29}/></span><h2 id="security-title">{t('secureUpload')}</h2></div><ul><li><span><PortalIcon name="lock"/></span>{t('securityEncrypted')}</li><li><span><AppIcon name="shield" size={21}/></span>{t('securityAccess', {company: view.requester.name})}</li><li><span><PortalIcon name="eyeOff"/></span>{t('securityPrivacy')}</li><li><span><AppIcon name="file" size={21}/></span>{t('securityGdpr')}</li></ul><div className={styles.securityWhy}><h3>{t('whyDocuments')}</h3><p>{t('whyDescription')}</p></div></aside>
+        <aside className={styles.securityCard} aria-labelledby="security-title"><div className={styles.sideHeading}><span className={styles.securityHero}><AppIcon name="shield" size={29}/></span><h2 id="security-title">{t('secureUpload')}</h2></div><ul><li><span><PortalIcon name="lock"/></span>{t('securityEncrypted')}</li><li><span><AppIcon name="shield" size={21}/></span>{t('securityAccess', {company: requester.name})}</li><li><span><PortalIcon name="eyeOff"/></span>{t('securityPrivacy')}</li><li><span><AppIcon name="file" size={21}/></span>{t('securityGdpr')}</li></ul><div className={styles.securityWhy}><h3>{t('whyDocuments')}</h3><p>{t('whyDescription')}</p></div></aside>
         <aside className={styles.helpCard} id="portal-help" aria-labelledby="help-title"><div className={styles.helpHeading}><span><PortalIcon name="help" size={27}/></span><div><h2 id="help-title">{t('needHelp')}</h2><p>{t('helpDescription')}</p></div></div><a href={`mailto:${view.help.email}`}><PortalIcon name="mail" size={22}/>{view.help.email}</a><a href={`tel:${view.help.phone.replace(/\s/g, '')}`}><PortalIcon name="phone" size={22}/>{view.help.phone}</a><p className={styles.hours}>{t('hours')}</p></aside>
         <div className={styles.mountainArt} aria-hidden="true"><span>{t('mountainLine')}</span></div>
       </div>

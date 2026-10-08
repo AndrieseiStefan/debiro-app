@@ -2,6 +2,9 @@
 export const onboardingFixture = {
   companyName: 'Demo Company SRL',
   taxId: 'RO12345678',
+  industry: 'professional',
+  companySize: '11-50',
+  country: 'RO',
   administratorName: 'Andrei Popescu',
   email: 'andrei.popescu@demo.ro',
   password: 'DemoSecure1!',

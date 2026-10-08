@@ -16,6 +16,7 @@ import {RoleBadge, RoleIcon} from './RoleVisual';
 import {InviteMemberDrawer} from './InviteMemberDrawer';
 import {companyRoles, type CompanyMembership, type CompanyRole, type CompanySettingsViewModel} from './types';
 import styles from './MembersAccessPage.module.css';
+import {companyIndustries} from '@/features/companies/company-options';
 
 
 function initials(name: string) {
@@ -59,7 +60,7 @@ export function MembersAccessPage({locale, view: initialView}: {locale: string; 
 
       <Surface className={styles.companySummary}>
         <span className={styles.companyIcon}><AppIcon name="building" size={32}/></span>
-        <div className={styles.companyCopy}><h2>{view.company.name}</h2><p>{t('taxId')}: {view.company.taxId}<span aria-hidden="true">|</span>{view.company.industry[locale === 'en' ? 'en' : 'ro']}</p></div>
+        <div className={styles.companyCopy}><h2>{view.company.name}</h2><p>{t('taxId')}: {view.company.taxId}<span aria-hidden="true">|</span>{companyIndustries[view.company.industry][locale === 'en' ? 'en' : 'ro']}</p></div>
         <div className={styles.companyBadges}><span className={styles.plan}><AppIcon name="crown" size={20}/>{view.company.subscription.plan}</span>{view.company.subscription.trialDaysRemaining > 0 && <span className={styles.trial}><AppIcon name="clock" size={20}/>{t('trialDays', {count: view.company.subscription.trialDaysRemaining})}</span>}</div>
       </Surface>
 

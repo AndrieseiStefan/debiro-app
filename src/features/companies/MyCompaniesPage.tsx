@@ -10,11 +10,12 @@ import {Surface} from '@/components/ui/Surface';
 import {RoleBadge} from '@/features/company-settings/RoleVisual';
 import {createCompany, currentUser, getCurrentMembership, switchActiveCompany, useCompanyState, type CompanyIndustry} from './company-state';
 import styles from './MyCompaniesPage.module.css';
+import {companyCountries, companyIndustries} from './company-options';
 
 type FormValues = {name: string; industry: CompanyIndustry | ''; taxId: string; country: string};
 const emptyForm: FormValues = {name: '', industry: '', taxId: '', country: ''};
-const industryOptions = ['professional', 'construction', 'cleaning', 'other'] as const;
-const countryOptions = ['RO', 'DE', 'FR'] as const;
+const industryOptions = Object.keys(companyIndustries) as CompanyIndustry[];
+const countryOptions = Object.keys(companyCountries) as (keyof typeof companyCountries)[];
 
 export function MyCompaniesPage({locale}: {locale: string}) {
   const t = useTranslations('Companies');
@@ -67,7 +68,7 @@ export function MyCompaniesPage({locale}: {locale: string}) {
                   <span className={styles.companyIcon} aria-hidden="true"><AppIcon name="building" size={29}/></span>
                   <div className={styles.companyInfo}>
                     <h3>{record.company.name}</h3>
-                    <p>{t('taxId')}: {record.company.taxId}<span aria-hidden="true">|</span>{record.company.industry[locale === 'en' ? 'en' : 'ro']}</p>
+                    <p>{t('taxId')}: {record.company.taxId}<span aria-hidden="true">|</span>{companyIndustries[record.company.industry][locale === 'en' ? 'en' : 'ro']}</p>
                     <div className={styles.badges}>
                       {membership && <RoleBadge role={membership.role} label={roles(`roles.${membership.role}`)} iconSize={16}/>}
                       <span className={styles.plan}><AppIcon name="crown" size={17}/>{record.company.subscription.plan}</span>
@@ -89,9 +90,9 @@ export function MyCompaniesPage({locale}: {locale: string}) {
             <h2>{t('createTitle')}</h2><p className={styles.createDescription}>{t('createDescription')}</p>
             <form id="create-company-form" noValidate onSubmit={submit}>
               <label><span className={styles.fieldLabel}>{t('name')} <em aria-hidden="true">*</em></span><input ref={nameRef} value={form.name} onChange={(event) => update('name', event.target.value)} aria-invalid={submitted && !form.name.trim()}/></label>
-              <label><span className={styles.fieldLabel}>{t('industry')} <em aria-hidden="true">*</em></span><select value={form.industry} data-empty={form.industry === ''} onChange={(event) => update('industry', event.target.value as CompanyIndustry | '')} aria-invalid={submitted && !form.industry}><option value="">{t('chooseIndustry')}</option>{industryOptions.map((industry) => <option key={industry} value={industry}>{t(`industries.${industry}`)}</option>)}</select></label>
+              <label><span className={styles.fieldLabel}>{t('industry')} <em aria-hidden="true">*</em></span><select value={form.industry} data-empty={form.industry === ''} onChange={(event) => update('industry', event.target.value as CompanyIndustry | '')} aria-invalid={submitted && !form.industry}><option value="">{t('chooseIndustry')}</option>{industryOptions.map((industry) => <option key={industry} value={industry}>{companyIndustries[industry][locale === 'en' ? 'en' : 'ro']}</option>)}</select></label>
               <label><span className={styles.fieldLabel}>{t('taxIdField')} <em aria-hidden="true">*</em></span><input value={form.taxId} onChange={(event) => update('taxId', event.target.value)} aria-invalid={submitted && (!form.taxId.trim() || error === 'duplicate')}/></label>
-              <label><span className={styles.fieldLabel}>{t('country')} <em aria-hidden="true">*</em></span><select value={form.country} data-empty={form.country === ''} onChange={(event) => update('country', event.target.value)} aria-invalid={submitted && !form.country}><option value="">{t('chooseCountry')}</option>{countryOptions.map((country) => <option key={country} value={country}>{t(`countries.${country}`)}</option>)}</select></label>
+              <label><span className={styles.fieldLabel}>{t('country')} <em aria-hidden="true">*</em></span><select value={form.country} data-empty={form.country === ''} onChange={(event) => update('country', event.target.value)} aria-invalid={submitted && !form.country}><option value="">{t('chooseCountry')}</option>{countryOptions.map((country) => <option key={country} value={country}>{companyCountries[country][locale === 'en' ? 'en' : 'ro']}</option>)}</select></label>
               <label><span className={styles.fieldLabel}>{t('administrator')} <em aria-hidden="true">*</em></span><input value={currentUser.fullName} readOnly/></label>
               {error && <p className={styles.error} role="alert">{t(error)}</p>}
               <p className={styles.createNotice}><AppIcon name="info" size={18}/>{t('createNotice')}</p>

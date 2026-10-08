@@ -10,11 +10,11 @@
 
 **Domain strategy:** Single domain
 
-**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and the experiences represented by all thirty approved mockups have fixture/browser-local implementations, with documented unsupported actions; backend/auth integrations are not.
+**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and the experiences represented by all thirty-one approved mockups have fixture/browser-local implementations, with documented unsupported actions; backend/auth integrations are not.
 
 ## Design state
 
-Thirty approved product mockups are tracked in `docs/design/mockups/`. They are canonical contracts requiring:
+Thirty-one approved product mockups are tracked in `docs/design/mockups/`. They are canonical contracts requiring:
 
 - UI fidelity as close to 1:1 as technically practical
 - Interaction fidelity as close to 1:1 as technically practical
@@ -34,7 +34,7 @@ The final logo is not yet designed and must not be invented.
 - Reusable low-level UI/layout primitives, accessibility baseline, Vitest/RTL and Playwright test tooling, deterministic visual capture, development-only design-system preview
 - E1-001 canonical landing page at `/` (Romanian) and `/en` (English), using a typed static dashboard preview and no provider data; see [landing page](../features/landing-page.md)
 - E1-024 public account entry links from Landing to existing locale-matched Login and Onboarding routes, without authentication or persistence
-- E1-002/E1-012 canonical three-step onboarding at `/onboarding` (Romanian) and `/en/onboarding` (English), using typed fixtures and browser-local interactions only; Steps 2 and 3 are optional and no data is persisted or sent; see [onboarding](../features/onboarding.md)
+- E1-002/E1-012 canonical three-step onboarding at `/onboarding` (Romanian) and `/en/onboarding` (English), using typed fixtures and browser-local interactions only; Steps 2 and 3 remain optional/temporary; E1-030 completion binds company fields to shared tab memory, without durable persistence or delivery; see [onboarding](../features/onboarding.md)
 - E1-014 canonical existing-user login at `/login` and `/en/login`, using local form validation and fixture-backed Dashboard navigation without a real session or social sign-in; see [login](../features/login.md)
 - E1-003 canonical dashboard overview at `/dashboard` (Romanian) and `/en/dashboard` (English), using an independent authenticated app shell and deterministic view fixture; see [dashboard](../features/dashboard.md)
 - E1-004/E1-026A/A1 Vendors List at `/vendors` and `/en/vendors`, with local search/category/compliance filters, five-column semantic sorting, pagination/page size, name-to-Details links for every vendor, contextual Open/Active/Inactive actions and active-only compliance summaries; unsupported bulk selection is removed; see [vendors](../features/vendors.md)
@@ -61,6 +61,7 @@ The final logo is not yet designed and must not be invented.
 - E1-018 Company Settings > Members & Access at `/company/settings/members` and `/en/company/settings/members`, with company-scoped fixture memberships, an Invite Member drawer, and browser-local pending invitations; see [company members and access](../features/company-members-access.md)
 - E1-019 Company Settings > Plan & Billing at `/company/settings/billing` and `/en/company/settings/billing`, reusing the active company's E1-018 membership counts for seat usage and showing fixture billing, payment, plan, and invoices without real payment operations; see [company plan and billing](../features/company-plan-billing.md)
 - E1-020 global-user profile dropdown in the authenticated shell, reusing the current-user, active-company membership, and accessible-company fixture data without fake destinations or logout; see [profile dropdown](../features/profile-dropdown.md)
+- E1-030 Company Profile at `/company/settings/profile` and `/en/company/settings/profile`, canonical three-section atomic editing, administrator/read-only roles, unsaved-change confirmation, onboarding company-field binding and shared identity propagation; see [Company Profile and ownership audit](../features/company-profile.md)
 - E1-021/022 My Companies at `/profile/companies` and `/en/profile/companies`, a shared browser-memory accessible-company and active-workspace source, local company creation, and a sidebar company switcher; see [My Companies](../features/my-companies.md)
 - Landing-page CTA alignment and visible brand casing standardized to `DEBIRO`; the three-mode responsive contract, shared centered 1350px page shell, shared 66px public header, stacked hero reflow, and boundary/safety viewport regression matrix are implemented in [UI foundation](../design/ui-foundation.md#page-shell-contract)
 

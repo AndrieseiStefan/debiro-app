@@ -1,4 +1,5 @@
 import {vendorCategories, type VendorCategory} from './types';
+import {validEmail, validWebsite} from '@/lib/field-validation';
 
 export type VendorMetadata = {
   name: string; cui: string; category: VendorCategory; email: string;
@@ -26,15 +27,9 @@ export function validateVendorValues(values: VendorFormValues, duplicateCui = fa
   if (!values.cui.trim()) errors.cui = 'cuiRequired';
   else if (duplicateCui) errors.cui = 'cuiDuplicate';
   if (!values.email.trim()) errors.email = 'emailRequired';
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) errors.email = 'emailInvalid';
+  else if (!validEmail(values.email)) errors.email = 'emailInvalid';
   if (!vendorCategories.includes(values.category as VendorCategory)) errors.category = 'categoryRequired';
-  if (values.website.trim()) {
-    try {
-      const value = values.website.trim();
-      const url = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
-      if (!['http:', 'https:'].includes(url.protocol) || !url.hostname.includes('.')) errors.website = 'websiteInvalid';
-    } catch {errors.website = 'websiteInvalid';}
-  }
+  if (values.website.trim() && !validWebsite(values.website)) errors.website = 'websiteInvalid';
   return errors;
 }
 

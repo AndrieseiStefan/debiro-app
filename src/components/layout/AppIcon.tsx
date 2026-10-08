@@ -6,10 +6,11 @@ export type AppIconName =
   | 'check' | 'clock' | 'close' | 'more' | 'calendar' | 'info'
   | 'building' | 'arrowRight' | 'userPlus' | 'fileX' | 'filter' | 'upload'
   | 'crown' | 'eye' | 'mail' | 'send' | 'creditCard' | 'edit' | 'download' | 'sort'
-  | 'user' | 'external' | 'logout' | 'clipboard' | 'trash' | 'filePdf'
+  | 'user' | 'external' | 'logout' | 'clipboard' | 'trash' | 'filePdf' | 'mapPin'
   | 'box' | 'construction' | 'tools' | 'safety' | 'truck' | 'computer' | 'briefcase' | 'layers' | 'warning';
 
 const paths: Record<AppIconName, ReactNode> = {
+  mapPin: <><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></>,
   clipboard: <><rect x="5" y="4" width="14" height="18" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1" fill="white"/></>,
   trash: <><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></>,
   filePdf: <><path d="M5 2h9l5 5v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Z" fill="currentColor"/><path d="M14 2v6h5" stroke="white" strokeWidth="1"/><text x="11.5" y="18" textAnchor="middle" fill="white" stroke="none" fontSize="6" fontWeight="700">PDF</text></>,

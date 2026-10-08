@@ -282,12 +282,9 @@
     "companyName": "Company name",
     "companyExample": "e.g. Global Clean Services Ltd",
     "industry": "Industry",
-    "industryValue": "Professional services",
     "companySize": "Company size",
-    "companySizeValue": "11 - 50 employees",
     "taxId": "Tax / registration number",
     "country": "Country",
-    "countryValue": "Romania",
     "administratorSectionTitle": "First user (administrator)",
     "administratorSectionDescription": "You'll administer the account and can add other team members later.",
     "fullName": "Full name",
@@ -464,8 +461,6 @@
     "duplicate": "You already have access to a company with this tax ID.",
     "chooseIndustry": "Select an industry",
     "chooseCountry": "Select a country",
-    "industries": {"professional": "Professional services", "construction": "Construction and installations", "cleaning": "Cleaning services", "other": "Other industry"},
-    "countries": {"RO": "Romania", "DE": "Germany", "FR": "France"},
     "createNotice": "The new company becomes active when created.",
     "cancel": "Cancel",
     "create": "Create company",
@@ -486,6 +481,25 @@
     "minutesAgo": "{count}m ago",
     "hoursAgo": "{count}h ago",
     "yesterday": "yesterday, {time}"
+  },
+  "CompanyProfile": {
+    "breadcrumbLabel": "Company profile navigation",
+    "title": "Company profile",
+    "description": "Manage your company's information. These details were provided during registration and are used throughout DEBIRO, including in documents, invitations and reports.",
+    "information": {"title": "Company information", "description": "Company identification and general information."},
+    "contact": {"title": "Contact details", "description": "The company's primary contact details."},
+    "address": {"title": "Company address", "description": "The company's registered office address."},
+    "fields": {
+      "name": "Company name", "taxId": "Tax ID", "registrationNumber": "Trade Register number", "website": "Website", "industry": "Industry", "companySize": "Company size",
+      "contactEmail": "Company email", "contactPhone": "Company phone", "contactPersonName": "Contact person", "contactPersonRole": "Position",
+      "addressLine": "Address", "city": "City", "countyRegion": "County / Region", "postalCode": "Postal code", "country": "Country"
+    },
+    "selectPlaceholder": "Select",
+    "cancel": "Cancel", "save": "Save changes", "saved": "Changes saved.",
+    "readOnly": "Only administrators can edit the company profile. You have read-only access.",
+    "accessDenied": "You cannot edit this company's profile. Check your active company and role.",
+    "discardTitle": "Discard unsaved changes?", "discardDescription": "Your company profile changes have not been saved. If you leave now, they will be lost.", "continueEditing": "Continue editing", "discardChanges": "Discard changes",
+    "validation": {"nameRequired": "Enter the company name.", "taxIdRequired": "Enter the company tax ID.", "duplicate": "An accessible company with this tax ID already exists.", "industryRequired": "Select the industry.", "countryRequired": "Select the country.", "invalidOption": "Select a valid option.", "invalidEmail": "Enter a valid email address.", "invalidUrl": "Enter a valid website address."}
   },
   "CompanyMembers": {
     "breadcrumbLabel": "Page navigation",
