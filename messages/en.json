@@ -1,4 +1,15 @@
 {
+  "CompanyWorkspace": {
+    "firstRunTitle": "Start with your first vendor",
+    "firstVendor": "Add your first vendor",
+    "vendorsTitle": "You have no vendors yet",
+    "vendorsDescription": "Add your first vendor to start managing documents and compliance.",
+    "pendingVendorsDescription": "Vendors entered during setup are retained for completion. Add the tax ID and category to create your first vendor.",
+    "documentsTitle": "No documents yet",
+    "documentsDescription": "Documents will appear here once vendor requirements are configured and documents are uploaded.",
+    "noAttention": "No documents require attention.",
+    "noActivity": "No activity yet."
+  },
   "DocumentManagement": {
     "openDetails": "Open details",
     "openVendor": "Open vendor",

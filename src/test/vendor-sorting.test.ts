@@ -61,5 +61,5 @@ it('does not invent independent fixture expiries or local expiry values', () => 
   for (const item of vendorsListFixture.vendors) {
     expect(item.nextExpiry).toEqual({date: null, ro: '—', en: '—', tone: 'neutral'});
   }
-  expect(toVendorListItem({id: 'local-sort', name: 'Local', cui: 'RO1234', category: 'software', email: 'local@example.test', lifecycleStatus: 'active'}).nextExpiry.date).toBeNull();
+  expect(toVendorListItem({id: 'local-sort', companyId: 'demo-company', name: 'Local', cui: 'RO1234', category: 'software', email: 'local@example.test', lifecycleStatus: 'active'}).nextExpiry.date).toBeNull();
 });

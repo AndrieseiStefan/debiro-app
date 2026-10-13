@@ -117,3 +117,7 @@ Run `npm run dev`, inspect `/__dev/design-system` (or `/en/__dev/design-system`)
 ## Remaining uncertainty and deviations
 
 Exact font provenance, antialiasing, individual screen spacing, mobile composition, and any screen-specific icon treatment remain to be verified against each mockup during its implementation. Token measurements are approximate where the raster image cannot establish CSS dimensions exactly. Approved material deviations: none. The preview is deliberately a component specimen, not a reproduced product screen.
+
+## Company-owned first-run states (E1-031)
+
+The authenticated shell is available for every accessible active company, not gated to Demo fixtures. Existing operational page headers/cards/navigation remain recognizable with honest zero/empty content. Shared EmptyState supports an optional decorative icon without changing existing consumers. Empty Dashboard alone exposes the existing Add Vendor drawer as `Adaugă primul furnizor`; populated Dashboard keeps no general creation CTA. No global responsive geometry changes. See [workspace ownership](../features/company-workspaces.md).

@@ -30,8 +30,8 @@ describe('documents fixture and states', () => {
   it('shows a distinct empty state when no documents exist', () => {
     render(<NextIntlClientProvider locale="ro" messages={ro}><DocumentsPage locale="ro" view={documentsFixture} /></NextIntlClientProvider>);
     expect(screen.getByRole('heading', {level: 1, name: 'Documente'})).toBeVisible();
-    expect(screen.getByText('Nu există documente')).toBeVisible();
-    expect(screen.getByText('Documentele furnizorilor vor apărea aici când vor fi disponibile.')).toBeVisible();
+    expect(screen.getByText('Nu există documente încă')).toBeVisible();
+    expect(screen.getByText('Documentele vor apărea aici după ce sunt configurate cerințe pentru furnizori și sunt încărcate documente.')).toBeVisible();
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
   });
 });

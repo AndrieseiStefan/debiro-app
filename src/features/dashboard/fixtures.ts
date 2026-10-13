@@ -14,7 +14,7 @@ export const dashboardFixture: DashboardViewModel = {
     attention: 0,
     noncompliant: 0,
     missingDocuments: 0,
-    monthlyIncrease: 3,
+    monthlyIncrease: 0,
     percentages: {compliant: 0, attention: 0, noncompliant: 0, missingDocuments: 0}
   },
   documentsRequiringAttention: [],

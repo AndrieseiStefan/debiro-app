@@ -17,7 +17,7 @@ export function LocalDocumentReviewPage({locale, documentId}: {locale: string; d
   const t = useTranslations('DocumentReview');
   const hydrated = useSyncExternalStore(subscribeToNothing, () => true, () => false);
   const companyId = useCompanyState().activeCompanyId;
-  const document = useDocumentRecords().find((item) => item.id === documentId && (item.companyId ?? 'demo-company') === companyId);
+  const document = useDocumentRecords().find((item) => item.id === documentId && item.companyId === companyId);
   if (!hydrated) return null;
   if (!document) return <AuthenticatedAppShell locale={locale} currentPath={`/documents/${documentId}/review`} organizationName={documentsFixture.organization.name} userName={documentsFixture.user.fullName} userInitials={documentsFixture.user.initials} notificationCount={documentsFixture.notificationCount}><EmptyState title={t('localDocumentUnavailable')} action={<Link href="/documents">{t('backToDocuments')}</Link>}/></AuthenticatedAppShell>;
   const view: DocumentReviewViewModel = {

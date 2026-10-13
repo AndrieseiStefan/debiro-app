@@ -19,6 +19,7 @@ import {documentDetailsHref, type DocumentSelection} from './document-management
 import {DocumentActions} from './DocumentActions';
 import {DocumentManagementDrawer} from './DocumentManagementDrawer';
 import {useCompanyState} from '@/features/companies/company-state';
+import {fixtureReferenceDate} from '@/lib/fixture-clock';
 import styles from './DocumentsPage.module.css';
 
 const pageSize = 8;
@@ -59,8 +60,9 @@ function DocumentRow({document, locale}: {document: CreatedDocument; locale: str
 
 export function DocumentsPage({locale, view, documentId, documentAction}: {locale: string; view: DocumentsViewModel} & DocumentSelection) {
   const t = useTranslations('Documents');
+  const empty = useTranslations('CompanyWorkspace');
   const companyId = useCompanyState().activeCompanyId;
-  const documents = activeDocuments(useDocumentRecords(), companyId ?? '', true);
+  const documents = activeDocuments(useDocumentRecords(), companyId ?? '');
   const [tab, setTab] = useState<'all' | 'review'>('all');
   const [query, setQuery] = useState('');
   const [vendor, setVendor] = useState('all');
@@ -121,7 +123,7 @@ export function DocumentsPage({locale, view, documentId, documentAction}: {local
       <section className={styles.summaryGrid} aria-label={t('summaryLabel')}>
         {(['total', 'review', 'valid', 'expiring'] as const).map((item) => {
           const count = item === 'total' ? documents.length : counts[item];
-          const helper = item === 'total' ? t('summary.increase', {count: Math.max(0, documents.length - view.previousMonthCount)}) : t('summary.percent', {percent: documents.length ? Math.round(count / documents.length * 100) : 0});
+          const helper = item === 'total' ? t('summary.increase', {count: documents.filter((document) => document.uploadedAt.slice(0, 7) === fixtureReferenceDate.slice(0, 7)).length}) : t('summary.percent', {percent: documents.length ? Math.round(count / documents.length * 100) : 0});
           const card = <><span className={styles.summaryIcon}><AppIcon name={item === 'total' ? 'file' : icons[item]} size={25} /></span><span className={styles.summaryCopy}><strong>{t(`summary.${item}`)}</strong><b>{count}</b><small>{helper}</small></span>{item === 'review' && <AppIcon name="chevronRight" size={19} className={styles.summaryChevron} />}</>;
           return <Surface key={item} className={styles.summaryCard} data-status={item}>{item === 'review' ? <button type="button" onClick={() => {setTab('review'); setPage(1);}} aria-label={`${t('summary.review')}: ${count}`} className={styles.summaryAction}>{card}</button> : <div className={styles.summaryBody}>{card}</div>}</Surface>;
         })}
@@ -152,7 +154,7 @@ export function DocumentsPage({locale, view, documentId, documentAction}: {local
               <label className={`${styles.toolbarButton} ${styles.sortControl}`}><span className={styles.srOnly}>{t('sortLabel')}</span><span aria-hidden="true">↕</span><select value={sort} onChange={(event) => {setSort(event.target.value as 'newest' | 'oldest'); setPage(1);}} aria-label={t('sortLabel')}><option value="newest">{t('sortVisible')} ↓</option><option value="oldest">{t('sortVisible')} ↑</option></select><AppIcon name="chevronDown" size={16} /></label>
             </div>
           </div>
-          {documents.length === 0 ? <EmptyState title={t('noDocuments')} description={t('noDocumentsDescription')} /> : filtered.length === 0 ? <EmptyState title={t('noMatches')} description={t('noMatchesDescription')} action={<button type="button" className={styles.emptyReset} onClick={resetSearchAndFilters}>{t('resetSearchAndFilters')}</button>} /> : <>
+          {documents.length === 0 ? <EmptyState icon={<AppIcon name="file" size={25}/>} title={empty('documentsTitle')} description={empty('documentsDescription')} /> : filtered.length === 0 ? <EmptyState title={t('noMatches')} description={t('noMatchesDescription')} action={<button type="button" className={styles.emptyReset} onClick={resetSearchAndFilters}>{t('resetSearchAndFilters')}</button>} /> : <>
             <div className={styles.tableScroll} role="region" aria-label={t('tableRegion')} tabIndex={0}><table className={styles.table}>
               <thead><tr><th scope="col">{t('table.document')}</th><th scope="col">{t('table.vendor')}</th><th scope="col">{t('table.type')}</th><th scope="col">{t('table.status')}</th><th scope="col">{t('table.uploaded')}</th><th scope="col">{t('table.expires')}</th><th scope="col">{t('table.actions')}</th></tr></thead>
               <tbody>{visible.map((document) => <DocumentRow key={document.id} document={document} locale={locale} />)}</tbody>

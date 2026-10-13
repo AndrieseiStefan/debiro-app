@@ -23,12 +23,13 @@ type DrawerProps = {
 
 export function AddVendorDrawer({onCreate, ...props}: DrawerProps & {onCreate: (vendor: NewVendorInput) => void}) {
   const companyId = useCompanyState().activeCompanyId ?? '';
-  return <VendorFormDrawer {...props} mode="create" companyId={companyId} onSubmit={onCreate}/>;
+  const pending = useVendorState().pendingVendorDrafts[companyId]?.[0];
+  return <VendorFormDrawer {...props} mode="create" companyId={companyId} initialValues={pending} onSubmit={onCreate}/>;
 }
 
 export function VendorFormDrawer({phase, onClose, onExited, triggerRef, mode, initialValues, companyId, vendorId, onSubmit}: DrawerProps & {
   mode: 'create' | 'edit';
-  initialValues?: VendorMetadata;
+  initialValues?: VendorMetadata | VendorFormValues;
   companyId: string;
   vendorId?: string;
   onSubmit: (vendor: VendorMetadata) => void | 'saved' | 'invalid' | 'duplicate' | 'missing';

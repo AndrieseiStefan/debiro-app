@@ -1,12 +1,12 @@
 import {notificationsFixture} from '@/features/notifications/fixtures';
 import type {AuditEvent, AuditEventType} from '@/features/notifications/types';
 import type {LocalAuditEvent} from '@/features/notifications/local-audit';
-import {vendorFixtureCompanyId, vendorOwnedByCompany} from './created-vendors';
+import {vendorOwnedByCompany} from './created-vendors';
 
 /** One audit projection: merge existing audit/notices, without repeating the same event. */
 export function vendorActivity(companyId: string, vendorId: string, local: LocalAuditEvent[]): AuditEvent[] {
   if (!vendorOwnedByCompany(companyId, vendorId)) return [];
-  const fixtures: AuditEvent[] = companyId === vendorFixtureCompanyId ? notificationsFixture.auditEvents : [];
+  const fixtures: AuditEvent[] = notificationsFixture.auditEvents.filter((event) => event.companyId === companyId);
   const seen = new Set<string>();
   const uniqueFixtures = fixtures.filter((event) => {
     if (event.vendorId !== vendorId) return false;

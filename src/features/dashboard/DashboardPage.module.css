@@ -456,6 +456,7 @@
 .expiring {background: #fff0c9;color: #d58c00;}
 .expired {background: #ffe0e7;color: #e22d49;}
 .added {background: #dfedff;color: #075ed7;}
+.updated {background: #dfedff;color: #075ed7;}
 
 .activityCopy {
   display: grid;
@@ -661,3 +662,5 @@
     display: none;
   }
 }
+.donut[data-empty] {background: var(--color-border);}
+.firstRun {margin-top: 20px;}

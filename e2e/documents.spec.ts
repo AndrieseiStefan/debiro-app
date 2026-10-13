@@ -34,8 +34,8 @@ test('tabs, search, filters, sort, empty recovery and pagination stay local', as
   await page.getByRole('combobox', {name: 'Sortează după data încărcării'}).selectOption('newest');
   await expect(table.locator('tbody tr').first()).toContainText('Certificat_fiscal_CP_2024.pdf');
   await page.getByRole('button', {name: 'Pagina 2'}).click();
-  await expect(page.getByText('Se afișează 9-16 din 24 documente')).toBeVisible();
-  await page.getByRole('button', {name: 'Pagina 3'}).click();
+  await expect(page.getByText('Se afișează 9-16 din 25 documente')).toBeVisible();
+  await page.getByRole('button', {name: 'Pagina 4'}).click();
   await expect(page.getByRole('button', {name: 'Pagina următoare'})).toBeDisabled();
   await page.getByRole('button', {name: 'Pagina 2'}).click();
   await search.fill('Certificat_fiscal_CP_2024.pdf');
@@ -53,9 +53,9 @@ test('tabs, search, filters, sort, empty recovery and pagination stay local', as
   await expect(table.locator('tbody tr')).toHaveCount(8);
   await openFilters(page);
   await page.getByRole('combobox', {name: 'Perioadă încărcare'}).selectOption('2026');
-  await expect(page.getByText('Se afișează 1-8 din 24 documente')).toBeVisible();
+  await expect(page.getByText('Se afișează 1-8 din 25 documente')).toBeVisible();
   await page.getByRole('button', {name: 'Resetează', exact: true}).click();
-  await expect(page.getByText('Se afișează 1-8 din 24 documente')).toBeVisible();
+  await expect(page.getByText('Se afișează 1-8 din 25 documente')).toBeVisible();
   await page.getByRole('button', {name: 'Filtrează'}).click();
   await expect(page.getByRole('button', {name: 'Filtrează'})).toHaveAttribute('aria-expanded', 'false');
   await page.getByRole('button', {name: 'Filtrează'}).click();

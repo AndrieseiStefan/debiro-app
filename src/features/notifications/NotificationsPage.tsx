@@ -15,7 +15,7 @@ import {useCompanyState} from '@/features/companies/company-state';
 import {useDocumentRecords} from '@/features/documents/created-documents';
 import {useVendorRequirements} from '@/features/vendors/vendor-requirements';
 import {useVendorState, vendorListItems} from '@/features/vendors/created-vendors';
-import {vendorsListFixture} from '@/features/vendors/fixtures';
+import {companyAuditEvents, companyNotifications} from './company-projections';
 import {calendarDaysUntil} from '@/lib/fixture-clock';
 import {notificationDocuments} from './document-projections';
 import {auditEventsToCsv, filterAuditEvents, filterNotifications, type ActivityCategory, type ActivityRange} from './selectors';
@@ -47,18 +47,15 @@ export function NotificationsPage({locale, view: initialView}: {locale: string; 
   const [category, setCategory] = useState<ActivityCategory>('all');
   const [range, setRange] = useState<ActivityRange>('last30');
   const [expanded, setExpanded] = useState({expiring: false, missing: false, recent: false, audit: false});
-  const companyId = useCompanyState().activeCompanyId;
+  const companyId = useCompanyState().activeCompanyId ?? '';
   const localAudit = useLocalAuditEvents().filter((event) => event.companyId === companyId);
-  const vendors = vendorListItems(useVendorState(), vendorsListFixture.vendors);
+  const vendors = vendorListItems(useVendorState(), companyId);
   const view = {...initialView, ...notificationDocuments(companyId ?? '', vendors, useVendorRequirements(), useDocumentRecords())};
-  const notifications = useNotificationItems(view.notifications);
-  // Existing successful local audit events are activity rows, not new delivered/unread notices.
-  const activity = [...notifications, ...localAudit.map((event) => ({id: event.id, type: event.eventType === 'document_marked_expired' ? 'status_changed' as const : event.eventType === 'template_applied' || event.eventType === 'vendor_invited' || event.eventType === 'vendor_edited' || event.eventType === 'vendor_active' || event.eventType === 'vendor_inactive' || event.eventType === 'requirement_removed' ? 'other' as const : event.eventType,
-    title: event.action, description: event.description, vendorId: event.vendorId, vendorName: vendors.find((vendor) => vendor.id === event.vendorId)?.name,
-    documentName: event.description, occurredAt: event.occurredAt, isUnread: false, actor: event.actorType, actorName: event.actorName}))];
+  const notifications = useNotificationItems(companyNotifications(companyId, localAudit, vendors, view.notifications));
+  const activity = notifications;
   const visibleNotifications = filterNotifications(activity, category, range, view.referenceTime);
   const rangedNotifications = filterNotifications(activity, 'all', range, view.referenceTime);
-  const auditEvents = filterAuditEvents([...view.auditEvents, ...localAudit], range, view.referenceTime);
+  const auditEvents = filterAuditEvents(companyAuditEvents(companyId, localAudit, view.auditEvents), range, view.referenceTime);
   const unreadCount = notifications.filter((item) => item.isUnread).length;
   const expiringRows = expanded.expiring ? view.expiringDocuments : view.expiringDocuments.slice(0, 3);
   const missingRows = expanded.missing ? view.missingDocuments : view.missingDocuments.slice(0, 3);

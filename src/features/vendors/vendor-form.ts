@@ -12,7 +12,7 @@ export const emptyVendorValues: VendorFormValues = {name: '', cui: '', registrat
 export const normalizeCui = (value: string) => value.normalize('NFKC').replace(/\s+/g, '').toUpperCase();
 const optional = (value: string) => value.trim() || undefined;
 
-export function vendorFormValues(metadata?: VendorMetadata): VendorFormValues {
+export function vendorFormValues(metadata?: Partial<Omit<VendorMetadata, 'category'>> & {category?: VendorCategory | ''}): VendorFormValues {
   return {...emptyVendorValues, ...metadata, registrationCode: metadata?.registrationCode ?? '', phone: metadata?.phone ?? '', contactName: metadata?.contactName ?? '', industry: metadata?.industry ?? '', address: metadata?.address ?? '', website: metadata?.website ?? '', notes: metadata?.notes ?? ''};
 }
 

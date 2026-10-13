@@ -2,6 +2,7 @@ import {fixtureReferenceTime} from '../src/lib/fixture-clock';
 import path from 'node:path';
 import {expect, test} from '@playwright/test';
 import {openFilters} from './support/filters';
+import {createWorkspaceCompany, workspaceSection} from './support/company-workspace';
 
 const route = process.env.VISUAL_ROUTE ?? '/__dev/design-system';
 const action = process.env.VISUAL_ACTION;
@@ -26,7 +27,19 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
   await page.waitForLoadState('networkidle');
   await page.evaluate(async () => { await document.fonts.ready; });
   if (action) {
-    if (['company-profile-dirty', 'company-profile-invalid', 'company-profile-readonly'].includes(action)) {
+    if (action === 'company-workspace-empty' || action === 'company-workspace-first-vendor') {
+      const match = /^\/(en\/)?(dashboard|vendors|documents|requirements|notifications)$/.exec(route);
+      if (!match) throw new Error('Workspace capture requires an implemented operational list route.');
+      const english = Boolean(match[1]);
+      await createWorkspaceCompany(page, 'Workspace B', english);
+      await workspaceSection(page, match[2] as 'dashboard' | 'vendors' | 'documents' | 'requirements' | 'notifications', english);
+      if (action === 'company-workspace-first-vendor') {
+        if (match[2] !== 'dashboard') throw new Error('First-vendor capture requires Dashboard.');
+        await page.getByRole('button', {name: english ? 'Add your first vendor' : 'Adaugă primul furnizor'}).click();
+        await expect(page.getByRole('dialog')).toBeVisible();
+      }
+      await page.evaluate(() => window.scrollTo(0, 0));
+    } else if (['company-profile-dirty', 'company-profile-invalid', 'company-profile-readonly'].includes(action)) {
       if (!/^\/(en\/)?company\/settings\/profile$/.test(route)) throw new Error('Company Profile capture requires its settings route.');
       const english = route.startsWith('/en');
       if (action === 'company-profile-readonly') {
@@ -357,7 +370,7 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
 
   const name = route === '/' ? 'root' : route.replace(/^\/+|\/+$/g, '').replace(/[^a-zA-Z0-9_-]+/g, '-');
   const output = path.join(process.cwd(), 'artifacts', 'visual', `${name}${action ? `-${action}` : ''}${viewportWidth ? `-${viewportWidth}x${viewportHeight}` : ''}.png`);
-  await page.screenshot({path: output, fullPage: !action || action === 'requirement-edit' || action === 'requirement-preview' || action.startsWith('vendor-') || action.startsWith('review-') && action !== 'review-reject-confirmation', animations: 'disabled'});
+  await page.screenshot({path: output, fullPage: !action || action === 'company-workspace-empty' || action === 'requirement-edit' || action === 'requirement-preview' || action.startsWith('vendor-') || action.startsWith('review-') && action !== 'review-reject-confirmation', animations: 'disabled'});
   if (action?.startsWith('document-') && action !== 'document-menu' && action !== 'document-expiry-confirmation') await page.getByRole('dialog').screenshot({path: output.replace(/\.png$/, '-drawer.png'), animations: 'disabled'});
   if (action === 'review-reject-confirmation' || action === 'document-expiry-confirmation') await page.getByRole('alertdialog').screenshot({path: output.replace(/\.png$/, '-dialog.png'), animations: 'disabled'});
   if (action === 'review-rejected-portal' || action === 'review-reupload-portal') await page.locator('[data-supplier-requirements]').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});

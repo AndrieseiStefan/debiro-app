@@ -126,10 +126,9 @@ describe('version-owned files and guarded downloads', () => {
     expect(downloadDocument('demo-company', available.id)).toBe(false);
     expect(downloadDocument(c.companyId, available.id, 'other-vendor')).toBe(false);
     expect(documentFile(c.companyId, available.id, 'other-vendor')).toBeUndefined();
-    updateDocumentRecord(available.id, {vendorId: 'construct-pro'});
-    expect(documentFile(c.companyId, available.id)).toBeUndefined();
-    expect(downloadDocument(c.companyId, available.id)).toBe(false);
-    updateDocumentRecord(available.id, {vendorId: c.vendor.id});
+    expect(updateDocumentRecord(c.companyId, available.id, {vendorId: 'construct-pro'})).toBe(false);
+    expect(updateDocumentRecord('demo-company', available.id, {issuer: 'Foreign edit'})).toBe(false);
+    expect(readDocumentRecords().find((record) => record.id === available.id)?.vendorId).toBe(c.vendor.id);
     switchActiveCompany('demo-company');
     expect(downloadDocument(c.companyId, available.id)).toBe(false);
     expect(createUrl).not.toHaveBeenCalled(); expect(HTMLAnchorElement.prototype.click).not.toHaveBeenCalled();

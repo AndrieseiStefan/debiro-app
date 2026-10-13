@@ -26,6 +26,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 - E1-015 Add Vendor drawer — implemented with shared drawer mechanics and browser-memory list/details mapping, without persistence or invitations; product-owner visual approval remains pending
 - E1-016 Add Document drawer — implemented with shared drawer mechanics, browser-memory document metadata, and conditional demo review; product-owner visual approval remains pending
 - E1-017 bell notification preview, E1-018 Members & Access, E1-019 Plan & Billing, and E1-020 global-user profile dropdown — implemented with fixture/browser-local data; product-owner visual approval remains pending
+- E1-031 company-owned operational workspaces — implemented with honest first-run pages, existing setup flows, scoped projections and retained onboarding setup/drafts; product-owner visual approval remains pending
 - E1-030 Company Profile and onboarding binding — implemented with atomic active-company Save/Cancel, administrator/read-only roles, shared options/identity propagation and dirty-navigation guard; product-owner visual approval remains pending
 - E1-021/022 My Companies and active-company switcher — implemented with shared browser-memory company state and local creation; product-owner visual approval remains pending
 

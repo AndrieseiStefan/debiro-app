@@ -5,6 +5,7 @@ import {useTranslations} from 'next-intl';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
 import {EmptyState} from '@/components/ui/EmptyState';
 import {Link} from '@/i18n/navigation';
+import {useCompanyState} from '@/features/companies/company-state';
 import {toVendorDetailsView, useCreatedVendors} from './created-vendors';
 import {VendorDetailsPage} from './VendorDetailsPage';
 import type {VendorsListViewModel} from './types';
@@ -19,7 +20,8 @@ export function LocalVendorDetailsPage({locale, vendorId, context, ...selection}
 } & DocumentSelection) {
   const t = useTranslations('VendorDetails');
   const hydrated = useSyncExternalStore(subscribeToNothing, () => true, () => false);
-  const vendor = useCreatedVendors().find((item) => item.id === vendorId);
+  const companyId = useCompanyState().activeCompanyId;
+  const vendor = useCreatedVendors().find((item) => item.id === vendorId && item.companyId === companyId);
   if (!hydrated) return null;
   if (!vendor) return <AuthenticatedAppShell locale={locale} currentPath={`/vendors/${vendorId}`} organizationName={context.organization.name} userName={context.user.fullName} userInitials={context.user.initials} notificationCount={context.notificationCount}>
     <EmptyState title={t('localVendorUnavailable')} action={<Link href="/vendors">{t('backToVendors')}</Link>}/>

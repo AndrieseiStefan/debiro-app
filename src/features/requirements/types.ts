@@ -77,6 +77,8 @@ export type TemplateDraft = {
   iconColorKey: AppearanceColorKey;
   documents: RequirementTemplateDocument[];
   duplicatedFromTemplateId?: string;
+  starterTemplateId?: string;
+  starterTemplateVersion?: number;
   isNew: true;
   isDirty: boolean;
 };

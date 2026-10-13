@@ -16,7 +16,7 @@ for (const english of [false, true]) {
     }
     await navigate(page, english, english ? 'Documents' : 'Documente');
     const summary = page.getByRole('region', {name: english ? 'Document summary' : 'Rezumat documente'});
-    for (const [status, count] of [['total', 24], ['review', 4], ['valid', 14], ['expiring', 4]] as const) {
+    for (const [status, count] of [['total', 25], ['review', 4], ['valid', 15], ['expiring', 4]] as const) {
       await expect(summary.locator(`[data-status="${status}"] b`)).toHaveText(String(count));
     }
     await page.getByRole('button', {name: english ? 'Needs review 4' : 'Necesită revizuire 4', exact: true}).click();

@@ -86,7 +86,7 @@ function DocumentDrawer({documentId, action, contextPath, vendorId, triggerRef}:
     return value ? new Intl.DateTimeFormat(language === 'en' ? 'en-GB' : 'ro-RO', {day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC'}).format(new Date(value.length === 10 ? `${value}T12:00:00Z` : value)) : '—';
   }
   function uploadedDate(item: CreatedDocument) {
-    const event = item.origin === 'fixture' ? notificationsFixture.auditEvents.find((event) => event.eventType === 'document_upload' && event.documentId === item.id) : undefined;
+    const event = item.origin === 'fixture' ? notificationsFixture.auditEvents.find((event) => event.companyId === companyId && event.eventType === 'document_upload' && event.documentId === item.id) : undefined;
     // Date-only fixture provenance must not acquire an invented upload time.
     if (item.origin === 'fixture' && (!event || event.dateOnly)) return date(item.uploadedAt);
     const time = new Intl.DateTimeFormat(language === 'en' ? 'en-GB' : 'ro-RO', {hour: '2-digit', minute: '2-digit', timeZone: 'UTC'}).format(new Date(item.createdAt));

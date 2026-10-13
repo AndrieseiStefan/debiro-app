@@ -17,14 +17,16 @@ export function projectDashboard(view: DashboardViewModel, companyId: string, ve
   const attention = [...expired.map((document) => ({id: document.id, supplier: document.vendorName, document: document.documentName, status: 'expired' as const, expiry: localizedDate(document.expiresAt!)})),
     ...expiringDocuments.map((document) => ({id: document.id, supplier: document.vendorName, document: document.documentName, status: 'expiring' as const, expiry: localizedDate(document.expiresAt)})),
     ...missingDocuments.map((document) => ({id: document.id, supplier: document.vendorName, document: document.documentName, status: 'missing' as const, expiry: {ro: '—', en: '—'}}))];
-  const recent = events.filter((event) => ['document_upload', 'document_expiring', 'vendor_added'].includes(event.eventType)).sort((a, b) => b.occurredAt.localeCompare(a.occurredAt)).slice(0, 4);
+  const recent = events.filter((event) => event.companyId === companyId).sort((a, b) => b.occurredAt.localeCompare(a.occurredAt)).slice(0, 4);
   return {...view, suppliers: {...view.suppliers, total: counts.all, compliant: counts.compliant, attention: counts.attention, noncompliant: counts.noncompliant,
+    monthlyIncrease: events.filter((event) => event.companyId === companyId && event.eventType === 'vendor_added' && event.occurredAt.slice(0, 7) === fixtureReferenceTime.slice(0, 7)).length,
     // Missing requirements are already represented by the existing compliance categories.
     missingDocuments: 0, percentages: {compliant: percent(counts.compliant), attention: percent(counts.attention), noncompliant: percent(counts.noncompliant), missingDocuments: 0}},
     documentsRequiringAttention: attention,
     recentActivity: recent.map((event) => {const days = calendarDaysUntil(event.occurredAt, fixtureReferenceTime);
       const time = new Intl.DateTimeFormat('ro-RO', {hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC'}).format(new Date(event.occurredAt));
-      return {id: event.id, kind: event.eventType === 'document_upload' ? 'uploaded' : event.eventType === 'document_expiring' ? 'expiring' : 'added',
+      return {id: event.id, kind: event.eventType === 'document_upload' ? 'uploaded' : event.eventType === 'document_expiring' ? 'expiring' : event.eventType === 'vendor_added' ? 'added' : 'updated',
+        action: ['document_upload', 'document_expiring', 'vendor_added'].includes(event.eventType) ? undefined : event.action,
         supplier: vendors.find((vendor) => vendor.id === event.vendorId)?.name ?? '—', document: event.eventType === 'vendor_added' ? undefined : event.description,
         time: event.dateOnly ? localizedDate(event.occurredAt) : days === 0 ? {ro: `azi, ${time}`, en: `today, ${time}`} : days === -1 ? {ro: `ieri, ${time}`, en: `yesterday, ${time}`} : localizedDate(event.occurredAt)};})};
 }

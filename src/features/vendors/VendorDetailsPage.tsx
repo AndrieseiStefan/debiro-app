@@ -2,7 +2,7 @@
 
 import {useCallback, useRef, useState} from 'react';
 import {useTranslations} from 'next-intl';
-import {useRouter} from '@/i18n/navigation';
+import {Link, useRouter} from '@/i18n/navigation';
 import {AppIcon} from '@/components/layout/AppIcon';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
 import {AuthenticatedBreadcrumbs} from '@/components/layout/AuthenticatedBreadcrumbs';
@@ -45,8 +45,8 @@ export function VendorDetailsPage({locale, view: initialView, ...selection}: {lo
   const companyId = company.activeCompanyId ?? '';
   const companyName = getActiveCompany(company)?.company.name ?? initialView.organization.name;
   useVendorState();
-  const app = useTranslations('AppShell');
-  if (!vendorOwnedByCompany(companyId, initialView.vendor.id)) return <AuthenticatedAppShell locale={locale} currentPath={`/vendors/${initialView.vendor.id}`} organizationName={companyName} userName={initialView.user.fullName} userInitials={initialView.user.initials} scope="company-aware"><EmptyState title={app('workspaceEmptyTitle')} description={app('workspaceEmptyDescription', {company: companyName})}/></AuthenticatedAppShell>;
+  const t = useTranslations('VendorDetails');
+  if (!vendorOwnedByCompany(companyId, initialView.vendor.id)) return <AuthenticatedAppShell locale={locale} currentPath={`/vendors/${initialView.vendor.id}`} organizationName={companyName} userName={initialView.user.fullName} userInitials={initialView.user.initials} scope="company-aware"><EmptyState title={t('localVendorUnavailable')} action={<Link href="/vendors">{t('backToVendors')}</Link>}/></AuthenticatedAppShell>;
   return <VendorDetailsWorkspace key={`${companyId}:${initialView.vendor.id}`} locale={locale} initialView={initialView} companyId={companyId} {...selection}/>;
 }
 

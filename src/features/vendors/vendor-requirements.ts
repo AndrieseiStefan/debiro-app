@@ -13,7 +13,7 @@ import {uploadFileError} from '@/features/documents/upload-file';
 import type {ReviewValues} from '@/features/document-review/types';
 import type {SupplierRequirementDocument, SupplierRequirementStatus} from '@/features/supplier-requirements/types';
 import {getVendorDetailsFixture} from './detail-fixtures';
-import {getVendorMetadata, getVendorState, vendorFixtureCompanyId} from './created-vendors';
+import {getVendorMetadata, getVendorState, vendorFixtureCompanyId, vendorOwnedByCompany} from './created-vendors';
 import type {VendorDocumentRow} from './types';
 import {recordLocalAuditEvent} from '@/features/notifications/local-audit';
 import {currentUser} from '@/features/companies/company-state';
@@ -47,11 +47,7 @@ const session = browserSession(Symbol.for('debiro.vendor-requirements-session'),
 const subscribe = (listener: () => void) => {session.listeners.add(listener); return () => {session.listeners.delete(listener);};};
 export function useVendorRequirements() {return useSyncExternalStore(subscribe, () => session.state, () => session.initialState);}
 export function readVendorRequirements() {return session.state;}
-export function vendorBelongsToCompany(companyId: string, vendorId: string) {
-  const vendors = getVendorState();
-  const local = vendors.createdVendors.find((vendor) => vendor.id === vendorId);
-  return local ? (local.companyId ?? vendorFixtureCompanyId) === companyId : companyId === vendorFixtureCompanyId && vendors.fixtureVendors.some((vendor) => vendor.id === vendorId);
-}
+export const vendorBelongsToCompany = vendorOwnedByCompany;
 export function getVendorRequirements(snapshot: VendorRequirementsState, companyId: string, vendorId: string) {
   return vendorBelongsToCompany(companyId, vendorId) ? snapshot[`${companyId}:${vendorId}`] ?? empty : empty;
 }
@@ -76,10 +72,11 @@ export function assignmentSummary(templates: RequirementTemplate[], existing: Ve
 
 export function applyVendorTemplates(companyId: string, vendorId: string, templateIds: string[]) {
   if (!vendorBelongsToCompany(companyId, vendorId)) return null;
-  const vendor = getVendorMetadata(getVendorState(), vendorId);
+  const vendor = getVendorMetadata(getVendorState(), vendorId, companyId);
   const available = getRequirementsWorkspace(readRequirementsState(), companyId).templates;
   const templates = [...new Set(templateIds)].map((id) => available.find((template) => template.id === id));
-  if (!templates.length || templates.some((template) => !template || template.companyId !== companyId || template.categoryId !== vendor?.category || template.documents.some((document) => !templateDocumentType(document)))) return null;
+  const companyTypes = getCompanyDocumentTypes(readRequirementsState(), companyId);
+  if (!templates.length || templates.some((template) => !template || template.companyId !== companyId || template.categoryId !== vendor?.category || template.documents.some((document) => !templateDocumentType(document) || document.companyDocumentTypeId && !companyTypes.some((type) => type.id === document.companyDocumentTypeId)))) return null;
   const selected = templates as RequirementTemplate[];
   const workspace = getVendorRequirements(session.state, companyId, vendorId);
   const existingKeys = new Set(workspace.requirements.map(documentIdentityKey));
@@ -123,28 +120,28 @@ export function removeVendorRequirement(companyId: string, vendorId: string, req
   const requirement = workspace.requirements.find((item) => item.id === requirementId);
   if (!requirement) return false;
   // Removing configuration never deletes evidence. The current file becomes unassociated.
-  const document = readDocumentRecords().find((item) => item.id === requirement.uploadedDocumentId && (item.companyId ?? vendorFixtureCompanyId) === companyId && item.vendorId === vendorId);
+  const document = readDocumentRecords().find((item) => item.id === requirement.uploadedDocumentId && item.companyId === companyId && item.vendorId === vendorId);
   if (requirement.uploadedDocumentId && !document) return false;
-  if (document) updateDocumentRecord(document.id, {vendorRequirementId: undefined});
+  if (document) updateDocumentRecord(companyId, document.id, {vendorRequirementId: undefined});
   publish(companyId, vendorId, {...workspace, requirements: workspace.requirements.filter((item) => item.id !== requirementId)});
   recordLocalAuditEvent(companyId, {vendorId, requirementId, documentId: requirement.uploadedDocumentId, eventType: 'requirement_removed', action: {ro: 'Cerință eliminată', en: 'Requirement removed'}, description: requirement.name});
   return true;
 }
 
 export function associateRequirementUpload(companyId: string, vendorId: string, document: CreatedDocument, requirementId?: string) {
-  if (!vendorBelongsToCompany(companyId, vendorId) || document.vendorId !== vendorId || (document.companyId ?? vendorFixtureCompanyId) !== companyId || !document.typeSnapshot) return false;
+  if (!vendorBelongsToCompany(companyId, vendorId) || document.vendorId !== vendorId || document.companyId !== companyId || !document.typeSnapshot) return false;
   const workspace = getVendorRequirements(session.state, companyId, vendorId);
   const requirement = workspace.requirements.find((item) => requirementId ? item.id === requirementId : documentIdentityKey(item) === documentIdentityKey(document.typeSnapshot!));
   if (requirementId && !requirement) return false;
   if (document.typeSnapshot.documentTypeSource === 'company' ? !getCompanyDocumentTypes(readRequirementsState(), companyId).some((type) => type.id === document.typeSnapshot?.companyDocumentTypeId) : !catalogDocument(document.typeSnapshot.catalogDocumentTypeId)) return false;
-  const invalidated = requirement?.uploadedDocumentId ? readDocumentRecords().find((item) => item.id === requirement.uploadedDocumentId && item.vendorId === vendorId && (item.companyId ?? vendorFixtureCompanyId) === companyId && !item.supersededById && item.manuallyExpiredAt) : undefined;
+  const invalidated = requirement?.uploadedDocumentId ? readDocumentRecords().find((item) => item.id === requirement.uploadedDocumentId && item.vendorId === vendorId && item.companyId === companyId && !item.supersededById && item.manuallyExpiredAt) : undefined;
   if (requirement && (documentIdentityKey(requirement) !== documentIdentityKey(document.typeSnapshot) || (requirement.uploadedDocumentId && !invalidated))) return false;
   if (document.reviewOutcome !== 'pending' || !readDocumentRecords().some((item) => item.id === document.id && item.reviewOutcome === 'pending')) return false;
   const next: VendorRequirement = requirement ? {...requirement, fixtureRow: undefined, uploadedDocumentId: document.id, status: 'in_review'}
     : {...document.typeSnapshot, id: `vendor-requirement-${crypto.randomUUID()}`, companyId, vendorId, required: false, sourceTemplateIds: [], sourceTemplateNames: {}, uploadedDocumentId: document.id, status: 'in_review', createdAt: document.createdAt};
-  const previous = readDocumentRecords().filter((item) => item.id !== document.id && item.vendorRequirementId === next.id && item.vendorId === vendorId && (item.companyId ?? vendorFixtureCompanyId) === companyId).sort((a, b) => (b.version ?? 1) - (a.version ?? 1))[0];
-  if (invalidated) updateDocumentRecord(invalidated.id, {supersededById: document.id});
-  updateDocumentRecord(document.id, {vendorRequirementId: next.id, ...(previous && {versionGroupId: previous.versionGroupId ?? previous.id, version: (previous.version ?? 1) + 1, previousDocumentId: previous.id})}, () => publish(companyId, vendorId, {...workspace, requirements: requirement ? workspace.requirements.map((item) => item.id === requirement.id ? next : item) : [...workspace.requirements, next]}));
+  const previous = readDocumentRecords().filter((item) => item.id !== document.id && item.vendorRequirementId === next.id && item.vendorId === vendorId && item.companyId === companyId).sort((a, b) => (b.version ?? 1) - (a.version ?? 1))[0];
+  if (invalidated) updateDocumentRecord(companyId, invalidated.id, {supersededById: document.id});
+  updateDocumentRecord(companyId, document.id, {vendorRequirementId: next.id, ...(previous && {versionGroupId: previous.versionGroupId ?? previous.id, version: (previous.version ?? 1) + 1, previousDocumentId: previous.id})}, () => publish(companyId, vendorId, {...workspace, requirements: requirement ? workspace.requirements.map((item) => item.id === requirement.id ? next : item) : [...workspace.requirements, next]}));
   return true;
 }
 
@@ -152,7 +149,7 @@ export function associateRequirementUpload(companyId: string, vendorId: string, 
 export function resolveDocumentReview(companyId: string, documentId: string, outcome: 'approved' | 'rejected', values?: ReviewValues) {
   if (!documentAccess(companyId).review) return 'unavailable' as const;
   const document = readDocumentRecords().find((item) => item.id === documentId);
-  if (!document || document.supersededById || (document.companyId ?? vendorFixtureCompanyId) !== companyId || !vendorBelongsToCompany(companyId, document.vendorId)) return 'unavailable' as const;
+  if (!document || document.supersededById || document.companyId !== companyId || !vendorBelongsToCompany(companyId, document.vendorId)) return 'unavailable' as const;
   if (document.reviewOutcome !== 'pending') return 'resolved' as const;
   const workspace = getVendorRequirements(session.state, companyId, document.vendorId);
   const requirement = workspace.requirements.find((item) => item.id === document.vendorRequirementId);
@@ -163,7 +160,7 @@ export function resolveDocumentReview(companyId: string, documentId: string, out
   if (outcome === 'approved' && (!normalized?.companyName || !normalized.documentType || (normalized.issuedAt && !issuedAt) || (normalized.expiresAt && !expiresAt) || (issuedAt && expiresAt && expiresAt < issuedAt))) return 'invalid' as const;
   const now = fixtureReferenceTime;
   const complianceStatus = outcome === 'approved' ? approvedCompliance(expiresAt ?? null, requirement?.expiryWarningDays ?? 30, now) : document.complianceStatus;
-  updateDocumentRecord(document.id, {reviewOutcome: outcome, reviewedAt: now, reviewedBy: currentUser.fullName,
+  updateDocumentRecord(companyId, document.id, {reviewOutcome: outcome, reviewedAt: now, reviewedBy: currentUser.fullName,
     ...(outcome === 'approved' && {confirmedMetadata: normalized, documentNumber: normalized!.documentNumber || undefined, issuer: normalized!.issuer || undefined, issuedAt: issuedAt ?? undefined, expiresAt: expiresAt ?? null,
       complianceStatus, status: complianceStatus === 'expiring_soon' ? 'expiring' : complianceStatus === 'needs_review' ? 'review' : complianceStatus, reviewRoute: null})}, () => {
     if (requirement) publish(companyId, document.vendorId, {...workspace, requirements: workspace.requirements.map((item) => item.id === requirement.id
@@ -186,7 +183,7 @@ export function markDocumentExpired(companyId: string, documentId: string) {
   const requirement = getVendorRequirements(session.state, companyId, document.vendorId).requirements.find((item) => item.id === document.vendorRequirementId);
   if (document.vendorRequirementId && (!requirement || requirement.uploadedDocumentId !== document.id)) return false;
   const now = fixtureReferenceTime;
-  updateDocumentRecord(document.id, {manuallyExpiredAt: now, manuallyExpiredBy: access.member!.userId,
+  updateDocumentRecord(companyId, document.id, {manuallyExpiredAt: now, manuallyExpiredBy: access.member!.userId,
     complianceStatus: approvedCompliance(document.expiresAt, requirement?.expiryWarningDays ?? 30, now, now), status: 'expired'});
   recordLocalAuditEvent(companyId, {eventType: 'document_marked_expired', actorId: access.member!.userId, actorName: access.member!.fullName,
     vendorId: document.vendorId, requirementId: requirement?.id, documentId: document.id, documentVersion: document.version ?? 1, occurredAt: now,
@@ -224,7 +221,7 @@ export function replaceInternalDocument(companyId: string, documentId: string, i
 
 export function supplierVendorDocuments(workspace: VendorRequirementsWorkspace, records: CreatedDocument[], language: 'ro' | 'en' = 'ro'): SupplierRequirementDocument[] {
   return workspace.requirements.map((requirement) => {
-    const document = records.find((item) => item.id === requirement.uploadedDocumentId && !item.supersededById && item.reviewOutcome !== 'rejected' && (item.companyId ?? vendorFixtureCompanyId) === requirement.companyId && item.vendorId === requirement.vendorId);
+    const document = records.find((item) => item.id === requirement.uploadedDocumentId && !item.supersededById && item.reviewOutcome !== 'rejected' && item.companyId === requirement.companyId && item.vendorId === requirement.vendorId);
     return {id: requirement.id, catalogDocumentTypeId: requirement.catalogDocumentTypeId, customName: requirement.documentTypeSource === 'company' ? requirement.name[language] : undefined,
       customDescription: requirement.description?.[language], iconKey: requirement.iconKey, iconColorKey: requirement.iconColorKey, required: requirement.required, status: document && !document.manuallyExpiredAt ? requirement.status : 'missing',
       uploadedFile: document && !document.manuallyExpiredAt ? document.filename : undefined, uploadedAt: document && !document.manuallyExpiredAt ? {ro: new Intl.DateTimeFormat('ro-RO', {dateStyle: 'medium', timeZone: 'UTC'}).format(new Date(document.createdAt)), en: new Intl.DateTimeFormat('en-GB', {dateStyle: 'medium', timeZone: 'UTC'}).format(new Date(document.createdAt))} : undefined};
@@ -233,7 +230,7 @@ export function supplierVendorDocuments(workspace: VendorRequirementsWorkspace, 
 
 export function vendorCompliance(workspace: VendorRequirementsWorkspace, records: CreatedDocument[]) {
   // Only the owned current reference satisfies a requirement; unrelated/history files do not.
-  const current = workspace.requirements.map((requirement) => ({requirement, document: records.find((item) => item.id === requirement.uploadedDocumentId && !item.supersededById && item.reviewOutcome !== 'rejected' && (item.companyId ?? vendorFixtureCompanyId) === requirement.companyId && item.vendorId === requirement.vendorId)}));
+  const current = workspace.requirements.map((requirement) => ({requirement, document: records.find((item) => item.id === requirement.uploadedDocumentId && !item.supersededById && item.reviewOutcome !== 'rejected' && item.companyId === requirement.companyId && item.vendorId === requirement.vendorId)}));
   const noncompliant = current.some(({requirement, document}) => requirement.required && (requirement.status === 'missing' || !document || document.complianceStatus === 'expired'));
   const attention = current.some(({requirement, document}) => requirement.status === 'in_review' || document?.complianceStatus === 'needs_review' || document?.complianceStatus === 'expiring_soon');
   const validCount = current.filter(({requirement, document}) => requirement.status === 'uploaded' && ['valid', 'expiring_soon'].includes(document?.complianceStatus ?? '')).length;

@@ -4,6 +4,7 @@ export type LocalizedText = {ro: string; en: string};
 export type NotificationActivityType = 'reminder' | 'document_upload' | 'document_replaced' | 'document_confirmed' | 'document_rejected' | 'document_expiring' | 'document_missing' | 'status_changed' | 'vendor_added' | 'other';
 export type NotificationActivityItem = {
   id: string;
+  companyId: string;
   type: NotificationActivityType;
   title: LocalizedText;
   description: LocalizedText;
@@ -20,6 +21,7 @@ export type NotificationActivityItem = {
 /** Read-only history: a distinct contract from notifications. */
 export type AuditEvent = {
   id: string;
+  companyId: string;
   eventType: AuditEventType;
   actorType: 'user' | 'system';
   actorName?: string;

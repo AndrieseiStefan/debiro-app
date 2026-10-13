@@ -1,0 +1,36 @@
+# Company operational workspaces (E1-031)
+
+Operational records use stable company IDs, never company/vendor names or the visible page. The existing stores remain separate domain owners; no new state library or parallel workspace copy is introduced.
+
+| Source | Company ownership and session lifetime |
+| --- | --- |
+| `created-vendors.ts` | Seeded and created vendors have explicit `companyId`; contacts/notes and incomplete ordinary Vendor form drafts are keyed by company/vendor. Lifecycle and metadata selectors/mutations enforce ownership. |
+| `requirements-state.ts` | Templates and their selection/new/edit drafts are keyed by company. Saved custom document types carry `companyId`; global read-only catalog/starter sources and pending catalog-candidate learning retain their existing separate contracts. |
+| `vendor-requirements.ts` | Requirements and applied-template provenance carry company/vendor IDs. Applying a template checks same-company template/custom-type ownership and category compatibility. |
+| `created-documents.ts` | Every current, rejected and historical version carries `companyId`. Upload checks vendor/type ownership; guarded updates/version commits reject foreign ownership/references. Exact files remain private tab-memory maps, read through existing membership/ownership checks. |
+| Notifications/Audit | Seeded notices/audit and local events carry `companyId`. Page/bell selectors scope before counts/filtering; read state uses company + notification ID. Local successful actions remain activity, not fabricated delivered/unread notices. |
+| Dashboard | Vendor compliance/KPIs, current attention rows, monthly event counts and recent activity derive from the selected company's owned records/events. |
+
+Vendor, template, document/version, requirement, company, audit and notification-read stores reuse `browserSession` owners. Client navigation, locale changes and A → B → A switching preserve each workspace, including module reinitialization. Full reload, other tabs and new sessions reset to fixtures; no backend persistence, auth or server authorization is added.
+
+## Demo and first run
+
+Only `demo-company` receives the existing 24 vendors, six template clones, configured Construct Pro requirements, document/history files and historical notice/audit examples. No empty-company selector falls back to them. A company created through My Companies starts with zero vendors, requirements, documents/versions, templates/custom types and events. Its existing company profile, Administrator membership and Starter plan are independent of operational data. My Companies remains user-global.
+
+Dashboard retains its normal header/cards/panels with honest zero values and an **Adaugă primul furnizor / Add your first vendor** entry into the existing Add Vendor drawer. Vendors retains its header/action and zero summary, with a contextual empty state instead of an empty table. Documents retains zero summary/tabs, explanatory no-document content and no unsafe upload CTA. Requirements uses its existing company-empty/editor/create flow. Notifications retains its page, zero summaries and empty activity/audit/bell states. Shared EmptyState, Button, Drawer and existing responsive page/shell patterns are reused; populated layouts are not redesigned.
+
+Global Documents means every current document owned by the active company. The pre-existing Construct Pro liability record is now included rather than hidden behind a vendor-only visibility flag: Demo begins with **25 current files: 4 Needs Review, 15 Valid, 4 Expiring Soon, 2 Expired**. Historical/rejected versions remain excluded, and all existing exact history files are preserved. Monthly helper counts use owned uploads/events in the shared fixture-reference month, not another company's static baselines. Compliance severity and initial-upload/review/renewal/manual-expiry rules are unchanged.
+
+## Onboarding setup
+
+Step 1 still initializes shared Company metadata at successful completion. Configure later has an empty Step 2 selection and creates no operational configuration. Explicit document choices initialize only the intended company through the same Requirements draft/document/Save actions and global catalog IDs (`insurance` → `liability`, `fireSafety` → `fire`). Construction has a known construction vendor category and saves one customized starter clone, not all Demo templates. Starter identity/version remains provenance without live synchronization or automatic assignment.
+
+The general template and direct checklist choices collect no operational vendor category. The product owner explicitly chose to retain these as ordinary company-owned Requirements drafts until a category is selected and Save succeeds; no applicability is invented. These drafts are not eligible saved templates and obey existing dirty/discard behavior. RO/EN starter names share the existing localized source.
+
+Supplier rows collect name/email only, insufficient for the existing required Vendor CUI/category contract. Their values are retained as ordinary company-keyed `VendorFormValues` drafts, not incomplete Vendor entities or a second onboarding Vendor model. The existing Add Vendor drawer prefills the next retained row; the user supplies CUI/category and explicitly creates the vendor through the normal domain mapper. The completed draft is removed only after creation. No missing CUI/category, automatic vendor, supplier invitation or delivery is fabricated.
+
+## Retrieval, routes and regression
+
+Lists scope their sources before search/filter/sort/pagination or derived options/counts. Given a foreign entity ID, scoped metadata/requirement/document/history helpers return no entity. Foreign vendor Details and Document Review routes show the existing unavailable state with a relevant list recovery link; they never keep displaying the previous company's entity after switching. Document drawer lookup similarly shows its safe unavailable state. Company Settings continues reading the active Company independently; the global user/profile data and accessible-company list are not filtered into one workspace.
+
+Unit/browser coverage includes blank first-run pages, Demo preservation, first vendor, template/custom-type assignment, upload/review/renewal/manual expiry, current/history access, rejected cross-company mutations, onboarding Configure later/construction/general/supplier drafts, A/B switching, locale/module reinitialization and responsive containment. Captures are ignored/unapproved review artifacts. English copy and final product-owner visual approval remain pending.

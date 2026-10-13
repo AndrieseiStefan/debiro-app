@@ -1,4 +1,15 @@
 {
+  "CompanyWorkspace": {
+    "firstRunTitle": "Începe cu primul furnizor",
+    "firstVendor": "Adaugă primul furnizor",
+    "vendorsTitle": "Nu ai furnizori încă",
+    "vendorsDescription": "Adaugă primul furnizor pentru a începe să gestionezi documentele și conformitatea.",
+    "pendingVendorsDescription": "Furnizorii adăugați în configurare sunt păstrați pentru completare. Adaugă CUI și categoria pentru a crea primul furnizor.",
+    "documentsTitle": "Nu există documente încă",
+    "documentsDescription": "Documentele vor apărea aici după ce sunt configurate cerințe pentru furnizori și sunt încărcate documente.",
+    "noAttention": "Nu există documente care necesită atenție.",
+    "noActivity": "Nu există activitate încă."
+  },
   "DocumentManagement": {
     "openDetails": "Deschide detalii",
     "openVendor": "Deschide furnizor",

@@ -17,10 +17,10 @@ The shared Company record is the sole saved source for company identity/profile.
 | Administrator email (`email`) | B — Global user | Form-local account draft, never Company contact email |
 | Password (`password`) | C — Authentication only | Form-local validation, never shared Company/account state |
 | Terms/privacy agreement (`terms`) | C — Authentication consent | Form-local validation; no E1 consent persistence |
-| Step 2 template and document checklist | D — Temporary configuration | Existing optional-step draft only |
-| Step 3 supplier name/email rows | D — Temporary configuration | Existing optional-step draft only; not company contact fields |
+| Step 2 template and document checklist | D — Setup configuration | E1-031 company-owned starter customization or Requirements draft; not Company contact/profile fields |
+| Step 3 supplier name/email rows | D — Setup configuration | E1-031 company-owned ordinary Vendor form drafts until mandatory CUI/category are completed; not company contact fields |
 
-Step 1 captures the five company values; shared state changes only on valid Step 3 completion. New CUI creates/activates one company with the existing current-user Administrator membership and Starter trial. The already-owned Demo sample's matching CUI initializes that existing record without a duplicate company; other accessible duplicate CUIs are rejected. No account/authentication, requirements assignment, supplier persistence or invitations are added. Global-user identity remains the existing E1 fixture and is not synchronized to company contact fields.
+Step 1 captures the five company values; shared state changes only on valid Step 3 completion. New CUI creates/activates one company with the existing current-user Administrator membership and Starter trial. The already-owned Demo sample's matching CUI initializes that existing record without a duplicate company; other accessible duplicate CUIs are rejected. E1-031 additionally retains intentional operational setup in its company workspace; no account/authentication, automatic requirements assignment, durable supplier persistence or invitations are added. Global-user identity remains the existing E1 fixture and is not synchronized to company contact fields.
 
 Optional registration number, website, company email/phone/contact person/role, address, city, region and postal code live on Company. Demo initialization reuses its existing legal/billing contact/address sample values; unknown postal code is empty. New companies preserve their onboarding/creation country and never acquire fabricated contact/address data.
 

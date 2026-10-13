@@ -73,7 +73,7 @@ test('validates files and optional dates, then maps a manual upload across both 
   await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Documente'}).click();
   await expect(page.getByRole('row', {name: /Manual_document_2026.pdf/})).toContainText('Construct Pro SRL');
   await expect(page.getByRole('row', {name: /Manual_document_2026.pdf/})).toContainText('Necesită revizuire');
-  await expect(page.getByRole('button', {name: 'Toate documentele 25'})).toBeVisible();
+  await expect(page.getByRole('button', {name: 'Toate documentele 26'})).toBeVisible();
 });
 
 test('exact demo fixture extraction opens review with the newly created document context', async ({page}) => {

@@ -2,7 +2,7 @@
 export type LocalizedSample = {ro: string; en: string};
 
 export type DashboardDocumentStatus = 'expired' | 'expiring' | 'missing';
-export type DashboardActivityKind = 'uploaded' | 'expiring' | 'expired' | 'added';
+export type DashboardActivityKind = 'uploaded' | 'expiring' | 'expired' | 'added' | 'updated';
 
 export type DashboardViewModel = {
   user: {
@@ -40,6 +40,7 @@ export type DashboardViewModel = {
     kind: DashboardActivityKind;
     supplier: string;
     document?: LocalizedSample;
+    action?: LocalizedSample;
     time: LocalizedSample;
   }>;
 };

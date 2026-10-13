@@ -35,7 +35,7 @@ describe('coherent E1 fixture timeline and current projections', () => {
     expect(documentHistory(records, companyId, historical.id)).toEqual(history);
     expect(documentHistory(records, 'other-company', id)).toEqual([]);
     expect(documentHistory(records, companyId, id, 'other-vendor')).toEqual([]);
-    expect(activeDocuments(history, companyId, true)).toEqual([current]);
+    expect(activeDocuments(history, companyId)).toEqual([current]);
     for (const document of history) {
       const file = documentFile(companyId, document.id)!;
       expect(file.type).toBe('application/pdf');
@@ -46,7 +46,7 @@ describe('coherent E1 fixture timeline and current projections', () => {
     expect(historical.filename).toBe('Autorizatie_ISU_v1.pdf');
 
     const withoutHistory = records.filter((document) => document.id !== historical.id);
-    expect(activeDocuments(records, companyId, true)).toEqual(activeDocuments(withoutHistory, companyId, true));
+    expect(activeDocuments(records, companyId)).toEqual(activeDocuments(withoutHistory, companyId));
     expect(getVendorRequirements(workspaces, companyId, current.vendorId).requirements.find((requirement) => requirement.id === current.vendorRequirementId)?.uploadedDocumentId).toBe(id);
     expect(vendors.map((vendor) => project(vendor))).toEqual(vendors.map((vendor) => project(vendor, withoutHistory)));
     // The ISU expiry stays 3 May; the vendor's earlier liability expiry stays 10 February.
@@ -70,11 +70,11 @@ describe('coherent E1 fixture timeline and current projections', () => {
     expect(approvedCompliance(null, 30, fixtureReferenceTime)).toBe('valid');
   });
 
-  it('reconciles all 24 current global documents, including expired and no-expiry records', () => {
-    const current = activeDocuments(records, companyId, true);
+  it('reconciles all 25 current company documents, including the existing vendor liability record', () => {
+    const current = activeDocuments(records, companyId);
     const count = (status: string) => current.filter((document) => document.complianceStatus === status).length;
-    expect(current).toHaveLength(documentsFixture.documents.length);
-    expect([count('needs_review'), count('valid'), count('expiring_soon'), count('expired')]).toEqual([4, 14, 4, 2]);
+    expect(current).toHaveLength(documentsFixture.documents.length + 1);
+    expect([count('needs_review'), count('valid'), count('expiring_soon'), count('expired')]).toEqual([4, 15, 4, 2]);
     for (const document of current) {
       expect(document.uploadedAt.startsWith('2026')).toBe(true);
       expect(document.uploadedAt <= fixtureReferenceDate).toBe(true);
@@ -138,8 +138,8 @@ describe('coherent E1 fixture timeline and current projections', () => {
   it('keeps reject/replacement/approval aggregates coherent without counting historical uploads', () => {
     const tax = records.find((document) => document.id === 'construct-pro-tax-2024')!;
     const rejected = records.map((document) => document.id === tax.id ? {...document, reviewOutcome: 'rejected' as const} : document);
-    expect(activeDocuments(rejected, companyId, true)).toHaveLength(23);
-    expect(activeDocuments(rejected, companyId, true).filter((document) => document.status === 'review')).toHaveLength(3);
+    expect(activeDocuments(rejected, companyId)).toHaveLength(24);
+    expect(activeDocuments(rejected, companyId).filter((document) => document.status === 'review')).toHaveLength(3);
     expect(notificationDocuments(companyId, vendors, workspaces, rejected).missingDocuments.map((document) => document.id)).toEqual(['vendor-requirement:construct-pro:tax', 'vendor-requirement:construct-pro:iso']);
     expect(project(vendors[0], rejected)).toMatchObject({status: 'noncompliant', documentCount: 3, documentTarget: 5});
     const replacement = {...tax, id: 'replacement-tax'};
@@ -147,12 +147,12 @@ describe('coherent E1 fixture timeline and current projections', () => {
     const replacementWorkspace = {...workspace, requirements: workspace.requirements.map((requirement) => requirement.id === tax.vendorRequirementId ? {...requirement, uploadedDocumentId: replacement.id, status: 'in_review' as const} : requirement)};
     const replacementWorkspaces = {...workspaces, [`${companyId}:${tax.vendorId}`]: replacementWorkspace};
     const reuploaded = [...rejected, replacement];
-    expect(activeDocuments(reuploaded, companyId, true)).toHaveLength(24);
-    expect(activeDocuments(reuploaded, companyId, true).filter((document) => document.status === 'review')).toHaveLength(4);
+    expect(activeDocuments(reuploaded, companyId)).toHaveLength(25);
+    expect(activeDocuments(reuploaded, companyId).filter((document) => document.status === 'review')).toHaveLength(4);
     expect(notificationDocuments(companyId, vendors, replacementWorkspaces, reuploaded).missingDocuments).toHaveLength(1);
     const confirmed = reuploaded.map((document) => document.id === replacement.id ? {...document, reviewOutcome: 'approved' as const, status: 'expiring' as const, complianceStatus: approvedCompliance(document.expiresAt, 30, fixtureReferenceTime)} : document);
     const confirmedWorkspace = {...replacementWorkspace, requirements: replacementWorkspace.requirements.map((requirement) => requirement.id === tax.vendorRequirementId ? {...requirement, status: 'uploaded' as const} : requirement)};
-    const current = activeDocuments(confirmed, companyId, true);
+    const current = activeDocuments(confirmed, companyId);
     expect(current.filter((document) => document.status === 'review')).toHaveLength(3);
     expect(current.filter((document) => document.status === 'expiring')).toHaveLength(5);
     expect(notificationDocuments(companyId, vendors, {...replacementWorkspaces, [`${companyId}:${tax.vendorId}`]: confirmedWorkspace}, confirmed).expiringDocuments).toHaveLength(5);

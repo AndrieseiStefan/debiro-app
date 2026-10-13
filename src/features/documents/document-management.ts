@@ -8,7 +8,7 @@ export type DocumentSelection = {documentId?: string; documentAction?: string};
 
 export function accessibleDocument(records: CreatedDocument[], companyId: string, id: string, vendorId?: string) {
   if (!documentAccess(companyId).visible) return undefined;
-  return records.find((item) => item.id === id && (item.companyId ?? 'demo-company') === companyId
+  return records.find((item) => item.id === id && item.companyId === companyId
     && (!vendorId || item.vendorId === vendorId) && vendorOwnedByCompany(companyId, item.vendorId));
 }
 
@@ -16,7 +16,7 @@ export function documentHistory(records: CreatedDocument[], companyId: string, i
   const selected = accessibleDocument(records, companyId, id, vendorId);
   if (!selected) return [];
   const group = selected.versionGroupId ?? selected.id;
-  return records.filter((item) => (item.companyId ?? 'demo-company') === companyId && item.vendorId === selected.vendorId && (item.versionGroupId ?? item.id) === group)
+  return records.filter((item) => item.companyId === companyId && item.vendorId === selected.vendorId && (item.versionGroupId ?? item.id) === group)
     .sort((a, b) => (b.version ?? 1) - (a.version ?? 1));
 }
 

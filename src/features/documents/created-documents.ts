@@ -16,10 +16,11 @@ import {documentAccess} from './document-access';
 import {createDocumentFixtureFile} from './fixture-files';
 import {vendorOwnedByCompany} from '@/features/vendors/created-vendors';
 import {browserSession} from '@/lib/browser-session';
+import {getCompanyDocumentTypes, readRequirementsState} from '@/features/requirements/requirements-state';
 export {approvedCompliance} from './compliance';
 
 export type CreatedDocument = DocumentSummary & {
-  companyId?: string;
+  companyId: string;
   typeSnapshot?: DocumentTypeSnapshot;
   fileType: string;
   fileSize: number;
@@ -40,7 +41,6 @@ export type CreatedDocument = DocumentSummary & {
   reviewedAt?: string;
   reviewedBy?: string;
   origin: 'fixture' | 'local';
-  globalVisible: boolean;
   versionGroupId?: string;
   version?: number;
   previousDocumentId?: string;
@@ -51,7 +51,7 @@ export type CreatedDocument = DocumentSummary & {
   notes?: string;
 };
 
-export type NewDocument = Omit<CreatedDocument, 'id' | 'status' | 'reviewRoute' | 'extractionState' | 'reviewOutcome' | 'complianceStatus' | 'vendorRequirementId' | 'extractedMetadata' | 'confirmedMetadata' | 'reviewedAt' | 'reviewedBy' | 'origin' | 'globalVisible' | 'versionGroupId' | 'version' | 'previousDocumentId' | 'supersededById' | 'updateSource' | 'manuallyExpiredAt' | 'manuallyExpiredBy'> & {reviewRequired: boolean; file?: File};
+export type NewDocument = Omit<CreatedDocument, 'id' | 'status' | 'reviewRoute' | 'extractionState' | 'reviewOutcome' | 'complianceStatus' | 'vendorRequirementId' | 'extractedMetadata' | 'confirmedMetadata' | 'reviewedAt' | 'reviewedBy' | 'origin' | 'versionGroupId' | 'version' | 'previousDocumentId' | 'supersededById' | 'updateSource' | 'manuallyExpiredAt' | 'manuallyExpiredBy'> & {reviewRequired: boolean; file?: File};
 function seededDocument(summary: DocumentSummary): CreatedDocument {
   const view = getVendorDetailsFixture(summary.vendorId);
   const extraction = getDocumentReviewFixture(summary.id)?.extraction.values;
@@ -60,7 +60,7 @@ function seededDocument(summary: DocumentSummary): CreatedDocument {
   const uploadEvent = notificationsFixture.auditEvents.find((event) => event.eventType === 'document_upload' && event.documentId === summary.id);
   return {...summary, reviewRoute: summary.status === 'review' ? `/documents/${summary.id}/review` : null, companyId: 'demo-company', reviewOutcome: summary.status === 'review' ? 'pending' : 'approved',
     complianceStatus: summary.status === 'review' ? 'needs_review' : summary.status === 'expiring' ? 'expiring_soon' : summary.status,
-    origin: 'fixture', globalVisible: true, fileType: 'application/pdf', fileSize: 0, uploadedBy: uploadEvent?.actorName ?? view?.user.fullName ?? '',
+    origin: 'fixture', fileType: 'application/pdf', fileSize: 0, uploadedBy: uploadEvent?.actorName ?? view?.user.fullName ?? '',
     vendorRegistrationNumber: view?.vendor.registrationNumber ?? '', vendorRegistrationCode: view?.registrationCode ?? '',
     documentNumber: extraction?.documentNumber, issuedAt: extraction ? reviewDateToIso(extraction.issuedAt) ?? undefined : undefined,
     issuer: extraction?.issuer, extractedMetadata: extraction ? {...extraction} : undefined, extractionRequested: Boolean(extraction), extractionState: extraction ? 'simulated' : 'none',
@@ -81,7 +81,7 @@ const seededDocuments: CreatedDocument[] = documentsFixture.documents.flatMap<Cr
   ];
 });
 seededDocuments.push({...seededDocument({id: 'vendor-document:construct-pro:insurance', vendorId: 'construct-pro', vendorName: 'Construct Pro SRL',
-  documentName: {ro: 'Asigurare Răspundere Civilă', en: 'Liability insurance'}, filename: 'Asigurare_ConstructPro.pdf', documentType: 'insurance', status: 'valid', uploadedAt: '2026-09-20', expiresAt: '2027-02-10', reviewRoute: null}), globalVisible: false});
+  documentName: {ro: 'Asigurare Răspundere Civilă', en: 'Liability insurance'}, filename: 'Asigurare_ConstructPro.pdf', documentType: 'insurance', status: 'valid', uploadedAt: '2026-09-20', expiresAt: '2027-02-10', reviewRoute: null})});
 // Reuse the same records, exact bytes and subscriptions across route/module lifetimes in this tab.
 const session = browserSession(Symbol.for('debiro.document-session'), () => {
   const files = new Map<string, Blob>(seededDocuments.map((document) => [document.id, createDocumentFixtureFile(document)]));
@@ -103,11 +103,13 @@ export function useCreatedDocuments() {
 export function useDocumentRecords() {return useSyncExternalStore(subscribe, () => session.documents, () => session.initialDocuments);}
 export function readDocumentRecords() {return session.documents;}
 export function readCreatedDocuments() {return session.documents.filter((document) => document.origin === 'local');}
-export function activeDocuments(records: CreatedDocument[], companyId: string, globalOnly = false) {
-  return records.filter((document) => (document.companyId ?? 'demo-company') === companyId && !document.supersededById && document.reviewOutcome !== 'rejected' && (!globalOnly || document.globalVisible));
+export function activeDocuments(records: CreatedDocument[], companyId: string) {
+  return records.filter((document) => document.companyId === companyId && !document.supersededById && document.reviewOutcome !== 'rejected');
 }
 
 export function createLocalDocument(input: NewDocument): CreatedDocument {
+  if (!vendorOwnedByCompany(input.companyId, input.vendorId)) throw new Error('COMPANY_SCOPE_MISMATCH');
+  if (input.typeSnapshot?.documentTypeSource === 'company' && !getCompanyDocumentTypes(readRequirementsState(), input.companyId).some((type) => type.id === input.typeSnapshot?.companyDocumentTypeId)) throw new Error('COMPANY_SCOPE_MISMATCH');
   const id = `local-document-${crypto.randomUUID()}`;
   const {reviewRequired, file, ...data} = input;
   const extraction = reviewRequired ? getSimulatedExtraction(input.vendorId, input.filename, input.documentType) : null;
@@ -115,27 +117,30 @@ export function createLocalDocument(input: NewDocument): CreatedDocument {
     ...data,
     ...(file ? {filename: file.name, fileType: file.type, fileSize: file.size} : {}),
     id,
-    status: 'review', complianceStatus: 'needs_review', reviewOutcome: 'pending', origin: 'local', globalVisible: true,
+    status: 'review', complianceStatus: 'needs_review', reviewOutcome: 'pending', origin: 'local',
     reviewRoute: `/documents/${id}/review`,
     extractionState: extraction ? 'simulated' : 'none',
     extractedMetadata: extraction ? {...extraction} : undefined
   };
   session.documents = [document, ...session.documents];
   if (file) session.files.set(id, file);
-  recordLocalAuditEvent(document.companyId ?? 'demo-company', {vendorId: document.vendorId, documentId: document.id, actorName: document.uploadedBy,
+  recordLocalAuditEvent(document.companyId, {vendorId: document.vendorId, documentId: document.id, actorName: document.uploadedBy,
     eventType: 'document_upload', action: {ro: 'Document încărcat', en: 'Document uploaded'}, description: document.documentName, occurredAt: document.createdAt});
   session.listeners.forEach((listener) => listener());
   return document;
 }
 
 export function documentFile(companyId: string, id: string, vendorId?: string) {
-  const record = session.documents.find((item) => item.id === id && (item.companyId ?? 'demo-company') === companyId && (!vendorId || item.vendorId === vendorId));
+  const record = session.documents.find((item) => item.id === id && item.companyId === companyId && (!vendorId || item.vendorId === vendorId));
   return documentAccess(companyId).visible && record && vendorOwnedByCompany(companyId, record.vendorId) ? session.files.get(id) : undefined;
 }
 
 /** The guarded domain transaction owns validation and requirement synchronization. */
 export function commitDocumentVersion(previous: CreatedDocument, replacement: CreatedDocument, file: File, synchronize: () => void) {
   // The previous version keeps its exact File/Blob and metadata, including rejected supplier uploads.
+  const owned = session.documents.find((item) => item.id === previous.id && item.companyId === previous.companyId && item.vendorId === previous.vendorId && !item.supersededById);
+  if (!owned || previous.companyId !== replacement.companyId || previous.vendorId !== replacement.vendorId || !vendorOwnedByCompany(previous.companyId, previous.vendorId)
+    || session.documents.some((item) => item.id === replacement.id) || replacement.previousDocumentId !== owned.id || replacement.versionGroupId !== (owned.versionGroupId ?? owned.id)) throw new Error('COMPANY_SCOPE_MISMATCH');
   session.files.set(replacement.id, file);
   session.documents = [replacement, ...session.documents.map((item) => item.id === previous.id ? {...item, supersededById: replacement.id} : item)];
   synchronize();
@@ -172,10 +177,19 @@ export function reviewDateToIso(value: string): string | null {
 }
 
 /** Used only by the requirement/review transaction after ownership/reference validation. */
-export function updateDocumentRecord(id: string, patch: Partial<CreatedDocument>, synchronize?: () => void) {
+export function updateDocumentRecord(companyId: string, id: string, patch: Partial<CreatedDocument>, synchronize?: () => void) {
+  const record = session.documents.find((item) => item.id === id && item.companyId === companyId);
+  if (!record || !vendorOwnedByCompany(companyId, record.vendorId)
+    || (patch.companyId !== undefined && patch.companyId !== companyId)
+    || (patch.id !== undefined && patch.id !== id)
+    || (patch.vendorId !== undefined && patch.vendorId !== record.vendorId)) return false;
+  for (const reference of [patch.previousDocumentId, patch.supersededById, patch.versionGroupId]) {
+    if (reference && !session.documents.some((item) => item.id === reference && item.companyId === companyId && item.vendorId === record.vendorId)) return false;
+  }
   session.documents = session.documents.map((document) => document.id === id ? {...document, ...patch} : document);
   synchronize?.();
   session.listeners.forEach((listener) => listener());
+  return true;
 }
 
 export function isoToReviewDate(value?: string | null): string {

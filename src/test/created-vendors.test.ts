@@ -6,10 +6,10 @@ import {getVendorRequirements, readVendorRequirements} from '@/features/vendors/
 import {projectVendorDocuments} from '@/features/vendors/projections';
 
 const project = (vendor: ReturnType<typeof toVendorListItem>) => projectVendorDocuments(vendor, getVendorRequirements(readVendorRequirements(), 'demo-company', vendor.id), readDocumentRecords(), 'demo-company');
-const currentVendors = () => vendorListItems(getVendorState(), vendorsListFixture.vendors).map(project);
+const currentVendors = () => vendorListItems(getVendorState(), 'demo-company').map(project);
 
 const requiredOnly: CreatedVendor = {
-  id: 'local-test', name: 'Atlas SRL', cui: 'RO12345678', category: 'software', email: 'hello@atlas.example', lifecycleStatus: 'active'
+  id: 'local-test', companyId: 'demo-company', name: 'Atlas SRL', cui: 'RO12345678', category: 'software', email: 'hello@atlas.example', lifecycleStatus: 'active'
 };
 
 describe('new vendor view mapping', () => {

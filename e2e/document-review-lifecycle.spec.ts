@@ -116,7 +116,7 @@ for (const {english, width} of [{english: false, width: 1448}, {english: true, w
     await page.getByRole('alertdialog').getByRole('button', {name: rejectLabel, exact: true}).click();
     await expect(page.getByRole('button', {name: rejectLabel, exact: true})).toBeDisabled();
     await page.getByRole('link', {name: english ? 'Back to documents' : 'Înapoi la documente'}).click();
-    await expect(page.getByRole('button', {name: english ? 'All documents 23' : 'Toate documentele 23'})).toBeVisible();
+    await expect(page.getByRole('button', {name: english ? 'All documents 24' : 'Toate documentele 24'})).toBeVisible();
     await expect(page.getByRole('button', {name: english ? 'Needs review 3' : 'Necesită revizuire 3', exact: true})).toBeVisible();
     await expect(page.getByRole('row', {name: /Certificat_fiscal_CP_2024.pdf/})).toHaveCount(0);
     await vendor(page, english, 'noncompliant');

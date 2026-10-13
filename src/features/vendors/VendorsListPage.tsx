@@ -8,6 +8,8 @@ import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
 import {AuthenticatedBreadcrumbs} from '@/components/layout/AuthenticatedBreadcrumbs';
 import {AuthenticatedPageHeader, AuthenticatedPagePrimaryAction} from '@/components/layout/AuthenticatedPageHeader';
 import {StatusBadge, type StatusTone} from '@/components/ui/StatusBadge';
+import {EmptyState} from '@/components/ui/EmptyState';
+import {Button} from '@/components/ui/Button';
 import {Surface} from '@/components/ui/Surface';
 import {SearchInput} from '@/components/ui/SearchInput';
 import {FilterPanel} from '@/components/ui/FilterPanel';
@@ -70,13 +72,14 @@ function VendorRow({vendor, locale, menuOpen, onMenuChange}: {vendor: VendorList
 
 export function VendorsListPage({locale, view}: {locale: string; view: VendorsListViewModel}) {
   const t = useTranslations('Vendors');
+  const empty = useTranslations('CompanyWorkspace');
   const router = useRouter();
   const filtersT = useTranslations('DataFilters');
   const vendorState = useVendorState();
   const requirements = useVendorRequirements();
   const records = useDocumentRecords();
   const companyId = useCompanyState().activeCompanyId ?? '';
-  const allVendors = vendorListItems(vendorState, view.vendors).map((vendor) => {
+  const allVendors = vendorListItems(vendorState, companyId).map((vendor) => {
     return projectVendorDocuments(vendor, getVendorRequirements(requirements, companyId, vendor.id), records, companyId);
   });
   const [addPhase, setAddPhase] = useState<'closed' | 'open' | 'closing'>('closed');
@@ -115,7 +118,7 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
   }
 
   function createVendor(input: NewVendorInput) {
-    const vendor = createLocalVendor(input);
+    const vendor = createLocalVendor(input, companyId);
     router.push(`/vendors/${vendor.id}`);
   }
 
@@ -153,7 +156,7 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
       </section>
 
       <Surface className={styles.listSurface}>
-        <div className={styles.tableScroll} role="region" aria-label={t('tableRegion')} tabIndex={0}>
+        {allVendors.length === 0 ? <EmptyState icon={<AppIcon name="users" size={25}/>} title={empty('vendorsTitle')} description={empty(vendorState.pendingVendorDrafts[companyId]?.length ? 'pendingVendorsDescription' : 'vendorsDescription')} action={<Button onClick={(event) => {addTriggerRef.current = event.currentTarget; setAddPhase('open');}}><AppIcon name="plus" size={20}/>{t('addVendor')}</Button>}/> : <><div className={styles.tableScroll} role="region" aria-label={t('tableRegion')} tabIndex={0}>
           <table className={styles.vendorTable}>
             <thead><tr>
               {(['vendor', 'category', 'generalStatus', 'documents', 'nextExpiry'] as const).map((column) => <th key={column} scope="col" aria-sort={sort?.column === column ? sort.direction : undefined}>
@@ -177,10 +180,11 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
             {[8, 16, 24].map((size) => <option key={size} value={size}>{t('perPage', {count: size})}</option>)}
           </select><AppIcon name="chevronDown" size={17} /></label>
         </div>
+      </>}
       </Surface>
 
       <aside className={styles.banner} aria-label={t('bannerTitle')}><div><h2>{t('bannerTitle')}</h2><p>{t('bannerDescription')}</p></div><p className={styles.bannerHandwriting}>{t('bannerHandwriting')}</p></aside>
     </div>
-    {addPhase !== 'closed' && <AddVendorDrawer phase={addPhase} onClose={closeAdd} onExited={finishAdd} triggerRef={addTriggerRef} onCreate={createVendor}/>}
+    {addPhase !== 'closed' && <AddVendorDrawer key={companyId} phase={addPhase} onClose={closeAdd} onExited={finishAdd} triggerRef={addTriggerRef} onCreate={createVendor}/>}
   </AuthenticatedAppShell>;
 }

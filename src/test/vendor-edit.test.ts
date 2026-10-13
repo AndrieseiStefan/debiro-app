@@ -56,7 +56,7 @@ describe('shared vendor metadata editing', () => {
     expect(projected.contact.role).toBe(view.contact.role);
     expect(projected.notes).toBe('Saved notes');
     expect(projected.categoryDetail).toBeUndefined();
-    expect(vendorListItems(getVendorState(), vendorsListFixture.vendors).find((vendor) => vendor.id === view.vendor.id)).toEqual(projected.vendor);
+    expect(vendorListItems(getVendorState(), 'demo-company').find((vendor) => vendor.id === view.vendor.id)).toMatchObject(projected.vendor);
     expect(updateVendorMetadata(vendorFixtureCompanyId, view.vendor.id, {...draft, notes: undefined, phone: undefined})).toBe('saved');
     expect(projectVendorDetails(view, getVendorState()).notes).toBeUndefined();
     expect(projectVendorDetails(view, getVendorState()).contact.phone).toBeUndefined();

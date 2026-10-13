@@ -1,6 +1,11 @@
 'use client';
 
-import type {CSSProperties} from 'react';
+import {useCallback, useRef, useState, type CSSProperties} from 'react';
+import {useRouter} from '@/i18n/navigation';
+import {Button} from '@/components/ui/Button';
+import {EmptyState} from '@/components/ui/EmptyState';
+import {AddVendorDrawer} from '@/features/vendors/AddVendorDrawer';
+import {createLocalVendor, type NewVendorInput} from '@/features/vendors/created-vendors';
 import {useTranslations} from 'next-intl';
 import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
@@ -12,7 +17,6 @@ import styles from './DashboardPage.module.css';
 import {useDocumentRecords} from '@/features/documents/created-documents';
 import {useVendorRequirements} from '@/features/vendors/vendor-requirements';
 import {useVendorState, vendorListItems} from '@/features/vendors/created-vendors';
-import {vendorsListFixture} from '@/features/vendors/fixtures';
 import {notificationsFixture} from '@/features/notifications/fixtures';
 import {useLocalAuditEvents} from '@/features/notifications/local-audit';
 import {useCompanyState} from '@/features/companies/company-state';
@@ -35,7 +39,8 @@ const activityIcons: Record<DashboardActivityKind, AppIconName> = {
   uploaded: 'file',
   expiring: 'clock',
   expired: 'fileX',
-  added: 'userPlus'
+  added: 'userPlus',
+  updated: 'file'
 };
 
 function sample(value: LocalizedSample, locale: string) {
@@ -65,6 +70,7 @@ function SummaryMetricCard({id, value, note}: {id: keyof typeof metricAppearance
 
 function DocumentsAttentionPanel({view, locale}: {view: DashboardViewModel; locale: string}) {
   const t = useTranslations('Dashboard');
+  const empty = useTranslations('CompanyWorkspace');
 
   return (
     <Surface className={styles.documentsPanel}>
@@ -72,7 +78,7 @@ function DocumentsAttentionPanel({view, locale}: {view: DashboardViewModel; loca
         <h2><AppIcon name="file" size={22} />{t('documentsTitle')}</h2>
         <SectionAction>{t('viewAll')}</SectionAction>
       </div>
-      <div className={styles.tableScroll}>
+      {view.documentsRequiringAttention.length === 0 ? <EmptyState icon={<AppIcon name="check" size={25}/>} title={empty('noAttention')}/> : <><div className={styles.tableScroll}>
         <table className={styles.documentsTable}>
           <thead><tr>
             <th scope="col">{t('table.supplier')}</th>
@@ -97,7 +103,7 @@ function DocumentsAttentionPanel({view, locale}: {view: DashboardViewModel; loca
       <div className={styles.documentNotice}>
         <span><span className={styles.infoIcon}><AppIcon name="info" size={19} /></span>{t('urgentDocuments', {count: view.documentsRequiringAttention.length})}</span>
         <SectionAction>{t('checkAndUpdate')}</SectionAction>
-      </div>
+      </div></>}
     </Surface>
   );
 }
@@ -125,7 +131,7 @@ function SupplierStatusPanel({view}: {view: DashboardViewModel}) {
         <SectionAction>{t('viewDetails')}</SectionAction>
       </div>
       <div className={styles.statusBody}>
-        <div className={styles.donut} style={donutStyle} role="img" aria-label={`${t('supplierStatusTitle')}: ${suppliers.total} ${t('suppliersLower')}`}>
+        <div className={styles.donut} data-empty={suppliers.total === 0 || undefined} style={donutStyle} role="img" aria-label={`${t('supplierStatusTitle')}: ${suppliers.total} ${t('suppliersLower')}`}>
           <span><strong>{suppliers.total}</strong><small>{t('suppliersLower')}</small></span>
         </div>
         <ul className={styles.statusLegend}>
@@ -142,6 +148,7 @@ function SupplierStatusPanel({view}: {view: DashboardViewModel}) {
 
 function RecentActivityPanel({view, locale}: {view: DashboardViewModel; locale: string}) {
   const t = useTranslations('Dashboard');
+  const empty = useTranslations('CompanyWorkspace');
 
   return (
     <Surface className={styles.activityPanel}>
@@ -149,22 +156,29 @@ function RecentActivityPanel({view, locale}: {view: DashboardViewModel; locale: 
         <h2><AppIcon name="calendar" size={21} />{t('recentActivityTitle')}</h2>
         <SectionAction>{t('viewAll')}</SectionAction>
       </div>
-      <ol className={styles.activityList}>
+      {view.recentActivity.length === 0 ? <EmptyState icon={<AppIcon name="calendar" size={25}/>} title={empty('noActivity')}/> : <ol className={styles.activityList}>
         {view.recentActivity.map((activity) => <li key={activity.id}>
           <span className={`${styles.activityIcon} ${styles[activity.kind]}`}><AppIcon name={activityIcons[activity.kind]} size={18} /></span>
-          <span className={styles.activityCopy}><strong>{t(`activity.${activity.kind}`)}</strong><small>{activity.supplier}{activity.document && ` — ${sample(activity.document, locale)}`}</small></span>
+          <span className={styles.activityCopy}><strong>{activity.action ? sample(activity.action, locale) : t(`activity.${activity.kind === 'updated' ? 'added' : activity.kind}`)}</strong><small>{activity.supplier}{activity.document && ` — ${sample(activity.document, locale)}`}</small></span>
           <time>{sample(activity.time, locale)}</time>
         </li>)}
-      </ol>
+      </ol>}
     </Surface>
   );
 }
 
 export function DashboardPage({locale, view: initialView}: {locale: string; view: DashboardViewModel}) {
   const t = useTranslations('Dashboard');
+  const empty = useTranslations('CompanyWorkspace');
+  const router = useRouter();
   const companyId = useCompanyState().activeCompanyId ?? '';
+  const [addPhase, setAddPhase] = useState<'closed' | 'open' | 'closing'>('closed');
+  const addTrigger = useRef<HTMLButtonElement>(null);
+  const closeAdd = useCallback(() => setAddPhase('closing'), []);
+  const finishAdd = useCallback(() => setAddPhase('closed'), []);
+  function createVendor(input: NewVendorInput) {const vendor = createLocalVendor(input, companyId); router.push(`/vendors/${vendor.id}`);}
   const local = useLocalAuditEvents().filter((event) => event.companyId === companyId);
-  const view = projectDashboard(initialView, companyId, vendorListItems(useVendorState(), vendorsListFixture.vendors), useVendorRequirements(), useDocumentRecords(), [...notificationsFixture.auditEvents, ...local]);
+  const view = projectDashboard(initialView, companyId, vendorListItems(useVendorState(), companyId), useVendorRequirements(), useDocumentRecords(), [...notificationsFixture.auditEvents, ...local]);
   const {suppliers} = view;
 
   return (
@@ -185,6 +199,7 @@ export function DashboardPage({locale, view: initialView}: {locale: string; view
           <SummaryMetricCard id="noncompliant" value={suppliers.noncompliant} note={t('summary.percentOfTotal', {percent: suppliers.percentages.noncompliant})} />
         </section>
 
+        {suppliers.total === 0 && <div className={styles.firstRun}><EmptyState icon={<AppIcon name="users" size={25}/>} title={empty('firstRunTitle')} description={empty('vendorsDescription')} action={<Button ref={addTrigger} onClick={() => setAddPhase('open')}><AppIcon name="plus" size={20}/>{empty('firstVendor')}</Button>}/></div>}
         <div className={styles.dashboardPanels}>
           <DocumentsAttentionPanel view={view} locale={locale} />
           <div className={styles.rightPanels}>
@@ -198,6 +213,7 @@ export function DashboardPage({locale, view: initialView}: {locale: string; view
           <p className={styles.bannerHandwriting}>{t('bannerHandwriting')}</p>
         </aside>
       </div>
+      {addPhase !== 'closed' && <AddVendorDrawer key={companyId} phase={addPhase} onClose={closeAdd} onExited={finishAdd} triggerRef={addTrigger} onCreate={createVendor}/>}
     </AuthenticatedAppShell>
   );
 }

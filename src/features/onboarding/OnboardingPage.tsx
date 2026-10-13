@@ -14,6 +14,7 @@ import type {OnboardingFixture} from './fixtures';
 import {companyCountries, companyIndustries, companySizes} from '@/features/companies/company-options';
 import {initializeOnboardingCompany, duplicateCompanyTaxId, getCurrentMembership, normalizeCompanyTaxId, readCompanyState, type NewCompanyInput} from '@/features/companies/company-state';
 import {validEmail} from '@/lib/field-validation';
+import {initializeCompanySetup} from './company-setup';
 import styles from './OnboardingPage.module.css';
 
 const stepIds = ['company', 'requirements', 'suppliers'] as const;
@@ -216,6 +217,7 @@ export function OnboardingPage({locale, fixture}: {locale: string; fixture: Onbo
     if (!companyInput) return;
     const result = initializeOnboardingCompany(companyInput);
     if (!result.ok) {setCompanyError(result.reason); setStep(1); return;}
+    initializeCompanySetup(result.id, {template, documents: selectedRequirements, suppliers: supplierRows}, language);
     router.push('/dashboard');
   }
 

@@ -104,7 +104,7 @@ for (const english of [false, true]) {
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
       await close(page, english);
       const summary = page.getByRole('region', {name: english ? 'Document summary' : 'Rezumat documente'});
-      for (const [status, count] of [['total', 24], ['review', 4], ['valid', 14], ['expiring', 4]] as const) {
+      for (const [status, count] of [['total', 25], ['review', 4], ['valid', 15], ['expiring', 4]] as const) {
         await expect(summary.locator(`[data-status="${status}"] b`)).toHaveText(String(count));
       }
       const row = page.getByRole('row', {name: /Autorizatie_ISU.pdf/});
@@ -169,7 +169,7 @@ for (const english of [false, true]) {
     await expect(page.getByRole('row', {name: /same.pdf/})).toHaveCount(1);
     await expect(page.getByRole('row', {name: /Autorizatie_ISU/})).toHaveCount(0);
     const summary = page.getByRole('region', {name: english ? 'Document summary' : 'Rezumat documente'});
-    await expect(summary.locator('[data-status="total"] b')).toHaveText('24');
+    await expect(summary.locator('[data-status="total"] b')).toHaveText('25');
     await expect(summary.locator('[data-status="review"] b')).toHaveText('4');
   });
 
@@ -351,7 +351,7 @@ for (const english of [false, true]) {
     const id = new URL(page.url()).searchParams.get('document')!;
     expect(id).not.toBe(registration);
     await close(page, english);
-    await expect(page.getByRole('button', {name: english ? 'All documents 24' : 'Toate documentele 24', exact: true})).toBeVisible();
+    await expect(page.getByRole('button', {name: english ? 'All documents 25' : 'Toate documentele 25', exact: true})).toBeVisible();
     await expect(page.getByRole('button', {name: english ? 'Needs review 4' : 'Necesită revizuire 4', exact: true})).toBeVisible();
     await expect(page.getByRole('row', {name: /ONRC_2024.pdf/})).toHaveCount(0);
     const renewedRow = page.getByRole('row', {name: /renewed.pdf/});
@@ -516,8 +516,8 @@ test('direct, unknown, mismatched vendor, stale company and history URLs fail sa
   // A client Back restores the former URL, not a new independent fixture session.
   await page.goBack();
   await expect(page).toHaveURL(new RegExp(`/documents\\?document=${pendingId}&documentAction=history$`));
-  await expect(page.getByText('Nu există date pentru această companie în demonstrația locală.')).toBeVisible();
-  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByText('Nu există documente încă')).toBeVisible();
+  await expect(page.getByRole('dialog', {name: 'Document indisponibil'})).toBeVisible();
   await expect(page.getByText('Certificat_fiscal_CP_2024.pdf')).toHaveCount(0);
   await page.goForward();
   await expect(page.getByText('Certificat_fiscal_CP_2024.pdf')).toHaveCount(0);

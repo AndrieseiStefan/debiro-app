@@ -45,13 +45,13 @@ test('switcher closes accessibly, preserves route, and prevents demo data leakag
   await trigger.click();
   await switcher.getByRole('button', {name: /Global Clean Services/}).click();
   await expect(page).toHaveURL(/\/vendors$/);
-  await expect(page.getByText('Nu există date pentru această companie în demonstrația locală.')).toBeVisible();
+  await expect(page.getByText('Nu ai furnizori încă')).toBeVisible();
   await expect(page.getByText('Construct Pro SRL')).toHaveCount(0);
   for (const path of ['/dashboard', '/documents', '/requirements', '/notifications']) {
     await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: path === '/dashboard' ? 'Dashboard' : path === '/documents' ? 'Documente' : path === '/requirements' ? 'Cerințe' : 'Notificări'}).click();
     await expect(page).toHaveURL(new RegExp(`${path}$`));
     if (path === '/requirements') await expect(page.getByText('Nu există șabloane pentru această companie')).toBeVisible();
-    else await expect(page.getByText('Nu există date pentru această companie în demonstrația locală.')).toBeVisible();
+    else await expect(page.getByText(path === '/dashboard' ? 'Începe cu primul furnizor' : path === '/documents' ? 'Nu există documente încă' : 'Nu există notificări sau activități.')).toBeVisible();
     await expect(page.getByText('Construct Pro SRL')).toHaveCount(0);
   }
   await page.getByRole('button', {name: 'Global Clean Services'}).click();
@@ -100,7 +100,7 @@ test('local creation validates, adds a membership and trial, and updates all thr
   await expect(switcher.getByRole('button')).toHaveCount(3);
   await expect(switcher.getByRole('button', {name: /New Horizon SRL/})).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Furnizori'}).click();
-  await expect(page.getByText('Nu există date pentru această companie în demonstrația locală.')).toBeVisible();
+  await expect(page.getByText('Nu ai furnizori încă')).toBeVisible();
   await expect(page.getByText('Construct Pro SRL')).toHaveCount(0);
   await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('button', {name: 'Setări companie'}).click();
   await page.getByRole('link', {name: 'Membri și acces'}).click();

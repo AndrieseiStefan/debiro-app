@@ -3,7 +3,10 @@
 import type {ReactNode} from 'react';
 import {useTranslations} from 'next-intl';
 import {notificationsFixture} from '@/features/notifications/fixtures';
-import {companySettingsFixture} from '@/features/company-settings/fixtures';
+import {getCurrentMembership} from '@/features/companies/company-state';
+import {companyNotifications} from '@/features/notifications/company-projections';
+import {useLocalAuditEvents} from '@/features/notifications/local-audit';
+import {useVendorState, vendorListItems} from '@/features/vendors/created-vendors';
 import {getActiveCompany, useCompanyState} from '@/features/companies/company-state';
 import {useNotificationItems} from '@/features/notifications/local-state';
 import type {NotificationActivityItem} from '@/features/notifications/types';
@@ -12,7 +15,7 @@ import {AppShell} from './AppShell';
 import {AppSidebar} from './AppSidebar';
 import {AppTopBar} from './AppTopBar';
 
-export function AuthenticatedAppShell({locale, currentPath, notificationItems, notificationReferenceTime, scope = 'demo-fixture', children}: {
+export function AuthenticatedAppShell({locale, currentPath, notificationItems, notificationReferenceTime, scope = 'company-aware', children}: {
   locale: string;
   currentPath: string;
   organizationName: string;
@@ -21,17 +24,18 @@ export function AuthenticatedAppShell({locale, currentPath, notificationItems, n
   notificationCount?: number;
   notificationItems?: NotificationActivityItem[];
   notificationReferenceTime?: string;
-  scope?: 'demo-fixture' | 'company-aware' | 'global';
+  scope?: 'company-aware' | 'global';
   children: ReactNode;
 }) {
   const t = useTranslations('AppShell');
   const companies = useCompanyState();
   const active = getActiveCompany(companies);
-  const notifications = useNotificationItems(notificationItems ?? notificationsFixture.notifications);
-  const visibleNotifications = active?.company.id === companySettingsFixture.company.id ? notifications : [];
+  const companyId = active?.company.id ?? '';
+  const notifications = companyNotifications(companyId, useLocalAuditEvents(), vendorListItems(useVendorState(), companyId), notificationItems ?? notificationsFixture.notifications);
+  const visibleNotifications = useNotificationItems(notifications);
   const unreadCount = visibleNotifications.filter((item) => item.isUnread).length;
   const referenceTime = notificationReferenceTime ?? notificationsFixture.referenceTime;
-  const showFixture = scope !== 'demo-fixture' || active?.company.id === companySettingsFixture.company.id;
+  const accessible = scope === 'global' || Boolean(active && getCurrentMembership(active));
 
   return (
     <AppShell
@@ -39,7 +43,7 @@ export function AuthenticatedAppShell({locale, currentPath, notificationItems, n
       sidebar={<AppSidebar locale={locale} currentPath={currentPath} notificationCount={unreadCount} notifications={visibleNotifications} notificationReferenceTime={referenceTime} />}
       header={<AppTopBar locale={locale} currentPath={currentPath} notifications={visibleNotifications} notificationReferenceTime={referenceTime} />}
     >
-      {showFixture ? children : <EmptyState title={t('workspaceEmptyTitle')} description={t('workspaceEmptyDescription', {company: active?.company.name ?? t('workspaceUnknown')})}/>}
+      {accessible ? children : <EmptyState title={t('workspaceEmptyTitle')} description={t('workspaceEmptyDescription', {company: active?.company.name ?? t('workspaceUnknown')})}/>}
     </AppShell>
   );
 }
