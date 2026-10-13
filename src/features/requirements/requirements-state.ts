@@ -9,7 +9,8 @@ import {catalogDocument, normalizeDocumentName} from './catalog';
 import {requirementsFixture} from './fixtures';
 import {resolveCompanyDocumentTypes, type CompanyDocumentType} from './document-types';
 import type {CatalogCandidate, RequirementDocumentInput, RequirementTemplate, RequirementTemplateDocument, TemplateDraft, TemplateEditDraft} from './types';
-import {starterRequirementTemplates} from './starter-templates';
+import {generalRequirementsDraftSource, starterRequirementTemplates} from './starter-templates';
+import {getActiveCompany, getCurrentMembership, readCompanyState} from '@/features/companies/company-state';
 
 type RuleChange = Partial<Pick<RequirementTemplateDocument, 'required' | 'expiryWarningDays' | 'validityMonths'>>;
 type CustomChange = {customName?: string; customDescription?: string; issuer?: string} & Partial<Appearance>;
@@ -252,21 +253,47 @@ export function deleteRequirementTemplate(companyId: string): boolean {
   return true;
 }
 
-/** Explicit starter customization reuses the normal draft/document/Save lifecycle. */
+export type StarterCloneResult = {status: 'cloned' | 'duplicate'; templateId: string} | {status: 'notFound' | 'accessDenied' | 'invalid' | 'dirty'};
+
+/** One atomic snapshot; no mutable starter references or live synchronization. */
+export function cloneStarterTemplate(companyId: string, starterId: string, documents?: RequirementDocumentInput[]): StarterCloneResult {
+  const company = getActiveCompany(readCompanyState());
+  if (company?.company.id !== companyId || getCurrentMembership(company)?.role !== 'administrator') return {status: 'accessDenied'};
+  const source = starterRequirementTemplates.find((item) => item.id === starterId && item.active);
+  if (!source) return {status: 'notFound'};
+  const workspace = getRequirementsWorkspace(session.state, companyId);
+  const existing = workspace.templates.find((item) => item.starterTemplateId === source.id);
+  if (existing) return {status: 'duplicate', templateId: existing.id};
+  if (workspace.draft?.isDirty || workspace.editDraft?.isDirty) return {status: 'dirty'};
+  const id = `local-template-${crypto.randomUUID()}`;
+  const copied = (documents ?? source.documents).map((document) => ({...document, id: `rule-${crypto.randomUUID()}`, templateId: id}));
+  // Starters/onboarding customizations reference the global catalog only.
+  if (copied.some((document) => !document.catalogDocumentTypeId || !catalogDocument(document.catalogDocumentTypeId))) return {status: 'invalid'};
+  let title = {...source.title}, number = 1;
+  while (workspace.templates.some((template) => Object.values(template.title).some((name) => Object.values(title).some((value) => normalizeDocumentName(name) === normalizeDocumentName(value))))) {
+    const suffix = number === 1 ? '' : ` ${number}`;
+    title = {ro: `${source.title.ro} — copie${suffix}`, en: `${source.title.en} — copy${suffix}`}; number++;
+  }
+  if (validateTemplateFields(workspace, {name: title.ro, categoryId: source.categoryId, documents: copied})) return {status: 'invalid'};
+  const template: RequirementTemplate = {id, companyId, title, subtitle: {...source.subtitle}, categoryId: source.categoryId,
+    iconKey: source.iconKey, iconColorKey: source.iconColorKey, documents: copied, starterTemplateId: source.id, starterTemplateVersion: source.version,
+    createdAt: fixtureReferenceTime, updatedAt: fixtureReferenceTime};
+  updateWorkspace(companyId, (current) => ({...current, templates: [...current.templates, template], selectedId: id, draft: null, editDraft: null}));
+  return {status: 'cloned', templateId: id};
+}
+
+/** Explicit onboarding customization uses the same clone transaction or ordinary incomplete draft. */
 export function initializeStarterTemplate(companyId: string, starterId: string, documents: RequirementDocumentInput[], language: 'ro' | 'en' = 'ro') {
-  const source = starterRequirementTemplates.find((item) => item.id === starterId);
-  if (!source || !documents.length || documents.some((document) => !document.catalogDocumentTypeId || !catalogDocument(document.catalogDocumentTypeId))) return false;
+  if (starterId !== 'starter-general') return cloneStarterTemplate(companyId, starterId, documents).status === 'cloned';
+  const source = generalRequirementsDraftSource;
+  if (!documents.length || documents.some((document) => !document.catalogDocumentTypeId || !catalogDocument(document.catalogDocumentTypeId))) return false;
   const existing = getRequirementsWorkspace(readRequirementsState(), companyId).templates;
   const base = source.title[language];
-  let name = base, number = 1;
+  let name: string = base, number = 1;
   while (existing.some((template) => Object.values(template.title).some((value) => normalizeDocumentName(value) === normalizeDocumentName(name)))) name = `${base} — ${language === 'ro' ? 'copie' : 'copy'}${number++ === 1 ? '' : ` ${number - 1}`}`;
   startRequirementDraft(companyId);
-  updateRequirementDraft(companyId, {name, description: source.subtitle[language], categoryId: source.categoryId ?? '', iconKey: source.iconKey, iconColorKey: source.iconColorKey});
-  updateWorkspace(companyId, (workspace) => ({...workspace, draft: {...workspace.draft!, starterTemplateId: source.id, starterTemplateVersion: source.version}}));
+  updateRequirementDraft(companyId, {name, description: source.subtitle[language], categoryId: '', iconKey: source.iconKey, iconColorKey: source.iconColorKey});
   for (const document of documents) if (addRequirementDocument(companyId, document) !== 'added') {discardRequirementDraft(companyId); return false;}
-  // General/custom selections have no operational category: retain the same editable draft,
-  // rather than fabricating applicability or making an ineligible saved template.
-  if (!source.categoryId) return true;
-  if (saveRequirementDraft(companyId) !== 'saved') return false;
+  // General/custom selections require an explicit category and normal Save later.
   return true;
 }

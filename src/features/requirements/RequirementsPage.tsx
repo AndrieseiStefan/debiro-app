@@ -12,16 +12,17 @@ import {Field} from '@/components/ui/Field';
 import {SelectField} from '@/components/ui/SelectField';
 import {SearchInput} from '@/components/ui/SearchInput';
 import {Surface} from '@/components/ui/Surface';
-import {getActiveCompany, switchActiveCompany, useCompanyState} from '@/features/companies/company-state';
+import {getActiveCompany, getCurrentMembership, switchActiveCompany, useCompanyState} from '@/features/companies/company-state';
 import {vendorCategories, type VendorCategory} from '@/features/vendors/types';
 import {AddRequirementDocumentDrawer} from './AddRequirementDocumentDrawer';
+import {StarterTemplateSelector} from './StarterTemplateSelector';
 import {AppearanceIcon, AppearancePicker} from './AppearancePicker';
 import {defaultAppearance, validColorKey, validIconKey} from './appearance';
 import {documentDisplay} from './document-presentation';
 import {previewSupplier, supplierPreviewDocuments} from './supplier-preview';
 import {SupplierRequirementContext, SupplierRequirementList} from '@/features/supplier-requirements/SupplierRequirements';
 import {
-  addRequirementDocument, deleteRequirementTemplate, discardExistingRequirementEdit, discardRequirementDraft, duplicateRequirementTemplate, getRequirementsWorkspace,
+  addRequirementDocument, cloneStarterTemplate, deleteRequirementTemplate, discardExistingRequirementEdit, discardRequirementDraft, duplicateRequirementTemplate, getRequirementsWorkspace,
   removeRequirementDocument, saveExistingRequirementEdit, saveRequirementDraft, selectRequirementTemplate, startRequirementDraft,
   updateCustomRequirementDocument, updateExistingRequirementTemplate, updateRequirementDocument, updateRequirementDraft,
   useRequirementsState, validateExistingRequirementEdit, validateRequirementDraft
@@ -48,12 +49,16 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
   const language = locale === 'en' ? 'en' : 'ro';
   const company = getActiveCompany(useCompanyState());
   const companyId = company?.company.id ?? '';
+  const canCreate = Boolean(company && getCurrentMembership(company)?.role === 'administrator');
   const workspace = getRequirementsWorkspace(useRequirementsState(), companyId);
   const draft = workspace.draft;
   const selected = workspace.templates.find((template) => template.id === workspace.selectedId) ?? workspace.templates[0] ?? null;
   const editDraft = workspace.editDraft?.templateId === selected?.id ? workspace.editDraft : null;
   const documents = draft?.documents ?? editDraft?.documents ?? selected?.documents ?? [];
   const [query, setQuery] = useState('');
+  const [showStarters, setShowStarters] = useState(false);
+  const editorTitleRef = useRef<HTMLHeadingElement>(null);
+  const addTemplateRef = useRef<HTMLButtonElement>(null);
   const [tab, setTab] = useState<'documents' | 'preview'>('documents');
   const [validation, setValidation] = useState<ReturnType<typeof validateRequirementDraft>>(null);
   const [editingCustomId, setEditingCustomId] = useState<string | null>(null);
@@ -85,11 +90,19 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
     pendingAction.current = null;
     action?.();
   }
-  function startNew() {requestDiscard(() => {startRequirementDraft(companyId); setValidation(null); setTab('documents');});}
+  function startNew() {if (canCreate) requestDiscard(() => {setShowStarters(false); startRequirementDraft(companyId); setValidation(null); setTab('documents');});}
+  function openStarters() {requestDiscard(() => {setShowStarters(true); setValidation(null);});}
+  function useStarter(id: string) {
+    const result = cloneStarterTemplate(companyId, id);
+    if (result.status !== 'cloned' && result.status !== 'duplicate') return false;
+    selectRequirementTemplate(companyId, result.templateId); setShowStarters(false); setTab('documents'); setValidation(null);
+    requestAnimationFrame(() => editorTitleRef.current?.focus());
+    return true;
+  }
   function duplicateSelected() {requestDiscard(() => {duplicateRequirementTemplate(companyId, language); setValidation(null); setTab('documents');});}
   function requestDelete() {requestDiscard(() => setConfirmDelete(true));}
   function confirmDeleteSelected() {deleteRequirementTemplate(companyId); setConfirmDelete(false); setValidation(null); setEditingCustomId(null);}
-  function selectTemplate(id: string) {if (!draft && selected?.id === id) return; requestDiscard(() => {selectRequirementTemplate(companyId, id); setValidation(null);});}
+  function selectTemplate(id: string) {if (!showStarters && !draft && selected?.id === id) return; requestDiscard(() => {setShowStarters(false); selectRequirementTemplate(companyId, id); setValidation(null);});}
   function saveNew() {
     const result = saveRequirementDraft(companyId);
     if (result === 'saved') setValidation(null);
@@ -140,7 +153,7 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
     <div className={styles.page}>
       <AuthenticatedPageHeader context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: app('navigation.requirements')}]} />} title={t('title')} titleId="requirements-title" description={t('description')}
         supportingContent={<div className={styles.headerCallout}><span className={styles.headerCalloutIcon}><AppIcon name="target" size={27}/></span><span>{t('calloutOne')}<br/>{t('calloutTwo')}</span></div>}
-        actions={<AuthenticatedPagePrimaryAction icon="plus" onClick={startNew}>{t('newTemplate')}</AuthenticatedPagePrimaryAction>}/>
+        actions={<AuthenticatedPagePrimaryAction ref={addTemplateRef} icon="plus" onClick={openStarters}>{t('newTemplate')}</AuthenticatedPagePrimaryAction>}/>
 
       <div className={styles.workspace}>
         <Surface className={styles.templatePanel}>
@@ -153,13 +166,15 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
             </button>)}
             {!draft && visible.length === 0 && <p className={styles.noResults}>{workspace.templates.length ? t('noResults') : t('creation.emptyCompanyDescription')}</p>}
           </div>
-          <button type="button" className={styles.addTemplate} onClick={startNew}><span className={styles.addIcon}><AppIcon name="plus" size={26}/></span><span><strong>{t('addNewTemplate')}</strong><small>{t('addNewDescription')}</small></span></button>
+          <button type="button" className={styles.addTemplate} disabled={!canCreate} onClick={startNew}><span className={styles.addIcon}><AppIcon name="plus" size={26}/></span><span><strong>{t('addNewTemplate')}</strong><small>{t('addNewDescription')}</small></span></button>
         </Surface>
 
         <Surface className={styles.editor}>
+          {showStarters ? <StarterTemplateSelector key={companyId} locale={locale} templates={workspace.templates} canCreate={canCreate} onCustom={startNew} onUse={useStarter} onExisting={selectTemplate} onBack={() => {setShowStarters(false); addTemplateRef.current?.focus();}}/> : <>
           {draft ? <div className={styles.editorTop}><AppearancePicker appearance={draft} onChange={(next) => updateRequirementDraft(companyId, next)} label={t('appearance.templateLabel')}/><div className={styles.editorIdentity}><h2>{t('creation.title')}</h2><p>{t('creation.subtitle')}</p></div></div>
-            : selected ? <div className={styles.editorTop}><AppearancePicker appearance={appearance} onChange={(next) => updateExistingRequirementTemplate(companyId, language, next)} label={t('appearance.templateLabel')}/><div className={styles.editorIdentity}><h2>{selected.title[language]}</h2><p>{selected.subtitle[language] || vendors(('category.' + selected.categoryId) as 'category.construction')}</p></div><div className={styles.editorActions}><Button variant="secondary" onClick={duplicateSelected}><ActionGlyph kind="copy"/>{t('duplicateTemplate')}</Button></div></div>
+            : selected ? <div className={styles.editorTop}><AppearancePicker appearance={appearance} onChange={(next) => updateExistingRequirementTemplate(companyId, language, next)} label={t('appearance.templateLabel')}/><div className={styles.editorIdentity}><h2 ref={editorTitleRef} tabIndex={-1}>{selected.title[language]}</h2><p>{selected.subtitle[language] || vendors(('category.' + selected.categoryId) as 'category.construction')}</p></div><div className={styles.editorActions}><Button variant="secondary" onClick={duplicateSelected}><ActionGlyph kind="copy"/>{t('duplicateTemplate')}</Button></div></div>
             : <div className={styles.editorTop}><span className={styles.addIcon}><AppIcon name="file" size={29}/></span><div className={styles.editorIdentity}><h2>{t('creation.emptyCompanyTitle')}</h2><p>{t('creation.emptyCompanyDescription')}</p></div></div>}
+          {!draft && !selected && <div className={styles.starterUse}><Button onClick={openStarters}>{t('starters.title')}</Button><Button variant="secondary" disabled={!canCreate} onClick={startNew}>{t('starters.custom')}</Button></div>}
 
           {(draft || selected) && <>
             <div className={styles.draftFields}>
@@ -209,6 +224,7 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
             </div>
             <div className={styles.notice}><span><AppIcon name="info" size={20}/></span><p>{draft ? t('creation.draftNotice') : t('availability', {name: vendors(('category.' + (editDraft?.categoryId || selected!.categoryId)) as 'category.construction')})}</p></div>
             <div className={styles.footer}>{!draft && <Button variant="destructive" onClick={requestDelete}><ActionGlyph kind="trash"/>{t('deleteTemplate')}</Button>}<span className={styles.footerRight}><Button variant="secondary" onClick={() => {if (draft) requestDiscard(() => {}); else {discardExistingRequirementEdit(companyId); setEditingCustomId(null); setValidation(null);}}}>{t('cancel')}</Button><Button aria-disabled={draft ? Boolean(draftValidation) : !editDraft?.isDirty || Boolean(editValidation)} onClick={() => draft ? saveNew() : saveExisting()}><ActionGlyph kind="save"/>{t('saveTemplate')}</Button></span></div>
+          </>}
           </>}
         </Surface>
       </div>

@@ -116,7 +116,7 @@ describe('company-owned operational workspace', () => {
     expect(getVendorState().pendingVendorDrafts[configured][0]).toMatchObject({name: 'Pending supplier', email: 'pending@example.test', cui: '', category: ''});
     const general = company(); initializeCompanySetup(general, {template: 'general', documents: ['registration'], suppliers: []});
     expect(getRequirementsWorkspace(readRequirementsState(), general)).toMatchObject({templates: [], draft: {categoryId: '', name: 'Șablon general'}});
-    expect(starterRequirementTemplates.find((source) => source.id === 'starter-general')?.categoryId).toBeUndefined();
+    expect(starterRequirementTemplates.some((source) => source.id === 'starter-general')).toBe(false);
     switchActiveCompany(configured);
     createLocalVendor({name: 'Pending supplier', email: 'pending@example.test', cui: 'RO-PENDING', category: 'construction'}, configured);
     expect(getVendorState().pendingVendorDrafts[configured]).toEqual([]);

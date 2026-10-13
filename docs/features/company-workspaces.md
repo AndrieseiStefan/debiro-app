@@ -23,7 +23,7 @@ Global Documents means every current document owned by the active company. The p
 
 ## Onboarding setup
 
-Step 1 still initializes shared Company metadata at successful completion. Configure later has an empty Step 2 selection and creates no operational configuration. Explicit document choices initialize only the intended company through the same Requirements draft/document/Save actions and global catalog IDs (`insurance` → `liability`, `fireSafety` → `fire`). Construction has a known construction vendor category and saves one customized starter clone, not all Demo templates. Starter identity/version remains provenance without live synchronization or automatic assignment.
+Step 1 still initializes shared Company metadata at successful completion. Configure later has an empty Step 2 selection and creates no operational configuration. Explicit document choices initialize only the intended company through the same company starter-clone transaction (construction) or ordinary Requirements draft/document/Save actions (General/direct selections) and global catalog IDs (`insurance` → `liability`, `fireSafety` → `fire`). Construction has a known construction vendor category and saves one customized starter clone, not all Demo templates. Starter identity/version remains provenance without live synchronization or automatic assignment.
 
 The general template and direct checklist choices collect no operational vendor category. The product owner explicitly chose to retain these as ordinary company-owned Requirements drafts until a category is selected and Save succeeds; no applicability is invented. These drafts are not eligible saved templates and obey existing dirty/discard behavior. RO/EN starter names share the existing localized source.
 

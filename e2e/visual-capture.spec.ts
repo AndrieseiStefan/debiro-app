@@ -253,13 +253,35 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
       await page.getByRole('button', {name: 'Demo Company SRL'}).click();
       await page.getByRole('dialog', {name: route.startsWith('/en') ? 'Switch company' : 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
       await expect(page.getByRole('heading', {name: 'Global Clean Services'})).toBeVisible();
+    } else if (['starter-catalog', 'starter-preview', 'starter-clone', 'starter-already-added', 'starter-no-results'].includes(action)) {
+      if (route !== '/requirements' && route !== '/en/requirements') throw new Error('Starter capture requires Requirements.');
+      const english = route.startsWith('/en');
+      await createWorkspaceCompany(page, 'Starter Workspace', english); await workspaceSection(page, 'requirements', english);
+      await page.getByRole('button', {name: english ? 'New template' : 'Șablon nou', exact: true}).click();
+      if (action === 'starter-no-results') await page.getByRole('searchbox', {name: english ? 'Search DEBIRO suggestions' : 'Caută sugestii DEBIRO'}).fill('zzzzzz');
+      else if (action !== 'starter-catalog') {
+        await page.locator('[data-starter-id="starter-software"]').click();
+        if (action === 'starter-clone' || action === 'starter-already-added') {
+          await page.getByRole('button', {name: english ? 'Use this template' : 'Folosește acest șablon'}).click();
+          await expect(page.locator('#requirement-template-name')).toHaveValue(english ? 'IT services' : 'Servicii IT');
+          if (action === 'starter-already-added') {
+            await page.getByRole('button', {name: english ? 'New template' : 'Șablon nou', exact: true}).click();
+            await page.locator('[data-starter-id="starter-software"]').click();
+            await expect(page.getByRole('button', {name: english ? 'Open template' : 'Deschide șablonul', exact: true})).toBeVisible();
+          }
+        }
+      }
+      await page.evaluate(() => window.scrollTo(0, 0));
     } else if (action === 'requirement-preview' || action === 'requirement-draft' || action === 'requirement-suggestions' || action === 'requirement-custom' || action === 'requirement-edit' || action === 'requirement-appearance' || action === 'requirement-document-appearance' || action === 'requirement-duplicate' || action === 'requirement-delete-confirm') {
       if (route !== '/requirements' && route !== '/en/requirements') throw new Error('Requirement captures require the Requirements route.');
       const english = route.startsWith('/en');
       if (action === 'requirement-preview') {
         await page.getByRole('tab', {name: english ? 'Preview' : 'Previzualizare'}).click();
         await expect(page.locator('#preview-panel')).toBeVisible();
-      } else if (action === 'requirement-draft') await page.getByRole('button', {name: english ? 'New template' : 'Șablon nou', exact: true}).click();
+      } else if (action === 'requirement-draft') {
+        await page.getByRole('button', {name: english ? 'New template' : 'Șablon nou', exact: true}).click();
+        await page.getByRole('button', {name: english ? 'Create new template' : 'Creează șablon nou', exact: true}).click();
+      }
       else if (action === 'requirement-appearance') {
         await page.getByRole('button', {name: english ? 'Change icon and color' : 'Schimbă iconița și culoarea'}).click();
         await expect(page.getByRole('dialog', {name: english ? 'Choose appearance' : 'Alege aspectul'})).toBeVisible();
@@ -370,7 +392,7 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
 
   const name = route === '/' ? 'root' : route.replace(/^\/+|\/+$/g, '').replace(/[^a-zA-Z0-9_-]+/g, '-');
   const output = path.join(process.cwd(), 'artifacts', 'visual', `${name}${action ? `-${action}` : ''}${viewportWidth ? `-${viewportWidth}x${viewportHeight}` : ''}.png`);
-  await page.screenshot({path: output, fullPage: !action || action === 'company-workspace-empty' || action === 'requirement-edit' || action === 'requirement-preview' || action.startsWith('vendor-') || action.startsWith('review-') && action !== 'review-reject-confirmation', animations: 'disabled'});
+  await page.screenshot({path: output, fullPage: !action || action.startsWith('starter-') || action === 'company-workspace-empty' || action === 'requirement-edit' || action === 'requirement-preview' || action.startsWith('vendor-') || action.startsWith('review-') && action !== 'review-reject-confirmation', animations: 'disabled'});
   if (action?.startsWith('document-') && action !== 'document-menu' && action !== 'document-expiry-confirmation') await page.getByRole('dialog').screenshot({path: output.replace(/\.png$/, '-drawer.png'), animations: 'disabled'});
   if (action === 'review-reject-confirmation' || action === 'document-expiry-confirmation') await page.getByRole('alertdialog').screenshot({path: output.replace(/\.png$/, '-dialog.png'), animations: 'disabled'});
   if (action === 'review-rejected-portal' || action === 'review-reupload-portal') await page.locator('[data-supplier-requirements]').screenshot({path: output.replace(/\.png$/, '-section.png'), animations: 'disabled'});
