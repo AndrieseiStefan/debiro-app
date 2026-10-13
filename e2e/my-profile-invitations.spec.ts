@@ -31,7 +31,7 @@ for (const english of [false, true]) {
     await expect(page).toHaveURL(`${prefix}/profile`); await expect(page.locator('#user-language')).toHaveValue(english ? 'en' : 'ro');
     await page.getByRole('button', {name: 'Demo Company SRL', exact: true}).click();
     await page.getByRole('dialog', {name: english ? 'Switch company' : 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
-    await expect(page).toHaveURL(`${prefix}/dashboard`); await expect(page.getByRole('heading', {name: english ? 'Welcome, Elena!' : 'Bun venit, Elena!'})).toBeVisible();
+    await expect(page).toHaveURL(`${prefix}/profile`); await expect(page.locator('#user-firstName')).toHaveValue('Elena');
     const switched = await menu(page, english); await expect(switched).toContainText('Reviewer'); await expect(switched).toContainText('Elena Ionescu');
     await switched.getByRole('link', {name: english ? 'My profile' : 'Profilul meu', exact: true}).click();
     await expect(page.locator('#user-phone')).toHaveValue('extension 4'); await expect(page.getByRole('switch', {name: english ? /^Reports and summaries/ : /^Rapoarte și rezumate/})).toBeChecked();
@@ -60,7 +60,7 @@ for (const english of [false, true]) {
     await expect(page.locator('[data-company-id="construct-group"]')).toContainText('Construct Group SRL');
     await page.getByRole('button', {name: 'Demo Company SRL', exact: true}).click();
     await page.getByRole('dialog', {name: english ? 'Switch company' : 'Schimbă compania'}).getByRole('button', {name: /Construct Group SRL/}).click();
-    await expect(page).toHaveURL(`${prefix}/dashboard`); await expect(page.getByRole('button', {name: 'Construct Group SRL', exact: true})).toBeVisible();
+    await expect(page).toHaveURL(`${prefix}/profile/companies`); await expect(page.getByRole('button', {name: 'Construct Group SRL', exact: true})).toBeVisible();
     await (await menu(page, english)).getByRole('link', {name: english ? 'My invitations' : 'Invitațiile mele', exact: true}).click();
     await expect(page.locator('[data-invitation-id="invitation-construct-group"]')).toHaveAttribute('data-status', 'accepted');
     await page.locator('#invitation-filter').selectOption('pending'); await expect(page.getByText(english ? 'No invitations match the selected filter.' : 'Nu există invitații pentru filtrul selectat.')).toBeVisible();

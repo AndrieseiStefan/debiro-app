@@ -4,11 +4,12 @@ import {Fragment, useLayoutEffect, useState, type ReactNode} from 'react';
 import {usePathname, useRouter} from '@/i18n/navigation';
 import {readCompanyState, subscribeCompanyState} from './company-state';
 
-/** One workspace-entry contract for every existing active-company mutation. */
+/** Company-scoped switches enter Dashboard; global Profile pages stay mounted. */
 export function CompanyWorkspaceNavigation({children}: {children: ReactNode}) {
   const pathname = usePathname().replace(/^\/(?:en|ro)(?=\/|$)/, '') || '/';
   const router = useRouter();
-  const workspaceRoute = /^\/(dashboard|vendors|documents|requirements|notifications|company\/settings|profile|invitations)(\/|$)/.test(pathname);
+  const globalProfileRoute = ['/profile', '/profile/companies', '/invitations'].includes(pathname);
+  const workspaceRoute = !globalProfileRoute && /^\/(dashboard|vendors|documents|requirements|notifications|company\/settings)(\/|$)/.test(pathname);
   const [entry, setEntry] = useState<{companyId: string | null; epoch: number}>({companyId: null, epoch: 0});
   // A route commit completes entry; keep its page key without an effect cascade.
   if (entry.companyId && pathname === '/dashboard') setEntry({...entry, companyId: null});

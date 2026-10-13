@@ -5,9 +5,9 @@ import styles from './AuthenticatedBreadcrumbs.module.css';
 
 type BreadcrumbItem = {label: string; href?: string};
 
-export function AuthenticatedBreadcrumbs({items, label}: {items: BreadcrumbItem[]; label: string}) {
+export function AuthenticatedBreadcrumbs({items, label, root}: {items: BreadcrumbItem[]; label: string; root?: BreadcrumbItem}) {
   const t = useTranslations('AppShell');
-  const crumbs = [{label: t('navigation.dashboard'), href: '/dashboard'}, ...items];
+  const crumbs = [root ?? {label: t('navigation.dashboard'), href: '/dashboard'}, ...items];
   return <nav className={styles.breadcrumbs} aria-label={label}>
     {crumbs.map((item, index) => <span className={styles.item} key={`${item.href ?? 'current'}-${item.label}`}>
       {index > 0 && <AppIcon name="chevronRight" size={15} />}

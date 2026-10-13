@@ -40,6 +40,8 @@ This repository tracks thirty-three approved product mockup images listed below.
 | `32a-my-profile.png` | E1-032A global My Profile; existing shell/components/menu take precedence. Read-only identity email, plain shared phone field, no unsupported camera/security action. |
 | `32a-my-invitations.png` | E1-032A global received invitations; existing shell, shared role/KPI/status controls and reduced profile menu take precedence. Acceptance adds access without automatic company switching. |
 
+E1-032A1 supersedes the pictured Dashboard parent on the two 32a Profile-area pages: My Profile is the Profile root, and Invitations is its child. My Companies retains its Profile hierarchy with a working parent link. These global destinations remain mounted/current on explicit company switches; company-scoped switches still enter Dashboard. No mockup image or page design is otherwise changed.
+
 ## Contract
 
 For every approved mockup, these are canonical:

@@ -468,6 +468,7 @@
     "logout": "Log out"
   },
   "Companies": {
+    "breadcrumbTitle": "My Companies",
     "breadcrumbLabel": "Page navigation",
     "profile": "Profile",
     "title": "My companies",

@@ -14,7 +14,9 @@ test('profile navigation, company list, switching and company settings share one
   await expect(cards.nth(1)).toContainText('Reviewer');
   await expect(cards.nth(1)).toContainText('Business');
   await cards.nth(1).getByRole('button', {name: 'Comută'}).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/profile\/companies$/);
+  await expect(cards.nth(0)).toHaveAttribute('data-active', 'false');
+  await expect(cards.nth(1)).toHaveAttribute('data-active', 'true');
   await expect(page.getByRole('button', {name: 'Global Clean Services', exact: true})).toBeVisible();
   await page.getByRole('button', {name: 'Profil utilizator: Andrei Popescu'}).click();
   await expect(page.getByRole('dialog', {name: 'Meniu profil'})).toContainText('Reviewer');
@@ -25,7 +27,7 @@ test('profile navigation, company list, switching and company settings share one
   await expect(switcher.getByRole('button')).toHaveCount(2);
   await switcher.getByRole('button', {name: /Demo Company SRL/}).click();
   await expect(page.getByRole('button', {name: 'Demo Company SRL', exact: true})).toBeVisible();
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/profile\/companies$/);
   await page.getByRole('button', {name: 'Profil utilizator: Andrei Popescu'}).click();
   await page.getByRole('dialog', {name: 'Meniu profil'}).getByRole('link', {name: 'Companiile mele 2'}).click();
   await expect(cards.nth(0)).toHaveAttribute('data-active', 'true');

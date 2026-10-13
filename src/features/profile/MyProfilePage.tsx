@@ -21,6 +21,7 @@ import styles from './MyProfilePage.module.css';
 export function MyProfilePage({locale}: {locale: string}) {
   const t = useTranslations('MyProfile');
   const common = useTranslations('CompanyProfile');
+  const profile = useTranslations('Companies');
   const user = useUserProfile();
   const router = useRouter();
   const [draft, setDraft] = useState<UserProfileValues | null>(null);
@@ -29,13 +30,13 @@ export function MyProfilePage({locale}: {locale: string}) {
   const dirty = userProfileDirty(values, user);
   const errors = validateUserProfile(values, user.email);
   const invalid = Object.values(errors).some(Boolean);
-  const navigation = useProfileNavigation(dirty, () => setDraft(null));
+  const navigation = useProfileNavigation(dirty, () => setDraft(null), 'global');
   function update(key: keyof UserProfileValues, value: string) {setDraft({...values, [key]: value}); setSaved(false);}
   function save(event: FormEvent) {event.preventDefault(); if (dirty && !invalid && updateUserProfile(values)) {setDraft(null); setSaved(true);}}
 
   return <AuthenticatedAppShell locale={locale} currentPath="/profile" organizationName="" userName={user.fullName} userInitials={user.initials} scope="global">
     <div className={styles.page}>
-      <AuthenticatedPageHeader context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: t('title')}]} />} title={t('title')} titleId="my-profile-title" description={t('description')}/>
+      <AuthenticatedPageHeader context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} root={{label: profile('profile')}} items={[]} />} title={t('title')} titleId="my-profile-title" description={t('description')}/>
       <Surface className={styles.section} role="region" aria-labelledby="personal-title">
         <div className={styles.heading}><AppIcon name="user" size={25}/><div><h2 id="personal-title">{t('personalTitle')}</h2><p>{t('personalDescription')}</p></div></div>
         <form noValidate onSubmit={save}>

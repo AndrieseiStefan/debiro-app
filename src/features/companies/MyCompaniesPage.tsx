@@ -5,6 +5,8 @@ import {useTranslations} from 'next-intl';
 import {AppIcon} from '@/components/layout/AppIcon';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
 import {AuthenticatedPageHeader} from '@/components/layout/AuthenticatedPageHeader';
+import {AuthenticatedBreadcrumbs} from '@/components/layout/AuthenticatedBreadcrumbs';
+import {useRouter} from '@/i18n/navigation';
 import {Button} from '@/components/ui/Button';
 import {Surface} from '@/components/ui/Surface';
 import {RoleBadge} from '@/features/company-settings/RoleVisual';
@@ -23,6 +25,7 @@ export function MyCompaniesPage({locale}: {locale: string}) {
   const t = useTranslations('Companies');
   const roles = useTranslations('CompanyMembers');
   const snapshot = useCompanyState();
+  const router = useRouter();
   const [form, setForm] = useState<FormValues>(emptyForm);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<'required' | 'duplicate' | null>(null);
@@ -48,6 +51,7 @@ export function MyCompaniesPage({locale}: {locale: string}) {
     setForm(emptyForm);
     setSubmitted(false);
     setError(null);
+    router.push('/dashboard');
   }
 
   return <AuthenticatedAppShell locale={locale} currentPath="/profile/companies" organizationName="" userName={currentUser.fullName} userInitials={currentUser.initials} scope="global">
@@ -55,7 +59,7 @@ export function MyCompaniesPage({locale}: {locale: string}) {
       <div className={styles.columns}>
         <section className={styles.mainColumn} aria-labelledby="companies-title">
           <AuthenticatedPageHeader
-            context={<nav className={styles.breadcrumb} aria-label={t('breadcrumbLabel')}><span>{t('profile')}</span><AppIcon name="chevronRight" size={16}/><span aria-current="page">{t('title')}</span></nav>}
+            context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} root={{label: t('profile'), href: '/profile'}} items={[{label: t('breadcrumbTitle')}]} />}
             title={t('title')} titleId="companies-title" description={t('description')}
           />
           <div className={styles.notice}><span className={styles.noticeIcon}><AppIcon name="info" size={21}/></span><div><strong>{t('noticeTitle')}</strong><p>{t('noticeDescription')}</p></div></div>

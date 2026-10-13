@@ -23,6 +23,7 @@ const tones: Record<InvitationStatus, StatusTone> = {pending: 'info', accepted: 
 export function MyInvitationsPage({locale}: {locale: string}) {
   const t = useTranslations('MyInvitations');
   const roles = useTranslations('CompanyMembers');
+  const profile = useTranslations('Companies');
   const user = useUserProfile();
   const invitations = invitationsForUser(useInvitations(), user);
   const counts = invitationCounts(invitations);
@@ -39,7 +40,7 @@ export function MyInvitationsPage({locale}: {locale: string}) {
   }
   return <AuthenticatedAppShell locale={locale} currentPath="/invitations" organizationName="" userName={user.fullName} userInitials={user.initials} scope="global">
     <div className={styles.page}>
-      <AuthenticatedPageHeader context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: t('title')}]} />} title={t('title')} titleId="my-invitations-title" description={t('description')}/>
+      <AuthenticatedPageHeader context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} root={{label: profile('profile'), href: '/profile'}} items={[{label: t('title')}]} />} title={t('title')} titleId="my-invitations-title" description={t('description')}/>
       <section className={styles.summary} aria-label={t('summaryLabel')}>
         <SummaryMetricCard title={t('total')} value={counts.total} note={t('totalNote')} icon="mail" tone="blue"/>
         <SummaryMetricCard title={t('pending')} value={counts.pending} note={t('pendingNote')} icon="check" tone="green"/>

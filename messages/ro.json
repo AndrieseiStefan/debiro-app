@@ -472,6 +472,7 @@
     "logout": "Logout"
   },
   "Companies": {
+    "breadcrumbTitle": "Companiile mele",
     "breadcrumbLabel": "Navigare pe pagină",
     "profile": "Profil",
     "title": "Companiile mele",

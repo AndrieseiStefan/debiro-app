@@ -5,7 +5,7 @@ import {useRouter} from 'next/navigation';
 import {switchActiveCompany} from '@/features/companies/company-state';
 
 /** Existing editable-flow contract: capture before navigation, shared confirmation, retained destination. */
-export function useProfileNavigation(dirty: boolean, discard: () => void) {
+export function useProfileNavigation(dirty: boolean, discard: () => void, scope: 'company-aware' | 'global' = 'company-aware') {
   const router = useRouter();
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const pending = useRef<(() => void) | null>(null);
@@ -46,6 +46,7 @@ export function useProfileNavigation(dirty: boolean, discard: () => void) {
       const target = event.target.closest<HTMLElement>('a[href], [data-company-switch-id]');
       if (!target || target.closest('[role="alertdialog"]') || target.getAttribute('target') === '_blank' || target.hasAttribute('download')) return;
       const href = target.getAttribute('href'), companyId = target.dataset.companySwitchId;
+      if (companyId && scope === 'global') return;
       if (companyId && target.getAttribute('aria-pressed') === 'true' || href && (new URL(href, currentUrl).href === currentUrl || !href.startsWith('/'))) return;
       event.preventDefault(); event.stopImmediatePropagation();
       requestLeave(() => {if (companyId) switchActiveCompany(companyId); else if (href) router.push(href);});
@@ -61,6 +62,6 @@ export function useProfileNavigation(dirty: boolean, discard: () => void) {
       if (historyGuard.current === guard) historyGuard.current = null;
       void guard.release();
     };
-  }, [dirty, requestLeave, router]);
+  }, [dirty, requestLeave, router, scope]);
   return {confirmDiscard, continueEditing, discardAndContinue, requestNavigation: (action: () => void) => {if (dirty) requestLeave(action); else action();}};
 }

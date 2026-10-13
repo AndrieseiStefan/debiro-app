@@ -1,9 +1,6 @@
 .page {min-width: 0; padding-bottom: 28px;}
 .columns {align-items: start; display: grid; gap: 24px; grid-template-columns: minmax(0, 1.55fr) minmax(360px, 1fr); min-width: 0;}
 .mainColumn, .sideColumn {min-width: 0;}
-.breadcrumb {align-items: center; color: #47628a; display: flex; font-size: 14px; gap: 8px; min-height: 20px;}
-.breadcrumb svg {color: #7191c1;}
-.breadcrumb [aria-current] {color: #172b4e; font-weight: 650;}
 .notice {align-items: start; background: #eaf3ff; border: 1px solid #d0e1fb; border-radius: 9px; color: #0754cd; display: flex; gap: 15px; margin: 24px 0 18px; padding: 16px 18px;}
 .noticeIcon {align-items: center; background: #0761eb; border-radius: 50%; color: #fff; display: flex; flex: 0 0 34px; height: 34px; justify-content: center;}
 .notice strong {font-size: 14px; line-height: 1.35;}

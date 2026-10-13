@@ -48,14 +48,14 @@ describe('shared company workspace entry', () => {
     navigation.pathname = '/onboarding'; page.rerender(view());
     act(() => {switchActiveCompany('demo-company');}); expect(navigation.push).not.toHaveBeenCalled(); expect(screen.getByRole('main')).toBeVisible();
   });
-  it('uses the same entry contract after successful My Companies creation', () => {
-    navigation.pathname = '/profile/companies'; render(view());
+  it('leaves intentional My Companies creation navigation to its page flow', () => {
+    navigation.pathname = '/profile/companies'; render(view()); fireEvent.click(screen.getByText('Open drawer'));
     act(() => {expect(createCompany({name: 'Entry Company', taxId: 'RO-ENTRY-COMPANY', country: 'RO', industry: 'professional'}).ok).toBe(true);});
-    expect(navigation.push).toHaveBeenCalledWith('/dashboard'); expect(readCompanyState().activeCompanyId).toMatch(/^local-company-/);
+    expect(navigation.push).not.toHaveBeenCalled(); expect(readCompanyState().activeCompanyId).toMatch(/^local-company-/); expect(screen.getByRole('dialog')).toBeVisible();
   });
-  it.each(['/profile', '/invitations', '/en/profile', '/en/invitations'])('enters Dashboard when explicitly switching from global-user route %s', (pathname) => {
-    navigation.pathname = pathname; render(view());
+  it.each(['/profile', '/profile/companies', '/invitations', '/en/profile', '/en/profile/companies', '/en/invitations'])('preserves the page and transient state on global-user route %s', (pathname) => {
+    navigation.pathname = pathname; render(view()); fireEvent.click(screen.getByText('Open drawer'));
     act(() => {switchActiveCompany('global-clean-services');});
-    expect(navigation.push).toHaveBeenCalledWith('/dashboard');
+    expect(navigation.push).not.toHaveBeenCalled(); expect(screen.getByRole('dialog')).toBeVisible(); expect(document.querySelector('[data-owner]')).toHaveAttribute('data-owner', 'global-clean-services');
   });
 });

@@ -4,7 +4,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 
 ## Phase 0 — Product & Repository Foundation
 
-- E1-032A My Profile / My Invitations — implemented with shared global-user state, local received-invitation lifecycle and existing company access; unsupported security/avatar actions omitted; product-owner visual approval remains pending
+- E1-032A/E1-032A1 My Profile / My Invitations — implemented with shared global-user state, local received-invitation lifecycle, Profile-root breadcrumbs and in-place company switching; unsupported security/avatar actions omitted; product-owner visual approval remains pending
 
 - Repository memory — complete
 - Canonical mockup contract and thirty-three approved images — complete
