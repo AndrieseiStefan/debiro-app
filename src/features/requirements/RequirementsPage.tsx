@@ -124,9 +124,10 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
       if (!target) return;
       const href = target.getAttribute('href');
       if (href && new URL(href, window.location.href).href === window.location.href) return;
+      const nextCompanyId = target.getAttribute('data-company-switch-id');
+      if (nextCompanyId === companyId) return;
       event.preventDefault();
       event.stopImmediatePropagation();
-      const nextCompanyId = target.getAttribute('data-company-switch-id');
       pendingAction.current = nextCompanyId
         ? () => switchActiveCompany(nextCompanyId)
         : () => {allowNavigation.current = true; target.click(); allowNavigation.current = false;};
@@ -135,7 +136,7 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
     window.addEventListener('beforeunload', onBeforeUnload);
     document.addEventListener('click', onClick, true);
     return () => {window.removeEventListener('beforeunload', onBeforeUnload); document.removeEventListener('click', onClick, true);};
-  }, [isDirty]);
+  }, [isDirty, companyId]);
 
   function renderRow(document: RequirementTemplateDocument) {
     const display = documentDisplay(document, language);

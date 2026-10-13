@@ -6,6 +6,7 @@ import {notFound} from 'next/navigation';
 import type {ReactNode} from 'react';
 import {IntlErrorHandlingProvider} from '@/i18n/IntlErrorHandlingProvider';
 import {routing} from '@/i18n/routing';
+import {CompanyWorkspaceNavigation} from '@/features/companies/CompanyWorkspaceNavigation';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({locale}));
@@ -27,7 +28,7 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <IntlErrorHandlingProvider locale={locale}>{children}</IntlErrorHandlingProvider>
+          <IntlErrorHandlingProvider locale={locale}><CompanyWorkspaceNavigation>{children}</CompanyWorkspaceNavigation></IntlErrorHandlingProvider>
         </NextIntlClientProvider>
       </body>
     </html>

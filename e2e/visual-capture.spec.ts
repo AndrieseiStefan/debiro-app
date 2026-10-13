@@ -45,6 +45,8 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
       if (action === 'company-profile-readonly') {
         await page.getByRole('button', {name: 'Demo Company SRL', exact: true}).click();
         await page.getByRole('dialog', {name: english ? 'Switch company' : 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
+        await expect(page).toHaveURL(/\/dashboard$/);
+        await page.getByRole('link', {name: english ? 'Company profile' : 'Profil companie', exact: true}).click();
         await expect(page.locator('#profile-name')).toBeDisabled();
       } else {
         await page.locator('#profile-name').fill(action === 'company-profile-invalid' ? ' ' : 'Unsaved company');
@@ -252,6 +254,8 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
       if (route !== '/company/settings/members' && route !== '/en/company/settings/members') throw new Error('Reviewer capture requires the Members & Access route.');
       await page.getByRole('button', {name: 'Demo Company SRL'}).click();
       await page.getByRole('dialog', {name: route.startsWith('/en') ? 'Switch company' : 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
+      await expect(page).toHaveURL(/\/dashboard$/);
+      await page.getByRole('link', {name: route.startsWith('/en') ? 'Members & access' : 'Membri și acces', exact: true}).click();
       await expect(page.getByRole('heading', {name: 'Global Clean Services'})).toBeVisible();
     } else if (['starter-catalog', 'starter-preview', 'starter-clone', 'starter-already-added', 'starter-no-results'].includes(action)) {
       if (route !== '/requirements' && route !== '/en/requirements') throw new Error('Starter capture requires Requirements.');

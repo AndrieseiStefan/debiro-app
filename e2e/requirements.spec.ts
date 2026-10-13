@@ -308,7 +308,8 @@ test('confirms before switching companies with an edited template draft', async 
   await page.getByRole('button', {name: 'Demo Company SRL'}).click();
   await page.getByRole('dialog', {name: 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
   await page.getByRole('button', {name: 'Renunță la modificări'}).click();
-  await expect(page.getByRole('heading', {name: 'Nu există șabloane pentru această companie'})).toBeVisible();
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page.getByText('Începe cu primul furnizor')).toBeVisible();
   await expect(page.getByRole('button', {name: 'Global Clean Services'})).toBeVisible();
 });
 

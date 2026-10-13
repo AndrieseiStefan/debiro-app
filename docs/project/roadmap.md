@@ -28,6 +28,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 - E1-017 bell notification preview, E1-018 Members & Access, E1-019 Plan & Billing, and E1-020 global-user profile dropdown — implemented with fixture/browser-local data; product-owner visual approval remains pending
 - E1-031 company-owned operational workspaces — implemented with honest first-run pages, existing setup flows, scoped projections and retained onboarding setup/drafts; product-owner visual approval remains pending
 - E1-031A DEBIRO starter templates — implemented with independent immutable suggestions, read-only previews, explicit company snapshot cloning, provenance duplicate protection and preserved onboarding drafts; product-owner visual approval remains pending
+- E1-031B company-switch workspace entry — implemented with centralized locale-matched Dashboard navigation, existing dirty guards, stale page/overlay cleanup, same-company no-op and retained owned session state
 - E1-030 Company Profile and onboarding binding — implemented with atomic active-company Save/Cancel, administrator/read-only roles, shared options/identity propagation and dirty-navigation guard; product-owner visual approval remains pending
 - E1-021/022 My Companies and active-company switcher — implemented with shared browser-memory company state and local creation; product-owner visual approval remains pending
 

@@ -166,10 +166,14 @@ for (const english of [false, true]) {
     await page.getByRole('button', {name: 'Demo Company SRL', exact: true}).click();
     await switcher.getByRole('button', {name: /Global Clean Services/}).click();
     await confirmation.getByRole('button', {name: english ? 'Discard changes' : 'Renunță la modificări'}).click();
+    await expect(page).toHaveURL(new RegExp(`${prefix}/dashboard$`));
     await expect(page.locator('#vendor-notes')).toHaveCount(0);
     await expect(page.locator('[data-contact-id], [data-vendor-event]')).toHaveCount(0);
     await page.getByRole('button', {name: 'Global Clean Services', exact: true}).click();
     await page.getByRole('dialog').getByRole('button', {name: /Demo Company SRL/}).click();
+    await expect(page).toHaveURL(new RegExp(`${prefix}/dashboard$`));
+    await page.getByRole('navigation', {name: english ? 'Application navigation' : 'Navigare în aplicație'}).getByRole('link', {name: english ? 'Suppliers' : 'Furnizori', exact: true}).click();
+    await page.getByRole('link', {name: english ? 'Details for Construct Pro SRL' : 'Detalii pentru Construct Pro SRL'}).click();
     await page.getByRole('tab', {name: english ? 'Notes' : 'Note', exact: true}).click();
     for (const title of ['Updated general', 'Compliance']) {
       const thread = page.locator('[data-note-id]').filter({hasText: title});

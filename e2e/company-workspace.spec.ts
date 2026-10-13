@@ -41,6 +41,7 @@ for (const english of [false, true]) {
     await workspaceSection(page, 'vendors', english);
     await expect(page.getByRole('link', {name: english ? 'Details for Construct Pro SRL' : 'Detalii pentru Construct Pro SRL'})).toBeVisible();
     await switchWorkspaceCompany(page, 'Demo Company SRL', 'Workspace B', english);
+    await workspaceSection(page, 'vendors', english);
     await expect(page.getByText(english ? 'You have no vendors yet' : 'Nu ai furnizori încă')).toBeVisible();
   });
 
@@ -86,10 +87,11 @@ for (const english of [false, true]) {
     await switchWorkspaceCompany(page, 'Workspace B', 'Demo Company SRL', english);
     await expect(page.getByRole('textbox', {name: /B Vendor/})).toHaveCount(0);
     await expect(page.locator('#review-companyName')).toHaveCount(0);
-    await page.getByRole('link', {name: english ? 'Back to documents' : 'Înapoi la documente'}).click();
+    await workspaceSection(page, 'documents', english);
     await expect(page.getByText('b-proof.pdf')).toHaveCount(0);
     await workspaceSection(page, 'requirements', english); await expect(page.getByText('B Template', {exact: true})).toHaveCount(0);
     await switchWorkspaceCompany(page, 'Demo Company SRL', 'Workspace B', english);
+    await workspaceSection(page, 'requirements', english);
     await expect(page.getByRole('heading', {name: 'B Template', exact: true})).toBeVisible();
     await workspaceSection(page, 'notifications', english);
     await expect(page.locator('[data-audit-id]')).toHaveCount(4);
@@ -102,7 +104,7 @@ for (const english of [false, true]) {
     await expect(page.locator('[data-vendor-status]')).toHaveAttribute('data-compliance', 'compliant');
     await switchWorkspaceCompany(page, 'Workspace B', 'Demo Company SRL', english);
     await expect(page.locator('[data-vendor-name]')).toHaveCount(0);
-    await page.getByRole('link', {name: english ? 'Back to suppliers' : 'Înapoi la furnizori'}).click();
+    await workspaceSection(page, 'vendors', english);
     await expect(page.getByText('B Vendor', {exact: true})).toHaveCount(0);
     expect(reviewPath).toContain('/documents/local-document-');
   });

@@ -114,9 +114,12 @@ for (const english of [false, true]) for (const width of [1448, 375]) {
     // Company switch/return cannot lose the original company's current version or leak it.
     await page.getByRole('button', {name: 'Demo Company SRL', exact: true}).click();
     await page.locator('[data-company-switch-id="global-clean-services"]').click();
+    await expect(page).toHaveURL(new RegExp(`${prefix}/dashboard$`));
     await expect(page.getByRole('row', {name: /Autorizatie_ISU.pdf/})).toHaveCount(0);
     await page.getByRole('button', {name: 'Global Clean Services', exact: true}).click();
     await page.locator('[data-company-switch-id="demo-company"]').click();
+    await expect(page).toHaveURL(new RegExp(`${prefix}/dashboard$`));
+    await sidebar(page, english, english ? 'Documents' : 'Documente');
     await open(page, english); await expect(drawer.getByRole('definition').nth(2)).toHaveText(expiredLabel);
     await drawer.getByRole('button', {name: english ? 'Replace document' : 'Înlocuiește document', exact: true}).click();
     await drawer.locator('input[type=file]').setInputFiles({name: 'after-expiry-v3.pdf', mimeType: 'application/pdf', buffer: Buffer.from('new internal version bytes')});

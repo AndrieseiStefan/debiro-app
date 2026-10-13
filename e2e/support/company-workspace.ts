@@ -7,7 +7,8 @@ export async function createWorkspaceCompany(page: Page, name = 'Workspace B', e
   await page.locator('#create-company-form input').nth(1).fill('RO-WORKSPACE-B');
   await page.locator('#create-company-form select').nth(1).selectOption('RO');
   await page.getByRole('button', {name: english ? 'Create company' : 'Creează compania', exact: true}).click();
-  await expect(page.locator('[data-company-id^="local-company-"]')).toContainText(name);
+  await expect(page).toHaveURL(new RegExp(`${english ? '/en' : ''}/dashboard$`));
+  await expect(page.getByRole('button', {name, exact: true})).toBeVisible();
 }
 
 export async function workspaceSection(page: Page, path: 'dashboard' | 'vendors' | 'documents' | 'requirements' | 'notifications', english = false) {
@@ -19,5 +20,6 @@ export async function workspaceSection(page: Page, path: 'dashboard' | 'vendors'
 export async function switchWorkspaceCompany(page: Page, current: string, next: string, english = false) {
   await page.getByRole('button', {name: current, exact: true}).click();
   await page.getByRole('dialog', {name: english ? 'Switch company' : 'Schimbă compania'}).getByRole('button', {name: new RegExp(next)}).click();
+  await expect(page).toHaveURL(new RegExp(`${english ? '/en' : ''}/dashboard$`));
   await expect(page.getByRole('button', {name: next, exact: true})).toBeVisible();
 }

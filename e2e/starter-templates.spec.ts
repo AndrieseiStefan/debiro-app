@@ -76,21 +76,22 @@ test('independent A/B clones survive navigation and locale switches without auto
   await page.getByRole('dialog', {name: 'Meniu profil'}).getByRole('link', {name: /Companiile mele/}).click();
   await page.locator('#create-company-form input').nth(0).fill('Starter B'); await page.locator('#create-company-form select').nth(0).selectOption('professional');
   await page.locator('#create-company-form input').nth(1).fill('RO-STARTER-B'); await page.locator('#create-company-form select').nth(1).selectOption('RO');
-  await page.getByRole('button', {name: 'Creează compania', exact: true}).click(); await workspaceSection(page, 'requirements');
+  await page.getByRole('button', {name: 'Creează compania', exact: true}).click(); await expect(page).toHaveURL(/\/dashboard$/); await workspaceSection(page, 'requirements');
   await expect(page.locator('[data-template-id]')).toHaveCount(0); await chooseIT(page, false);
   expect(await page.locator('[data-template-id]').getAttribute('data-template-id')).not.toBe(firstId);
   await expect(page.locator('#requirement-template-name')).toHaveValue('Servicii IT');
-  await switchWorkspaceCompany(page, 'Starter B', 'Starter A'); await expect(page.locator('#requirement-template-name')).toHaveValue('A only IT');
+  await switchWorkspaceCompany(page, 'Starter B', 'Starter A'); await workspaceSection(page, 'requirements'); await expect(page.locator('#requirement-template-name')).toHaveValue('A only IT');
   await page.getByRole('link', {name: 'EN', exact: true}).filter({visible: true}).click();
   await expect(page).toHaveURL(/\/en\/requirements$/);
   await expect(page.locator('#requirement-template-name')).toHaveValue('A only IT');
-  await switchWorkspaceCompany(page, 'Starter A', 'Starter B', true); await expect(page.locator('#requirement-template-name')).toHaveValue('IT services');
+  await switchWorkspaceCompany(page, 'Starter A', 'Starter B', true); await workspaceSection(page, 'requirements', true); await expect(page.locator('#requirement-template-name')).toHaveValue('IT services');
   await workspaceSection(page, 'vendors', true); await expect(page.getByText('You have no vendors yet')).toBeVisible();
   await workspaceSection(page, 'requirements', true); await expect(page.locator('[data-template-id]')).toHaveCount(1);
 });
 
 test('read-only company membership can browse but not clone or create templates', async ({page}) => {
   await page.goto('/requirements'); await switchWorkspaceCompany(page, 'Demo Company SRL', 'Global Clean Services');
+  await workspaceSection(page, 'requirements');
   await expect(page.getByRole('button', {name: 'Adaugă șablon nou'})).toBeDisabled();
   await suggestions(page, false); await expect(page.locator('[data-starter-id]')).toHaveCount(6);
   await expect(page.getByRole('button', {name: 'Creează șablon nou', exact: true})).toBeDisabled();

@@ -37,7 +37,7 @@ const initialState: CompanyState = {
 };
 
 const session = browserSession(Symbol.for('debiro.company-session'), () => ({state: initialState, listeners: new Set<() => void>()}));
-function subscribe(listener: () => void) {
+export function subscribeCompanyState(listener: () => void) {
   session.listeners.add(listener);
   return () => {session.listeners.delete(listener);};
 }
@@ -47,7 +47,7 @@ function publish(next: CompanyState) {
 }
 
 export function useCompanyState() {
-  return useSyncExternalStore(subscribe, () => session.state, () => initialState);
+  return useSyncExternalStore(subscribeCompanyState, () => session.state, () => initialState);
 }
 export function readCompanyState() {return session.state;}
 
@@ -61,7 +61,8 @@ export function getCurrentMembership(record: AccessibleCompany) {
 
 export function switchActiveCompany(id: string) {
   const state = session.state;
-  if (!state.companies.some(({company}) => company.id === id)) return false;
+  const target = state.companies.find(({company}) => company.id === id);
+  if (!target || !getCurrentMembership(target)) return false;
   if (state.activeCompanyId !== id) publish({...state, activeCompanyId: id});
   return true;
 }

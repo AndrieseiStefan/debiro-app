@@ -109,11 +109,14 @@ for (const english of [false, true]) for (const width of [1448, 375]) {
     await close(page, english);
     await page.getByRole('button', {name: 'Demo Company SRL', exact: true}).click();
     await page.locator('[data-company-switch-id="global-clean-services"]').click();
+    await expect(page).toHaveURL(new RegExp(`${prefix}/dashboard$`));
     await expect(page.getByText('isu-session-v3.pdf')).toHaveCount(0);
     await navigate(english ? 'Documents' : 'Documente', '/documents');
     await expect(page.getByRole('row', {name: /isu-session-v3.pdf/})).toHaveCount(0);
     await page.getByRole('button', {name: 'Global Clean Services', exact: true}).click();
     await page.locator('[data-company-switch-id="demo-company"]').click();
+    await expect(page).toHaveURL(new RegExp(`${prefix}/dashboard$`));
+    await navigate(english ? 'Documents' : 'Documente', '/documents');
     await assertVersions(); await close(page, english);
     // Reload/new tabs are intentionally fresh E1 sessions, unlike SPA navigation.
     await page.reload();

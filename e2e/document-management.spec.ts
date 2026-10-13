@@ -513,7 +513,11 @@ test('direct, unknown, mismatched vendor, stale company and history URLs fail sa
   await page.getByRole('dialog').getByRole('link', {name: 'Revizuiește documentul'}).click();
   await page.getByRole('button', {name: 'Demo Company SRL', exact: true}).click();
   await page.getByRole('dialog', {name: 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
   // A client Back restores the former URL, not a new independent fixture session.
+  await page.goBack();
+  await expect(page).toHaveURL(new RegExp(`/documents/${pendingId}/review$`));
+  await expect(page.locator('#review-companyName')).toHaveCount(0);
   await page.goBack();
   await expect(page).toHaveURL(new RegExp(`/documents\\?document=${pendingId}&documentAction=history$`));
   await expect(page.getByText('Nu există documente încă')).toBeVisible();

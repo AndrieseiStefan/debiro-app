@@ -14,7 +14,7 @@ test('profile navigation, company list, switching and company settings share one
   await expect(cards.nth(1)).toContainText('Reviewer');
   await expect(cards.nth(1)).toContainText('Business');
   await cards.nth(1).getByRole('button', {name: 'Comută'}).click();
-  await expect(cards.nth(1)).toHaveAttribute('data-active', 'true');
+  await expect(page).toHaveURL(/\/dashboard$/);
   await expect(page.getByRole('button', {name: 'Global Clean Services', exact: true})).toBeVisible();
   await page.getByRole('button', {name: 'Profil utilizator: Andrei Popescu'}).click();
   await expect(page.getByRole('dialog', {name: 'Meniu profil'})).toContainText('Reviewer');
@@ -25,10 +25,13 @@ test('profile navigation, company list, switching and company settings share one
   await expect(switcher.getByRole('button')).toHaveCount(2);
   await switcher.getByRole('button', {name: /Demo Company SRL/}).click();
   await expect(page.getByRole('button', {name: 'Demo Company SRL', exact: true})).toBeVisible();
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await page.getByRole('button', {name: 'Profil utilizator: Andrei Popescu'}).click();
+  await page.getByRole('dialog', {name: 'Meniu profil'}).getByRole('link', {name: 'Companiile mele 2'}).click();
   await expect(cards.nth(0)).toHaveAttribute('data-active', 'true');
 });
 
-test('switcher closes accessibly, preserves route, and prevents demo data leakage', async ({page}) => {
+test('switcher closes accessibly, enters Dashboard, and prevents demo data leakage', async ({page}) => {
   await page.goto('/vendors');
   const trigger = page.getByRole('button', {name: 'Demo Company SRL'});
   await trigger.focus();
@@ -44,7 +47,8 @@ test('switcher closes accessibly, preserves route, and prevents demo data leakag
   await expect(switcher).not.toBeVisible();
   await trigger.click();
   await switcher.getByRole('button', {name: /Global Clean Services/}).click();
-  await expect(page).toHaveURL(/\/vendors$/);
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Furnizori', exact: true}).click();
   await expect(page.getByText('Nu ai furnizori încă')).toBeVisible();
   await expect(page.getByText('Construct Pro SRL')).toHaveCount(0);
   for (const path of ['/dashboard', '/documents', '/requirements', '/notifications']) {
@@ -81,6 +85,9 @@ test('local creation validates, adds a membership and trial, and updates all thr
   await expect(page.getByText('Există deja o companie accesibilă cu acest CUI.', {exact: true})).toBeVisible();
   await page.getByRole('textbox', {name: /CUI \/ Cod fiscal/}).fill(' ro45678912 ');
   await page.getByRole('button', {name: 'Creează compania'}).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await page.getByRole('button', {name: 'Profil utilizator: Andrei Popescu'}).click();
+  await page.getByRole('dialog', {name: 'Meniu profil'}).getByRole('link', {name: 'Companiile mele 3'}).click();
   const created = page.locator('[data-company-id^="local-company-"]');
   await expect(created).toHaveCount(1);
   await expect(created).toContainText('New Horizon SRL');
@@ -176,6 +183,8 @@ test('membership roles keep one icon and semantic color across company surfaces'
 
   await page.getByRole('button', {name: 'Demo Company SRL', exact: true}).click();
   await page.getByRole('dialog', {name: 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await page.getByRole('link', {name: 'Membri și acces'}).click();
   await expect(roleCard.locator('[data-role="reviewer"]')).toHaveCSS('color', reviewerColor);
   await page.getByRole('button', {name: 'Profil utilizator: Andrei Popescu'}).click();
   await expect(page.getByRole('dialog', {name: 'Meniu profil'}).locator('[data-role="reviewer"]')).toHaveCSS('color', reviewerColor);

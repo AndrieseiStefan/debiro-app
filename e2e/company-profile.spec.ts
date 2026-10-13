@@ -62,11 +62,13 @@ for (const english of [false, true]) {
     await openProfile(page, english, false);
     await expect(page.locator('#profile-website')).toHaveValue('updated.demo.ro');
     await switchTo(page, 'Updated Demo SRL', 'Global Clean Services', english);
+    await expect(page).toHaveURL(new RegExp(`${prefix}/dashboard$`)); await openProfile(page, english, false);
     await expect(page.locator('#profile-name')).toHaveValue('Global Clean Services');
     await expect(page.locator('#profile-name')).toBeDisabled();
     await expect(save).toHaveCount(0);
     await expect(page.locator('#profile-contactPersonName')).toHaveValue('');
     await switchTo(page, 'Global Clean Services', 'Updated Demo SRL', english);
+    await expect(page).toHaveURL(new RegExp(`${prefix}/dashboard$`)); await openProfile(page, english, false);
     await expect(page.locator('#profile-contactPersonName')).toHaveValue('Company contact');
     await page.getByRole('link', {name: english ? 'Members & access' : 'Membri și acces'}).click();
     await expect(page.getByRole('heading', {name: 'Updated Demo SRL'})).toBeVisible();
@@ -106,8 +108,10 @@ for (const english of [false, true]) {
     await expect(page.getByRole('button', {name: english ? 'Salvează modificările' : 'Save changes'})).toBeEnabled();
     await switchTo(page, 'Demo Company SRL', 'Global Clean Services', !english);
     await page.getByRole('alertdialog').getByRole('button', {name: english ? 'Renunță la modificări' : 'Discard changes'}).click();
+    await expect(page).toHaveURL(new RegExp(`${english ? '' : '/en'}/dashboard$`)); await openProfile(page, !english, false);
     await expect(page.locator('#profile-name')).toHaveValue('Global Clean Services');
     await switchTo(page, 'Global Clean Services', 'Demo Company SRL', !english);
+    await expect(page).toHaveURL(new RegExp(`${english ? '' : '/en'}/dashboard$`)); await openProfile(page, !english, false);
     await expect(page.locator('#profile-name')).toHaveValue('Demo Company SRL');
   });
   test(`${english ? 'EN' : 'RO'} onboarding initializes the canonical company with every company field`, async ({page}) => {
@@ -169,6 +173,7 @@ test('My Companies creation exposes partial profile values and later edits do no
   await page.getByRole('combobox', {name: /Industrie/}).selectOption('construction');
   await page.getByRole('combobox', {name: /Țară/}).selectOption('DE');
   await page.getByRole('button', {name: 'Creează compania'}).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
   await openProfile(page);
   await expect(page.locator('#profile-name')).toHaveValue('Created Company SRL');
   await expect(page.locator('#profile-companySize')).toHaveValue('');
@@ -176,8 +181,10 @@ test('My Companies creation exposes partial profile values and later edits do no
   await page.locator('#profile-city').fill('Berlin');
   await page.getByRole('button', {name: 'Salvează modificările'}).click();
   await switchTo(page, 'Created Company SRL', 'Demo Company SRL');
+  await expect(page).toHaveURL(/\/dashboard$/); await openProfile(page, false, false);
   await expect(page.locator('#profile-city')).toHaveValue('București');
   await switchTo(page, 'Demo Company SRL', 'Created Company SRL');
+  await expect(page).toHaveURL(/\/dashboard$/); await openProfile(page, false, false);
   await expect(page.locator('#profile-city')).toHaveValue('Berlin');
 });
 

@@ -91,6 +91,7 @@ for (const {english, width} of [{english: false, width: 1448}, {english: true, w
     await page.getByRole('button', {name: english ? 'Confirm and save' : 'Confirmă și salvează'}).click();
     await page.getByRole('button', {name: 'Demo Company SRL', exact: true}).click();
     await page.getByRole('dialog', {name: english ? 'Switch company' : 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();
+    await expect(page).toHaveURL(new RegExp(`${prefix}/dashboard$`));
     await expect(page.locator('#review-documentNumber')).toHaveCount(0);
     await expect(page.getByRole('button', {name: english ? 'Confirm and save' : 'Confirmă și salvează'})).toHaveCount(0);
     await sidebar(page, english, english ? 'Documents' : 'Documente');
@@ -98,8 +99,11 @@ for (const {english, width} of [{english: false, width: 1448}, {english: true, w
     await expect(page.getByText('Construct Pro SRL')).toHaveCount(0);
     await page.getByRole('button', {name: 'Global Clean Services', exact: true}).click();
     await page.getByRole('dialog', {name: english ? 'Switch company' : 'Schimbă compania'}).getByRole('button', {name: /Demo Company SRL/}).click();
+    await expect(page).toHaveURL(new RegExp(`${prefix}/dashboard$`));
+    await sidebar(page, english, english ? 'Documents' : 'Documente');
     await expect(page.getByRole('row', {name: /Certificat_fiscal_CP_2024.pdf/})).toContainText('Valid');
-    await page.goBack();
+    for (let step = 0; step < 5 && !new URL(page.url()).pathname.endsWith('/review'); step++) await page.goBack();
+    await expect(page).toHaveURL(new RegExp(`${prefix}/documents/construct-pro-tax-2024/review$`));
     await expect(page.getByRole('button', {name: english ? 'Confirm and save' : 'Confirmă și salvează'})).toBeDisabled();
   });
 
