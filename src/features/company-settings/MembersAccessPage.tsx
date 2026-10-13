@@ -17,6 +17,7 @@ import {InviteMemberDrawer} from './InviteMemberDrawer';
 import {companyRoles, type CompanyMembership, type CompanyRole, type CompanySettingsViewModel} from './types';
 import styles from './MembersAccessPage.module.css';
 import {companyIndustries} from '@/features/companies/company-options';
+import {currentMemberIdentity, useUserProfile} from '@/features/profile/user-profile-state';
 
 
 function initials(name: string) {
@@ -28,7 +29,8 @@ export function MembersAccessPage({locale, view: initialView}: {locale: string; 
   const app = useTranslations('AppShell');
   const companyState = useCompanyState();
   const active = getActiveCompany(companyState);
-  const view = active ? {...initialView, company: active.company, members: active.members} : initialView;
+  const user = useUserProfile();
+  const view = active ? {...initialView, currentUser: user, company: active.company, members: active.members.map((member) => currentMemberIdentity(member, user))} : {...initialView, currentUser: user};
   const localInvitations = useLocalInvitations(view.company.id);
   const {members, activeCount, pendingCount} = getCompanyMembershipSummary(view, localInvitations);
   const currentMembership = members.find((member) => member.isCurrentUser);
@@ -46,7 +48,7 @@ export function MembersAccessPage({locale, view: initialView}: {locale: string; 
 
   function memberRow(member: CompanyMembership) {
     return <tr key={member.id} data-member-id={member.id}>
-      <td><span className={styles.memberIdentity}><span className={styles.avatar}>{initials(member.fullName)}</span><strong>{member.fullName}</strong>{member.isCurrentUser && <span className={styles.you}>{t('you')}</span>}</span></td>
+      <td><span className={styles.memberIdentity}><span className={styles.avatar}>{member.isCurrentUser && member.userId === user.userId ? user.initials : initials(member.fullName)}</span><strong>{member.fullName}</strong>{member.isCurrentUser && <span className={styles.you}>{t('you')}</span>}</span></td>
       <td>{member.email}</td>
       <td><RoleBadge role={member.role} label={t(`roles.${member.role}`)}/></td>
       <td><span className={styles.status} data-status={member.status}><AppIcon name={member.status === 'active' ? 'check' : 'clock'} size={17}/>{t(`statuses.${member.status}`)}</span></td>

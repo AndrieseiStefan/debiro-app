@@ -1,0 +1,7 @@
+.control {display: inline-flex; flex: 0 0 43px; height: 25px; position: relative; width: 43px;}
+.control input {cursor: pointer; height: 25px; margin: 0; opacity: 0; position: absolute; right: 0; width: 43px; z-index: 1;}
+.track {background: #a9b9d0; border-radius: 99px; flex: 0 0 43px; height: 25px; position: relative;}
+.track::after {background: #fff; border-radius: 50%; content: ''; height: 21px; left: 2px; position: absolute; top: 2px; width: 21px;}
+.control input:checked + .track {background: #075fe8;}
+.control input:checked + .track::after {left: 20px;}
+.control input:focus-visible + .track {outline: 3px solid var(--color-focus); outline-offset: 2px;}

@@ -3,13 +3,15 @@
 import {useId, useLayoutEffect, useRef, useState} from 'react';
 import {useTranslations} from 'next-intl';
 import {Link} from '@/i18n/navigation';
-import {getActiveCompany, getCurrentMembership, currentUser, switchActiveCompany, useCompanyState} from '@/features/companies/company-state';
+import {getActiveCompany, getCurrentMembership, switchActiveCompany, useCompanyState} from '@/features/companies/company-state';
+import {useUserProfile} from '@/features/profile/user-profile-state';
 import {RoleBadge} from '@/features/company-settings/RoleVisual';
 import {AppIcon} from './AppIcon';
 import sidebar from './AppSidebar.module.css';
 import styles from './CompanySwitcher.module.css';
 
 export function CompanySwitcher() {
+  const currentUser = useUserProfile();
   const t = useTranslations('Companies');
   const roles = useTranslations('CompanyMembers');
   const snapshot = useCompanyState();

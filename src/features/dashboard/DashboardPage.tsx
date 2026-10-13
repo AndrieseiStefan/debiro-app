@@ -21,8 +21,10 @@ import {notificationsFixture} from '@/features/notifications/fixtures';
 import {useLocalAuditEvents} from '@/features/notifications/local-audit';
 import {useCompanyState} from '@/features/companies/company-state';
 import {projectDashboard} from './projections';
+import {SummaryMetricCard as SharedSummaryMetricCard} from './SummaryMetricCard';
+import {useUserProfile} from '@/features/profile/user-profile-state';
 
-const metricAppearance: Record<'total' | 'compliant' | 'attention' | 'noncompliant', {icon: AppIconName; tone: string}> = {
+const metricAppearance: Record<'total' | 'compliant' | 'attention' | 'noncompliant', {icon: AppIconName; tone: 'blue' | 'green' | 'amber' | 'red'}> = {
   total: {icon: 'users', tone: 'blue'},
   compliant: {icon: 'check', tone: 'green'},
   attention: {icon: 'clock', tone: 'amber'},
@@ -55,17 +57,7 @@ function SummaryMetricCard({id, value, note}: {id: keyof typeof metricAppearance
   const t = useTranslations('Dashboard');
   const appearance = metricAppearance[id];
 
-  return (
-    <Surface className={styles.metricCard} data-tone={appearance.tone}>
-      <span className={`${styles.metricIcon} ${styles[appearance.tone]}`}><AppIcon name={appearance.icon} size={24} /></span>
-      <div className={styles.metricCopy}>
-        <h2>{t(`summary.${id}`)}</h2>
-        <strong>{value}</strong>
-        <p className={styles[`${appearance.tone}Text`]}>{note}</p>
-      </div>
-      <AppIcon name="chevronRight" size={17} className={styles.metricChevron} />
-    </Surface>
-  );
+  return <SharedSummaryMetricCard title={t(`summary.${id}`)} value={value} note={note} icon={appearance.icon} tone={appearance.tone} chevron/>;
 }
 
 function DocumentsAttentionPanel({view, locale}: {view: DashboardViewModel; locale: string}) {
@@ -168,6 +160,7 @@ function RecentActivityPanel({view, locale}: {view: DashboardViewModel; locale: 
 }
 
 export function DashboardPage({locale, view: initialView}: {locale: string; view: DashboardViewModel}) {
+  const user = useUserProfile();
   const t = useTranslations('Dashboard');
   const empty = useTranslations('CompanyWorkspace');
   const router = useRouter();
@@ -186,7 +179,7 @@ export function DashboardPage({locale, view: initialView}: {locale: string; view
       <div className={styles.pageContent}>
         <AuthenticatedPageHeader
           context={<p className={styles.welcomeEyebrow}>{t('welcomeEyebrow')}</p>}
-          title={t('welcomeTitle', {name: view.user.firstName})}
+          title={t('welcomeTitle', {name: user.firstName})}
           titleId="dashboard-title"
           description={t('welcomeDescription', {count: suppliers.total})}
           supportingContent={<div className={styles.complianceCallout}><span><AppIcon name="target" size={27} /></span><p>{t('calloutOne')}<br />{t('calloutTwo')}</p></div>}

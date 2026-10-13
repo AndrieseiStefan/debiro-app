@@ -24,12 +24,6 @@
 .optionCopy {display: grid; flex: 1 1 auto; gap: 3px; min-width: 0;}
 .optionCopy strong {color: #1b2d4e; font-size: 14px; font-weight: 700;}
 .optionCopy small {color: #516b8d; font-size: 12px; line-height: 1.25;}
-.option input {cursor: pointer; height: 25px; opacity: 0; position: absolute; right: 0; width: 43px; z-index: 1;}
-.switch {background: #a9b9d0; border-radius: 99px; flex: 0 0 43px; height: 25px; position: relative;}
-.switch::after {background: #fff; border-radius: 50%; content: ''; height: 21px; left: 2px; position: absolute; top: 2px; width: 21px;}
-.option input:checked + .switch {background: #075fe8;}
-.option input:checked + .switch::after {left: 20px;}
-.option input:focus-visible + .switch {outline: 3px solid var(--color-focus); outline-offset: 2px;}
 .linkSection {border-top: 1px solid #dce7f7; display: grid; gap: 9px; margin-top: 2px; min-width: 0; padding-top: 22px;}
 .linkSection > label {align-items: center; display: inline-flex; gap: 12px;}
 .linkSection > label svg {color: #0760d9;}

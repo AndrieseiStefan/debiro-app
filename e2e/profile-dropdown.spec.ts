@@ -12,10 +12,10 @@ test('shows global user context and only the approved profile actions', async ({
   await expect(menu).toContainText('andrei.popescu@demo.ro');
   await expect(menu).toContainText('Administrator');
   await expect(menu).toContainText('în Demo Company SRL');
-  await expect(menu.getByRole('button')).toHaveCount(4);
-  await expect(menu.getByRole('button', {name: 'Profilul meu'})).toBeFocused();
+  await expect(menu.getByRole('button')).toHaveCount(2);
+  await expect(menu.getByRole('link', {name: 'Profilul meu'})).toBeFocused();
   await expect(menu.getByRole('link', {name: 'Companiile mele 2'})).toBeVisible();
-  await expect(menu.getByRole('button', {name: 'Invitațiile mele'})).toBeVisible();
+  await expect(menu.getByRole('link', {name: 'Invitațiile mele 1'})).toBeVisible();
   await expect(menu.getByRole('button', {name: 'Centrul de ajutor'})).toBeVisible();
   await expect(menu.getByRole('button', {name: 'Logout'})).toBeVisible();
   await expect(menu).not.toContainText('Membri companie');
@@ -51,9 +51,9 @@ test('English copy, safe unresolved actions, and bell regression', async ({page}
   await page.getByRole('button', {name: 'User profile: Andrei Popescu'}).click();
   const menu = page.getByRole('dialog', {name: 'Profile menu'});
   await expect(menu).toContainText('at Demo Company SRL');
-  await expect(menu.getByRole('button', {name: 'My profile'})).toBeVisible();
+  await expect(menu.getByRole('link', {name: 'My profile'})).toBeVisible();
   await expect(menu.getByRole('link', {name: 'My companies 2'})).toBeVisible();
-  await expect(menu.getByRole('button', {name: 'My invitations'})).toBeVisible();
+  await expect(menu.getByRole('link', {name: 'My invitations 1'})).toBeVisible();
   await expect(menu.getByRole('button', {name: 'Help center'})).toHaveAttribute('aria-disabled', 'true');
   await expect(menu.getByRole('button', {name: 'Log out'})).toHaveAttribute('aria-disabled', 'true');
   await menu.getByRole('button', {name: 'Log out'}).dispatchEvent('click');

@@ -3,8 +3,11 @@
 import {useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore} from 'react';
 import {useTranslations} from 'next-intl';
 import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
-import {Link} from '@/i18n/navigation';
-import {currentUser, getActiveCompany, getCurrentMembership, useCompanyState} from '@/features/companies/company-state';
+import {Link, usePathname} from '@/i18n/navigation';
+import {getActiveCompany, getCurrentMembership, useCompanyState} from '@/features/companies/company-state';
+import {useUserProfile} from './user-profile-state';
+import {invitationCounts, invitationsForUser, useInvitations} from './invitations-state';
+import {Avatar} from '@/components/ui/Avatar';
 import {RoleBadge} from '@/features/company-settings/RoleVisual';
 import styles from './ProfileDropdown.module.css';
 
@@ -28,11 +31,14 @@ export function ProfileDropdown({compact, triggerClassName}: {
   const app = useTranslations('AppShell');
   const members = useTranslations('CompanyMembers');
   const companyState = useCompanyState();
+  const currentUser = useUserProfile();
+  const pathname = usePathname();
+  const invitationCount = invitationCounts(invitationsForUser(useInvitations(), currentUser)).pending;
   const activeCompany = getActiveCompany(companyState);
   const id = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const firstActionRef = useRef<HTMLButtonElement>(null);
+  const firstActionRef = useRef<HTMLAnchorElement>(null);
   const activeId = useSyncExternalStore(subscribe, () => openProfileId, () => null);
   const open = activeId === id;
   const [position, setPosition] = useState({left: 0, top: 0, width: 0, maxHeight: 0});
@@ -79,10 +85,10 @@ export function ProfileDropdown({compact, triggerClassName}: {
     };
   }, [open, compact]);
 
-  const rows: {key: 'myProfile' | 'myCompanies' | 'myInvitations'; icon: AppIconName; count?: number}[] = [
-    {key: 'myProfile', icon: 'user'},
-    {key: 'myCompanies', icon: 'building', count: companyState.companies.length},
-    {key: 'myInvitations', icon: 'mail'}
+  const rows: {key: 'myProfile' | 'myCompanies' | 'myInvitations'; href: string; icon: AppIconName; count?: number}[] = [
+    {key: 'myProfile', href: '/profile', icon: 'user'},
+    {key: 'myCompanies', href: '/profile/companies', icon: 'building', count: companyState.companies.length},
+    {key: 'myInvitations', href: '/invitations', icon: 'mail', count: invitationCount}
   ];
 
   return <div className={styles.anchor}>
@@ -91,7 +97,7 @@ export function ProfileDropdown({compact, triggerClassName}: {
     </button>
     {open && <div ref={panelRef} id={id} role="dialog" aria-label={t('title')} className={styles.panel} style={{left: position.left, top: position.top, width: position.width, maxHeight: position.maxHeight}}>
       <div className={styles.header}>
-        <span className={styles.avatar} aria-hidden="true">{currentUser.initials}</span>
+        <Avatar initials={currentUser.initials}/>
         <div className={styles.identity}>
           <strong>{currentUser.fullName}</strong>
           <span className={styles.email}>{currentUser.email}</span>
@@ -102,11 +108,9 @@ export function ProfileDropdown({compact, triggerClassName}: {
         </div>
       </div>
       <div className={styles.actions}>
-        {rows.map(({key, icon, count}, index) => key === 'myCompanies' ? <Link key={key} href="/profile/companies" onClick={() => setOpenProfile(null)} className={styles.row}>
-          <AppIcon name={icon} size={19} /><span>{t(key)}</span><span className={styles.count}>{count}</span>
-        </Link> : <button key={key} ref={index === 0 ? firstActionRef : undefined} type="button" aria-disabled="true" className={styles.row}>
-          <AppIcon name={icon} size={19} /><span>{t(key)}</span>
-        </button>)}
+        {rows.map(({key, href, icon, count}, index) => <Link key={key} ref={index === 0 ? firstActionRef : undefined} href={href} onClick={() => setOpenProfile(null)} className={styles.row} aria-current={pathname === href ? 'page' : undefined}>
+          <AppIcon name={icon} size={19} /><span>{t(key)}</span>{count !== undefined && (key === 'myCompanies' || count > 0) && <span className={styles.count}>{count}</span>}
+        </Link>)}
         <button type="button" aria-disabled="true" className={`${styles.row} ${styles.groupStart}`}>
           <AppIcon name="info" size={19} /><span>{t('help')}</span><AppIcon name="external" size={16} />
         </button>

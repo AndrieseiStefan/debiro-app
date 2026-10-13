@@ -8,4 +8,6 @@ The form requires trimmed company name, industry, tax ID/CUI, and country, and r
 
 Company identity now uses shared industry/country IDs and feeds the editable [Company Profile](company-profile.md). Created companies show their creation values there, with unknown contact/address fields empty. Company state survives SPA module reinitialization and locale navigation within the same tab, not refresh or other tabs.
 
+E1-032A adds accepted [received invitations](my-profile-invitations.md) to this same accessible-company list without activating them. Existing membership/access is reused without duplication. Global user edits update the read-only initial administrator and live current-member labels; company-owned profile/subscription data stays independent. My Companies layout and existing creation/switch behavior are unchanged.
+
 Members & Access and Plan & Billing read the active company's own membership/subscription data and live Company identity. Companies without a payment method or invoices show empty billing states, never Demo Company billing data. E1-031 exposes complete company-owned operational workspaces with honest first-run states and an existing Add Vendor entry; see [Company workspaces](company-workspaces.md). No cross-company records are copied. No screenshot baseline is approved or committed.

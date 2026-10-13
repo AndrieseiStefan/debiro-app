@@ -8,7 +8,7 @@ import {readCompanyState, subscribeCompanyState} from './company-state';
 export function CompanyWorkspaceNavigation({children}: {children: ReactNode}) {
   const pathname = usePathname().replace(/^\/(?:en|ro)(?=\/|$)/, '') || '/';
   const router = useRouter();
-  const workspaceRoute = /^\/(dashboard|vendors|documents|requirements|notifications|company\/settings|profile\/companies)(\/|$)/.test(pathname);
+  const workspaceRoute = /^\/(dashboard|vendors|documents|requirements|notifications|company\/settings|profile|invitations)(\/|$)/.test(pathname);
   const [entry, setEntry] = useState<{companyId: string | null; epoch: number}>({companyId: null, epoch: 0});
   // A route commit completes entry; keep its page key without an effect cascade.
   if (entry.companyId && pathname === '/dashboard') setEntry({...entry, companyId: null});

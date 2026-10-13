@@ -13,6 +13,8 @@ Operational records use stable company IDs, never company/vendor names or the vi
 
 Vendor, template, document/version, requirement, company, audit and notification-read stores reuse `browserSession` owners. Client navigation, locale changes and A → B → A switching preserve each workspace, including module reinitialization. Full reload, other tabs and new sessions reset to fixtures; no backend persistence, auth or server authorization is added.
 
+E1-032A [My Profile and received Invitations](my-profile-invitations.md) also use global tab-memory owners, never active-company filtering. Invitation acceptance adds/reuses the existing membership/access record without changing activeCompanyId or navigating. Explicit switching from these global routes follows the same Dashboard-entry contract; user profile and invitation history remain unchanged.
+
 ## Demo and first run
 
 Only `demo-company` receives the existing 24 vendors, six template clones, configured Construct Pro requirements, document/history files and historical notice/audit examples. No empty-company selector falls back to them. A company created through My Companies starts with zero vendors, requirements, documents/versions, templates/custom types and events. Its existing company profile, Administrator membership and Starter plan are independent of operational data. My Companies remains user-global.

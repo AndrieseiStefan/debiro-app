@@ -8,7 +8,8 @@ import {AuthenticatedPageHeader} from '@/components/layout/AuthenticatedPageHead
 import {Button} from '@/components/ui/Button';
 import {Surface} from '@/components/ui/Surface';
 import {RoleBadge} from '@/features/company-settings/RoleVisual';
-import {createCompany, currentUser, getCurrentMembership, switchActiveCompany, useCompanyState, type CompanyIndustry} from './company-state';
+import {createCompany, getCurrentMembership, switchActiveCompany, useCompanyState, type CompanyIndustry} from './company-state';
+import {useUserProfile} from '@/features/profile/user-profile-state';
 import styles from './MyCompaniesPage.module.css';
 import {companyCountries, companyIndustries} from './company-options';
 
@@ -18,6 +19,7 @@ const industryOptions = Object.keys(companyIndustries) as CompanyIndustry[];
 const countryOptions = Object.keys(companyCountries) as (keyof typeof companyCountries)[];
 
 export function MyCompaniesPage({locale}: {locale: string}) {
+  const currentUser = useUserProfile();
   const t = useTranslations('Companies');
   const roles = useTranslations('CompanyMembers');
   const snapshot = useCompanyState();

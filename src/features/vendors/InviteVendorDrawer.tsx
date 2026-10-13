@@ -8,6 +8,7 @@ import {Button} from '@/components/ui/Button';
 import {Drawer, type DrawerPhase} from '@/components/ui/Drawer';
 import {Field} from '@/components/ui/Field';
 import {SelectField} from '@/components/ui/SelectField';
+import {Switch} from '@/components/ui/Switch';
 import {recordLocalAuditEvent} from '@/features/notifications/local-audit';
 import {Link} from '@/i18n/navigation';
 import type {VendorContact, VendorDetailsViewModel} from './types';
@@ -98,8 +99,8 @@ export function InviteVendorDrawer({phase, onClose, onExited, triggerRef, vendor
           <div className={styles.validityField}><label htmlFor="invite-validity">{t('linkValidity')} <span className={styles.required}>*</span></label><div className={styles.selectWrap}><AppIcon name="calendar" size={19}/><select id="invite-validity" value={validityDays} onChange={(event) => {setValidityDays(Number(event.target.value)); setErrors((current) => ({...current, validity: undefined}));}} aria-invalid={errors.validity ? true : undefined}>{[7, 14, 30, 60].map((days) => <option key={days} value={days}>{t('days', {count: days})}</option>)}</select><AppIcon name="chevronDown" size={18}/></div><p className={styles.expiryHelp}>{t('expiresOn', {date: expiryText})}</p>{errors.validity && <span className={styles.error} role="alert">{errors.validity}</span>}</div>
 
           <div className={styles.options}>
-            <label className={styles.option}><span className={styles.optionIcon}><DrawerIcon name="mail" /></span><span className={styles.optionCopy}><strong>{t('sendEmailNow')}</strong><small>{t('sendEmailHelp')}</small></span><input type="checkbox" checked={sendEmail} onChange={(event) => setSendEmail(event.target.checked)} /><span className={styles.switch} aria-hidden="true" /></label>
-            <label className={styles.option}><span className={styles.optionIcon}><AppIcon name="bell" size={19}/></span><span className={styles.optionCopy}><strong>{t('notifyOnUpload')}</strong><small>{t('notifyHelp')}</small></span><input type="checkbox" checked={notifyUpload} onChange={(event) => setNotifyUpload(event.target.checked)} /><span className={styles.switch} aria-hidden="true" /></label>
+            <label className={styles.option}><span className={styles.optionIcon}><DrawerIcon name="mail" /></span><span className={styles.optionCopy}><strong>{t('sendEmailNow')}</strong><small>{t('sendEmailHelp')}</small></span><Switch role="checkbox" checked={sendEmail} onChange={(event) => setSendEmail(event.target.checked)} /></label>
+            <label className={styles.option}><span className={styles.optionIcon}><AppIcon name="bell" size={19}/></span><span className={styles.optionCopy}><strong>{t('notifyOnUpload')}</strong><small>{t('notifyHelp')}</small></span><Switch role="checkbox" checked={notifyUpload} onChange={(event) => setNotifyUpload(event.target.checked)} /></label>
           </div>
 
           {preview ? <div className={styles.linkSection}><label htmlFor="invite-upload-link"><DrawerIcon name="link" />{t('secureLink')}</label><div className={styles.linkRow}><input id="invite-upload-link" readOnly value={preview.demoUploadUrl}/><Button variant="secondary" disabled={!recipient} onClick={copyLink}><DrawerIcon name="copy" />{copyState === 'copied' ? t('copied') : t('copy')}</Button></div>{copyState === 'failed' && <span className={styles.error} role="alert">{t('copyFailed')}</span>}{recipient ? <Link href={preview.demoUploadPath} locale={locale === 'en' ? 'en' : undefined} target="_blank" rel="noopener noreferrer" className={styles.preview}><DrawerIcon name="eye" />{t('previewUpload')}<span aria-hidden="true">↗</span></Link> : <span className={styles.preview} aria-disabled="true">{t('previewUpload')}</span>}</div> : <p className={styles.demoNote}>{t('noPreview')}</p>}

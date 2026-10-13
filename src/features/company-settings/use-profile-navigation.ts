@@ -62,5 +62,5 @@ export function useProfileNavigation(dirty: boolean, discard: () => void) {
       void guard.release();
     };
   }, [dirty, requestLeave, router]);
-  return {confirmDiscard, continueEditing, discardAndContinue};
+  return {confirmDiscard, continueEditing, discardAndContinue, requestNavigation: (action: () => void) => {if (dirty) requestLeave(action); else action();}};
 }

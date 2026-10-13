@@ -1,0 +1,2 @@
+.avatar {align-items: center; align-self: start; background: #e8f1ff; border-radius: 50%; color: #0c60df; display: inline-flex; flex-shrink: 0; font-size: 15px; font-weight: 700; height: 48px; justify-content: center; width: 48px;}
+.avatar[data-size='large'] {font-size: 30px; height: 104px; width: 104px;}

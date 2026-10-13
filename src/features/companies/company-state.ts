@@ -6,6 +6,8 @@ import type {CompanyMembership, CompanySettingsViewModel} from '@/features/compa
 import {browserSession} from '@/lib/browser-session';
 import {companyCountries, companyIndustries, companySizes, normalizeCompanyTaxId, type CompanyIndustry, type CompanySize} from './company-options';
 import {normalizeCompanyProfile, validateCompanyProfile, type CompanyProfileValues} from '@/features/company-settings/company-profile';
+import {currentUser, currentMemberIdentity, readUserProfile} from '@/features/profile/user-profile-state';
+export {currentUser} from '@/features/profile/user-profile-state';
 export type {CompanyIndustry} from './company-options';
 export {normalizeCompanyTaxId} from './company-options';
 
@@ -16,7 +18,6 @@ export type AccessibleCompany = {
 
 type CompanyState = {companies: AccessibleCompany[]; activeCompanyId: string | null};
 
-export const currentUser = companySettingsFixture.currentUser;
 const initialState: CompanyState = {
   companies: [
     {company: companySettingsFixture.company, members: companySettingsFixture.members},
@@ -56,7 +57,19 @@ export function getActiveCompany(snapshot: CompanyState) {
 }
 
 export function getCurrentMembership(record: AccessibleCompany) {
-  return record.members.find((member) => member.companyId === record.company.id && member.isCurrentUser && member.status === 'active') ?? null;
+  const member = record.members.find((member) => member.companyId === record.company.id && member.isCurrentUser && member.userId === readUserProfile().userId && member.status === 'active');
+  return member ? currentMemberIdentity(member) : null;
+}
+
+/** Accept access without entering the workspace. Existing active membership wins. */
+export function addCompanyAccess(company: AccessibleCompany['company'], role: CompanyMembership['role']) {
+  const state = session.state;
+  const existing = state.companies.find((record) => record.company.id === company.id);
+  if (existing && getCurrentMembership(existing)) return;
+  const user = readUserProfile();
+  const membership: CompanyMembership = {id: `membership-${company.id}-${user.userId}`, companyId: company.id, userId: user.userId, fullName: user.fullName, email: user.email, role, status: 'active', isCurrentUser: true};
+  const record = {company: existing?.company ?? company, members: [...(existing?.members.filter((member) => member.userId !== user.userId && member.email.toLowerCase() !== user.email.toLowerCase()) ?? []), membership]};
+  publish({...state, companies: existing ? state.companies.map((item) => item === existing ? record : item) : [...state.companies, record]});
 }
 
 export function switchActiveCompany(id: string) {
@@ -90,7 +103,7 @@ export function createCompany(input: NewCompanyInput): CreateCompanyResult {
         capabilities: {unlimitedDocuments: false, customRequirements: false, notificationsAudit: false}, invoices: []
       }
     },
-    members: [{id: `membership-${id}`, companyId: id, userId: 'andrei-popescu', fullName: currentUser.fullName, email: currentUser.email, role: 'administrator', status: 'active', isCurrentUser: true}]
+    members: [{id: `membership-${id}`, companyId: id, userId: readUserProfile().userId, fullName: currentUser.fullName, email: currentUser.email, role: 'administrator', status: 'active', isCurrentUser: true}]
   };
   publish({companies: [...state.companies, created], activeCompanyId: id});
   return {ok: true, id};

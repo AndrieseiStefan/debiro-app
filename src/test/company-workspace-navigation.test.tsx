@@ -53,4 +53,9 @@ describe('shared company workspace entry', () => {
     act(() => {expect(createCompany({name: 'Entry Company', taxId: 'RO-ENTRY-COMPANY', country: 'RO', industry: 'professional'}).ok).toBe(true);});
     expect(navigation.push).toHaveBeenCalledWith('/dashboard'); expect(readCompanyState().activeCompanyId).toMatch(/^local-company-/);
   });
+  it.each(['/profile', '/invitations', '/en/profile', '/en/invitations'])('enters Dashboard when explicitly switching from global-user route %s', (pathname) => {
+    navigation.pathname = pathname; render(view());
+    act(() => {switchActiveCompany('global-clean-services');});
+    expect(navigation.push).toHaveBeenCalledWith('/dashboard');
+  });
 });

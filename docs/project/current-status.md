@@ -10,11 +10,11 @@
 
 **Domain strategy:** Single domain
 
-**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and the experiences represented by all thirty-one approved mockups have fixture/browser-local implementations, with documented unsupported actions; backend/auth integrations are not.
+**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and the experiences represented by all thirty-three approved mockups have fixture/browser-local implementations, with documented unsupported actions; backend/auth integrations are not.
 
 ## Design state
 
-Thirty-one approved product mockups are tracked in `docs/design/mockups/`. They are canonical contracts requiring:
+Thirty-three approved product mockups are tracked in `docs/design/mockups/`. They are canonical contracts requiring:
 
 - UI fidelity as close to 1:1 as technically practical
 - Interaction fidelity as close to 1:1 as technically practical
@@ -25,6 +25,8 @@ Thirty-one approved product mockups are tracked in `docs/design/mockups/`. They 
 The final logo is not yet designed and must not be invented.
 
 ## Implemented
+
+- E1-032A global My Profile and My Invitations — shared user identity/preferences, locale synchronization, atomic received-invitation accept/reject with shared company access and no automatic activation, live profile menu links/pending badge, and reused shell/control treatments; tab memory only; see [profile and invitations](../features/my-profile-invitations.md)
 
 - Canonical repository documentation and project-memory rules
 - High-level product, roadmap, design, decision, and development guidance

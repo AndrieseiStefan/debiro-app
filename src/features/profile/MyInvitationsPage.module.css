@@ -1,0 +1,31 @@
+.page {min-width: 0;}
+.summary {display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 20px;}
+.listPanel {container-type: inline-size; padding: 20px;}
+.listHeading {align-items: center; display: grid; gap: 18px; grid-template-columns: 28px minmax(0, 1fr) auto; margin-bottom: 20px;}
+.listHeading > svg {color: #5874a3;}
+.listHeading h2 {font-size: var(--text-card-title);}
+.listHeading p, .notice p {color: #5874a3; font-size: var(--text-body-small); line-height: 1.5; margin-top: 4px;}
+.list {display: grid; gap: 16px;}
+.invitation {align-items: center; display: grid; gap: 16px; grid-template-columns: 52px minmax(150px, 1.3fr) minmax(120px, .6fr) minmax(160px, 1fr) minmax(92px, .6fr) minmax(92px, .6fr) minmax(176px, max-content); padding: 22px 18px;}
+.invitation[data-status='pending'] {background: #f7fbff; border-color: #8dbaff;}
+.companyIcon {align-items: center; background: #e0edff; border-radius: 14px; color: #075ed7; display: flex; height: 52px; justify-content: center;}
+.companyIcon[data-status='expired'] {background: var(--color-danger-soft); color: var(--color-danger);}
+.companyIcon[data-status='accepted'] {background: var(--color-success-soft); color: var(--color-success);}
+.company, .detail {min-width: 0; overflow-wrap: anywhere;}
+.company h3 {font-size: 16px; line-height: 1.3;}
+.company p {color: #5874a3; font-size: 12px; margin-top: 4px;}
+.detail {align-items: start; display: grid; font-size: 13px; gap: 5px; justify-items: start;}
+.detail > span:first-child, .detail small {color: #5874a3; font-size: 12px;}
+.detail strong {font-weight: 550;}
+.detail .remaining {color: var(--color-success);}
+.actions {align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end;}
+.actions button {font-size: 13px; min-height: 42px; padding-inline: 16px;}
+.notice {align-items: start; background: var(--color-info-soft); border: 1px solid var(--color-border); border-radius: var(--radius-field); display: flex; gap: 16px; margin-top: 24px; padding: 20px;}
+.notice > svg {color: var(--color-action-primary); flex-shrink: 0;}
+.notice strong {font-size: var(--text-body);}
+.feedback {background: var(--color-info-soft); border-radius: var(--radius-field); color: var(--color-success); font-size: var(--text-body-small); margin-bottom: 16px; padding: 12px;}
+.feedback[data-error='true'] {color: var(--color-danger);}
+@container (max-width: 1050px) {.invitation {grid-template-columns: repeat(2, minmax(0, 1fr));}.companyIcon {grid-column: 1; grid-row: 1; width: 52px;}.company {grid-column: 1 / -1; grid-row: 1; padding-left: 68px;}.detail {grid-column: auto;}.actions {grid-column: 1 / -1; justify-content: flex-start;}}
+@container (max-width: 500px) {.listHeading {grid-template-columns: 28px minmax(0, 1fr);}.listHeading > div:last-child {grid-column: 1 / -1;}.invitation {grid-template-columns: 40px minmax(0, 1fr); gap: 14px; padding: 16px;}.companyIcon {height: 40px; width: 40px;}.company {grid-column: 2 / -1; padding-left: 0;}.detail {grid-column: 1 / -1;}.actions {grid-column: 1 / -1;}.notice {padding: 14px; gap: 10px;}}
+@media (max-width: 1199px) {.summary {grid-template-columns: repeat(2, minmax(0, 1fr));}}
+@media (max-width: 600px) {.summary {grid-template-columns: minmax(0, 1fr);}.listPanel {padding: 16px;}}

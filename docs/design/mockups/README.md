@@ -1,6 +1,6 @@
 # Approved Mockups
 
-This repository tracks thirty-one approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
+This repository tracks thirty-three approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
 
 ## Expected initial mapping
 
@@ -37,6 +37,8 @@ This repository tracks thirty-one approved product mockup images listed below. T
 | `29-document-actions-and-details-entrypoints.png` | E1-029 shared document details, replacement and history; E1-029B restores section 6's compact timeline. Briefs preserve current tables and override internal-upload review, expire/delete actions and invented metadata; unavailable downloads/rejection reasons are not fabricated. |
 | `document-details.png` | E1-029A/B dedicated Document Details composition, six information rows, action card and compact history preview; supersedes mockup 29's Details presentation only. E1-029B removes the Notes row and duplicate badge dot. E1-029G enables confirmed manual expiry and removes general document Delete; unsupported external file-open is omitted. |
 | `30-company-settings-profile.png` | E1-030 active Company Profile; adds existing onboarding company size, retains optional fields per business rules and uses free-text County/Region with the shared form scale. |
+| `32a-my-profile.png` | E1-032A global My Profile; existing shell/components/menu take precedence. Read-only identity email, plain shared phone field, no unsupported camera/security action. |
+| `32a-my-invitations.png` | E1-032A global received invitations; existing shell, shared role/KPI/status controls and reduced profile menu take precedence. Acceptance adds access without automatic company switching. |
 
 ## Contract
 

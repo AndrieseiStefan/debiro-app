@@ -1,4 +1,31 @@
 {
+  "MyProfile": {
+    "title": "Profilul meu",
+    "description": "Gestionează informațiile contului și preferințele personale.",
+    "breadcrumbLabel": "Navigare profil",
+    "personalTitle": "Informații personale",
+    "personalDescription": "Aceste informații sunt utilizate pentru contul tău în DEBIRO.",
+    "firstName": "Prenume", "lastName": "Nume", "email": "Adresă de email", "phone": "Număr de telefon",
+    "required": "Acest câmp este obligatoriu.", "invalidEmail": "Adresa de email nu este validă.",
+    "save": "Salvează modificările", "saved": "Modificările au fost salvate.",
+    "preferencesTitle": "Preferințe", "preferencesDescription": "Personalizează experiența ta în DEBIRO.",
+    "language": "Limbă aplicație", "languageDescription": "Alege limba în care este afișată interfața aplicației.",
+    "emailNotificationsEnabled": "Notificări pe email", "emailNotificationsEnabledDescription": "Primește notificări importante legate de furnizori, documente, cerințe și invitații.",
+    "periodicSummaryEnabled": "Rapoarte și rezumate", "periodicSummaryEnabledDescription": "Primește pe email rezumate periodice despre activitatea din contul tău."
+  },
+  "MyInvitations": {
+    "title": "Invitațiile mele", "description": "Gestionează invitațiile de la companii pentru a te alătura echipelor lor în DEBIRO.", "breadcrumbLabel": "Navigare invitații",
+    "summaryLabel": "Sumar invitații", "total": "Total invitații", "pending": "Active", "expired": "Expirate", "accepted": "Acceptate", "rejected": "Refuzate", "all": "Toate invitațiile",
+    "totalNote": "Toate invitațiile primite", "pendingNote": "Necesită acțiune", "expiredNote": "Nu mai pot fi acceptate", "acceptedNote": "Te-ai alăturat companiei",
+    "listTitle": "Lista invitațiilor", "listDescription": "Invitații primite de la companii pentru a te alătura ca membru.", "filterLabel": "Filtrează invitațiile",
+    "taxId": "CUI", "proposedRole": "Rol propus", "invitedBy": "Invitat de", "receivedAt": "Data primirii", "expiresIn": "Expiră în", "expiredAt": "Expirat la", "acceptedAt": "Acceptată la", "rejectedAt": "Refuzată la", "days": "{count} zile",
+    "accept": "Acceptă", "reject": "Refuză", "cancel": "Anulează", "rejectTitle": "Refuzi invitația?", "rejectDescription": "Nu te vei alătura companiei. Invitația rămâne în istoricul tău.",
+    "acceptedSuccess": "Invitație acceptată. Compania este disponibilă în Companiile mele.", "rejectedSuccess": "Invitația a fost refuzată.",
+    "status": {"pending": "Activă", "accepted": "Acceptată", "rejected": "Refuzată", "expired": "Expirată"},
+    "errors": {"invalid": "Invitația nu mai este disponibilă pentru această acțiune.", "identity": "Invitația nu aparține contului tău.", "expired": "Invitația a expirat și nu mai poate fi acceptată.", "inaccessible": "Compania nu este disponibilă."},
+    "emptyTitle": "Nu ai invitații", "emptyDescription": "Invitațiile de la companii vor apărea aici.", "filteredEmpty": "Nu există invitații pentru filtrul selectat.", "unknownCompany": "Companie indisponibilă",
+    "noticeTitle": "Nu ai primit nicio invitație?", "noticeDescription": "Invitațiile sunt trimise de administratorii companiilor existente în DEBIRO. Dacă ar trebui să ai o invitație și nu o vezi aici, verifică adresa de email sau contactează administratorul companiei."
+  },
   "CompanyWorkspace": {
     "firstRunTitle": "Începe cu primul furnizor",
     "firstVendor": "Adaugă primul furnizor",

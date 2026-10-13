@@ -1,4 +1,5 @@
 'use client';
+import {useUserProfile} from '@/features/profile/user-profile-state';
 
 import {useCallback, useRef, useState} from 'react';
 import {useTranslations} from 'next-intl';
@@ -57,7 +58,8 @@ function VendorDetailsWorkspace({locale, initialView, companyId, ...selection}: 
   const projected = projectVendorDetails(initialView, vendorState);
   const workspace = getVendorRequirements(useVendorRequirements(), companyId, projected.vendor.id);
   const vendorProjection = projectVendorDocuments(projected.vendor, workspace, useDocumentRecords(), companyId);
-  const view = {...projected, validDocumentCount: vendorProjection.documentCount, vendor: vendorProjection};
+  const user = useUserProfile();
+  const view = {...projected, user: {...projected.user, ...user}, validDocumentCount: vendorProjection.documentCount, vendor: vendorProjection};
   const metadata = getVendorMetadata(vendorState, view.vendor.id);
   const contacts = getVendorContacts(vendorState, companyId, view.vendor.id);
   const configuredRequirements = workspace.requirements.length;

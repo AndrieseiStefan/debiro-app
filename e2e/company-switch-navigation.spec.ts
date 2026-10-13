@@ -1,7 +1,7 @@
 import {expect, test, type Page} from '@playwright/test';
 import {createWorkspaceCompany, switchWorkspaceCompany, workspaceSection} from './support/company-workspace';
 
-const routes = ['/dashboard', '/vendors', '/vendors/construct-pro', '/documents', '/documents/construct-pro-tax-2024/review', '/requirements', '/notifications', '/company/settings/profile', '/company/settings/members', '/company/settings/billing', '/profile/companies'];
+const routes = ['/dashboard', '/vendors', '/vendors/construct-pro', '/documents', '/documents/construct-pro-tax-2024/review', '/requirements', '/notifications', '/company/settings/profile', '/company/settings/members', '/company/settings/billing', '/profile/companies', '/profile', '/invitations'];
 async function switchToOther(page: Page, english: boolean) {
   await page.getByRole('button', {name: 'Demo Company SRL', exact: true}).click();
   await page.getByRole('dialog', {name: english ? 'Switch company' : 'Schimbă compania'}).getByRole('button', {name: /Global Clean Services/}).click();

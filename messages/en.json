@@ -1,4 +1,27 @@
 {
+  "MyProfile": {
+    "title": "My Profile", "description": "Manage your account information and personal preferences.", "breadcrumbLabel": "Profile navigation",
+    "personalTitle": "Personal information", "personalDescription": "This information is used for your DEBIRO account.",
+    "firstName": "First name", "lastName": "Last name", "email": "Email address", "phone": "Phone number",
+    "required": "This field is required.", "invalidEmail": "The email address is invalid.", "save": "Save changes", "saved": "Changes saved.",
+    "preferencesTitle": "Preferences", "preferencesDescription": "Personalize your DEBIRO experience.",
+    "language": "Application language", "languageDescription": "Choose the language used for the application interface.",
+    "emailNotificationsEnabled": "Email notifications", "emailNotificationsEnabledDescription": "Receive important notifications about suppliers, documents, requirements and invitations.",
+    "periodicSummaryEnabled": "Reports and summaries", "periodicSummaryEnabledDescription": "Receive periodic email summaries of your account activity."
+  },
+  "MyInvitations": {
+    "title": "My Invitations", "description": "Manage company invitations to join their teams in DEBIRO.", "breadcrumbLabel": "Invitation navigation",
+    "summaryLabel": "Invitation summary", "total": "Total invitations", "pending": "Active", "expired": "Expired", "accepted": "Accepted", "rejected": "Rejected", "all": "All invitations",
+    "totalNote": "All invitations received", "pendingNote": "Action required", "expiredNote": "Can no longer be accepted", "acceptedNote": "You joined the company",
+    "listTitle": "Invitation list", "listDescription": "Company invitations to join as a member.", "filterLabel": "Filter invitations",
+    "taxId": "CUI", "proposedRole": "Proposed role", "invitedBy": "Invited by", "receivedAt": "Received on", "expiresIn": "Expires in", "expiredAt": "Expired on", "acceptedAt": "Accepted on", "rejectedAt": "Rejected on", "days": "{count} days",
+    "accept": "Accept", "reject": "Reject", "cancel": "Cancel", "rejectTitle": "Reject invitation?", "rejectDescription": "You will not join the company. The invitation remains in your history.",
+    "acceptedSuccess": "Invitation accepted. The company is available in My companies.", "rejectedSuccess": "Invitation rejected.",
+    "status": {"pending": "Active", "accepted": "Accepted", "rejected": "Rejected", "expired": "Expired"},
+    "errors": {"invalid": "This invitation is no longer available for this action.", "identity": "This invitation does not belong to your account.", "expired": "This invitation has expired and can no longer be accepted.", "inaccessible": "The company is unavailable."},
+    "emptyTitle": "You have no invitations", "emptyDescription": "Company invitations will appear here.", "filteredEmpty": "No invitations match the selected filter.", "unknownCompany": "Unavailable company",
+    "noticeTitle": "Haven’t received an invitation?", "noticeDescription": "Invitations are sent by administrators of existing DEBIRO companies. If you expect an invitation but cannot see it here, check your email address or contact the company administrator."
+  },
   "CompanyWorkspace": {
     "firstRunTitle": "Start with your first vendor",
     "firstVendor": "Add your first vendor",

@@ -12,6 +12,7 @@ import {useLocalInvitations} from './local-invitations';
 import {getCompanyMembershipSummary} from './membership-summary';
 import type {CompanySettingsViewModel} from './types';
 import styles from './CompanyBillingPage.module.css';
+import {currentMemberIdentity, useUserProfile} from '@/features/profile/user-profile-state';
 
 function formatDate(date: string, locale: string) {
   return new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'ro-RO', {
@@ -25,7 +26,8 @@ export function CompanyBillingPage({locale, view: initialView}: {locale: string;
   const membersT = useTranslations('CompanyMembers');
   const companyState = useCompanyState();
   const active = getActiveCompany(companyState);
-  const view = active ? {...initialView, company: active.company, members: active.members} : initialView;
+  const user = useUserProfile();
+  const view = active ? {...initialView, currentUser: user, company: active.company, members: active.members.map((member) => currentMemberIdentity(member, user))} : {...initialView, currentUser: user};
   const localInvitations = useLocalInvitations(view.company.id);
   const {members, activeCount, availableSeats} = getCompanyMembershipSummary(view, localInvitations);
   const currentMembership = members.find((member) => member.isCurrentUser);
