@@ -93,3 +93,69 @@ test('desktop and compact profile instances never stay open together', async ({p
   await expect(page.locator('button[aria-label^="Profil utilizator:"][aria-expanded="true"]')).toHaveCount(1);
   await expect(page.getByRole('dialog', {name: 'Meniu profil'})).toHaveCount(1);
 });
+
+for (const english of [false, true]) {
+  test(`${english ? 'EN' : 'RO'} compact circular profile trigger keeps its attached chevron and accessible states`, async ({page}) => {
+    test.setTimeout(60_000);
+    await page.goto(english ? '/en/dashboard' : '/dashboard');
+    const trigger = page.getByRole('button', {name: english ? 'User profile: Andrei Popescu' : 'Profil utilizator: Andrei Popescu'});
+    const menu = page.getByRole('dialog', {name: english ? 'Profile menu' : 'Meniu profil'});
+    for (const width of [1448, 1024, 801, 800, 768, 758, 600, 375, 320]) {
+      await test.step(`${width}px`, async () => {
+        await page.setViewportSize({width, height: 1086});
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await expect(trigger).toBeVisible();
+        await expect(trigger).toBeInViewport();
+        const geometry = await trigger.evaluate((element) => {
+          const bounds = (node: Element) => {
+            const {x, y, width, height, right, bottom} = node.getBoundingClientRect();
+            return {x, y, width, height, right, bottom};
+          };
+          const utilities = element.parentElement!.parentElement!;
+          return {
+            trigger: bounds(element), avatar: bounds(element.querySelector('span')!), chevron: bounds(element.querySelector('svg')!),
+            bell: bounds(utilities.querySelector('button')!), locale: bounds(utilities.querySelector('nav')!),
+            radius: getComputedStyle(element).borderRadius, chevronDisplay: getComputedStyle(element.querySelector('svg')!).display
+          };
+        });
+        expect(geometry.radius).toBe('50%');
+        expect(geometry.trigger.width).toBe(width > 800 ? 38 : 34);
+        expect(geometry.trigger.height).toBe(geometry.trigger.width);
+        expect(geometry.avatar.width).toBe(geometry.trigger.width - 2);
+        expect(geometry.chevronDisplay).not.toBe('none');
+        expect(geometry.chevron.x).toBeGreaterThan(geometry.trigger.x + geometry.trigger.width / 2);
+        expect(geometry.chevron.y).toBeGreaterThan(geometry.trigger.y + geometry.trigger.height / 2);
+        expect(geometry.chevron.right).toBeLessThanOrEqual(geometry.trigger.right + 1);
+        expect(geometry.chevron.bottom).toBeLessThanOrEqual(geometry.trigger.bottom + 1);
+        for (const sibling of [geometry.bell, geometry.locale]) {
+          expect(Math.abs(sibling.y + sibling.height / 2 - geometry.trigger.y - geometry.trigger.height / 2)).toBeLessThanOrEqual(1);
+          expect(sibling.right).toBeLessThan(geometry.trigger.x);
+        }
+
+        await trigger.hover();
+        await expect(trigger).toHaveCSS('background-color', 'rgb(232, 241, 255)');
+        await expect(trigger).toHaveCSS('border-radius', '50%');
+        expect(await trigger.boundingBox()).toEqual({x: geometry.trigger.x, y: geometry.trigger.y, width: geometry.trigger.width, height: geometry.trigger.height});
+        await trigger.focus();
+        await expect(trigger).toHaveCSS('outline-style', 'solid');
+        await expect(trigger).toHaveCSS('outline-width', '3px');
+        await page.keyboard.press('Space');
+        await expect(menu).toBeVisible();
+        await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+        await page.keyboard.press('Escape');
+        await expect(menu).not.toBeVisible();
+        await expect(trigger).toBeFocused();
+        // The attached indicator is part of the same button, not a second action.
+        await trigger.locator('svg').click();
+        await expect(menu).toBeVisible();
+        const panel = await menu.boundingBox();
+        expect(panel!.x).toBeGreaterThanOrEqual(0);
+        expect(panel!.x + panel!.width).toBeLessThanOrEqual(width);
+        expect(panel!.y).toBeGreaterThanOrEqual(geometry.trigger.bottom);
+        await page.getByRole('heading', {level: 1}).click();
+        await expect(menu).not.toBeVisible();
+        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      });
+    }
+  });
+}

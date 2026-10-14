@@ -42,6 +42,8 @@ This repository tracks thirty-three approved product mockup images listed below.
 
 E1-032A1 supersedes the pictured Dashboard parent on the two 32a Profile-area pages: My Profile is the Profile root, and Invitations is its child. My Companies retains its Profile hierarchy with a working parent link. These global destinations remain mounted/current on explicit company switches; company-scoped switches still enter Dashboard. No mockup image or page design is otherwise changed.
 
+E1-032A2 supersedes the separated avatar/chevron in authenticated headers with a compact circular avatar and an attached bottom-right chevron indicator. Profile dropdown content and interactions are otherwise unchanged.
+
 ## Contract
 
 For every approved mockup, these are canonical:

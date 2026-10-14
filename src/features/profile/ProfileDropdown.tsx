@@ -93,7 +93,7 @@ export function ProfileDropdown({compact, triggerClassName}: {
 
   return <div className={styles.anchor}>
     <button ref={triggerRef} type="button" className={triggerClassName} aria-label={`${app('profileLabel')}: ${currentUser.fullName}`} aria-haspopup="dialog" aria-expanded={open} aria-controls={open ? id : undefined} onClick={() => setOpenProfile(open ? null : id)}>
-      <span>{currentUser.initials}</span><AppIcon name="chevronDown" size={16} />
+      <Avatar initials={currentUser.initials}/><AppIcon name="chevronDown" size={16} />
     </button>
     {open && <div ref={panelRef} id={id} role="dialog" aria-label={t('title')} className={styles.panel} style={{left: position.left, top: position.top, width: position.width, maxHeight: position.maxHeight}}>
       <div className={styles.header}>
