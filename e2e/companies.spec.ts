@@ -1,4 +1,72 @@
 import {expect, test} from '@playwright/test';
+import {createWorkspaceCompany} from './support/company-workspace';
+
+for (const english of [false, true]) {
+  test(`${english ? 'EN' : 'RO'} switcher stays anchored above the trigger, falls back safely, and retains compact placement`, async ({page}) => {
+    test.setTimeout(60_000);
+    await page.goto(english ? '/en/dashboard' : '/dashboard');
+    const trigger = page.getByRole('button', {name: 'Demo Company SRL', exact: true});
+    await trigger.focus(); await page.keyboard.press('Enter');
+    const switcher = page.getByRole('dialog', {name: english ? 'Switch company' : 'Schimbă compania'});
+    await expect(switcher.getByRole('button', {name: /Demo Company SRL/})).toBeFocused();
+    for (const [width, height] of [[1448, 1086], [1024, 768], [801, 700], [1448, 300], [1448, 200], [801, 300], [1448, 1086], [800, 900], [758, 833], [600, 800], [375, 812], [320, 700], [1448, 1086]]) {
+      await test.step(`${width} × ${height}`, async () => {
+        await page.setViewportSize({width, height});
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await expect(switcher).toBeVisible();
+        const anchor = await trigger.boundingBox();
+        if (width > 800 && height > 200) {
+          await expect.poll(async () => {const box = await switcher.boundingBox(); return Math.round(anchor!.y - box!.y - box!.height);}).toBe(8);
+          expect((await switcher.boundingBox())!.x).toBe(anchor!.x);
+        } else if (width > 800) {
+          await expect.poll(async () => (await switcher.boundingBox())!.x - anchor!.x - anchor!.width).toBe(8);
+        } else {
+          const header = await page.getByRole('complementary', {name: english ? 'Application sidebar' : 'Bară laterală aplicație', exact: true}).boundingBox();
+          await expect.poll(async () => (await switcher.boundingBox())!.y - header!.y - header!.height).toBe(8);
+          expect((await switcher.boundingBox())!.x).toBe(Math.max(12, anchor!.x + anchor!.width - 260));
+        }
+        const box = await switcher.boundingBox();
+        expect(box!.width).toBe(260);
+        expect(box!.x).toBeGreaterThanOrEqual(12);
+        expect(box!.x + box!.width).toBeLessThanOrEqual(width - 12);
+        expect(box!.y).toBeGreaterThanOrEqual(12);
+        expect(box!.y + box!.height).toBeLessThanOrEqual(height - 12);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+        await expect(switcher.getByRole('button')).toHaveCount(2);
+        await expect(switcher.getByRole('button', {name: /Demo Company SRL/})).toHaveAttribute('aria-pressed', 'true');
+        const footer = switcher.getByRole('link', {name: english ? 'View all companies' : 'Vezi toate companiile'});
+        await footer.scrollIntoViewIfNeeded(); await expect(footer).toBeInViewport();
+      });
+    }
+    await page.keyboard.press('Escape'); await expect(switcher).not.toBeVisible(); await expect(trigger).toBeFocused();
+    await trigger.click(); await page.getByRole('heading', {level: 1}).click(); await expect(switcher).not.toBeVisible();
+    await trigger.click(); await trigger.click(); await expect(switcher).not.toBeVisible();
+    await trigger.click(); await switcher.getByRole('link', {name: english ? 'View all companies' : 'Vezi toate companiile'}).click();
+    await expect(page).toHaveURL(english ? '/en/profile/companies' : '/profile/companies'); await expect(switcher).not.toBeVisible();
+  });
+}
+
+test('switcher measures the full multi-company list at its final width', async ({page}) => {
+  const name = 'Long Company Name With Multiple Words Across Lines';
+  await createWorkspaceCompany(page, name);
+  await page.setViewportSize({width: 1448, height: 1086});
+  const trigger = page.getByRole('button', {name, exact: true});
+  await trigger.click();
+  const switcher = page.getByRole('dialog', {name: 'Schimbă compania'});
+  await expect(switcher.getByRole('button')).toHaveCount(3);
+  const anchor = await trigger.boundingBox();
+  await expect.poll(async () => {const box = await switcher.boundingBox(); const gap = anchor!.y - box!.y - box!.height; return gap >= 8 && gap <= 12;}).toBe(true);
+  expect((await switcher.boundingBox())!.x).toBe(anchor!.x);
+  expect(await switcher.evaluate((node) => node.scrollHeight <= node.clientHeight)).toBe(true);
+  await expect(switcher.getByRole('button', {name: new RegExp(name)})).toHaveAttribute('aria-pressed', 'true');
+  await expect(switcher.getByRole('link', {name: 'Vezi toate companiile'})).toBeInViewport();
+  await page.setViewportSize({width: 1448, height: 300});
+  const shortAnchor = await trigger.boundingBox();
+  await expect.poll(async () => (await switcher.boundingBox())!.x - shortAnchor!.x - shortAnchor!.width).toBe(8);
+  const box = await switcher.boundingBox();
+  expect(box!.y).toBeGreaterThanOrEqual(12);
+  expect(box!.y + box!.height).toBeLessThanOrEqual(288);
+});
 
 test('profile navigation, company list, switching and company settings share one active workspace', async ({page}) => {
   await page.goto('/dashboard');

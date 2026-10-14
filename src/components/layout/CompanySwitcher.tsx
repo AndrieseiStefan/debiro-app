@@ -27,15 +27,23 @@ export function CompanySwitcher() {
     if (!open) return;
     function place() {
       const trigger = triggerRef.current?.getBoundingClientRect();
-      if (!trigger) return;
+      const panel = panelRef.current;
+      if (!trigger || !panel) return;
       const gutter = 12;
+      const gap = 8;
       const width = Math.min(260, window.innerWidth - gutter * 2);
       const compact = window.innerWidth <= 800;
-      const left = compact ? Math.max(gutter, Math.min(trigger.right - width, window.innerWidth - gutter - width)) : Math.max(gutter, Math.min(trigger.left, window.innerWidth - gutter - width));
-      const panelHeight = panelRef.current?.scrollHeight ?? 320;
+      // Measure at the final width, not the initial zero-width/scroll-constrained box.
+      panel.style.width = `${width}px`;
+      const panelHeight = panel.scrollHeight + panel.offsetHeight - panel.clientHeight;
+      const viewportHeight = Math.max(0, window.innerHeight - gutter * 2);
+      const spaceAbove = trigger.top - gutter - gap;
+      const above = panelHeight <= spaceAbove && trigger.top - gap <= window.innerHeight - gutter;
+      const anchorLeft = compact ? trigger.right - width : above ? trigger.left : trigger.right + gap;
+      const left = Math.max(gutter, Math.min(anchorLeft, window.innerWidth - gutter - width));
       const compactHeaderBottom = compact ? triggerRef.current?.closest('aside')?.getBoundingClientRect().bottom ?? 0 : 0;
-      const top = compact ? compactHeaderBottom + 8 : Math.max(gutter, trigger.top - panelHeight - 8);
-      const maxHeight = compact ? Math.max(0, window.innerHeight - top - gutter) : Math.max(0, trigger.top - top - 8);
+      const top = compact ? compactHeaderBottom + gap : above ? trigger.top - panelHeight - gap : Math.max(gutter, Math.min(trigger.top, window.innerHeight - gutter - Math.min(panelHeight, viewportHeight)));
+      const maxHeight = compact ? Math.max(0, window.innerHeight - top - gutter) : above ? spaceAbove : viewportHeight;
       setPosition({left, top, width, maxHeight});
     }
     function onPointerDown(event: PointerEvent) {
@@ -50,12 +58,15 @@ export function CompanySwitcher() {
       triggerRef.current?.focus({preventScroll: true});
     }
     place();
+    const observer = new ResizeObserver(place);
+    if (panelRef.current) observer.observe(panelRef.current);
     firstCompanyRef.current?.focus({preventScroll: true});
     document.addEventListener('pointerdown', onPointerDown);
     document.addEventListener('keydown', onKeyDown);
     window.addEventListener('resize', place);
     window.addEventListener('scroll', place, true);
     return () => {
+      observer.disconnect();
       document.removeEventListener('pointerdown', onPointerDown);
       document.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('resize', place);
