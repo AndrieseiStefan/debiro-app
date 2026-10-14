@@ -1,7 +1,7 @@
 'use client';
 
 import {useCallback, useRef, useState, type CSSProperties} from 'react';
-import {Link, useRouter} from '@/i18n/navigation';
+import {useRouter} from '@/i18n/navigation';
 import {Button} from '@/components/ui/Button';
 import {EmptyState} from '@/components/ui/EmptyState';
 import {AddVendorDrawer} from '@/features/vendors/AddVendorDrawer';
@@ -12,6 +12,7 @@ import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
 import {AuthenticatedPageHeader} from '@/components/layout/AuthenticatedPageHeader';
 import {StatusBadge, type StatusTone} from '@/components/ui/StatusBadge';
 import {Surface} from '@/components/ui/Surface';
+import {SectionAction} from '@/components/ui/SectionAction';
 import type {DashboardActivityKind, DashboardDocumentStatus, DashboardViewModel, LocalizedSample} from './types';
 import styles from './DashboardPage.module.css';
 import {useDocumentRecords} from '@/features/documents/created-documents';
@@ -50,10 +51,6 @@ function sample(value: LocalizedSample, locale: string) {
   return locale === 'en' ? value.en : value.ro;
 }
 
-function SectionAction({children, href}: {children: React.ReactNode; href: string}) {
-  return <Link href={href} className={styles.sectionAction}>{children}<AppIcon name="arrowRight" size={16} /></Link>;
-}
-
 function SummaryMetricCard({id, value, note}: {id: keyof typeof metricAppearance; value: number; note: string}) {
   const t = useTranslations('Dashboard');
   const appearance = metricAppearance[id];
@@ -72,7 +69,7 @@ export function DocumentsAttentionPanel({view, locale}: {view: DashboardViewMode
     <Surface className={styles.documentsPanel}>
       <div className={styles.panelHeader}>
         <h2><AppIcon name="file" size={22} />{t('documentsTitle')}</h2>
-        <SectionAction href={documentsAttentionHref}>{t('viewAll')}</SectionAction>
+        <SectionAction mode="navigate" href={documentsAttentionHref}>{t('viewAll')}</SectionAction>
       </div>
       {total === 0 ? <EmptyState icon={<AppIcon name="check" size={25}/>} title={empty('noAttention')}/> : <><div className={styles.tableScroll}>
         <table className={styles.documentsTable}>
@@ -148,7 +145,7 @@ function RecentActivityPanel({view, locale}: {view: DashboardViewModel; locale: 
     <Surface className={styles.activityPanel}>
       <div className={styles.panelHeader}>
         <h2><AppIcon name="calendar" size={21} />{t('recentActivityTitle')}</h2>
-        <SectionAction href="/notifications">{t('viewAll')}</SectionAction>
+        <SectionAction mode="navigate" href="/notifications">{t('viewAll')}</SectionAction>
       </div>
       {view.recentActivity.length === 0 ? <EmptyState icon={<AppIcon name="calendar" size={25}/>} title={empty('noActivity')}/> : <ol className={styles.activityList}>
         {view.recentActivity.map((activity) => <li key={activity.id}>

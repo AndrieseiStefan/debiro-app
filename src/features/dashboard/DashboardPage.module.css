@@ -197,23 +197,6 @@
   flex: 0 0 auto;
 }
 
-.sectionAction {
-  align-items: center;
-  background: transparent;
-  border: 0;
-  color: #0055c5;
-  display: inline-flex;
-  flex: 0 0 auto;
-  font-size: 13px;
-  font-weight: 550;
-  gap: 8px;
-  padding: 8px 0;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.sectionAction:hover {color: var(--color-action-hover);}
-
 .rowAction[aria-disabled='true'] {
   cursor: default;
 }

@@ -25,9 +25,7 @@
 .summaryCard h2 {color: #142749; font-size: 13px; font-weight: 700; line-height: 1.2; margin-top: 2px;}
 .summaryCard strong {color: #14233e; display: block; font-size: 30px; line-height: 1.05; margin-top: 5px;}
 .summaryCard p {color: #5b769d; font-size: 12px; line-height: 1.25; margin-top: 3px;}
-.summaryCard button, .panelHeading button {align-items: center; background: none; border: 0; color: #075ceb; cursor: pointer; display: inline-flex; font-size: 12px; gap: 6px; padding: 4px 0; white-space: nowrap;}
-.summaryCard button {bottom: 3px; position: absolute; right: 15px;}
-.summaryCard button:hover, .panelHeading button:hover, .reset:hover {color: #003fba;}
+.reset:hover {color: #003fba;}
 .panel {padding: 12px;}
 .panelHeading {align-items: center; display: flex; gap: 12px; justify-content: space-between; min-height: 28px; min-width: 0; padding: 0 2px 8px;}
 .panelHeading h2 {align-items: center; color: #172b4c; display: flex; font-size: 16px; gap: 8px; min-width: 0;}
@@ -66,5 +64,5 @@
 .srOnly {clip: rect(0, 0, 0, 0); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px;}
 @media (max-width: 1399px) {.workspace {grid-template-columns: minmax(0, 1fr);} .auditPanel {min-height: 0;} .auditCallout {margin-top: 10px;}}
 @media (max-width: 950px) {.toolbar {flex-wrap: wrap;} .rangeControl {min-height: 50px;}}
-@media (max-width: 700px) {.summaryGrid {grid-template-columns: 1fr;} .summaryCard {height: auto; min-height: 112px;} .summaryCard button {display: flex; margin: 5px 0 0 auto; position: static;} .categoryScroll {flex-basis: 100%;} .rangeControl {flex: 1 1 auto;} .auditPanel {padding: 12px;} }
+@media (max-width: 700px) {.summaryGrid {grid-template-columns: 1fr;} .summaryCard {height: auto; min-height: 112px;} .categoryScroll {flex-basis: 100%;} .rangeControl {flex: 1 1 auto;} .auditPanel {padding: 12px;} }
 @media (max-width: 375px) {.panelHeading h2 {font-size: 14px;} .timeline {margin-left: 6px; padding-left: 16px;} .timeline li::before {left: -21px;} .timelineMeta {flex-wrap: wrap;} }

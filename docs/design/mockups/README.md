@@ -57,7 +57,9 @@ E1-032Bc1 places this explanation to the right, vertically centered on the navig
 
 ## Contract
 
-E1-032Bd reuses shared Drawer forms for canonical billing details and safe masked payment metadata; invoices show the latest three with Show More/Less and no page-level View All. Plan Upgrade uses three actual tiers (Starter, Professional, Business), not the mockup's four dummy plans. Trial is separate subscription state. Only existing seats/capabilities and clearly marked demo prices appear; no unsupported vendor limits, SSO, API/support/account-manager claims or sales action are invented. Current/lower cards are read-only, the next eligible tier is emphasized, and upgrades require shared confirmation. Desktop/tablet/mobile cards use 3/2/1 columns. See [billing contract](../../features/company-plan-billing.md).
+E1-032Be standardizes only equivalent inline list expansion (Notifications' four sections and Billing invoices): `Vezi toate` / `View all`, `Vezi mai puține` / `Show less`, and down/up chevrons through the shared section action. The canonical small blue Dashboard section-header treatment is reused for both expansion buttons and navigation links. Dashboard keeps its right arrows/destinations; Document History keeps same-drawer navigation. Preview limits, section composition and other disclosures/controls are unchanged.
+
+E1-032Bd reuses shared Drawer forms for canonical billing details and safe masked payment metadata; invoices show the latest three with View all/Show less and no page-level View All. Plan Upgrade uses three actual tiers (Starter, Professional, Business), not the mockup's four dummy plans. Trial is separate subscription state. Only existing seats/capabilities and clearly marked demo prices appear; no unsupported vendor limits, SSO, API/support/account-manager claims or sales action are invented. Current/lower cards are read-only, the next eligible tier is emphasized, and upgrades require shared confirmation. Desktop/tablet/mobile cards use 3/2/1 columns. See [billing contract](../../features/company-plan-billing.md).
 
 For every approved mockup, these are canonical:
 

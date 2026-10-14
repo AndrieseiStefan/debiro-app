@@ -26,6 +26,8 @@ The final logo is not yet designed and must not be invented.
 
 ## Implemented
 
+- E1-032Be shared section actions — Notifications and Billing use centralized RO/EN View all/Show less labels, stateful down/up chevrons and shared Button styling; Dashboard reuses the navigation mode with unchanged locale-aware destinations/right arrows; preview limits, filters and company state are unchanged
+
 - E1-032Bd Plan & Billing interactions — canonical Company billing Drawer, latest-three invoice expansion, safe metadata-only demo payment Drawer, centralized existing three-tier catalog and blurred comparison/confirmed upgrade overlay; company/role/stale guards, separate preserved trial state, live plan badge propagation; no provider or charges; see [billing contract](../features/company-plan-billing.md)
 
 - E1-032Bc reusable primary/nested navigation availability — Reports alone uses the inactive Coming Soon state with accessible RO/EN hover/focus/touch help; no route, history or active-state changes, and no Reports page; reporting is post-MVP

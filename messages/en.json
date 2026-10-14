@@ -1,4 +1,5 @@
 {
+  "SectionActions": {"viewAll": "View all", "showLess": "Show less"},
   "MyProfile": {
     "title": "My Profile", "description": "Manage your account information and personal preferences.", "breadcrumbLabel": "Profile navigation",
     "personalTitle": "Personal information", "personalDescription": "This information is used for your DEBIRO account.",
@@ -696,9 +697,7 @@
       "paid": "Paid",
       "download": "Download",
       "moreActions": "More actions for {number}",
-      "empty": "No invoices yet.",
-      "showMore": "Show more",
-      "showLess": "Show less"
+      "empty": "No invoices yet."
     }
   },
   "Dashboard": {
@@ -791,7 +790,6 @@
     "bannerHandwriting": "More than compliance"
   },
   "Notifications": {
-    "showLess": "Show less",
     "breadcrumbLabel": "Page navigation",
     "title": "Notifications and Audit Activity",
     "description": "See what needs your attention, follow notifications, and review the activity history.",
@@ -808,7 +806,6 @@
     "expiringNote": "need attention",
     "missingNote": "suppliers affected",
     "recentNotes": {"last30": "events in the last 30 days", "last7": "events in the last 7 days", "all": "events in total"},
-    "viewAll": "View all",
     "expiringTable": {"vendor": "SUPPLIER", "document": "DOCUMENT", "expires": "EXPIRY DATE", "remaining": "DAYS LEFT", "status": "STATUS"},
     "missingTable": {"vendor": "SUPPLIER", "document": "DOCUMENT", "requirement": "REQUIREMENT", "due": "DUE DATE", "status": "STATUS"},
     "recentTable": {"type": "TYPE", "description": "DESCRIPTION", "vendor": "SUPPLIER", "document": "DOCUMENT", "date": "DATE"},

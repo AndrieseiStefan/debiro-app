@@ -36,6 +36,10 @@ Surface and StatusBadge base treatments have intentionally low CSS specificity. 
 
 E1-003 composes AppShell into a separate `AuthenticatedAppShell` with `AppSidebar` and `AppTopBar` for product screens. The authenticated shell currently has no session or route guard. Its layout contract is defined below.
 
+### Section actions (E1-032Be)
+
+`SectionAction` promotes Dashboard's existing section-header action into a shared component, composed from Button/ButtonLink and AppIcon. The single `section` Button variant owns its 13px/550 blue text, 8px icon gap, 16px icon, hover color and existing visible focus/native disabled treatment; page-specific action CSS is removed. Expand mode derives `Vezi toate` / `View all` and `Vezi mai puține` / `Show less` from the shared `SectionActions` catalog, uses a down/up chevron and exposes `aria-expanded` on a button. Navigate mode retains the supplied destination/copy, right arrow and locale-aware link semantics. Notifications' Expiring/Missing/Recent/Audit previews remain 3/3/5/6 with independent state; Billing invoices remain newest-three/all. Controls are hidden when no extra rows exist. Dashboard destinations, Document History drawer navigation, document-viewer resizing, sidebar disclosures and popover triggers are not inline list expansion and keep their existing semantics.
+
 ### Shared modal composition (E1-032Bd)
 
 `Modal` extracts the existing ConfirmationDialog portal, inert background, body scroll lock, focus trap/restore and Escape handling for larger compositional dialogs. ConfirmationDialog retains its styling, alertdialog semantics and Cancel-first focus. Backdrop clicks do not dismiss either. Opt-in blurred/translucent backing is used by Plan Upgrade; nested confirmations temporarily inert the parent panel and own keyboard handling. Billing and safe payment forms reuse the shared Drawer, Field/SelectField, Button and existing dirty-navigation guard.

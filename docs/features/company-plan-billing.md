@@ -12,7 +12,7 @@ Active members consume seats; pending invitations do not. Used/available seats s
 
 ## Invoices
 
-History sorts deterministically by ISO date descending (ID tie-breaker), shows the latest three by default, and exposes localized Show More/Show Less only above three. Expansion displays all owned invoices without pagination. Zero invoices retain the empty state. The redundant page-level View All is removed. Reduced-width horizontal table containment remains unchanged.
+History sorts deterministically by ISO date descending (ID tie-breaker), shows the latest three by default, and exposes View all/Show less only above three. E1-032Be reuses shared `SectionAction` and centralized RO/EN labels, down/up chevrons, section-header styling and `aria-expanded` button semantics, matching Notifications. Expansion displays all owned invoices without pagination. Zero invoices retain the empty state. The redundant page-level View All is removed. Reduced-width horizontal table containment and sample Download remain unchanged.
 
 Download is the only row action. `INV-…-sample.csv` exports current owned invoice/company metadata with a localized prominent **not an official invoice** disclaimer; its tooltip identifies it as a sample. Download revalidates active company/access and invoice ownership. Shared CSV escaping neutralizes formulas. No official invoice, separate invoice page or provider resource is generated.
 

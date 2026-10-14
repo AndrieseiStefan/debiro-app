@@ -121,12 +121,12 @@ describe.each(['ro', 'en'] as const)('%s invoice preview and billing UI', (local
     const table = screen.getByRole('table');
     if (count) expect(within(table).getAllByRole('row')).toHaveLength(Math.min(count, 3) + 1);
     else expect(within(table).getByText(copy.CompanyBilling.invoices.empty)).toBeVisible();
-    const more = screen.queryByRole('button', {name: copy.CompanyBilling.invoices.showMore});
+    const more = screen.queryByRole('button', {name: copy.SectionActions.viewAll});
     if (count > 3) {
       expect(more).toHaveAttribute('aria-expanded', 'false'); fireEvent.click(more!);
       expect(within(table).getAllByRole('row')).toHaveLength(count + 1);
       expect(Array.from(table.querySelectorAll('tbody tr td:first-child'), (cell) => cell.textContent)).toEqual(['INV-2026-009', 'INV-2026-008', 'INV-2026-007', 'INV-2026-006']);
-      fireEvent.click(screen.getByRole('button', {name: copy.CompanyBilling.invoices.showLess}));
+      fireEvent.click(screen.getByRole('button', {name: copy.SectionActions.showLess}));
       expect(within(table).getAllByRole('row')).toHaveLength(4);
     } else expect(more).toBeNull();
     expect(screen.queryByRole('button', {name: copy.CompanyBilling.viewAllInvoices})).toBeNull();

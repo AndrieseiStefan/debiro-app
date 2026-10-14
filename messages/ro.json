@@ -1,4 +1,5 @@
 {
+  "SectionActions": {"viewAll": "Vezi toate", "showLess": "Vezi mai puține"},
   "MyProfile": {
     "title": "Profilul meu",
     "description": "Gestionează informațiile contului și preferințele personale.",
@@ -700,9 +701,7 @@
       "paid": "Plătită",
       "download": "Descarcă",
       "moreActions": "Alte acțiuni pentru {number}",
-      "empty": "Nu există încă facturi.",
-      "showMore": "Vezi mai multe",
-      "showLess": "Vezi mai puține"
+      "empty": "Nu există încă facturi."
     }
   },
   "Dashboard": {
@@ -795,7 +794,6 @@
     "bannerHandwriting": "Mai mult decât conformitate"
   },
   "Notifications": {
-    "showLess": "Vezi mai puține",
     "breadcrumbLabel": "Navigare pe pagină",
     "title": "Notificări și Activitate de Audit",
     "description": "Vezi ce necesită atenția ta, urmărește notificările și verifică istoricul activităților.",
@@ -812,7 +810,6 @@
     "expiringNote": "necesită atenție",
     "missingNote": "furnizori afectați",
     "recentNotes": {"last30": "evenimente în ultimele 30 zile", "last7": "evenimente în ultimele 7 zile", "all": "evenimente în total"},
-    "viewAll": "Vezi toate",
     "expiringTable": {"vendor": "FURNIZOR", "document": "DOCUMENT", "expires": "DATA EXPIRĂRII", "remaining": "ZILE RĂMASE", "status": "STATUS"},
     "missingTable": {"vendor": "FURNIZOR", "document": "DOCUMENT", "requirement": "CERINȚĂ", "due": "TERMEN LIMITĂ", "status": "STATUS"},
     "recentTable": {"type": "TIP", "description": "DESCRIERE", "vendor": "FURNIZOR", "document": "DOCUMENT", "date": "DATA"},

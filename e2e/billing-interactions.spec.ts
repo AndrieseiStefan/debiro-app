@@ -74,7 +74,7 @@ for (const english of [false, true]) {
     const rows = page.locator('#billing-invoice-rows tr');
     await expect(rows).toHaveCount(3);
     await expect(rows.locator('td:first-child')).toHaveText(['INV-2026-009', 'INV-2026-008', 'INV-2026-007']);
-    await page.getByRole('button', {name: english ? 'Show more' : 'Vezi mai multe', exact: true}).click();
+    await page.getByRole('button', {name: english ? 'View all' : 'Vezi toate', exact: true}).click();
     await expect(rows).toHaveCount(4);
     await expect(rows.locator('td:first-child')).toHaveText(['INV-2026-009', 'INV-2026-008', 'INV-2026-007', 'INV-2026-006']);
     for (const row of await rows.all()) await expect(row.getByRole('button')).toHaveCount(1);
@@ -166,7 +166,7 @@ test('new company has empty billing states, can add safe metadata and select any
   await createWorkspaceCompany(page, 'Billing Workspace');
   await billing(page);
   await expect(page.getByText('Nu există încă facturi.', {exact: true})).toBeVisible();
-  await expect(page.getByRole('button', {name: 'Vezi mai multe'})).toHaveCount(0);
+  await expect(page.getByRole('button', {name: 'Vezi toate', exact: true})).toHaveCount(0);
   await page.getByRole('button', {name: 'Adaugă metodă de plată', exact: true}).click();
   const drawer = page.getByRole('dialog');
   await drawer.locator('#payment-name').fill('Fictional Holder');

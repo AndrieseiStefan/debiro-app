@@ -9,6 +9,7 @@ import {AuthenticatedPageHeader} from '@/components/layout/AuthenticatedPageHead
 import {EmptyState} from '@/components/ui/EmptyState';
 import {StatusBadge} from '@/components/ui/StatusBadge';
 import {Surface} from '@/components/ui/Surface';
+import {SectionAction} from '@/components/ui/SectionAction';
 import {useNotificationItems} from './local-state';
 import {useLocalAuditEvents} from './local-audit';
 import {useCompanyState} from '@/features/companies/company-state';
@@ -75,7 +76,7 @@ export function NotificationsPage({locale, view: initialView}: {locale: string; 
   }
 
   function expansionAction(section: keyof typeof expanded, count: number, preview: number) {
-    return count > preview ? <button type="button" aria-expanded={expanded[section]} onClick={() => toggle(section)}>{t(expanded[section] ? 'showLess' : 'viewAll')} <AppIcon name="arrowRight" size={16}/></button> : null;
+    return count > preview ? <SectionAction mode="expand" expanded={expanded[section]} onClick={() => toggle(section)}/> : null;
   }
 
   function exportAudit() {

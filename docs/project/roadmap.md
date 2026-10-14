@@ -4,6 +4,8 @@ This roadmap records direction only. Detailed requirements are created by the ta
 
 ## Phase 0 — Product & Repository Foundation
 
+- E1-032Be section action consistency — implemented shared expansion/navigation modes, canonical localized labels and down/up vs right-arrow semantics, without preview/filter/ownership changes
+
 - E1-032Bd Plan & Billing interactions — implemented locally: canonical Company billing Drawer, three-invoice expansion, safe demo payment metadata, centralized existing-tier catalog and confirmed company-scoped upgrades with preserved trial state; provider billing remains deferred
 
 - E1-032Bc navigation availability — implemented shared Coming Soon rendering and accessible localized tooltip; Reports remains visible, unavailable and explicitly post-MVP, without a placeholder route

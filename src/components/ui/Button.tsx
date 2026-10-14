@@ -2,7 +2,7 @@ import {forwardRef, type ButtonHTMLAttributes, type ComponentProps, type ReactNo
 import {Link} from '@/i18n/navigation';
 import styles from './Button.module.css';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive' | 'section';
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;

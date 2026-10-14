@@ -87,6 +87,27 @@
   background: #ffd5dd;
 }
 
+/* Existing Dashboard section-header action, shared by links and inline disclosure. */
+.section {
+  background: transparent;
+  border: 0;
+  color: #0055c5;
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 550;
+  gap: 8px;
+  min-height: 0;
+  padding: 8px 0;
+}
+
+.section:not(:disabled):hover {
+  color: var(--color-action-hover);
+}
+
+.section[aria-expanded='true'] .content > svg {
+  transform: rotate(180deg);
+}
+
 .spinner {
   border: 2px solid currentColor;
   border-right-color: transparent;

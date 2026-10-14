@@ -8,6 +8,7 @@ import {AuthenticatedPageHeader} from '@/components/layout/AuthenticatedPageHead
 import {AppIcon} from '@/components/layout/AppIcon';
 import {Button} from '@/components/ui/Button';
 import {Surface} from '@/components/ui/Surface';
+import {SectionAction} from '@/components/ui/SectionAction';
 import {getActiveCompany, getCurrentMembership, useCompanyState} from '@/features/companies/company-state';
 import {useLocalInvitations} from './local-invitations';
 import {getCompanyMembershipSummary} from './membership-summary';
@@ -124,7 +125,7 @@ function CompanyBillingWorkspace({locale, view: initialView}: {locale: string; v
       </div>
 
       <Surface className={styles.invoicesPanel}>
-        <div className={styles.invoiceHeading}><h2 className={styles.panelTitle}><span className={styles.headingIcon}><AppIcon name="file" size={23}/></span>{t('invoices.title')}</h2>{subscription.invoices.length > 3 && <Button variant="ghost" aria-expanded={expanded} aria-controls="billing-invoice-rows" onClick={() => setExpanded(!expanded)}>{t(expanded ? 'invoices.showLess' : 'invoices.showMore')}<AppIcon name="arrowRight" size={16}/></Button>}</div>
+        <div className={styles.invoiceHeading}><h2 className={styles.panelTitle}><span className={styles.headingIcon}><AppIcon name="file" size={23}/></span>{t('invoices.title')}</h2>{subscription.invoices.length > 3 && <SectionAction mode="expand" expanded={expanded} controls="billing-invoice-rows" onClick={() => setExpanded(!expanded)}/>}</div>
         <div className={styles.invoiceScroll} role="region" aria-label={t('invoices.region')} tabIndex={0}>
           <table className={styles.invoiceTable}><thead><tr>
             <th scope="col">{t('invoices.number')}<AppIcon name="sort" size={16}/></th>
