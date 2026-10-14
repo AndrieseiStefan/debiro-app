@@ -692,7 +692,6 @@
       "missing": "Missing"
     },
     "urgentDocuments": "{count} documents need immediate attention.",
-    "attentionPreviewNote": "Showing the first {count}.",
     "checkAndUpdate": "Check and update",
     "supplierStatusTitle": "Supplier status",
     "suppliersLower": "suppliers",

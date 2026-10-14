@@ -696,7 +696,6 @@
       "missing": "Lipsește"
     },
     "urgentDocuments": "{count} documente necesită atenție imediată.",
-    "attentionPreviewNote": "Se afișează primele {count}.",
     "checkAndUpdate": "Verifică și actualizează",
     "supplierStatusTitle": "Status furnizori",
     "suppliersLower": "furnizori",

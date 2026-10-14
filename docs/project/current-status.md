@@ -26,7 +26,7 @@ The final logo is not yet designed and must not be invented.
 
 ## Implemented
 
-- E1-032Bb/Bb1 Dashboard secondary navigation — company-owned uploaded-document attention (Review/Expiring/Expired), seven-row urgency-ordered preview with full footer/filter totals, transient Documents entry filters, Recent Activity to normal Notifications, and informational-only vendor chart/attention footer; see [Dashboard](../features/dashboard.md)
+- E1-032Bb/Bb2 Dashboard secondary navigation — company-owned uploaded-document attention (Review/Expiring/Expired), five-row urgency-ordered preview with full footer/filter totals and no preview-limit suffix, transient Documents entry filters, Recent Activity to normal Notifications, and informational-only vendor chart/attention footer; see [Dashboard](../features/dashboard.md)
 
 - E1-032Ba secondary actions: whole-card Dashboard vendor-filter navigation, independent Notifications expansion/collapse without summary links, Administrator member/invitation management with ownership/last-admin guards, canonical invitation history, and invoice overflow cleanup with explicitly approved local sample CSV downloads; no backend/email/payment integration
 

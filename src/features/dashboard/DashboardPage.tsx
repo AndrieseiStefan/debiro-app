@@ -65,7 +65,7 @@ export function DocumentsAttentionPanel({view, locale}: {view: DashboardViewMode
   const t = useTranslations('Dashboard');
   const documentsT = useTranslations('Documents');
   const empty = useTranslations('CompanyWorkspace');
-  const previewLimit = 7;
+  const previewLimit = 5;
   const total = view.documentsRequiringAttention.length;
 
   return (
@@ -97,7 +97,7 @@ export function DocumentsAttentionPanel({view, locale}: {view: DashboardViewMode
         </table>
       </div>
       <div className={styles.documentNotice}>
-        <span><span className={styles.infoIcon}><AppIcon name="info" size={19} /></span>{t('urgentDocuments', {count: total}) + (total > previewLimit ? ` ${t('attentionPreviewNote', {count: previewLimit})}` : '')}</span>
+        <span><span className={styles.infoIcon}><AppIcon name="info" size={19} /></span>{t('urgentDocuments', {count: total})}</span>
       </div></>}
     </Surface>
   );
