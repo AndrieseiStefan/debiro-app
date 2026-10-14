@@ -43,6 +43,15 @@ for (const locale of ['ro', 'en'] as const) {
 
     await reports.hover();
     await expect(page.getByRole('tooltip')).toHaveText(explanation); await expect(reports).toHaveAccessibleDescription(explanation);
+    const expectRightPlacement = async () => {
+      const trigger = (await reports.boundingBox())!, tooltip = (await page.getByRole('tooltip').boundingBox())!;
+      expect(tooltip.x - trigger.x - trigger.width).toBeCloseTo(8, 1);
+      expect(tooltip.y + tooltip.height / 2).toBeCloseTo(trigger.y + trigger.height / 2, 1);
+      expect(tooltip.x + tooltip.width).toBeLessThanOrEqual(page.viewportSize()!.width - 12);
+      const settings = (await navigation.getByRole('button', {name: locale === 'ro' ? 'Setări companie' : 'Company settings', exact: true}).boundingBox())!;
+      expect(tooltip.x).toBeGreaterThanOrEqual(settings.x + settings.width);
+    };
+    await expectRightPlacement();
     expect(await reports.boundingBox()).toEqual(geometry);
     expect(await reports.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(appearance.background);
     await page.getByRole('tooltip').hover(); await expect(page.getByRole('tooltip')).toBeVisible();
@@ -52,6 +61,7 @@ for (const locale of ['ro', 'en'] as const) {
     await navigation.locator(`a[href="${prefix}/notifications"]`).focus();
     await page.keyboard.press('Tab'); await expect(reports).toBeFocused();
     await expect(page.getByRole('tooltip')).toHaveText(explanation);
+    await expectRightPlacement();
     expect(await reports.evaluate((element) => element.matches(':focus-visible') && getComputedStyle(element).outlineStyle !== 'none')).toBe(true);
     await page.keyboard.press('Escape'); await expect(page.getByRole('tooltip')).toHaveCount(0); await expect(reports).toBeFocused();
     for (const key of ['Enter', 'Space']) {await page.keyboard.press(key); expect(await historySnapshot()).toEqual(before);}
@@ -94,6 +104,9 @@ for (const locale of ['ro', 'en'] as const) {
         await page.touchscreen.tap(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
         const tooltip = page.getByRole('tooltip'); await expect(tooltip).toHaveText(explanation); await expect(reports).toHaveAccessibleDescription(explanation);
         const tip = (await tooltip.boundingBox())!; expect(tip.x).toBeGreaterThanOrEqual(0); expect(tip.x + tip.width).toBeLessThanOrEqual(width);
+        // These narrow viewports cannot fit the preferred right side: keep the existing vertical fallback.
+        expect(bounds.x + bounds.width + 8 + tip.width).toBeGreaterThan(width - 12);
+        expect(tip.y >= bounds.y + bounds.height + 8 || tip.y + tip.height <= bounds.y - 8).toBe(true);
         expect(await page.evaluate(() => ({url: location.href, length: history.length, state: JSON.stringify(history.state)}))).toEqual(before);
         await assertSection(page, locale, sections[0]);
         await page.getByRole('heading', {level: 1}).tap(); await expect(tooltip).toHaveCount(0);

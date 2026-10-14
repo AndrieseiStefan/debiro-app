@@ -14,7 +14,7 @@ export function SidebarNavigationItem({href, active = false, availability = 'ava
 }) {
   const t = useTranslations('AppShell');
   const baseClass = nested ? styles.settingsLink : styles.navItem;
-  if (availability === 'comingSoon') return <Tooltip content={t('navigationComingSoon')}>{(props) =>
+  if (availability === 'comingSoon') return <Tooltip content={t('navigationComingSoon')} placement="right">{(props) =>
     <button {...props} type="button" aria-disabled="true" className={`${baseClass} ${styles.comingSoon}`} onKeyDown={(event) => {if (event.key === 'Enter' || event.key === ' ') event.preventDefault();}}>{children}</button>
   }</Tooltip>;
   return <Link href={href} aria-current={active ? 'page' : undefined} className={`${baseClass} ${active ? nested ? styles.settingsActive : styles.active : ''}`}>{children}</Link>;

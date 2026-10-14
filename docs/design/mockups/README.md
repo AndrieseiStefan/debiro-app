@@ -52,6 +52,8 @@ E1-032Bb2 caps the Dashboard attention preview at five rows, preserving determin
 
 E1-032Bc gives Reports the shared Coming Soon navigation state: readable muted text/icon, unchanged item geometry, no clickable/active treatment and the approved RO/EN hover/focus/touch explanation. Reports remains visible but cannot navigate; no Reports screen or other navigation redesign is introduced.
 
+E1-032Bc1 places this explanation to the right, vertically centered on the navigation item with an 8px gap when it fits. The existing below/above viewport fallback remains available for constrained widths; no copy or navigation semantics change.
+
 ## Contract
 
 For every approved mockup, these are canonical:
