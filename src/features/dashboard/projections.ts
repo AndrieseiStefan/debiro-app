@@ -8,11 +8,18 @@ import type {VendorListItem} from '@/features/vendors/types';
 import {fixtureReferenceTime, localizedDate, calendarDaysUntil} from '@/lib/fixture-clock';
 import type {DashboardDocumentStatus, DashboardViewModel} from './types';
 
+const attentionPriority = {expired: 0, needs_review: 1, expiring_soon: 2, valid: 3};
+function attentionDate(document: CreatedDocument) {
+  // Review urgency is time waiting; expiry urgency uses the actual expiry/manual-expiry date.
+  return document.complianceStatus === 'needs_review' ? document.uploadedAt : document.expiresAt ?? document.manuallyExpiredAt ?? '\uffff';
+}
+
 export function projectDashboard(view: DashboardViewModel, companyId: string, vendors: VendorListItem[], workspaces: Record<string, VendorRequirementsWorkspace>, records: CreatedDocument[], events: AuditEvent[]): DashboardViewModel {
   const projected = vendors.map((vendor) => projectVendorDocuments(vendor, getVendorRequirements(workspaces, companyId, vendor.id), records, companyId));
   const counts = vendorSummary(projected);
   const percent = (value: number) => counts.all ? Math.round(value / counts.all * 100) : 0;
   const attention = activeDocuments(records, companyId).filter((document) => attentionComplianceStatuses.some((status) => status === document.complianceStatus))
+    .sort((a, b) => attentionPriority[a.complianceStatus] - attentionPriority[b.complianceStatus] || attentionDate(a).localeCompare(attentionDate(b)) || a.id.localeCompare(b.id))
     .map((document) => ({id: document.id, supplier: document.vendorName, document: document.documentName, status: document.status as DashboardDocumentStatus,
       expiry: document.expiresAt ? localizedDate(document.expiresAt) : {ro: '—', en: '—'}}));
   const recent = events.filter((event) => event.companyId === companyId).sort((a, b) => b.occurredAt.localeCompare(a.occurredAt)).slice(0, 4);

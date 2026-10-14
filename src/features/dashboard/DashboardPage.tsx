@@ -61,10 +61,12 @@ function SummaryMetricCard({id, value, note}: {id: keyof typeof metricAppearance
   return <SharedSummaryMetricCard title={t(`summary.${id}`)} value={value} note={note} icon={appearance.icon} tone={appearance.tone} chevron href={id === 'total' ? '/vendors' : `/vendors?status=${id}`}/>;
 }
 
-function DocumentsAttentionPanel({view, locale}: {view: DashboardViewModel; locale: string}) {
+export function DocumentsAttentionPanel({view, locale}: {view: DashboardViewModel; locale: string}) {
   const t = useTranslations('Dashboard');
   const documentsT = useTranslations('Documents');
   const empty = useTranslations('CompanyWorkspace');
+  const previewLimit = 7;
+  const total = view.documentsRequiringAttention.length;
 
   return (
     <Surface className={styles.documentsPanel}>
@@ -72,7 +74,7 @@ function DocumentsAttentionPanel({view, locale}: {view: DashboardViewModel; loca
         <h2><AppIcon name="file" size={22} />{t('documentsTitle')}</h2>
         <SectionAction href={documentsAttentionHref}>{t('viewAll')}</SectionAction>
       </div>
-      {view.documentsRequiringAttention.length === 0 ? <EmptyState icon={<AppIcon name="check" size={25}/>} title={empty('noAttention')}/> : <><div className={styles.tableScroll}>
+      {total === 0 ? <EmptyState icon={<AppIcon name="check" size={25}/>} title={empty('noAttention')}/> : <><div className={styles.tableScroll}>
         <table className={styles.documentsTable}>
           <thead><tr>
             <th scope="col">{t('table.supplier')}</th>
@@ -82,7 +84,7 @@ function DocumentsAttentionPanel({view, locale}: {view: DashboardViewModel; loca
             <th scope="col">{t('table.actions')}</th>
           </tr></thead>
           <tbody>
-            {view.documentsRequiringAttention.map((document) => (
+            {view.documentsRequiringAttention.slice(0, previewLimit).map((document) => (
               <tr key={document.id} data-attention-document-id={document.id}>
                 <td className={styles.supplierCell}>{document.supplier}</td>
                 <td>{sample(document.document, locale)}</td>
@@ -95,7 +97,7 @@ function DocumentsAttentionPanel({view, locale}: {view: DashboardViewModel; loca
         </table>
       </div>
       <div className={styles.documentNotice}>
-        <span><span className={styles.infoIcon}><AppIcon name="info" size={19} /></span>{t('urgentDocuments', {count: view.documentsRequiringAttention.length})}</span>
+        <span><span className={styles.infoIcon}><AppIcon name="info" size={19} /></span>{t('urgentDocuments', {count: total}) + (total > previewLimit ? ` ${t('attentionPreviewNote', {count: previewLimit})}` : '')}</span>
       </div></>}
     </Surface>
   );

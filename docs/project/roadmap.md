@@ -4,7 +4,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 
 ## Phase 0 — Product & Repository Foundation
 
-- E1-032Bb Dashboard secondary navigation — implemented locally with transient Documents attention filters, uploaded-file-only counts, normal Notifications entry and removal of redundant chart/footer actions
+- E1-032Bb/Bb1 Dashboard secondary navigation — implemented locally with a seven-row urgency-ordered attention preview retaining full totals, transient Documents attention filters, uploaded-file-only counts, normal Notifications entry and removal of redundant chart/footer actions
 
 - E1-032Ba secondary management actions — implemented locally: vendor KPI drill-down, notification toggles, member role/removal and invitation role/cancellation, invoice cleanup and owner-approved sample CSV download; backend services remain deferred
 

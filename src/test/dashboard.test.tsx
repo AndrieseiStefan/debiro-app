@@ -3,8 +3,10 @@ import {NextIntlClientProvider} from 'next-intl';
 import {describe, expect, it, vi} from 'vitest';
 import en from '../../messages/en.json';
 import ro from '../../messages/ro.json';
-import {DashboardPage} from '@/features/dashboard/DashboardPage';
+import {DashboardPage, DocumentsAttentionPanel} from '@/features/dashboard/DashboardPage';
 import {dashboardFixture} from '@/features/dashboard/fixtures';
+import {projectDashboard} from '@/features/dashboard/projections';
+import {readDocumentRecords} from '@/features/documents/created-documents';
 
 vi.mock('@/i18n/navigation', () => ({useRouter: () => ({push: vi.fn()}),
   usePathname: () => '/dashboard',
@@ -42,11 +44,11 @@ describe('dashboard overview', () => {
     expect(within(summary).getByText('0')).toBeVisible();
 
     const table = screen.getByRole('table');
-    expect(within(table).getAllByRole('row')).toHaveLength(11);
+    expect(within(table).getAllByRole('row')).toHaveLength(8);
     expect(within(table).getAllByText('Construct Pro SRL').length).toBeGreaterThan(0);
     expect(within(table).queryByText('Certificare ISO 9001')).not.toBeInTheDocument();
     expect(within(table).getAllByText('Necesită revizuire')).toHaveLength(4);
-    expect(within(table).getAllByText('Expiră curând')).toHaveLength(4);
+    expect(within(table).getAllByText('Expiră curând')).toHaveLength(1);
     expect(screen.getByRole('heading', {name: 'Status furnizori'})).toBeVisible();
     expect(screen.getByRole('img', {name: 'Status furnizori: 24 furnizori'})).toBeVisible();
     expect(screen.getByText('Lipsesc documente')).toBeVisible();
@@ -69,5 +71,32 @@ describe('dashboard overview', () => {
     expect(screen.getAllByRole('button', {name: 'User profile: Andrei Popescu'})).toHaveLength(2);
     expect(screen.getByRole('button', {name: 'Demo Company SRL'})).toBeVisible();
     expect(screen.getAllByText('Tax certificate', {selector: 'td'}).length).toBeGreaterThan(0);
+  });
+});
+
+describe.each(['ro', 'en'] as const)('%s Dashboard attention preview', (locale) => {
+  it.each([0, 4, 7, 8, 12])('renders at most seven of %i documents while retaining the full total', (count) => {
+    const messages = locale === 'ro' ? ro : en;
+    const base = readDocumentRecords().find((document) => document.complianceStatus === 'needs_review')!;
+    const records = Array.from({length: count}, (_, index) => ({...base, id: `preview-${index}`}));
+    const view = projectDashboard(dashboardFixture, 'demo-company', [], {}, records, []);
+    render(<NextIntlClientProvider locale={locale} messages={messages}><DocumentsAttentionPanel view={view} locale={locale}/></NextIntlClientProvider>);
+
+    expect(view.documentsRequiringAttention).toHaveLength(count);
+    expect(screen.getByRole('link', {name: messages.Dashboard.viewAll})).toBeVisible();
+    if (count === 0) {
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
+      expect(screen.getByText(messages.CompanyWorkspace.noAttention)).toBeVisible();
+    } else {
+      const table = screen.getByRole('table');
+      expect(within(table).getAllByRole('row')).toHaveLength(Math.min(count, 7) + 1);
+      expect(Array.from(table.querySelectorAll('[data-attention-document-id]'), (row) => row.getAttribute('data-attention-document-id')))
+        .toEqual(view.documentsRequiringAttention.slice(0, 7).map((document) => document.id));
+      const notice = messages.Dashboard.urgentDocuments.replace('{count}', String(count));
+      const suffix = messages.Dashboard.attentionPreviewNote.replace('{count}', '7');
+      expect(screen.getByText(notice + (count > 7 ? ` ${suffix}` : ''))).toBeVisible();
+    }
+    if (count <= 7) expect(screen.queryByText(/Se afișează primele|Showing the first/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', {name: /Next|Următoarea/})).not.toBeInTheDocument();
   });
 });

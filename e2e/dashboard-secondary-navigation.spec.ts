@@ -22,9 +22,14 @@ for (const english of [false, true]) {
     await page.goto(prefix + '/dashboard');
     const attention = panel(page, copy.Dashboard.documentsTitle);
     const ids = await attention.locator('[data-attention-document-id]').evaluateAll((rows) => rows.map((row) => row.getAttribute('data-attention-document-id')));
-    expect(ids).toHaveLength(10); expect(ids.every((id) => !id!.startsWith('vendor-requirement:'))).toBe(true);
+    expect(ids).toHaveLength(7); expect(ids.every((id) => !id!.startsWith('vendor-requirement:'))).toBe(true);
+    await expect(attention.locator('tbody td:nth-child(3)')).toHaveText([
+      copy.Documents.status.expired, copy.Documents.status.expired,
+      copy.Documents.status.review, copy.Documents.status.review, copy.Documents.status.review, copy.Documents.status.review,
+      copy.Documents.status.expiring
+    ]);
     await expect(attention).not.toContainText('ISO 9001');
-    const notice = page.getByText(copy.Dashboard.urgentDocuments.replace('{count}', '10')).locator('..');
+    const notice = page.getByText(copy.Dashboard.urgentDocuments.replace('{count}', '10') + ' ' + copy.Dashboard.attentionPreviewNote.replace('{count}', '7')).locator('..');
     await expect(notice.getByRole('button')).toHaveCount(0); await expect(notice.getByRole('link')).toHaveCount(0);
     await expect(notice.locator('svg')).toHaveCount(1);
     expect(await notice.evaluate((element) => getComputedStyle(element).cursor)).not.toBe('pointer');
@@ -43,7 +48,8 @@ for (const english of [false, true]) {
     await expect(page.locator('tbody [data-status="valid"]')).toHaveCount(0);
     await page.getByRole('button', {name: copy.Documents.pageNumber.replace('{page}', '2'), exact: true}).click();
     resultIds.push(...await page.locator('tbody [data-document-id]').evaluateAll((rows) => rows.map((row) => row.getAttribute('data-document-id'))));
-    expect(resultIds.sort()).toEqual(ids.sort());
+    expect(resultIds).toHaveLength(10); expect(new Set(resultIds).size).toBe(10);
+    expect(resultIds).toEqual(expect.arrayContaining(ids));
     // Details remains in the same filtered context; closing does not remount/reset the list.
     await page.locator('tbody tr').first().getByRole('link').first().click();
     await expect(page).toHaveURL(/attention=1&document=/);
@@ -86,7 +92,7 @@ for (const english of [false, true]) {
     await expect(page).toHaveURL(prefix + '/documents?attention=1'); await expectAttentionFilters(page, english, true);
     await expect(page.getByText(copy.Documents.noMatches)).toBeVisible(); await expect(page.getByRole('table')).toHaveCount(0);
     await switchWorkspaceCompany(page, 'Workspace B', 'Demo Company SRL', english);
-    await expect(attention.locator('[data-attention-document-id]')).toHaveCount(10);
+    await expect(attention.locator('[data-attention-document-id]')).toHaveCount(7);
     await attention.getByRole('link', {name: copy.Dashboard.viewAll}).click(); await expect(page.locator('tbody tr')).toHaveCount(8);
     await switchWorkspaceCompany(page, 'Demo Company SRL', 'Workspace B', english);
     await attention.getByRole('link', {name: copy.Dashboard.viewAll}).click(); await expect(page.getByText(copy.Documents.noMatches)).toBeVisible();
@@ -97,6 +103,15 @@ for (const english of [false, true]) {
     for (const width of [1448, 1024, 758, 600, 375, 320]) {
       await page.setViewportSize({width, height: 900}); await page.goto(prefix + '/dashboard');
       const attention = panel(page, copy.Dashboard.documentsTitle);
+      await expect(attention.locator('tbody tr')).toHaveCount(7);
+      await expect(attention.getByRole('button', {name: /Next|Următoarea/})).toHaveCount(0);
+      const tableGeometry = await attention.getByRole('table').evaluate((table) => {
+        const container = table.parentElement!;
+        return {tableHeight: table.getBoundingClientRect().height, containerHeight: container.clientHeight, panelHeight: container.parentElement!.getBoundingClientRect().height};
+      });
+      // Preserve horizontal containment, without adding a vertical table scroller or an oversized preview.
+      expect(tableGeometry.tableHeight).toBeLessThanOrEqual(tableGeometry.containerHeight + 1);
+      expect(tableGeometry.panelHeight).toBeLessThan(800);
       const geometry = await attention.locator('tbody td:nth-child(3) > span').evaluateAll((badges) => badges.map((badge) => ({badgeRight: badge.getBoundingClientRect().right, cellRight: badge.parentElement!.getBoundingClientRect().right, scroll: badge.scrollWidth, width: badge.clientWidth})));
       for (const badge of geometry) {expect(badge.badgeRight).toBeLessThanOrEqual(badge.cellRight + 1); expect(badge.scroll).toBeLessThanOrEqual(badge.width + 1);}
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);

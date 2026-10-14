@@ -48,6 +48,8 @@ E1-032Ba makes Dashboard KPI cards filtered Vendors links, removes Notifications
 
 E1-032Bb supersedes Dashboard's missing-requirement document row and redundant chart/footer actions: its attention table uses actual current Review/Expiring/Expired uploads and matching dynamic counts, View all enters the canonical Documents filters, and Recent Activity enters Notifications. The vendor chart and blue footer remain informational. Documents retains its existing controls/layout and uses a transient route-entry intent; the canonical images and other visual treatments remain unchanged.
 
+E1-032Bb1 caps the Dashboard attention preview at seven rows in deterministic urgency order (Expired, Review, Expiring). Its informational footer retains the real total and adds the approved RO/EN first-seven suffix only when truncated. View all still opens the complete filtered Documents list; no table pagination, vertical scroller or other visual redesign is added.
+
 ## Contract
 
 For every approved mockup, these are canonical:

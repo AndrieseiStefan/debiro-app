@@ -17,10 +17,31 @@ describe('Dashboard uploaded-document attention', () => {
     expect(attentionDocumentStatuses).toEqual(['review', 'expiring', 'expired']);
     const expected = activeDocuments(records, companyId).filter((document) => attentionDocumentStatuses.includes(document.status));
     const attention = project();
-    expect(attention.map((document) => document.id)).toEqual(expected.map((document) => document.id));
+    expect(attention.map((document) => document.id).sort()).toEqual(expected.map((document) => document.id).sort());
     expect(attention).toHaveLength(10);
     for (const [status, count] of [['review', 4], ['expiring', 4], ['expired', 2]]) expect(attention.filter((document) => document.status === status)).toHaveLength(count as number);
     expect(new Set(attention.map((document) => document.id)).size).toBe(attention.length);
+  });
+  it('orders all attention records by urgency, relevant date and stable identity without mutating the source', () => {
+    const base = records[0];
+    const documents = [
+      {...base, id: 'expiring-later', complianceStatus: 'expiring_soon' as const, status: 'expiring' as const, expiresAt: '2026-10-20'},
+      {...base, id: 'review-newer', complianceStatus: 'needs_review' as const, status: 'review' as const, uploadedAt: '2026-10-02', expiresAt: '2026-10-01'},
+      {...base, id: 'expired-later', complianceStatus: 'expired' as const, status: 'expired' as const, expiresAt: '2026-10-01'},
+      {...base, id: 'review-older-b', complianceStatus: 'needs_review' as const, status: 'review' as const, uploadedAt: '2026-09-01', expiresAt: null},
+      {...base, id: 'expired-no-date', complianceStatus: 'expired' as const, status: 'expired' as const, expiresAt: null},
+      {...base, id: 'expiring-earlier', complianceStatus: 'expiring_soon' as const, status: 'expiring' as const, expiresAt: '2026-10-05'},
+      {...base, id: 'review-older-a', complianceStatus: 'needs_review' as const, status: 'review' as const, uploadedAt: '2026-09-01', expiresAt: '2027-01-01'},
+      {...base, id: 'expired-earlier', complianceStatus: 'expired' as const, status: 'expired' as const, expiresAt: '2026-09-01'},
+      {...base, id: 'expired-manual', complianceStatus: 'expired' as const, status: 'expired' as const, expiresAt: null, manuallyExpiredAt: '2026-09-15T12:00:00.000Z'}
+    ];
+    const ids = documents.map((document) => document.id);
+    const expected = ['expired-earlier', 'expired-manual', 'expired-later', 'expired-no-date', 'review-older-a', 'review-older-b', 'review-newer', 'expiring-earlier', 'expiring-later'];
+    expect(project(documents).map((document) => document.id)).toEqual(expected);
+    expect(project([...documents].reverse()).map((document) => document.id)).toEqual(expected);
+    expect(documents.map((document) => document.id)).toEqual(ids);
+    // The projection stays complete; only the Dashboard's presentation is limited.
+    expect(project(documents)).toHaveLength(9);
   });
   it('keeps missing requirements only in their existing projections, including when all current files are valid', () => {
     const valid = records.map((document) => ({...document, status: 'valid' as const, complianceStatus: 'valid' as const, reviewOutcome: 'approved' as const}));
