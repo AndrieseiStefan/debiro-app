@@ -1,6 +1,6 @@
 # Approved Mockups
 
-This repository tracks thirty-three approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references. Do not generate fake screenshots or use screenshots as functional UI.
+This repository tracks thirty-four approved product mockup images listed below. They are the canonical visual, interaction, typography, and Romanian-copy references, subject to the explicit content overrides documented below. Do not generate fake screenshots or use screenshots as functional UI.
 
 ## Expected initial mapping
 
@@ -39,6 +39,7 @@ This repository tracks thirty-three approved product mockup images listed below.
 | `30-company-settings-profile.png` | E1-030 active Company Profile; adds existing onboarding company size, retains optional fields per business rules and uses free-text County/Region with the shared form scale. |
 | `32a-my-profile.png` | E1-032A global My Profile; existing shell/components/menu take precedence. Read-only identity email, plain shared phone field, no unsupported camera/security action. |
 | `32a-my-invitations.png` | E1-032A global received invitations; existing shell, shared role/KPI/status controls and reduced profile menu take precedence. Acceptance adds access without automatic company switching. |
+| `e1-032bd-plan-upgrade.png` | E1-032Bd Plan Upgrade visual hierarchy, centered rounded panel, elevated tier cards and translucent blurred app. All depicted commercial content is dummy; the existing three-tier demo catalog and shared controls take precedence. |
 
 E1-032A1 supersedes the pictured Dashboard parent on the two 32a Profile-area pages: My Profile is the Profile root, and Invitations is its child. My Companies retains its Profile hierarchy with a working parent link. These global destinations remain mounted/current on explicit company switches; company-scoped switches still enter Dashboard. No mockup image or page design is otherwise changed.
 
@@ -55,6 +56,8 @@ E1-032Bc gives Reports the shared Coming Soon navigation state: readable muted t
 E1-032Bc1 places this explanation to the right, vertically centered on the navigation item with an 8px gap when it fits. The existing below/above viewport fallback remains available for constrained widths; no copy or navigation semantics change.
 
 ## Contract
+
+E1-032Bd reuses shared Drawer forms for canonical billing details and safe masked payment metadata; invoices show the latest three with Show More/Less and no page-level View All. Plan Upgrade uses three actual tiers (Starter, Professional, Business), not the mockup's four dummy plans. Trial is separate subscription state. Only existing seats/capabilities and clearly marked demo prices appear; no unsupported vendor limits, SSO, API/support/account-manager claims or sales action are invented. Current/lower cards are read-only, the next eligible tier is emphasized, and upgrades require shared confirmation. Desktop/tablet/mobile cards use 3/2/1 columns. See [billing contract](../../features/company-plan-billing.md).
 
 For every approved mockup, these are canonical:
 

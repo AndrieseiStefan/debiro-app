@@ -8,6 +8,8 @@ import {browserSession} from '@/lib/browser-session';
 import {companyCountries, companyIndustries, companySizes, normalizeCompanyTaxId, type CompanyIndustry, type CompanySize} from './company-options';
 import {normalizeCompanyProfile, validateCompanyProfile, type CompanyProfileValues} from '@/features/company-settings/company-profile';
 import {currentUser, currentMemberIdentity, readUserProfile} from '@/features/profile/user-profile-state';
+import {companyPlan, planSubscriptionFields} from '@/features/company-settings/plan-catalog';
+import {normalizedBillingDetails, validDemoPayment, validateBillingDetails, type BillingDetailsValues, type DemoPaymentValues} from '@/features/company-settings/billing-details';
 export {currentUser} from '@/features/profile/user-profile-state';
 export type {CompanyIndustry} from './company-options';
 export {normalizeCompanyTaxId} from './company-options';
@@ -27,9 +29,8 @@ const initialState: CompanyState = {
         id: 'global-clean-services', name: 'Global Clean Services', taxId: 'RO87654321', country: 'RO',
         industry: 'cleaning',
         subscription: {
-          plan: 'Business', seatLimit: 10, trialDaysRemaining: 0, monthlyPriceEur: 49,
-          billingProfile: {legalName: 'Global Clean Services', taxId: 'RO87654321', email: '', address: '', contactName: ''},
-          capabilities: {unlimitedDocuments: true, customRequirements: true, notificationsAudit: true}, invoices: []
+          ...planSubscriptionFields('Business'), status: 'active', trialDaysRemaining: 0,
+          billingProfile: {email: ''}, invoices: []
         }
       },
       members: [{id: 'membership-andrei-global-clean', companyId: 'global-clean-services', userId: 'andrei-popescu', fullName: currentUser.fullName, email: currentUser.email, role: 'reviewer', status: 'active', isCurrentUser: true}]
@@ -121,9 +122,8 @@ export function createCompany(input: NewCompanyInput): CreateCompanyResult {
     company: {
       id, name, taxId, country, industry: input.industry, companySize: input.companySize,
       subscription: {
-        plan: 'Starter', seatLimit: 5, trialDaysRemaining: 14, monthlyPriceEur: 0,
-        billingProfile: {legalName: name, taxId, email: '', address: '', contactName: ''},
-        capabilities: {unlimitedDocuments: false, customRequirements: false, notificationsAudit: false}, invoices: []
+        ...planSubscriptionFields('Starter'), status: 'trialing', trialDaysRemaining: 14,
+        billingProfile: {email: ''}, invoices: []
       }
     },
     members: [{id: `membership-${id}`, companyId: id, userId: readUserProfile().userId, fullName: currentUser.fullName, email: currentUser.email, role: 'administrator', status: 'active', isCurrentUser: true}]
@@ -141,6 +141,38 @@ export function updateCompanyProfile(companyId: string, values: CompanyProfileVa
   const company = {...active.company, ...normalizeCompanyProfile(values)};
   publish({...state, companies: state.companies.map((record) => record.company.id === companyId ? {...record, company} : record)});
   return {ok: true} as const;
+}
+
+export type BillingMutationResult = {ok: true} | {ok: false; reason: 'accessDenied' | 'validation' | 'unavailablePlan' | 'invalidTarget' | 'stalePlan'};
+export function updateCompanyBillingDetails(companyId: string, values: BillingDetailsValues): BillingMutationResult {
+  const active = managedCompany(companyId);
+  if (!active) return {ok: false, reason: 'accessDenied'};
+  if (Object.keys(validateBillingDetails(active.company, values, duplicateCompanyTaxId(values.taxId, companyId))).length) return {ok: false, reason: 'validation'};
+  const {billingEmail, ...canonical} = normalizedBillingDetails(active.company, values);
+  const company = {...active.company, ...canonical, subscription: {...active.company.subscription, billingProfile: {email: billingEmail}}};
+  publish({...session.state, companies: session.state.companies.map((record) => record === active ? {...record, company} : record)});
+  return {ok: true};
+}
+export function replaceCompanyDemoPayment(companyId: string, values: DemoPaymentValues): BillingMutationResult {
+  const active = managedCompany(companyId);
+  if (!active) return {ok: false, reason: 'accessDenied'};
+  if (!validDemoPayment(values)) return {ok: false, reason: 'validation'};
+  // Whitelist safe display metadata. Never copy arbitrary form/input properties into the store.
+  const paymentMethod = {id: `demo-payment-${crypto.randomUUID()}`, companyId, brand: values.brand, lastFour: values.lastFour, expiryMonth: values.expiryMonth, expiryYear: values.expiryYear, cardholderName: values.cardholderName.trim(), isDefault: true};
+  const company = {...active.company, subscription: {...active.company.subscription, paymentMethod}};
+  publish({...session.state, companies: session.state.companies.map((record) => record === active ? {...record, company} : record)});
+  return {ok: true};
+}
+export function upgradeCompanyPlan(companyId: string, expectedPlan: string, targetId: string): BillingMutationResult {
+  const active = managedCompany(companyId);
+  if (!active) return {ok: false, reason: 'accessDenied'};
+  if (active.company.subscription.plan !== expectedPlan) return {ok: false, reason: 'stalePlan'};
+  const current = companyPlan(expectedPlan), target = companyPlan(targetId);
+  if (!current || !target || !target.available) return {ok: false, reason: 'unavailablePlan'};
+  if (target.rank <= current.rank) return {ok: false, reason: 'invalidTarget'};
+  const company = {...active.company, subscription: {...active.company.subscription, ...planSubscriptionFields(target.id)}};
+  publish({...session.state, companies: session.state.companies.map((record) => record === active ? {...record, company} : record)});
+  return {ok: true};
 }
 
 /** Bind only company-owned onboarding values. No user/password/step configuration is stored. */

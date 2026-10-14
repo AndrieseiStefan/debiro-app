@@ -602,6 +602,44 @@
     }
   },
   "CompanyBilling": {
+    "editor": {
+      "close": "Închide",
+      "cancel": "Anulează",
+      "billingDescription": "Actualizează datele companiei folosite pentru facturare.",
+      "discardDescription": "Modificările nu au fost salvate. Dacă pleci acum, acestea vor fi pierdute.",
+      "billingSaved": "Datele de facturare au fost actualizate.",
+      "paymentSaved": "Metoda de plată demo a fost actualizată.",
+      "readOnly": "Doar administratorii companiei pot modifica datele de facturare, metoda de plată și planul.",
+      "failure": "Modificarea nu a putut fi salvată. Verifică accesul la compania activă și încearcă din nou.",
+      "paymentTitle": "Schimbă metoda de plată",
+      "addPayment": "Adaugă metodă de plată",
+      "paymentDescription": "Configurează doar metadate fictive pentru metoda de plată a companiei.",
+      "paymentSafety": "Demonstrație locală, fără procesare de plăți. Nu introduce datele unui card real. Nu colectăm numărul complet al cardului sau CVV/CVC.",
+      "brand": "Tip card demo",
+      "cardholderName": "Nume titular demo",
+      "lastFour": "Ultimele 4 cifre demo",
+      "lastFourHelp": "Introdu doar patru cifre fictive, nu numărul complet al unui card.",
+      "expiryMonth": "Lună expirare",
+      "expiryYear": "An expirare",
+      "paymentInvalid": "Completează numele titularului, exact patru cifre și o dată de expirare validă."
+    },
+    "upgrade": {
+      "description": "Alege planul potrivit pentru compania ta.",
+      "compare": "Compară planurile",
+      "current": "Planul tău actual",
+      "recommended": "Recomandat pentru upgrade",
+      "action": "Fă upgrade",
+      "period": "/ lună",
+      "demoPricing": "Preț demonstrativ E1",
+      "comparisonOnly": "Doar pentru comparație",
+      "unavailable": "Indisponibil",
+      "demoNotice": "Planuri și prețuri demonstrative. Schimbarea este doar locală; nu se efectuează nicio plată și nu se prelungește perioada de trial.",
+      "confirmTitle": "Schimbi planul?",
+      "confirmDescription": "Planul companiei va fi schimbat din {currentPlan} în {targetPlan}. În versiunea demo nu se efectuează nicio plată.",
+      "confirmAction": "Confirmă schimbarea",
+      "saved": "Planul companiei a fost actualizat local. Nu s-a efectuat nicio plată.",
+      "failure": "Planul nu mai poate fi schimbat. Verifică planul curent și accesul la companie, apoi redeschide comparația."
+    },
     "sampleDownload": "Descarcă un exemplu local, nu o factură oficială.",
     "breadcrumbLabel": "Navigare pe pagină",
     "title": "Plan și facturare",
@@ -662,7 +700,9 @@
       "paid": "Plătită",
       "download": "Descarcă",
       "moreActions": "Alte acțiuni pentru {number}",
-      "empty": "Nu există încă facturi."
+      "empty": "Nu există încă facturi.",
+      "showMore": "Vezi mai multe",
+      "showLess": "Vezi mai puține"
     }
   },
   "Dashboard": {

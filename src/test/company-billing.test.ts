@@ -25,9 +25,9 @@ describe('company billing membership summary', () => {
   it('keeps plan, billing profile, payment method, and invoices on the company subscription', () => {
     const {company} = companySettingsFixture;
     expect(company.subscription.seatLimit).toBe(5);
-    expect(company.subscription.billingProfile.legalName).toBe(company.name);
+    expect(company.subscription.billingProfile).toEqual({email: 'billing@demo.ro'});
     expect(company.subscription.paymentMethod?.lastFour).toBe('4242');
-    expect(company.subscription.invoices).toHaveLength(2);
+    expect(company.subscription.invoices).toHaveLength(4);
     expect(companySettingsFixture.currentUser).not.toHaveProperty('subscription');
   });
 });

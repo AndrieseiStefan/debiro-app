@@ -36,6 +36,10 @@ Surface and StatusBadge base treatments have intentionally low CSS specificity. 
 
 E1-003 composes AppShell into a separate `AuthenticatedAppShell` with `AppSidebar` and `AppTopBar` for product screens. The authenticated shell currently has no session or route guard. Its layout contract is defined below.
 
+### Shared modal composition (E1-032Bd)
+
+`Modal` extracts the existing ConfirmationDialog portal, inert background, body scroll lock, focus trap/restore and Escape handling for larger compositional dialogs. ConfirmationDialog retains its styling, alertdialog semantics and Cancel-first focus. Backdrop clicks do not dismiss either. Opt-in blurred/translucent backing is used by Plan Upgrade; nested confirmations temporarily inert the parent panel and own keyboard handling. Billing and safe payment forms reuse the shared Drawer, Field/SelectField, Button and existing dirty-navigation guard.
+
 ### Navigation availability and tooltip (E1-032Bc)
 
 `SidebarNavigationItem` shares the existing primary/nested navigation geometry and accepts `availability: 'available' | 'comingSoon'` (available by default). Coming-soon items render a focusable `aria-disabled` button, never a link or active destination. Their icon/text have reduced but readable emphasis, no clickable hover/pressed background and a default cursor. Reports is the only current opt-in and is explicitly post-MVP; `/reports` and `/en/reports` remain absent.

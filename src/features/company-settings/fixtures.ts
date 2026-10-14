@@ -1,4 +1,5 @@
 import type {CompanySettingsViewModel} from './types';
+import {planSubscriptionFields} from './plan-catalog';
 
 export const companySettingsFixture: CompanySettingsViewModel = {
   company: {
@@ -18,23 +19,19 @@ export const companySettingsFixture: CompanySettingsViewModel = {
     city: 'București',
     countyRegion: 'București',
     subscription: {
-      plan: 'Professional',
-      seatLimit: 5,
+      ...planSubscriptionFields('Professional'),
+      status: 'trialing',
       trialDaysRemaining: 12,
-      monthlyPriceEur: 29,
       nextPaymentDate: '2026-10-12',
       billingProfile: {
-        legalName: 'Demo Company SRL',
-        taxId: 'RO12345678',
-        email: 'billing@demo.ro',
-        address: 'Str. Constructorilor nr. 12, București',
-        contactName: 'Andrei Popescu'
+        email: 'billing@demo.ro'
       },
-      paymentMethod: {brand: 'Visa', lastFour: '4242', expiryMonth: 8, expiryYear: 2028},
-      capabilities: {unlimitedDocuments: true, customRequirements: true, notificationsAudit: true},
+      paymentMethod: {id: 'demo-payment', companyId: 'demo-company', brand: 'Visa', lastFour: '4242', expiryMonth: 8, expiryYear: 2028, cardholderName: 'Andrei Popescu', isDefault: true},
       invoices: [
         {id: 'invoice-september-2026', number: 'INV-2026-009', date: '2026-09-12', amountEur: 29, status: 'paid'},
-        {id: 'invoice-august-2026', number: 'INV-2026-008', date: '2026-08-12', amountEur: 29, status: 'paid'}
+        {id: 'invoice-august-2026', number: 'INV-2026-008', date: '2026-08-12', amountEur: 29, status: 'paid'},
+        {id: 'invoice-june-2026', number: 'INV-2026-006', date: '2026-06-12', amountEur: 29, status: 'paid'},
+        {id: 'invoice-july-2026', number: 'INV-2026-007', date: '2026-07-12', amountEur: 29, status: 'paid'}
       ]
     }
   },

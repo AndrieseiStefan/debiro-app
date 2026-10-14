@@ -19,12 +19,11 @@ test('Plan & Billing renders the active company and safe fixture-backed billing 
   await expect(page.getByText('•••• 4242')).toBeVisible();
   await expect(page.getByRole('row', {name: /INV-2026-009/})).toContainText('Plătită');
 
-  for (const name of ['Upgrade plan', 'Vezi toate facturile', 'Actualizează datele de facturare', 'Schimbă cardul']) {
+  for (const name of ['Upgrade plan', 'Actualizează datele de facturare', 'Schimbă cardul']) {
     const action = page.getByRole('button', {name, exact: true}).first();
-    await expect(action).toHaveAttribute('aria-disabled', 'true');
-    await action.evaluate((button: HTMLButtonElement) => button.click());
-    await expect(page).toHaveURL(/\/company\/settings\/billing$/);
+    await expect(action).toBeEnabled();
   }
+  await expect(page.getByRole('button', {name: 'Vezi toate facturile', exact: true})).toHaveCount(0);
   await expect(page.getByRole('button', {name: /Acțiuni.*INV-/})).toHaveCount(0);
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('row', {name: /INV-2026-009/}).getByRole('button', {name: 'Descarcă'}).click();

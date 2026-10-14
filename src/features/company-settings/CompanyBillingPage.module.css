@@ -2,6 +2,9 @@
 .page > :first-child {margin-bottom: 0;}
 .headerActions {display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end;}
 .headerActions :global(button) {font-size: 13px; min-height: 46px; padding-inline: 16px; white-space: nowrap;}
+.feedback {color: var(--color-success); font-size: var(--text-body-small);}
+.readOnly {background: var(--color-info-soft); border-radius: var(--radius-field); color: var(--color-text-secondary); font-size: var(--text-body-small); padding: 12px 16px;}
+.invoiceHeading {align-items: center; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; min-height: 55px; padding: 8px 18px;}
 .companySummary {align-items: center; display: flex; gap: 18px; min-height: 94px; min-width: 0; padding: 15px 18px;}
 .companyIcon {align-items: center; background: #e5f1ff; border-radius: 50%; color: #075ceb; display: flex; flex: 0 0 60px; height: 60px; justify-content: center;}
 .companyCopy {flex: 1 1 auto; min-width: 0;}
@@ -34,8 +37,8 @@
 .sidePanels {display: grid; gap: 12px; min-width: 0;}
 .paymentPanel, .limitsPanel {min-width: 0; padding: 12px;}
 .panelTitle {align-items: center; display: flex; gap: 12px;}
-.paymentMethod {align-items: center; border: 1px solid #e1eaf6; border-radius: 9px; display: flex; gap: 12px; margin-top: 12px; min-width: 0; padding: 10px;}
-.cardBrand {border: 1px solid #dce7f9; border-radius: 6px; color: #123fc0; display: inline-flex; flex: 0 0 56px; font-size: 17px; font-style: italic; font-weight: 850; height: 38px; align-items: center; justify-content: center; text-transform: uppercase;}
+.paymentMethod {align-items: center; border: 1px solid #e1eaf6; border-radius: 9px; display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; min-width: 0; padding: 10px;}
+.cardBrand {border: 1px solid #dce7f9; border-radius: 6px; color: #123fc0; display: inline-flex; flex: 0 0 auto; font-size: 17px; font-style: italic; font-weight: 850; height: 38px; align-items: center; justify-content: center; padding-inline: 8px; text-transform: uppercase;}
 .paymentMethod > div {flex: 1 1 auto; min-width: 0;}
 .paymentMethod strong {color: #14234b; font-size: 15px; white-space: nowrap;}
 .paymentMethod p {color: #6683af; font-size: 12px; margin-top: 3px; white-space: nowrap;}

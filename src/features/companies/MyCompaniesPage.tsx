@@ -14,6 +14,7 @@ import {createCompany, getCurrentMembership, switchActiveCompany, useCompanyStat
 import {useUserProfile} from '@/features/profile/user-profile-state';
 import styles from './MyCompaniesPage.module.css';
 import {companyCountries, companyIndustries} from './company-options';
+import {companyPlan} from '@/features/company-settings/plan-catalog';
 
 type FormValues = {name: string; industry: CompanyIndustry | ''; taxId: string; country: string};
 const emptyForm: FormValues = {name: '', industry: '', taxId: '', country: ''};
@@ -77,7 +78,7 @@ export function MyCompaniesPage({locale}: {locale: string}) {
                     <p>{t('taxId')}: {record.company.taxId}<span aria-hidden="true">|</span>{companyIndustries[record.company.industry][locale === 'en' ? 'en' : 'ro']}</p>
                     <div className={styles.badges}>
                       {membership && <RoleBadge role={membership.role} label={roles(`roles.${membership.role}`)} iconSize={16}/>}
-                      <span className={styles.plan}><AppIcon name="crown" size={17}/>{record.company.subscription.plan}</span>
+                      <span className={styles.plan}><AppIcon name="crown" size={17}/>{companyPlan(record.company.subscription.plan)?.name[locale === 'en' ? 'en' : 'ro'] ?? record.company.subscription.plan}</span>
                     </div>
                   </div>
                   <div className={styles.cardActions}>

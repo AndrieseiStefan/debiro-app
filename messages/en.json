@@ -598,6 +598,44 @@
     }
   },
   "CompanyBilling": {
+    "editor": {
+      "close": "Close",
+      "cancel": "Cancel",
+      "billingDescription": "Update the company details used for billing.",
+      "discardDescription": "Your changes have not been saved. If you leave now, they will be lost.",
+      "billingSaved": "Billing details updated.",
+      "paymentSaved": "Demo payment method updated.",
+      "readOnly": "Only company administrators can change billing details, the payment method and the plan.",
+      "failure": "The change could not be saved. Check access to the active company and try again.",
+      "paymentTitle": "Change payment method",
+      "addPayment": "Add payment method",
+      "paymentDescription": "Configure fictional display metadata only for the company payment method.",
+      "paymentSafety": "Local demonstration without payment processing. Do not enter real card details. We do not collect a full card number or CVV/CVC.",
+      "brand": "Demo card type",
+      "cardholderName": "Demo cardholder name",
+      "lastFour": "Last 4 demo digits",
+      "lastFourHelp": "Enter only four fictional digits, not a full card number.",
+      "expiryMonth": "Expiry month",
+      "expiryYear": "Expiry year",
+      "paymentInvalid": "Enter a cardholder name, exactly four digits and a valid expiry date."
+    },
+    "upgrade": {
+      "description": "Choose the right plan for your company.",
+      "compare": "Compare plans",
+      "current": "Your current plan",
+      "recommended": "Recommended upgrade",
+      "action": "Upgrade",
+      "period": "/ month",
+      "demoPricing": "E1 demo price",
+      "comparisonOnly": "For comparison only",
+      "unavailable": "Unavailable",
+      "demoNotice": "Demo plans and prices. Changes are local only; no payment is made and the trial is not extended.",
+      "confirmTitle": "Change plan?",
+      "confirmDescription": "The company plan will change from {currentPlan} to {targetPlan}. No payment is made in the demo version.",
+      "confirmAction": "Confirm change",
+      "saved": "Company plan updated locally. No payment was made.",
+      "failure": "The plan can no longer be changed. Check the current plan and company access, then reopen the comparison."
+    },
     "sampleDownload": "Download a local sample, not an official invoice.",
     "breadcrumbLabel": "Page navigation",
     "title": "Plan & billing",
@@ -658,7 +696,9 @@
       "paid": "Paid",
       "download": "Download",
       "moreActions": "More actions for {number}",
-      "empty": "No invoices yet."
+      "empty": "No invoices yet.",
+      "showMore": "Show more",
+      "showLess": "Show less"
     }
   },
   "Dashboard": {

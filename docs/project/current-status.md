@@ -10,11 +10,11 @@
 
 **Domain strategy:** Single domain
 
-**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and the experiences represented by all thirty-three approved mockups have fixture/browser-local implementations, with documented unsupported actions; backend/auth integrations are not.
+**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and the experiences represented by all thirty-four approved mockups have fixture/browser-local implementations, with documented unsupported actions; backend/auth integrations are not.
 
 ## Design state
 
-Thirty-three approved product mockups are tracked in `docs/design/mockups/`. They are canonical contracts requiring:
+Thirty-four approved product mockups are tracked in `docs/design/mockups/`. They are canonical contracts requiring:
 
 - UI fidelity as close to 1:1 as technically practical
 - Interaction fidelity as close to 1:1 as technically practical
@@ -25,6 +25,8 @@ Thirty-three approved product mockups are tracked in `docs/design/mockups/`. The
 The final logo is not yet designed and must not be invented.
 
 ## Implemented
+
+- E1-032Bd Plan & Billing interactions — canonical Company billing Drawer, latest-three invoice expansion, safe metadata-only demo payment Drawer, centralized existing three-tier catalog and blurred comparison/confirmed upgrade overlay; company/role/stale guards, separate preserved trial state, live plan badge propagation; no provider or charges; see [billing contract](../features/company-plan-billing.md)
 
 - E1-032Bc reusable primary/nested navigation availability — Reports alone uses the inactive Coming Soon state with accessible RO/EN hover/focus/touch help; no route, history or active-state changes, and no Reports page; reporting is post-MVP
 
@@ -88,8 +90,8 @@ TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to
 - Document storage or upload system
 - Document processing, OCR, or AI extraction
 - Real notification delivery, email, or scheduled reminders; persistent audit history
-- Billing
+- Provider billing, real charges and official invoices
 
 ## Next
 
-The experiences represented by all thirty tracked canonical mockups have fixture/browser-local implementations with documented unsupported actions; product-owner visual approval remains pending. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).
+The experiences represented by all thirty-four tracked canonical mockups have fixture/browser-local implementations with documented unsupported actions; product-owner visual approval remains pending. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).

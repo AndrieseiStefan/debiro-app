@@ -1,0 +1,2 @@
+.backdrop {align-items: center; background: rgb(14 31 57 / 58%); display: flex; inset: 0; justify-content: center; padding: 16px; position: fixed; z-index: 1100;}
+.backdrop[data-blurred='true'] {backdrop-filter: blur(6px); background: rgb(18 38 63 / 48%);}

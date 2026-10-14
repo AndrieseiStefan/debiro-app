@@ -1,20 +1,24 @@
 import type {CompanyIndustry, CompanySize} from '@/features/companies/company-options';
+import type {CompanyPlanId} from './plan-catalog';
 
 export type CompanyRole = 'administrator' | 'reviewer' | 'viewer';
 export const companyRoles = ['administrator', 'reviewer', 'viewer'] as const satisfies readonly CompanyRole[];
 export type MembershipStatus = 'active' | 'invited';
 
 export type CompanySubscription = {
-  plan: string;
+  plan: CompanyPlanId;
+  status: 'trialing' | 'active';
   seatLimit: number;
   trialDaysRemaining: number;
   monthlyPriceEur: number;
   nextPaymentDate?: string;
-  billingProfile: {legalName: string; taxId: string; email: string; address: string; contactName: string};
-  paymentMethod?: {brand: string; lastFour: string; expiryMonth: number; expiryYear: number};
+  billingProfile: {email: string};
+  paymentMethod?: CompanyPaymentMethod;
   capabilities: {unlimitedDocuments: boolean; customRequirements: boolean; notificationsAudit: boolean};
   invoices: {id: string; number: string; date: string; amountEur: number; status: 'paid'}[];
 };
+
+export type CompanyPaymentMethod = {id: string; companyId: string; brand: 'Visa' | 'Mastercard'; lastFour: string; expiryMonth: number; expiryYear: number; cardholderName: string; isDefault: boolean};
 
 /** A role and invitation belong to a company membership, never to the global user. */
 export type CompanyMembership = {

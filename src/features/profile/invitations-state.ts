@@ -4,6 +4,7 @@ import {useSyncExternalStore} from 'react';
 import {addCompanyAccess, managedCompany, readCompanyState, type AccessibleCompany, type MemberManagementResult} from '@/features/companies/company-state';
 import {companyRoles, type CompanyMembership, type CompanyRole} from '@/features/company-settings/types';
 import {companySettingsFixture} from '@/features/company-settings/fixtures';
+import {planSubscriptionFields} from '@/features/company-settings/plan-catalog';
 import {recordLocalAuditEvent} from '@/features/notifications/local-audit';
 import {browserSession} from '@/lib/browser-session';
 import {fixtureReferenceTime} from '@/lib/fixture-clock';
@@ -12,7 +13,7 @@ import {readUserProfile, type UserProfile} from './user-profile-state';
 export type InvitationStatus = 'pending' | 'accepted' | 'rejected' | 'expired' | 'cancelled';
 export type CompanyInvitation = {id: string; companyId: string; invitedEmail: string; invitedName?: string; role: CompanyRole; invitedByUserId: string; invitedByDisplayName: string; invitedByEmail: string; createdAt: string; expiresAt: string; status: InvitationStatus; resolvedAt?: string};
 function company(id: string, name: string, taxId: string, industry: AccessibleCompany['company']['industry']): AccessibleCompany['company'] {
-  return {id, name, taxId, country: 'RO', industry, subscription: {plan: 'Starter', seatLimit: 5, trialDaysRemaining: 0, monthlyPriceEur: 0, billingProfile: {legalName: name, taxId, email: '', address: '', contactName: ''}, capabilities: {unlimitedDocuments: false, customRequirements: false, notificationsAudit: false}, invoices: []}};
+  return {id, name, taxId, country: 'RO', industry, subscription: {...planSubscriptionFields('Starter'), status: 'active', trialDaysRemaining: 0, billingProfile: {email: ''}, invoices: []}};
 }
 export const invitationCompanies = [company('construct-group', 'Construct Group SRL', 'RO22345678', 'construction'), company('pro-build', 'Pro Build Solutions', 'RO087654321', 'construction'), company('global-clean-services', 'Global Clean Services', 'RO87654321', 'cleaning')];
 const email = readUserProfile().email;

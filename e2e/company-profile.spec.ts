@@ -75,7 +75,7 @@ for (const english of [false, true]) {
     await page.getByRole('link', {name: english ? 'Plan & billing' : 'Plan și facturare'}).click();
     await expect(page.getByRole('heading', {name: 'Updated Demo SRL'})).toBeVisible();
     await expect(page.getByText('RO23456789', {exact: true})).toBeVisible();
-    await expect(page.getByText('Andrei Popescu', {exact: true}).first()).toBeVisible();
+    await expect(page.getByText('Company contact', {exact: true})).toBeVisible();
     await page.getByRole('link', {name: english ? 'RO' : 'EN', exact: true}).click();
     await expect(page.getByRole('heading', {name: 'Updated Demo SRL'})).toBeVisible();
   });

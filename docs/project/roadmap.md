@@ -4,6 +4,8 @@ This roadmap records direction only. Detailed requirements are created by the ta
 
 ## Phase 0 — Product & Repository Foundation
 
+- E1-032Bd Plan & Billing interactions — implemented locally: canonical Company billing Drawer, three-invoice expansion, safe demo payment metadata, centralized existing-tier catalog and confirmed company-scoped upgrades with preserved trial state; provider billing remains deferred
+
 - E1-032Bc navigation availability — implemented shared Coming Soon rendering and accessible localized tooltip; Reports remains visible, unavailable and explicitly post-MVP, without a placeholder route
 
 - E1-032Bb/Bb2 Dashboard secondary navigation — implemented locally with a five-row urgency-ordered attention preview retaining full totals without a preview-limit suffix, transient Documents attention filters, uploaded-file-only counts, normal Notifications entry and removal of redundant chart/footer actions
@@ -13,7 +15,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 - E1-032A/E1-032A1 My Profile / My Invitations — implemented with shared global-user state, local received-invitation lifecycle, Profile-root breadcrumbs and in-place company switching; unsupported security/avatar actions omitted; product-owner visual approval remains pending
 
 - Repository memory — complete
-- Canonical mockup contract and thirty-three approved images — complete
+- Canonical mockup contract and thirty-four approved images — complete
 - Architecture and stack decision — complete (TASK-002)
 - UI foundation and canonical design system tooling — complete (TASK-003); no product screens approved
 - E1-001 canonical landing page — implemented; product-owner visual approval remains pending
