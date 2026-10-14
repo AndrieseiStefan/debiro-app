@@ -13,7 +13,7 @@ test('renders the canonical Romanian dashboard in the authenticated shell', asyn
   await expect(page.getByRole('heading', {name: 'Documente care necesită atenție'})).toBeVisible();
   await expect(page.getByRole('heading', {name: 'Status furnizori'})).toBeVisible();
   await expect(page.getByRole('heading', {name: 'Activitate recentă'})).toBeVisible();
-  await expect(page.getByRole('table').getByRole('row')).toHaveCount(8);
+  await expect(page.getByRole('table').getByRole('row')).toHaveCount(11);
   await expect(page.getByRole('button', {name: 'Adaugă furnizor'})).toHaveCount(0);
   await expect(page.getByRole('img', {name: 'Status furnizori: 24 furnizori'})).toBeVisible();
   await expect(page.getByRole('banner').getByText('DEBIRO')).toHaveCount(0);

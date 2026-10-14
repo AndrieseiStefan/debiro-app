@@ -21,7 +21,7 @@ export function documentHistory(records: CreatedDocument[], companyId: string, i
 }
 
 export function documentManagementHref(document: CreatedDocument, contextPath: string, action?: string) {
-  return `${contextPath}?document=${encodeURIComponent(document.id)}${action ? `&documentAction=${encodeURIComponent(action)}` : ''}`;
+  return `${contextPath}${contextPath.includes('?') ? '&' : '?'}document=${encodeURIComponent(document.id)}${action ? `&documentAction=${encodeURIComponent(action)}` : ''}`;
 }
 
 export function documentDetailsHref(document: CreatedDocument, contextPath: string) {

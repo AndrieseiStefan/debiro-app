@@ -1,7 +1,9 @@
+import type {DocumentStatus} from '@/features/documents/types';
+
 /** Presentation data for the fixture-backed dashboard; not a persistence model. */
 export type LocalizedSample = {ro: string; en: string};
 
-export type DashboardDocumentStatus = 'expired' | 'expiring' | 'missing';
+export type DashboardDocumentStatus = Exclude<DocumentStatus, 'valid'>;
 export type DashboardActivityKind = 'uploaded' | 'expiring' | 'expired' | 'added' | 'updated';
 
 export type DashboardViewModel = {

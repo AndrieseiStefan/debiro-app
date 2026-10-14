@@ -20,6 +20,7 @@ import {DocumentActions} from './DocumentActions';
 import {DocumentManagementDrawer} from './DocumentManagementDrawer';
 import {useCompanyState} from '@/features/companies/company-state';
 import {fixtureReferenceDate} from '@/lib/fixture-clock';
+import {attentionDocumentStatuses, documentsAttentionHref} from './attention';
 import styles from './DocumentsPage.module.css';
 
 const pageSize = 8;
@@ -37,15 +38,15 @@ function DocumentStatusBadge({status}: {status: DocumentStatus}) {
   return <StatusBadge tone={tones[status]} className={styles.statusBadge} data-status={status}><AppIcon name={icons[status]} size={13} />{t(`status.${status}`)}</StatusBadge>;
 }
 
-function DocumentRow({document, locale}: {document: CreatedDocument; locale: string}) {
+function DocumentRow({document, locale, contextPath}: {document: CreatedDocument; locale: string; contextPath: string}) {
   const t = useTranslations('Documents');
   const name = document.documentName[locale === 'en' ? 'en' : 'ro'];
   const actionLabel = t('reviewDocument', {name, vendor: document.vendorName});
-  return <tr>
+  return <tr data-document-id={document.id}>
     <td><div className={styles.documentIdentity}>
       <span className={styles.documentIcon} data-status={document.status}><AppIcon name="file" size={21} /></span>
       <span className={styles.documentText}>
-        <Link href={documentDetailsHref(document, '/documents')} aria-label={document.reviewRoute ? actionLabel : undefined}>{name}</Link>
+        <Link href={documentDetailsHref(document, contextPath)} aria-label={document.reviewRoute ? actionLabel : undefined}>{name}</Link>
         <small title={document.filename}>{document.filename}</small>
       </span>
     </div></td>
@@ -54,11 +55,11 @@ function DocumentRow({document, locale}: {document: CreatedDocument; locale: str
     <td><DocumentStatusBadge status={document.status} /></td>
     <td><time dateTime={document.uploadedAt}>{displayDate(document.uploadedAt, locale)}</time></td>
     <td>{document.expiresAt ? <time dateTime={document.expiresAt} className={styles.expiry} data-status={document.status}>{displayDate(document.expiresAt, locale)}</time> : '—'}</td>
-    <td className={styles.actionsCell}><DocumentActions document={document} contextPath="/documents" includeVendor className={styles.rowAction}/></td>
+    <td className={styles.actionsCell}><DocumentActions document={document} contextPath={contextPath} includeVendor className={styles.rowAction}/></td>
   </tr>;
 }
 
-export function DocumentsPage({locale, view, documentId, documentAction}: {locale: string; view: DocumentsViewModel} & DocumentSelection) {
+export function DocumentsPage({locale, view, documentId, documentAction, attention = false}: {locale: string; view: DocumentsViewModel; attention?: boolean} & DocumentSelection) {
   const t = useTranslations('Documents');
   const empty = useTranslations('CompanyWorkspace');
   const companyId = useCompanyState().activeCompanyId;
@@ -67,7 +68,8 @@ export function DocumentsPage({locale, view, documentId, documentAction}: {local
   const [query, setQuery] = useState('');
   const [vendor, setVendor] = useState('all');
   const [type, setType] = useState<DocumentType | 'all'>('all');
-  const [selectedStatuses, setSelectedStatuses] = useState<DocumentStatus[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<DocumentStatus[]>(() => attention ? [...attentionDocumentStatuses] : []);
+  const contextPath = attention ? documentsAttentionHref : '/documents';
   const [uploadYear, setUploadYear] = useState('any');
   const [sort, setSort] = useState<'newest' | 'oldest'>('newest');
   const [page, setPage] = useState(1);
@@ -154,10 +156,10 @@ export function DocumentsPage({locale, view, documentId, documentAction}: {local
               <label className={`${styles.toolbarButton} ${styles.sortControl}`}><span className={styles.srOnly}>{t('sortLabel')}</span><span aria-hidden="true">↕</span><select value={sort} onChange={(event) => {setSort(event.target.value as 'newest' | 'oldest'); setPage(1);}} aria-label={t('sortLabel')}><option value="newest">{t('sortVisible')} ↓</option><option value="oldest">{t('sortVisible')} ↑</option></select><AppIcon name="chevronDown" size={16} /></label>
             </div>
           </div>
-          {documents.length === 0 ? <EmptyState icon={<AppIcon name="file" size={25}/>} title={empty('documentsTitle')} description={empty('documentsDescription')} /> : filtered.length === 0 ? <EmptyState title={t('noMatches')} description={t('noMatchesDescription')} action={<button type="button" className={styles.emptyReset} onClick={resetSearchAndFilters}>{t('resetSearchAndFilters')}</button>} /> : <>
+          {documents.length === 0 && selectedStatuses.length === 0 ? <EmptyState icon={<AppIcon name="file" size={25}/>} title={empty('documentsTitle')} description={empty('documentsDescription')} /> : filtered.length === 0 ? <EmptyState title={t('noMatches')} description={t('noMatchesDescription')} action={<button type="button" className={styles.emptyReset} onClick={resetSearchAndFilters}>{t('resetSearchAndFilters')}</button>} /> : <>
             <div className={styles.tableScroll} role="region" aria-label={t('tableRegion')} tabIndex={0}><table className={styles.table}>
               <thead><tr><th scope="col">{t('table.document')}</th><th scope="col">{t('table.vendor')}</th><th scope="col">{t('table.type')}</th><th scope="col">{t('table.status')}</th><th scope="col">{t('table.uploaded')}</th><th scope="col">{t('table.expires')}</th><th scope="col">{t('table.actions')}</th></tr></thead>
-              <tbody>{visible.map((document) => <DocumentRow key={document.id} document={document} locale={locale} />)}</tbody>
+              <tbody>{visible.map((document) => <DocumentRow key={document.id} document={document} locale={locale} contextPath={contextPath} />)}</tbody>
             </table></div>
             <div className={styles.tableFooter}><p>{t('showing', {start, end, count: filtered.length})}</p><nav className={styles.pagination} aria-label={t('paginationLabel')}>
               <button type="button" aria-label={t('previousPage')} disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}><AppIcon name="chevronRight" size={16} className={styles.previousIcon} /></button>
@@ -168,6 +170,6 @@ export function DocumentsPage({locale, view, documentId, documentAction}: {local
         </section>
       </div>
     </div>
-    <DocumentManagementDrawer documentId={documentId} documentAction={documentAction} contextPath="/documents"/>
+    <DocumentManagementDrawer documentId={documentId} documentAction={documentAction} contextPath={contextPath}/>
   </AuthenticatedAppShell>;
 }

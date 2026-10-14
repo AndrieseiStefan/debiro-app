@@ -1,7 +1,7 @@
 'use client';
 
 import {useCallback, useRef, useState, type CSSProperties} from 'react';
-import {useRouter} from '@/i18n/navigation';
+import {Link, useRouter} from '@/i18n/navigation';
 import {Button} from '@/components/ui/Button';
 import {EmptyState} from '@/components/ui/EmptyState';
 import {AddVendorDrawer} from '@/features/vendors/AddVendorDrawer';
@@ -15,6 +15,7 @@ import {Surface} from '@/components/ui/Surface';
 import type {DashboardActivityKind, DashboardDocumentStatus, DashboardViewModel, LocalizedSample} from './types';
 import styles from './DashboardPage.module.css';
 import {useDocumentRecords} from '@/features/documents/created-documents';
+import {documentsAttentionHref} from '@/features/documents/attention';
 import {useVendorRequirements} from '@/features/vendors/vendor-requirements';
 import {useVendorState, vendorListItems} from '@/features/vendors/created-vendors';
 import {notificationsFixture} from '@/features/notifications/fixtures';
@@ -34,7 +35,7 @@ const metricAppearance: Record<'total' | 'compliant' | 'attention' | 'noncomplia
 const documentTones: Record<DashboardDocumentStatus, StatusTone> = {
   expired: 'danger',
   expiring: 'warning',
-  missing: 'neutral'
+  review: 'danger'
 };
 
 const activityIcons: Record<DashboardActivityKind, AppIconName> = {
@@ -49,8 +50,8 @@ function sample(value: LocalizedSample, locale: string) {
   return locale === 'en' ? value.en : value.ro;
 }
 
-function SectionAction({children}: {children: React.ReactNode}) {
-  return <button type="button" aria-disabled="true" className={styles.sectionAction}>{children}<AppIcon name="arrowRight" size={16} /></button>;
+function SectionAction({children, href}: {children: React.ReactNode; href: string}) {
+  return <Link href={href} className={styles.sectionAction}>{children}<AppIcon name="arrowRight" size={16} /></Link>;
 }
 
 function SummaryMetricCard({id, value, note}: {id: keyof typeof metricAppearance; value: number; note: string}) {
@@ -62,13 +63,14 @@ function SummaryMetricCard({id, value, note}: {id: keyof typeof metricAppearance
 
 function DocumentsAttentionPanel({view, locale}: {view: DashboardViewModel; locale: string}) {
   const t = useTranslations('Dashboard');
+  const documentsT = useTranslations('Documents');
   const empty = useTranslations('CompanyWorkspace');
 
   return (
     <Surface className={styles.documentsPanel}>
       <div className={styles.panelHeader}>
         <h2><AppIcon name="file" size={22} />{t('documentsTitle')}</h2>
-        <SectionAction>{t('viewAll')}</SectionAction>
+        <SectionAction href={documentsAttentionHref}>{t('viewAll')}</SectionAction>
       </div>
       {view.documentsRequiringAttention.length === 0 ? <EmptyState icon={<AppIcon name="check" size={25}/>} title={empty('noAttention')}/> : <><div className={styles.tableScroll}>
         <table className={styles.documentsTable}>
@@ -81,10 +83,10 @@ function DocumentsAttentionPanel({view, locale}: {view: DashboardViewModel; loca
           </tr></thead>
           <tbody>
             {view.documentsRequiringAttention.map((document) => (
-              <tr key={document.id}>
+              <tr key={document.id} data-attention-document-id={document.id}>
                 <td className={styles.supplierCell}>{document.supplier}</td>
                 <td>{sample(document.document, locale)}</td>
-                <td><StatusBadge tone={documentTones[document.status]} className={styles.tableStatus}>{t(`documentStatus.${document.status}`)}</StatusBadge></td>
+                <td><StatusBadge tone={documentTones[document.status]} className={styles.tableStatus}>{documentsT(`status.${document.status}`)}</StatusBadge></td>
                 <td className={styles[`${document.status}Date`]}>{sample(document.expiry, locale)}</td>
                 <td><button type="button" aria-disabled="true" aria-label={t('table.rowAction', {supplier: document.supplier})} className={styles.rowAction}><AppIcon name="more" size={17} /></button></td>
               </tr>
@@ -94,7 +96,6 @@ function DocumentsAttentionPanel({view, locale}: {view: DashboardViewModel; loca
       </div>
       <div className={styles.documentNotice}>
         <span><span className={styles.infoIcon}><AppIcon name="info" size={19} /></span>{t('urgentDocuments', {count: view.documentsRequiringAttention.length})}</span>
-        <SectionAction>{t('checkAndUpdate')}</SectionAction>
       </div></>}
     </Surface>
   );
@@ -120,7 +121,6 @@ function SupplierStatusPanel({view}: {view: DashboardViewModel}) {
     <Surface className={styles.statusPanel}>
       <div className={styles.panelHeader}>
         <h2><AppIcon name="settings" size={21} />{t('supplierStatusTitle')}</h2>
-        <SectionAction>{t('viewDetails')}</SectionAction>
       </div>
       <div className={styles.statusBody}>
         <div className={styles.donut} data-empty={suppliers.total === 0 || undefined} style={donutStyle} role="img" aria-label={`${t('supplierStatusTitle')}: ${suppliers.total} ${t('suppliersLower')}`}>
@@ -146,7 +146,7 @@ function RecentActivityPanel({view, locale}: {view: DashboardViewModel; locale: 
     <Surface className={styles.activityPanel}>
       <div className={styles.panelHeader}>
         <h2><AppIcon name="calendar" size={21} />{t('recentActivityTitle')}</h2>
-        <SectionAction>{t('viewAll')}</SectionAction>
+        <SectionAction href="/notifications">{t('viewAll')}</SectionAction>
       </div>
       {view.recentActivity.length === 0 ? <EmptyState icon={<AppIcon name="calendar" size={25}/>} title={empty('noActivity')}/> : <ol className={styles.activityList}>
         {view.recentActivity.map((activity) => <li key={activity.id}>

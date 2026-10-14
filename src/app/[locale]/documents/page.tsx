@@ -6,5 +6,6 @@ export default async function DocumentsRoute({params, searchParams}: {params: Pr
   const {locale} = await params;
   setRequestLocale(locale);
   const query = await searchParams;
-  return <DocumentsPage locale={locale} view={documentsFixture} documentId={typeof query.document === 'string' ? query.document : undefined} documentAction={typeof query.documentAction === 'string' ? query.documentAction : undefined}/>;
+  const attention = query.attention === '1';
+  return <DocumentsPage key={attention ? 'attention' : 'all'} attention={attention} locale={locale} view={documentsFixture} documentId={typeof query.document === 'string' ? query.document : undefined} documentAction={typeof query.documentAction === 'string' ? query.documentAction : undefined}/>;
 }

@@ -46,6 +46,8 @@ E1-032A2 supersedes the separated avatar/chevron in authenticated headers with a
 
 E1-032Ba makes Dashboard KPI cards filtered Vendors links, removes Notifications summary-card actions, and uses conditional section-level View all/Show less toggles. Members menus now follow the approved Administrator-only management/confirmation contract and omit self/readonly empty triggers. Invoice overflow menus are removed; the owner explicitly approved a clearly marked local CSV sample Download (not an official invoice). Existing layout, copy outside these actions and canonical images remain unchanged.
 
+E1-032Bb supersedes Dashboard's missing-requirement document row and redundant chart/footer actions: its attention table uses actual current Review/Expiring/Expired uploads and matching dynamic counts, View all enters the canonical Documents filters, and Recent Activity enters Notifications. The vendor chart and blue footer remain informational. Documents retains its existing controls/layout and uses a transient route-entry intent; the canonical images and other visual treatments remain unchanged.
+
 ## Contract
 
 For every approved mockup, these are canonical:

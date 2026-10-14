@@ -1,4 +1,4 @@
-import {render, screen} from '@testing-library/react';
+import {fireEvent, render, screen} from '@testing-library/react';
 import {NextIntlClientProvider} from 'next-intl';
 import {describe, expect, it, vi} from 'vitest';
 import ro from '../../messages/ro.json';
@@ -33,5 +33,14 @@ describe('documents fixture and states', () => {
     expect(screen.getByText('Nu există documente încă')).toBeVisible();
     expect(screen.getByText('Documentele vor apărea aici după ce sunt configurate cerințe pentru furnizori și sunt încărcate documente.')).toBeVisible();
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+  it('shows filtered zero results for attention entry and returns to the normal empty state on Reset', () => {
+    render(<NextIntlClientProvider locale="ro" messages={ro}><DocumentsPage locale="ro" view={documentsFixture} attention/></NextIntlClientProvider>);
+    expect(screen.getByText(ro.Documents.noMatches)).toBeVisible();
+    fireEvent.click(screen.getByRole('button', {name: 'Filtrează (3)'}));
+    for (const status of ['review', 'expiring', 'expired'] as const) expect(screen.getByRole('checkbox', {name: new RegExp(ro.Documents.status[status])})).toBeChecked();
+    expect(screen.getByRole('checkbox', {name: new RegExp(ro.Documents.status.valid)})).not.toBeChecked();
+    fireEvent.click(screen.getByRole('button', {name: 'Resetează'}));
+    expect(screen.getByText('Nu există documente încă')).toBeVisible();
   });
 });

@@ -42,9 +42,10 @@ describe('dashboard overview', () => {
     expect(within(summary).getByText('0')).toBeVisible();
 
     const table = screen.getByRole('table');
-    expect(within(table).getAllByRole('row')).toHaveLength(8);
-    expect(within(table).getByText('Construct Pro SRL')).toBeVisible();
-    expect(within(table).getByText('Certificare ISO 9001')).toBeVisible();
+    expect(within(table).getAllByRole('row')).toHaveLength(11);
+    expect(within(table).getAllByText('Construct Pro SRL').length).toBeGreaterThan(0);
+    expect(within(table).queryByText('Certificare ISO 9001')).not.toBeInTheDocument();
+    expect(within(table).getAllByText('Necesită revizuire')).toHaveLength(4);
     expect(within(table).getAllByText('Expiră curând')).toHaveLength(4);
     expect(screen.getByRole('heading', {name: 'Status furnizori'})).toBeVisible();
     expect(screen.getByRole('img', {name: 'Status furnizori: 24 furnizori'})).toBeVisible();
@@ -67,6 +68,6 @@ describe('dashboard overview', () => {
     }
     expect(screen.getAllByRole('button', {name: 'User profile: Andrei Popescu'})).toHaveLength(2);
     expect(screen.getByRole('button', {name: 'Demo Company SRL'})).toBeVisible();
-    expect(screen.getByText('Tax certificate', {selector: 'td'})).toBeVisible();
+    expect(screen.getAllByText('Tax certificate', {selector: 'td'}).length).toBeGreaterThan(0);
   });
 });

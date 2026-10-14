@@ -1,22 +1,20 @@
 import {activeDocuments, type CreatedDocument} from '@/features/documents/created-documents';
-import {notificationDocuments} from '@/features/notifications/document-projections';
+import {attentionComplianceStatuses} from '@/features/documents/attention';
 import type {AuditEvent} from '@/features/notifications/types';
 import {vendorSummary} from '@/features/vendors/created-vendors';
 import {getVendorRequirements, type VendorRequirementsWorkspace} from '@/features/vendors/vendor-requirements';
 import {projectVendorDocuments} from '@/features/vendors/projections';
 import type {VendorListItem} from '@/features/vendors/types';
 import {fixtureReferenceTime, localizedDate, calendarDaysUntil} from '@/lib/fixture-clock';
-import type {DashboardViewModel} from './types';
+import type {DashboardDocumentStatus, DashboardViewModel} from './types';
 
 export function projectDashboard(view: DashboardViewModel, companyId: string, vendors: VendorListItem[], workspaces: Record<string, VendorRequirementsWorkspace>, records: CreatedDocument[], events: AuditEvent[]): DashboardViewModel {
   const projected = vendors.map((vendor) => projectVendorDocuments(vendor, getVendorRequirements(workspaces, companyId, vendor.id), records, companyId));
   const counts = vendorSummary(projected);
   const percent = (value: number) => counts.all ? Math.round(value / counts.all * 100) : 0;
-  const {missingDocuments, expiringDocuments} = notificationDocuments(companyId, vendors, workspaces, records);
-  const expired = activeDocuments(records, companyId).filter((document) => document.reviewOutcome === 'approved' && document.complianceStatus === 'expired');
-  const attention = [...expired.map((document) => ({id: document.id, supplier: document.vendorName, document: document.documentName, status: 'expired' as const, expiry: localizedDate(document.expiresAt!)})),
-    ...expiringDocuments.map((document) => ({id: document.id, supplier: document.vendorName, document: document.documentName, status: 'expiring' as const, expiry: localizedDate(document.expiresAt)})),
-    ...missingDocuments.map((document) => ({id: document.id, supplier: document.vendorName, document: document.documentName, status: 'missing' as const, expiry: {ro: '—', en: '—'}}))];
+  const attention = activeDocuments(records, companyId).filter((document) => attentionComplianceStatuses.some((status) => status === document.complianceStatus))
+    .map((document) => ({id: document.id, supplier: document.vendorName, document: document.documentName, status: document.status as DashboardDocumentStatus,
+      expiry: document.expiresAt ? localizedDate(document.expiresAt) : {ro: '—', en: '—'}}));
   const recent = events.filter((event) => event.companyId === companyId).sort((a, b) => b.occurredAt.localeCompare(a.occurredAt)).slice(0, 4);
   return {...view, suppliers: {...view.suppliers, total: counts.all, compliant: counts.compliant, attention: counts.attention, noncompliant: counts.noncompliant,
     monthlyIncrease: events.filter((event) => event.companyId === companyId && event.eventType === 'vendor_added' && event.occurredAt.slice(0, 7) === fixtureReferenceTime.slice(0, 7)).length,
