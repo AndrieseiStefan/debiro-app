@@ -50,6 +50,8 @@ E1-032Bb supersedes Dashboard's missing-requirement document row and redundant c
 
 E1-032Bb2 caps the Dashboard attention preview at five rows, preserving deterministic urgency order (Expired, Review, Expiring). Its informational footer shows only the real total, without a preview-limit suffix in RO/EN. View all still opens the complete filtered Documents list; no table pagination, vertical scroller or other visual redesign is added.
 
+E1-032Bc gives Reports the shared Coming Soon navigation state: readable muted text/icon, unchanged item geometry, no clickable/active treatment and the approved RO/EN hover/focus/touch explanation. Reports remains visible but cannot navigate; no Reports screen or other navigation redesign is introduced.
+
 ## Contract
 
 For every approved mockup, these are canonical:

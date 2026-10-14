@@ -431,6 +431,7 @@
     "startFree": "Get started free"
   },
   "AppShell": {
+    "navigationComingSoon": "In progress · Coming soon",
     "sidebarLabel": "Application sidebar",
     "navigationLabel": "Application navigation",
     "taglineOne": "Trusted partners.",

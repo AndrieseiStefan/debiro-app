@@ -36,6 +36,12 @@ Surface and StatusBadge base treatments have intentionally low CSS specificity. 
 
 E1-003 composes AppShell into a separate `AuthenticatedAppShell` with `AppSidebar` and `AppTopBar` for product screens. The authenticated shell currently has no session or route guard. Its layout contract is defined below.
 
+### Navigation availability and tooltip (E1-032Bc)
+
+`SidebarNavigationItem` shares the existing primary/nested navigation geometry and accepts `availability: 'available' | 'comingSoon'` (available by default). Coming-soon items render a focusable `aria-disabled` button, never a link or active destination. Their icon/text have reduced but readable emphasis, no clickable hover/pressed background and a default cursor. Reports is the only current opt-in and is explicitly post-MVP; `/reports` and `/en/reports` remain absent.
+
+There was no accessible shared Tooltip beyond native `title` hints. The reusable `Tooltip` now exposes an `aria-describedby` explanation on button hover/focus or touch, with the exact RO/EN navigation message `În lucru · Disponibil în curând` / `In progress · Coming soon`. It uses existing surface/border/radius/shadow tokens, a viewport-clamped fixed portal outside scrolling/clipping containers, and no trigger wrapper or focus trap. Pointer transfer onto the tooltip keeps it open; Escape, blur or outside interaction dismiss it. Enter/Space on unavailable navigation is suppressed without changing the route, history or active item. Available links, Company Settings disclosure behavior, menu order, shell dimensions and breakpoints remain unchanged.
+
 For each new canonical screen, inspect and reuse existing components and page containers before adding a primitive; compose existing pieces or keep screen-specific UI inside its feature. Implemented screens are regression-protected. Change shared components used by them only for a necessary reusable requirement, keep the change backward-compatible unless an explicit migration task says otherwise, and revalidate every affected existing screen. Do not refactor unrelated working UI as part of a new screen task.
 
 ## View data and localization

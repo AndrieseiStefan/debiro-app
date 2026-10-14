@@ -24,6 +24,84 @@ async function assertSection(page: Page, locale: 'ro' | 'en', section: typeof se
 }
 
 for (const locale of ['ro', 'en'] as const) {
+  const prefix = locale === 'en' ? '/en' : '';
+  const reportsLabel = locale === 'ro' ? 'Rapoarte' : 'Reports';
+  const explanation = locale === 'ro' ? 'În lucru · Disponibil în curând' : 'In progress · Coming soon';
+
+  test(`${locale.toUpperCase()} Reports explains its unavailable state without route, history or active-state changes`, async ({page}) => {
+    await page.goto(`${prefix}/dashboard`);
+    const navigation = page.getByRole('navigation', {name: locale === 'ro' ? 'Navigare în aplicație' : 'Application navigation'});
+    const reports = navigation.getByRole('button', {name: reportsLabel, exact: true});
+    await expect(reports).toHaveAttribute('aria-disabled', 'true'); await expect(reports).not.toHaveAttribute('disabled');
+    await expect(navigation.getByRole('link', {name: reportsLabel, exact: true})).toHaveCount(0);
+    const historySnapshot = () => page.evaluate(() => ({url: location.href, length: history.length, state: JSON.stringify(history.state)}));
+    const before = await historySnapshot();
+    const geometry = await reports.boundingBox();
+    const appearance = await reports.evaluate((element) => ({color: getComputedStyle(element).color, background: getComputedStyle(element).backgroundColor, cursor: getComputedStyle(element).cursor}));
+    expect(appearance.cursor).toBe('default');
+    expect(appearance.color).not.toBe(await navigation.getByRole('link', {name: 'Dashboard', exact: true}).evaluate((element) => getComputedStyle(element).color));
+
+    await reports.hover();
+    await expect(page.getByRole('tooltip')).toHaveText(explanation); await expect(reports).toHaveAccessibleDescription(explanation);
+    expect(await reports.boundingBox()).toEqual(geometry);
+    expect(await reports.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(appearance.background);
+    await page.getByRole('tooltip').hover(); await expect(page.getByRole('tooltip')).toBeVisible();
+    await page.mouse.move(800, 300);
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+
+    await navigation.locator(`a[href="${prefix}/notifications"]`).focus();
+    await page.keyboard.press('Tab'); await expect(reports).toBeFocused();
+    await expect(page.getByRole('tooltip')).toHaveText(explanation);
+    expect(await reports.evaluate((element) => element.matches(':focus-visible') && getComputedStyle(element).outlineStyle !== 'none')).toBe(true);
+    await page.keyboard.press('Escape'); await expect(page.getByRole('tooltip')).toHaveCount(0); await expect(reports).toBeFocused();
+    for (const key of ['Enter', 'Space']) {await page.keyboard.press(key); expect(await historySnapshot()).toEqual(before);}
+    // aria-disabled remains focusable; send the actual mouse click despite Playwright's disabled-action guard.
+    await reports.click({force: true}); await expect(page.getByRole('tooltip')).toHaveText(explanation);
+    expect(await historySnapshot()).toEqual(before); await assertSection(page, locale, sections[0]);
+    await expect(reports).not.toHaveAttribute('aria-current');
+    await navigation.getByRole('link', {name: locale === 'ro' ? 'Furnizori' : 'Suppliers', exact: true}).click();
+    await assertSection(page, locale, sections[1]);
+    const afterNavigation = await historySnapshot(); await reports.click({force: true}); expect(await historySnapshot()).toEqual(afterNavigation);
+    await assertSection(page, locale, sections[1]);
+    expect((await page.goto(`${prefix}/reports`))?.status()).toBe(404);
+  });
+
+  test(`${locale.toUpperCase()} coming-soon navigation stays contained in tablet and compact shells`, async ({page}) => {
+    for (const width of [1024, 801, 800, 758, 600]) {
+      await page.setViewportSize({width, height: 900}); await page.goto(`${prefix}/dashboard`);
+      const navigation = page.getByRole('navigation', {name: locale === 'ro' ? 'Navigare în aplicație' : 'Application navigation'});
+      const reports = navigation.getByRole('button', {name: reportsLabel, exact: true});
+      await reports.scrollIntoViewIfNeeded(); await reports.focus();
+      const tooltip = page.getByRole('tooltip'); await expect(tooltip).toHaveText(explanation);
+      const bounds = (await tooltip.boundingBox())!;
+      expect(bounds.x).toBeGreaterThanOrEqual(0); expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
+      expect(bounds.y).toBeGreaterThanOrEqual(0); expect(bounds.y + bounds.height).toBeLessThanOrEqual(900);
+      await reports.click({force: true}); await expect(page).toHaveURL(`${prefix}/dashboard`); await expect(reports).not.toHaveAttribute('aria-current');
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    }
+  });
+
+  test(`${locale.toUpperCase()} touch users can discover Reports help without activating navigation`, async ({browser, baseURL}) => {
+    const context = await browser.newContext({baseURL, hasTouch: true, isMobile: true});
+    const page = await context.newPage();
+    try {
+      for (const width of [375, 320]) {
+        await page.setViewportSize({width, height: 812}); await page.goto(`${prefix}/dashboard`);
+        const navigation = page.getByRole('navigation', {name: locale === 'ro' ? 'Navigare în aplicație' : 'Application navigation'});
+        const reports = navigation.getByRole('button', {name: reportsLabel, exact: true});
+        await reports.scrollIntoViewIfNeeded(); const bounds = (await reports.boundingBox())!;
+        const before = await page.evaluate(() => ({url: location.href, length: history.length, state: JSON.stringify(history.state)}));
+        await page.touchscreen.tap(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+        const tooltip = page.getByRole('tooltip'); await expect(tooltip).toHaveText(explanation); await expect(reports).toHaveAccessibleDescription(explanation);
+        const tip = (await tooltip.boundingBox())!; expect(tip.x).toBeGreaterThanOrEqual(0); expect(tip.x + tip.width).toBeLessThanOrEqual(width);
+        expect(await page.evaluate(() => ({url: location.href, length: history.length, state: JSON.stringify(history.state)}))).toEqual(before);
+        await assertSection(page, locale, sections[0]);
+        await page.getByRole('heading', {level: 1}).tap(); await expect(tooltip).toHaveCount(0);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      }
+    } finally {await context.close();}
+  });
+
   test(`${locale.toUpperCase()} direct routes and repeated sidebar navigation agree on one active section`, async ({page}) => {
     test.setTimeout(60_000);
     const prefix = locale === 'en' ? '/en' : '';

@@ -87,6 +87,9 @@
   cursor: default;
 }
 
+.comingSoon, .comingSoon:hover, .comingSoon:active {background: transparent; border-color: transparent; box-shadow: none; color: #a8bbd3; cursor: default;}
+.comingSoon:focus-visible {outline: 3px solid #d4e1f2; outline-offset: -3px;}
+
 .active {
   background: linear-gradient(110deg, #1c5bb2, #225a9e);
   border-color: #2e74d4;

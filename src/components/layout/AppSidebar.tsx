@@ -4,21 +4,22 @@ import {useLayoutEffect, useRef, useSyncExternalStore} from 'react';
 import {useTranslations} from 'next-intl';
 import {BrandWordmark} from '@/components/brand/BrandWordmark';
 import type {NotificationActivityItem} from '@/features/notifications/types';
-import {Link, usePathname} from '@/i18n/navigation';
+import {usePathname} from '@/i18n/navigation';
 import {AppIcon, type AppIconName} from './AppIcon';
 import {AppUtilities} from './AppUtilities';
 import {CompanySwitcher} from './CompanySwitcher';
+import {SidebarNavigationItem, type NavigationAvailability} from './SidebarNavigationItem';
 import styles from './AppSidebar.module.css';
 
 const items = [
-  {id: 'dashboard', icon: 'home'},
-  {id: 'suppliers', icon: 'users'},
-  {id: 'documents', icon: 'file'},
-  {id: 'requirements', icon: 'shield'},
-  {id: 'notifications', icon: 'bell'},
-  {id: 'reports', icon: 'bars'},
+  {id: 'dashboard', icon: 'home', href: '/dashboard'},
+  {id: 'suppliers', icon: 'users', href: '/vendors'},
+  {id: 'documents', icon: 'file', href: '/documents'},
+  {id: 'requirements', icon: 'shield', href: '/requirements'},
+  {id: 'notifications', icon: 'bell', href: '/notifications'},
+  {id: 'reports', icon: 'bars', href: '/reports', availability: 'comingSoon'},
   {id: 'settings', icon: 'settings'}
-] as const satisfies ReadonlyArray<{id: string; icon: AppIconName}>;
+] as const satisfies ReadonlyArray<{id: string; icon: AppIconName; href?: string; availability?: NavigationAvailability}>;
 
 let settingsExpansion: boolean | null = null;
 const settingsExpansionListeners = new Set<() => void>();
@@ -91,17 +92,12 @@ export function AppSidebar({locale, currentPath, notificationCount, notification
           if (item.id === 'settings') return <div key={item.id} className={styles.settingsGroup} data-expanded={settingsExpanded}>
             <button type="button" className={`${styles.navItem} ${styles.settingsToggle} ${activeSection === 'settings' ? styles.active : ''}`} aria-label={t('navigation.settings')} aria-expanded={settingsExpanded} aria-controls={settingsExpanded ? 'company-settings-subnav' : undefined} onClick={() => setSettingsExpansion(!settingsExpanded)}>{content}<AppIcon name="chevronDown" size={17} /></button>
             {settingsExpanded && <div id="company-settings-subnav" className={styles.settingsSubnav}>
-              <Link href="/company/settings/profile" aria-current={pathname === '/company/settings/profile' ? 'page' : undefined} className={`${styles.settingsLink} ${pathname === '/company/settings/profile' ? styles.settingsActive : ''}`}><AppIcon name="building" size={18}/>{t('navigation.companyProfile')}</Link>
-              <Link href="/company/settings/members" aria-current={pathname === '/company/settings/members' ? 'page' : undefined} className={`${styles.settingsLink} ${pathname === '/company/settings/members' ? styles.settingsActive : ''}`}><AppIcon name="users" size={18}/>{t('navigation.membersAccess')}</Link>
-              <Link href="/company/settings/billing" aria-current={pathname === '/company/settings/billing' ? 'page' : undefined} className={[styles.settingsLink, pathname === '/company/settings/billing' ? styles.settingsActive : ''].filter(Boolean).join(' ')}><AppIcon name="file" size={18}/>{t('navigation.plansBilling')}</Link>
+              <SidebarNavigationItem href="/company/settings/profile" active={pathname === '/company/settings/profile'} nested><AppIcon name="building" size={18}/>{t('navigation.companyProfile')}</SidebarNavigationItem>
+              <SidebarNavigationItem href="/company/settings/members" active={pathname === '/company/settings/members'} nested><AppIcon name="users" size={18}/>{t('navigation.membersAccess')}</SidebarNavigationItem>
+              <SidebarNavigationItem href="/company/settings/billing" active={pathname === '/company/settings/billing'} nested><AppIcon name="file" size={18}/>{t('navigation.plansBilling')}</SidebarNavigationItem>
             </div>}
           </div>;
-          if (item.id === 'dashboard' || item.id === 'suppliers' || item.id === 'requirements' || item.id === 'documents' || item.id === 'notifications') {
-            const path = item.id === 'dashboard' ? '/dashboard' : item.id === 'suppliers' ? '/vendors' : item.id === 'requirements' ? '/requirements' : item.id === 'notifications' ? '/notifications' : '/documents';
-            const active = activeSection === item.id;
-            return <Link key={item.id} href={path} aria-current={active ? 'page' : undefined} className={`${styles.navItem} ${active ? styles.active : ''}`}>{content}</Link>;
-          }
-          return <button key={item.id} type="button" aria-disabled="true" className={styles.navItem}>{content}</button>;
+          return <SidebarNavigationItem key={item.id} href={item.href} active={activeSection === item.id} availability={'availability' in item ? item.availability : 'available'}>{content}</SidebarNavigationItem>;
         })}
       </nav>
 

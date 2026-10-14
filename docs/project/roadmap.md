@@ -4,6 +4,8 @@ This roadmap records direction only. Detailed requirements are created by the ta
 
 ## Phase 0 — Product & Repository Foundation
 
+- E1-032Bc navigation availability — implemented shared Coming Soon rendering and accessible localized tooltip; Reports remains visible, unavailable and explicitly post-MVP, without a placeholder route
+
 - E1-032Bb/Bb2 Dashboard secondary navigation — implemented locally with a five-row urgency-ordered attention preview retaining full totals without a preview-limit suffix, transient Documents attention filters, uploaded-file-only counts, normal Notifications entry and removal of redundant chart/footer actions
 
 - E1-032Ba secondary management actions — implemented locally: vendor KPI drill-down, notification toggles, member role/removal and invitation role/cancellation, invoice cleanup and owner-approved sample CSV download; backend services remain deferred
