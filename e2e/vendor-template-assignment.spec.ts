@@ -142,7 +142,7 @@ test('custom identity is reused across templates and uploads; later template edi
   await expect(custom).toHaveCount(1);
   await expect(custom).toContainText('Șablon: Acces A'); await expect(custom).toContainText('Șablon: Acces B');
   const before = await custom.innerText();
-  await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Cerințe', exact: true}).click();
+  await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Șabloane', exact: true}).click();
   await page.getByRole('button', {name: /^Acces A/}).click();
   await page.locator('#requirement-template-name').fill('Acces A schimbat');
   await page.getByRole('button', {name: 'Salvează șablon', exact: true}).click();
@@ -199,7 +199,7 @@ test('no-compatible empty state links safely to Requirements and company switche
   await expect(drawer).toContainText('Nu există șabloane compatibile cu această categorie.');
   await expect(drawer.getByRole('checkbox')).toHaveCount(6);
   for (const checkbox of await drawer.getByRole('checkbox').all()) await expect(checkbox).toBeDisabled();
-  await drawer.getByRole('link', {name: 'Vezi cerințele'}).click();
+  await drawer.getByRole('link', {name: 'Vezi șabloanele'}).click();
   await expect(page).toHaveURL(/\/requirements$/);
   await goToVendor(page);
   await applyConstruction(page);

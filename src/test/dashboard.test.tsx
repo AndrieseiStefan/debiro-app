@@ -36,7 +36,7 @@ describe('dashboard overview', () => {
     const navigation = screen.getByRole('navigation', {name: 'Navigare în aplicație'});
     expect(within(navigation).getByRole('link', {name: 'Dashboard'})).toHaveAttribute('aria-current', 'page');
     expect(within(navigation).getByRole('link', {name: 'Furnizori'})).toHaveAttribute('href', '/vendors');
-    expect(screen.getByRole('combobox', {name: 'Caută furnizori, documente sau cerințe'})).toBeVisible();
+    expect(screen.getByRole('combobox', {name: 'Caută furnizori, documente sau șabloane'})).toBeVisible();
     expect(screen.queryByRole('button', {name: 'Adaugă furnizor'})).not.toBeInTheDocument();
 
     const summary = screen.getByRole('region', {name: 'Status furnizori'});

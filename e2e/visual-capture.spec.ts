@@ -261,7 +261,7 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
       if (route !== '/requirements' && route !== '/en/requirements') throw new Error('Starter capture requires Requirements.');
       const english = route.startsWith('/en');
       await createWorkspaceCompany(page, 'Starter Workspace', english); await workspaceSection(page, 'requirements', english);
-      await page.getByRole('button', {name: english ? 'New template' : 'Șablon nou', exact: true}).click();
+      await page.getByRole('button', {name: english ? 'New Template' : 'Șablon nou', exact: true}).click();
       if (action === 'starter-no-results') await page.getByRole('searchbox', {name: english ? 'Search DEBIRO suggestions' : 'Caută sugestii DEBIRO'}).fill('zzzzzz');
       else if (action !== 'starter-catalog') {
         await page.locator('[data-starter-id="starter-software"]').click();
@@ -269,7 +269,7 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
           await page.getByRole('button', {name: english ? 'Use this template' : 'Folosește acest șablon'}).click();
           await expect(page.locator('#requirement-template-name')).toHaveValue(english ? 'IT services' : 'Servicii IT');
           if (action === 'starter-already-added') {
-            await page.getByRole('button', {name: english ? 'New template' : 'Șablon nou', exact: true}).click();
+            await page.getByRole('button', {name: english ? 'New Template' : 'Șablon nou', exact: true}).click();
             await page.locator('[data-starter-id="starter-software"]').click();
             await expect(page.getByRole('button', {name: english ? 'Open template' : 'Deschide șablonul', exact: true})).toBeVisible();
           }
@@ -283,7 +283,7 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
         await page.getByRole('tab', {name: english ? 'Preview' : 'Previzualizare'}).click();
         await expect(page.locator('#preview-panel')).toBeVisible();
       } else if (action === 'requirement-draft') {
-        await page.getByRole('button', {name: english ? 'New template' : 'Șablon nou', exact: true}).click();
+        await page.getByRole('button', {name: english ? 'New Template' : 'Șablon nou', exact: true}).click();
         await page.getByRole('button', {name: english ? 'Create new template' : 'Creează șablon nou', exact: true}).click();
       }
       else if (action === 'requirement-appearance') {

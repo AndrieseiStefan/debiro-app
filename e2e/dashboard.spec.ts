@@ -7,7 +7,7 @@ test('renders the canonical Romanian dashboard in the authenticated shell', asyn
   await expect(page.locator('html')).toHaveAttribute('lang', 'ro');
   await expect(page.getByRole('heading', {level: 1})).toHaveText('Bun venit, Andrei!');
   await expect(page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Dashboard'})).toHaveAttribute('aria-current', 'page');
-  await expect(page.getByRole('combobox', {name: 'Caută furnizori, documente sau cerințe'})).toBeVisible();
+  await expect(page.getByRole('combobox', {name: 'Caută furnizori, documente sau șabloane'})).toBeVisible();
   await page.getByRole('combobox').fill('Construct Pro');
   await expect(page.getByRole('combobox')).toHaveValue('Construct Pro');
   await page.keyboard.press('Escape');
@@ -141,7 +141,7 @@ test('keeps authenticated utilities and organization in the correct responsive s
       await page.setViewportSize({width, height});
       await expect(sidebar.getByText('DEBIRO')).toBeVisible();
       await expect(navigation.getByRole('link', {name: 'Dashboard'})).toBeVisible();
-      await expect(header.getByRole('combobox', {name: 'Caută furnizori, documente sau cerințe'})).toBeVisible();
+      await expect(header.getByRole('combobox', {name: 'Caută furnizori, documente sau șabloane'})).toBeVisible();
       await expect(sidebar.getByRole('button', {name: 'Demo Company SRL'})).toBeVisible();
 
       const utilityRegion = width <= 800 ? sidebar : header;

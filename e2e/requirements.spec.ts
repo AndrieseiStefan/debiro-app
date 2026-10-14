@@ -1,11 +1,45 @@
 import {expect, test, type Locator} from '@playwright/test';
+import {mkdir} from 'node:fs/promises';
 
 const roPath = '/requirements';
 
+test('Templates terminology stays consistent in RO/EN desktop and compact navigation', async ({page}) => {
+  await mkdir('artifacts/visual/e1-032bg', {recursive: true});
+  for (const english of [false, true]) {
+    const prefix = english ? '/en' : '', section = english ? 'Templates' : 'Șabloane';
+    await page.goto(`${prefix}/requirements`);
+    for (const width of [1448, 758, 375, 320]) {
+      await page.setViewportSize({width, height: width === 1448 ? 1086 : 812});
+      const nav = page.getByRole('navigation', {name: english ? 'Application navigation' : 'Navigare în aplicație'});
+      const link = nav.getByRole('link', {name: section, exact: true});
+      await link.scrollIntoViewIfNeeded(); await expect(link).toBeVisible();
+      await expect(link).toHaveAttribute('href', `${prefix}/requirements`); await expect(link).toHaveAttribute('aria-current', 'page');
+      await expect(page.getByRole('heading', {level: 1})).toHaveText(english ? 'Requirement Templates' : 'Șabloane de cerințe');
+      await expect(page.getByRole('heading', {level: 2, name: english ? 'Requirement Templates' : 'Șabloane de cerințe', exact: true})).toBeVisible();
+      await expect(page.getByRole('button', {name: english ? 'New Template' : 'Șablon nou', exact: true})).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      await page.screenshot({path: `artifacts/visual/e1-032bg/${english ? 'en' : 'ro'}-${width}.png`});
+      const search = page.getByRole('combobox', {name: english ? 'Search vendors, documents or templates' : 'Caută furnizori, documente sau șabloane', exact: true});
+      await search.fill(english ? 'IT services' : 'Servicii IT');
+      const panel = page.locator('[data-global-search-panel]');
+      await expect(panel.getByRole('heading', {name: `${section} (1)`, exact: true})).toBeVisible();
+      const result = panel.locator('[data-search-result="requirement:software"]');
+      await expect(result).toHaveAttribute('href', `${prefix}/requirements?template=software`);
+      await page.screenshot({path: `artifacts/visual/e1-032bg/${english ? 'en' : 'ro'}-search-${width}.png`});
+      await result.click(); await expect(panel).toHaveCount(0);
+      await expect(page.locator('#requirement-template-name')).toHaveValue(english ? 'IT services' : 'Servicii IT');
+    }
+  }
+});
+
 test('renders both locales with canonical fixture rules and local template search', async ({page}) => {
   await page.goto(roPath);
-  await expect(page.getByRole('heading', {level: 1, name: 'Cerințe documente'})).toBeVisible();
-  await expect(page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Cerințe'})).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('heading', {level: 1, name: 'Șabloane de cerințe'})).toBeVisible();
+  await expect(page.getByText('Creează și gestionează seturi de documente necesare pentru fiecare categorie de furnizori.', {exact: true})).toBeVisible();
+  await expect(page.getByRole('navigation', {name: 'Navigare pe pagină'})).toHaveText('DashboardȘabloane');
+  await expect(page.getByRole('button', {name: 'Șablon nou', exact: true})).toBeVisible();
+  await expect(page.getByRole('combobox', {name: 'Caută furnizori, documente sau șabloane', exact: true})).toHaveAttribute('placeholder', 'Caută furnizori, documente sau șabloane...');
+  await expect(page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Șabloane'})).toHaveAttribute('aria-current', 'page');
   await expect(page.getByRole('table').getByRole('row')).toHaveCount(6);
   await expect(page.getByText('Acest șablon va fi disponibil pentru atribuire la furnizori din categoria „Construcții”.')).toBeVisible();
   await expect(page.getByRole('tab')).toHaveCount(2);
@@ -16,8 +50,12 @@ test('renders both locales with canonical fixture rules and local template searc
   await expect(page.getByRole('table').getByRole('row')).toHaveCount(5);
   await expect(page.getByText('Acest șablon va fi disponibil pentru atribuire la furnizori din categoria „Materiale construcții”.')).toBeVisible();
   await page.goto('/en/requirements');
-  await expect(page.getByRole('heading', {level: 1, name: 'Document requirements'})).toBeVisible();
-  await expect(page.getByRole('navigation', {name: 'Application navigation'}).getByRole('link', {name: 'Requirements'})).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('heading', {level: 1, name: 'Requirement Templates'})).toBeVisible();
+  await expect(page.getByText('Create and manage sets of required documents for each vendor category.', {exact: true})).toBeVisible();
+  await expect(page.getByRole('navigation', {name: 'Page navigation'})).toHaveText('DashboardTemplates');
+  await expect(page.getByRole('button', {name: 'New Template', exact: true})).toBeVisible();
+  await expect(page.getByRole('combobox', {name: 'Search vendors, documents or templates', exact: true})).toHaveAttribute('placeholder', 'Search vendors, documents or templates...');
+  await expect(page.getByRole('navigation', {name: 'Application navigation'}).getByRole('link', {name: 'Templates'})).toHaveAttribute('aria-current', 'page');
   await expect(page.getByRole('tab')).toHaveCount(2);
   await expect(page.getByText('This template will be available to assign to suppliers in the “Construction” category.')).toBeVisible();
 });
@@ -26,7 +64,7 @@ test('contains the page across the required authenticated widths', async ({page}
   await page.goto(roPath);
   for (const width of [1448, 1024, 801, 799, 600, 375, 320]) {
     await page.setViewportSize({width, height: width === 1448 ? 1086 : width === 375 ? 812 : 768});
-    await expect(page.getByRole('heading', {level: 1, name: 'Cerințe documente'})).toBeVisible();
+    await expect(page.getByRole('heading', {level: 1, name: 'Șabloane de cerințe'})).toBeVisible();
     const dimensions = await page.evaluate(() => ({document: document.documentElement.scrollWidth, table: document.querySelector('[role="region"][aria-label="Documentele și regulile șablonului"]')!.getBoundingClientRect().right}));
     expect(dimensions.document, `document overflow at ${width}px`).toBeLessThanOrEqual(width);
     expect(dimensions.table, `table region escaped at ${width}px`).toBeLessThanOrEqual(width + 1);
@@ -43,12 +81,12 @@ test('keeps direct and client-navigated Requirements geometry equivalent', async
     await page.goto(roPath);
     const direct = await measure();
     await page.goto('/dashboard');
-    await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Cerințe'}).click();
+    await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Șabloane'}).click();
     await expect(page).toHaveURL(/\/requirements$/);
     await expect(page.getByRole('tabpanel', {name: /^Documente necesare/})).toBeVisible();
     expect(await measure()).toEqual(direct);
     await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Furnizori'}).click();
-    await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Cerințe'}).click();
+    await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Șabloane'}).click();
     await expect(page.getByRole('tabpanel', {name: /^Documente necesare/})).toBeVisible();
     expect(await measure()).toEqual(direct);
   }
@@ -420,7 +458,7 @@ test('edits custom metadata and protects dirty existing templates across navigat
   await expect(page.getByRole('alertdialog')).toBeVisible();
   await page.getByRole('button', {name: 'Renunță la modificări'}).click();
   await expect(page).toHaveURL(/\/vendors$/);
-  await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Cerințe'}).click();
+  await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Șabloane'}).click();
   await expect(name).toHaveValue('Subcontractor construcții');
   await expect(page.getByRole('row').filter({hasText: 'Aviz local QA'})).toBeVisible();
   await expect(page.getByText('Aviz local corectat')).toHaveCount(0);

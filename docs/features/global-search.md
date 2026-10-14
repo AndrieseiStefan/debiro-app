@@ -2,13 +2,15 @@
 
 The existing authenticated top-navigation `SearchInput` now searches the active company's local workspace while typing. The current route and shell remain unchanged until a result is selected. [The canonical reference](../design/mockups/e1-032bf-global-search.png) supplies grouped rows, hierarchy and match emphasis; existing DEBIRO controls and this task's explicit data/action boundaries take precedence.
 
+E1-032Bg names the reusable-template group **Șabloane / Templates**, including localized counts and ready/no-match copy. The existing input's placeholder and accessible label now refer to “furnizori, documente sau șabloane” / “vendors, documents or templates”. Existing localization keys, matching fields/order, company/role boundaries and `/requirements?template=<id>` editor/Preview destinations are unchanged. Assigned vendor requirements are not renamed.
+
 ## Data and matching
 
 `search-workspace.ts` is a synchronous, pure presentation projection over the existing company, vendor, uploaded-document, vendor-requirement and Requirements stores. It neither imports page fixtures nor mutates records. Active membership and company scope are checked before searching:
 
 - Vendors: name, CUI and localized operational category. Compliance uses the same configured-requirement/current-document projection as Vendor Details/List. Contact information, descriptive industry and document contents are not searched.
 - Documents: localized displayed name, filename and actual catalog/custom type label. Only owned current uploads with an owned vendor are searchable; rejected and superseded versions are excluded. History remains available inside existing Details/History.
-- Requirements: company-owned template name, description and category, plus the existing company draft. There is one result per template, not one per contained rule. Platform starter suggestions are excluded. Incomplete drafts retain their identity, missing category/rules and validation; search never saves or finalizes them.
+- Templates: company-owned template name, description and category, plus the existing company draft. There is one result per template, not one per contained rule. Platform starter suggestions are excluded. Incomplete drafts retain their identity, missing category/rules and validation; search never saves or finalizes them.
 
 Normalization reuses the Requirements catalog helper: case/diacritic insensitive, collapsed whitespace and trimmed partial text. Empty/invalid queries return without scanning entity stores. Each group sorts exact title, title prefix, title substring, then secondary-field matches, with localized alphabetical and stable-ID ties. All matches appear; counts come from the same result projection, with empty groups omitted. There is no preview cap, pagination, View all, results route, OCR, remote API, search history or keystroke audit event.
 

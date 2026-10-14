@@ -4,6 +4,8 @@ This roadmap records direction only. Detailed requirements are created by the ta
 
 ## Phase 0 — Product & Repository Foundation
 
+- E1-032Bg terminology — implemented UI-copy-only Templates / Șabloane naming across template-management entry points and Global Search; existing routes, data/contracts and vendor obligations remain unchanged
+
 - E1-032Bf global search — implemented with local company-scoped matching, complete grouped results, keyboard navigation and existing role-aware entity destinations; no new results page/backend/history
 
 - E1-032Be section action consistency — implemented shared expansion/navigation modes, canonical localized labels and down/up vs right-arrow semantics, without preview/filter/ownership changes

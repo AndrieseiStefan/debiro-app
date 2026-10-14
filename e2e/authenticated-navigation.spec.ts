@@ -4,7 +4,7 @@ const sections = [
   {path: '/dashboard', ro: 'Dashboard', en: 'Dashboard', breadcrumbRo: null, breadcrumbEn: null},
   {path: '/vendors', ro: 'Furnizori', en: 'Suppliers', breadcrumbRo: 'DashboardFurnizori', breadcrumbEn: 'DashboardSuppliers'},
   {path: '/documents', ro: 'Documente', en: 'Documents', breadcrumbRo: 'DashboardDocumente', breadcrumbEn: 'DashboardDocuments'},
-  {path: '/requirements', ro: 'Cerințe', en: 'Requirements', breadcrumbRo: 'DashboardCerințe', breadcrumbEn: 'DashboardRequirements'},
+  {path: '/requirements', ro: 'Șabloane', en: 'Templates', breadcrumbRo: 'DashboardȘabloane', breadcrumbEn: 'DashboardTemplates'},
   {path: '/notifications', ro: 'Notificări', en: 'Notifications', breadcrumbRo: 'DashboardNotificări', breadcrumbEn: 'DashboardNotifications'}
 ] as const;
 

@@ -2,7 +2,7 @@ import {expect, test, type Page} from '@playwright/test';
 import {createWorkspaceCompany, switchWorkspaceCompany, workspaceSection} from './support/company-workspace';
 
 async function suggestions(page: Page, english: boolean) {
-  await page.getByRole('button', {name: english ? 'New template' : 'Șablon nou', exact: true}).click();
+  await page.getByRole('button', {name: english ? 'New Template' : 'Șablon nou', exact: true}).click();
   await expect(page.locator('[data-starter-selector]')).toBeVisible();
 }
 async function chooseIT(page: Page, english: boolean) {

@@ -20,10 +20,10 @@ function renderRequirements(locale: 'ro' | 'en') {
 describe('document requirements', () => {
   it('renders canonical Romanian template rules and the active Requirements navigation', () => {
     renderRequirements('ro');
-    expect(screen.getByRole('heading', {level: 1, name: 'Cerințe documente'})).toBeVisible();
-    expect(within(screen.getByRole('navigation', {name: 'Navigare în aplicație'})).getByRole('link', {name: 'Cerințe'})).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('heading', {level: 1, name: 'Șabloane de cerințe'})).toBeVisible();
+    expect(within(screen.getByRole('navigation', {name: 'Navigare în aplicație'})).getByRole('link', {name: 'Șabloane'})).toHaveAttribute('aria-current', 'page');
     expect(document.querySelector('[data-page-header-support]')).toHaveTextContent('Un singur set de reguli.');
-    expect(screen.getByRole('heading', {name: 'Șabloane de cerințe'})).toBeVisible();
+    expect(screen.getByRole('heading', {level: 2, name: 'Șabloane de cerințe'})).toBeVisible();
     expect(screen.getByRole('tab', {name: 'Documente necesare (5)'})).toHaveAttribute('aria-selected', 'true');
     expect(screen.getAllByRole('tab')).toHaveLength(2);
     expect(screen.getByRole('tab', {name: 'Previzualizare'})).not.toHaveAttribute('aria-disabled');
@@ -38,7 +38,7 @@ describe('document requirements', () => {
 
   it('renders English and filters/selects templates locally without persistence', () => {
     renderRequirements('en');
-    expect(screen.getByRole('heading', {level: 1, name: 'Document requirements'})).toBeVisible();
+    expect(screen.getByRole('heading', {level: 1, name: 'Requirement Templates'})).toBeVisible();
     fireEvent.change(screen.getByRole('searchbox', {name: 'Search templates'}), {target: {value: 'materials'}});
     expect(screen.getByRole('button', {name: /Materials supplier/})).toBeVisible();
     fireEvent.click(screen.getByRole('button', {name: /Materials supplier/}));

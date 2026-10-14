@@ -2,7 +2,7 @@
 
 Do not pre-create feature specifications. A feature document is created by the task that defines or implements that feature, and it documents actual current requirements and behavior.
 
-Implemented screen records: [landing page](landing-page.md), [onboarding](onboarding.md), [login](login.md), [dashboard overview](dashboard.md), [Vendors List](vendors.md), [Vendor Details](vendor-details.md), [Document Requirements](requirements.md), [Invite Vendor drawer](invite-vendor.md), [Supplier Upload Portal](supplier-upload-portal.md), [Document Review](document-review.md), [Notifications and Audit Activity](notifications-audit.md), and [Documents](documents.md).
+Implemented screen records: [landing page](landing-page.md), [onboarding](onboarding.md), [login](login.md), [dashboard overview](dashboard.md), [Vendors List](vendors.md), [Vendor Details](vendor-details.md), [Requirement Templates](requirements.md), [Invite Vendor drawer](invite-vendor.md), [Supplier Upload Portal](supplier-upload-portal.md), [Document Review](document-review.md), [Notifications and Audit Activity](notifications-audit.md), and [Documents](documents.md).
 
 The authenticated shell also provides [global workspace search](global-search.md) across owned Vendors, current Documents and company Requirement templates/drafts.
 

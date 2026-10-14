@@ -38,7 +38,7 @@ test('company settings expansion persists while the active main section changes'
   for (const [label, path] of [
     ['Furnizori', '/vendors'],
     ['Documente', '/documents'],
-    ['Cerințe', '/requirements'],
+    ['Șabloane', '/requirements'],
     ['Notificări', '/notifications'],
     ['Dashboard', '/dashboard']
   ]) {

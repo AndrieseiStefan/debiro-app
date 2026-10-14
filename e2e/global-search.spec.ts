@@ -7,7 +7,7 @@ import type {readDocumentRecords} from '../src/features/documents/created-docume
 import {switchWorkspaceCompany} from './support/company-workspace';
 
 const panel = (page: Page) => page.locator('[data-global-search-panel]');
-const input = (page: Page, en = false) => page.getByRole('combobox', {name: en ? 'Search suppliers, documents or requirements' : 'Caută furnizori, documente sau cerințe', exact: true});
+const input = (page: Page, en = false) => page.getByRole('combobox', {name: en ? 'Search vendors, documents or templates' : 'Caută furnizori, documente sau șabloane', exact: true});
 async function query(page: Page, value: string, en = false) {await input(page, en).fill(value); await expect(panel(page)).toBeVisible();}
 async function open(page: Page, id: string) {await page.locator(`[data-search-result="${id}"]`).click(); await expect(panel(page)).toHaveCount(0);}
 
@@ -61,8 +61,12 @@ for (const en of [false, true]) {
     }
     await expect(panel(page).getByRole('status')).toContainText(String(count));
     await expect(panel(page).getByText(/Vezi toate|View all/)).toHaveCount(0);
+    await query(page, en ? 'IT services' : 'Servicii IT', en);
+    await expect(panel(page).getByRole('heading', {name: en ? 'Templates (1)' : 'Șabloane (1)'})).toBeVisible();
+    await expect(panel(page).getByRole('status')).toHaveText(en ? 'Found 1 result: 1 template' : 'Am găsit 1 rezultat: 1 șablon');
     await query(page, 'zzzzz-no-match', en); await expect(panel(page).getByRole('group')).toHaveCount(0);
     await expect(panel(page).getByText(en ? 'No results found' : 'Nu am găsit rezultate', {exact: true})).toHaveCount(1);
+    await expect(panel(page)).toContainText(en ? 'No vendors, documents or templates match your search.' : 'Nu există furnizori, documente sau șabloane care să corespundă căutării.');
     await panel(page).getByRole('button', {name: en ? 'Close search' : 'Închide căutarea'}).click();
     await expect(panel(page)).toHaveCount(0); await expect(search).toBeFocused();
     await query(page, '  CONSTRUCT   PRO ', en);

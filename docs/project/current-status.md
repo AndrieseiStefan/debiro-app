@@ -26,6 +26,8 @@ The final logo is not yet designed and must not be invented.
 
 ## Implemented
 
+- E1-032Bg template-management terminology — shared RO/EN catalogs name navigation/breadcrumbs/search groups Șabloane / Templates and page/list headings Șabloane de cerințe / Requirement Templates; approved description and New Template action, consistent section references/management links, with unchanged `/requirements` routes, workflows and assigned vendor-requirement terminology
+
 - E1-032Bf global workspace search — live normalized/deterministic matching over owned Vendors, current uploaded Documents and company Requirement templates/drafts, accurate grouped counts/all results in an internally scrolling panel, keyboard navigation and role-aware existing Details/Review/editor/Preview entry; stale/company isolation checks and temporary query reset, no API/search history; see [global search](../features/global-search.md)
 
 - E1-032Be shared section actions — Notifications and Billing use centralized RO/EN View all/Show less labels, stateful down/up chevrons and shared Button styling; Dashboard reuses the navigation mode with unchanged locale-aware destinations/right arrows; preview limits, filters and company state are unchanged

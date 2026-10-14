@@ -96,7 +96,7 @@ test('reflects unsaved additions, removals, custom metadata, optionality and app
 
 test('new-template empty preview stays compact and reflects staged additions before Save', async ({page}) => {
   await page.goto('/en/requirements');
-  await page.getByRole('button', {name: 'New template', exact: true}).click();
+  await page.getByRole('button', {name: 'New Template', exact: true}).click();
   await page.getByRole('button', {name: 'Create new template', exact: true}).click();
   let preview = await openPreview(page, true);
   await expect(preview.getByRole('heading', {name: 'No documents requested'})).toBeVisible();

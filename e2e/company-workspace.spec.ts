@@ -50,7 +50,7 @@ for (const english of [false, true]) {
     await createFirstVendor(page, english);
     const vendorPath = new URL(page.url()).pathname;
     await workspaceSection(page, 'requirements', english);
-    await page.getByRole('button', {name: english ? 'New template' : 'Șablon nou', exact: true}).click();
+    await page.getByRole('button', {name: english ? 'New Template' : 'Șablon nou', exact: true}).click();
     await page.getByRole('button', {name: english ? 'Create new template' : 'Creează șablon nou', exact: true}).click();
     await page.locator('#requirement-template-name').fill('B Template');
     await page.locator('#requirement-template-category').selectOption('construction');
