@@ -1,4 +1,13 @@
 {
+  "GlobalSearch": {
+    "resultsFor": "Rezultate pentru „{query}”", "total": "Am găsit {count, plural, one {# rezultat} few {# rezultate} other {# de rezultate}}",
+    "groups": {"vendors": "Furnizori", "documents": "Documente", "requirements": "Cerințe"},
+    "counts": {"vendors": "{count, plural, one {# furnizor} few {# furnizori} other {# de furnizori}}", "documents": "{count, plural, one {# document} few {# documente} other {# de documente}}", "requirements": "{count, plural, one {# cerință} few {# cerințe} other {# de cerințe}}"},
+    "readyTitle": "Caută în compania ta", "readyDescription": "Caută furnizori, documente sau șabloane de cerințe.",
+    "emptyTitle": "Nu am găsit rezultate", "emptyDescription": "Nu există furnizori, documente sau cerințe care să corespundă căutării.",
+    "clear": "Șterge căutarea", "close": "Închide căutarea", "draft": "Ciornă",
+    "unavailable": "Rezultatul nu mai este disponibil. Încearcă din nou căutarea."
+  },
   "SectionActions": {"viewAll": "Vezi toate", "showLess": "Vezi mai puține"},
   "MyProfile": {
     "title": "Profilul meu",

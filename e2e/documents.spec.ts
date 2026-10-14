@@ -44,7 +44,7 @@ test('tabs, search, filters, sort, empty recovery and pagination stay local', as
   await search.fill('');
 
   await openFilters(page);
-  await page.getByRole('combobox', {name: 'Furnizor'}).selectOption('construct-pro');
+  await page.getByRole('combobox', {name: 'Furnizor', exact: true}).selectOption('construct-pro');
   await page.getByRole('combobox', {name: 'Tip document'}).selectOption('tax');
   await expect(table.locator('tbody tr')).toHaveCount(1);
   await page.getByRole('checkbox', {name: /Expirat/}).check();

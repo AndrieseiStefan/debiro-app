@@ -8,6 +8,7 @@ import ro from '../../messages/ro.json';
 import en from '../../messages/en.json';
 
 vi.mock('@/i18n/navigation', () => ({
+  useRouter: () => ({push: vi.fn()}),
   usePathname: () => '/documents/construct-pro-tax-2024/review',
   Link: ({locale, href, ...props}: {locale?: string; href: string; children: React.ReactNode}) =>
     <a href={locale === 'en' ? `/en${href}` : href} {...props} />

@@ -8,6 +8,7 @@ import {getDocumentReviewFixture} from '@/features/document-review/fixtures';
 vi.mock('@/features/documents/created-documents', async (original) => ({...await original<typeof import('@/features/documents/created-documents')>(), useDocumentRecords: () => [], activeDocuments: () => []}));
 
 vi.mock('@/i18n/navigation', () => ({
+  useRouter: () => ({push: vi.fn()}),
   usePathname: () => '/documents',
   Link: ({href, ...props}: {href: string; children: React.ReactNode}) => <a href={href} {...props} />
 }));

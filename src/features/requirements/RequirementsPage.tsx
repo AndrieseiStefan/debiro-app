@@ -1,7 +1,8 @@
 'use client';
 
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useEffectEvent, useRef, useState} from 'react';
 import {useTranslations} from 'next-intl';
+import {useRouter} from '@/i18n/navigation';
 import {AppIcon} from '@/components/layout/AppIcon';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
 import {AuthenticatedBreadcrumbs} from '@/components/layout/AuthenticatedBreadcrumbs';
@@ -21,6 +22,7 @@ import {defaultAppearance, validColorKey, validIconKey} from './appearance';
 import {documentDisplay} from './document-presentation';
 import {previewSupplier, supplierPreviewDocuments} from './supplier-preview';
 import {SupplierRequirementContext, SupplierRequirementList} from '@/features/supplier-requirements/SupplierRequirements';
+import {readWorkspaceSearchData, searchResultHref} from '@/features/global-search/search-workspace';
 import {
   addRequirementDocument, cloneStarterTemplate, deleteRequirementTemplate, discardExistingRequirementEdit, discardRequirementDraft, duplicateRequirementTemplate, getRequirementsWorkspace,
   removeRequirementDocument, saveExistingRequirementEdit, saveRequirementDraft, selectRequirementTemplate, startRequirementDraft,
@@ -42,10 +44,11 @@ function ActionGlyph({kind}: {kind: 'copy' | 'trash' | 'save'}) {
   };
   return <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{paths[kind]}</svg>;
 }
-export function RequirementsPage({locale, view}: {locale: string; view: RequirementsViewModel}) {
+export function RequirementsPage({locale, view, templateId}: {locale: string; view: RequirementsViewModel; templateId?: string}) {
   const t = useTranslations('Requirements');
   const app = useTranslations('AppShell');
   const vendors = useTranslations('Vendors');
+  const router = useRouter();
   const language = locale === 'en' ? 'en' : 'ro';
   const company = getActiveCompany(useCompanyState());
   const companyId = company?.company.id ?? '';
@@ -115,28 +118,57 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
     else setValidation(result);
   }
 
+  // Route entry selects the existing company editor/preview, never creates or saves a template.
+  const enterTemplate = useEffectEvent((id: string) => {
+    if (!company || !getCurrentMembership(company)) return;
+    if (draft?.id === id || (!draft && selected?.id === id)) {
+      setShowStarters(false); setTab('documents'); return;
+    }
+    if (!workspace.templates.some((item) => item.id === id && item.companyId === companyId)) return;
+    requestDiscard(() => {selectRequirementTemplate(companyId, id); setShowStarters(false); setTab('documents'); setValidation(null);});
+  });
   useEffect(() => {
-    if (!isDirty) return;
+    if (!templateId) return;
+    const frame = requestAnimationFrame(() => enterTemplate(templateId));
+    return () => cancelAnimationFrame(frame);
+  }, [companyId, templateId]);
+
+  useEffect(() => {
     function onBeforeUnload(event: BeforeUnloadEvent) {event.preventDefault(); event.returnValue = '';}
     function onClick(event: MouseEvent) {
       if (allowNavigation.current || !(event.target instanceof Element)) return;
       const target = event.target.closest<HTMLElement>('a[href], [data-company-switch-id]');
       if (!target) return;
+      // Reopening the current entity (including a dirty, incomplete draft) is not leaving it.
+      const resultId = target.getAttribute('data-requirement-result-id');
+      if (resultId && resultId === (draft?.id ?? selected?.id)) {
+        event.preventDefault(); setShowStarters(false); setTab('documents'); return;
+      }
       const href = target.getAttribute('href');
+      if (resultId && href && new URL(href, window.location.href).href === window.location.href) {
+        event.preventDefault(); enterTemplate(resultId); return;
+      }
+      if (!isDirty) return;
       if (href && new URL(href, window.location.href).href === window.location.href) return;
       const nextCompanyId = target.getAttribute('data-company-switch-id');
       if (nextCompanyId === companyId) return;
       event.preventDefault();
       event.stopImmediatePropagation();
+      const resultKey = target.getAttribute('data-search-result');
+      const separator = resultKey?.indexOf(':') ?? -1;
+      const resultType = resultKey?.slice(0, separator);
+      const result = separator > 0 && (resultType === 'vendor' || resultType === 'document' || resultType === 'requirement') ? {type: resultType, id: resultKey!.slice(separator + 1), companyId} as const : null;
       pendingAction.current = nextCompanyId
         ? () => switchActiveCompany(nextCompanyId)
+        // Search rows unmount when confirmation takes focus. Retain/revalidate identity, not a detached link.
+        : result ? () => {const destination = searchResultHref(result, readWorkspaceSearchData()); if (destination) router.push(destination);}
         : () => {allowNavigation.current = true; target.click(); allowNavigation.current = false;};
       setConfirmDiscard(true);
     }
-    window.addEventListener('beforeunload', onBeforeUnload);
+    if (isDirty) window.addEventListener('beforeunload', onBeforeUnload);
     document.addEventListener('click', onClick, true);
     return () => {window.removeEventListener('beforeunload', onBeforeUnload); document.removeEventListener('click', onClick, true);};
-  }, [isDirty, companyId]);
+  }, [isDirty, companyId, draft?.id, selected?.id, router]);
 
   function renderRow(document: RequirementTemplateDocument) {
     const display = documentDisplay(document, language);
@@ -171,7 +203,14 @@ export function RequirementsPage({locale, view}: {locale: string; view: Requirem
         </Surface>
 
         <Surface className={styles.editor}>
-          {showStarters ? <StarterTemplateSelector key={companyId} locale={locale} templates={workspace.templates} canCreate={canCreate} onCustom={startNew} onUse={useStarter} onExisting={selectTemplate} onBack={() => {setShowStarters(false); addTemplateRef.current?.focus();}}/> : <>
+          {showStarters ? <StarterTemplateSelector key={companyId} locale={locale} templates={workspace.templates} canCreate={canCreate} onCustom={startNew} onUse={useStarter} onExisting={selectTemplate} onBack={() => {setShowStarters(false); addTemplateRef.current?.focus();}}/> : !canCreate && (draft || selected) ? <>
+            <div className={styles.editorTop}><AppearanceIcon appearance={appearance}/><div className={styles.editorIdentity}><h2 ref={editorTitleRef} tabIndex={-1}>{draft ? draft.name || t('creation.draftListTitle') : selected?.title[language]}</h2><p>{draft ? draft.description : selected?.subtitle[language]}</p></div></div>
+            <div className={styles.previewPanel} data-requirement-readonly>
+              <aside className={styles.previewNotice}><span><AppIcon name="info" size={20}/></span><div><h3>{t('preview.title')}</h3><p>{t('starters.readOnlyRole')}</p></div></aside>
+              <SupplierRequirementContext locale={locale} requester={{name: company?.company.name ?? view.organization.name, registrationNumber: company?.company.taxId}} supplier={previewSupplier}/>
+              <SupplierRequirementList locale={locale} documents={supplierPreviewDocuments(draft?.documents ?? selected?.documents ?? [])}/>
+            </div>
+          </> : <>
           {draft ? <div className={styles.editorTop}><AppearancePicker appearance={draft} onChange={(next) => updateRequirementDraft(companyId, next)} label={t('appearance.templateLabel')}/><div className={styles.editorIdentity}><h2>{t('creation.title')}</h2><p>{t('creation.subtitle')}</p></div></div>
             : selected ? <div className={styles.editorTop}><AppearancePicker appearance={appearance} onChange={(next) => updateExistingRequirementTemplate(companyId, language, next)} label={t('appearance.templateLabel')}/><div className={styles.editorIdentity}><h2 ref={editorTitleRef} tabIndex={-1}>{selected.title[language]}</h2><p>{selected.subtitle[language] || vendors(('category.' + selected.categoryId) as 'category.construction')}</p></div><div className={styles.editorActions}><Button variant="secondary" onClick={duplicateSelected}><ActionGlyph kind="copy"/>{t('duplicateTemplate')}</Button></div></div>
             : <div className={styles.editorTop}><span className={styles.addIcon}><AppIcon name="file" size={29}/></span><div className={styles.editorIdentity}><h2>{t('creation.emptyCompanyTitle')}</h2><p>{t('creation.emptyCompanyDescription')}</p></div></div>}

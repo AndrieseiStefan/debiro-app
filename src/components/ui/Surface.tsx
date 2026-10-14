@@ -1,6 +1,6 @@
-import type {HTMLAttributes} from 'react';
+import {forwardRef, type HTMLAttributes} from 'react';
 import styles from './Surface.module.css';
 
-export function Surface({className, ...props}: HTMLAttributes<HTMLDivElement>) {
-  return <div className={[styles.surface, className].filter(Boolean).join(' ')} {...props} />;
-}
+export const Surface = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(function Surface({className, ...props}, ref) {
+  return <div ref={ref} className={[styles.surface, className].filter(Boolean).join(' ')} {...props} />;
+});

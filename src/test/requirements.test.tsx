@@ -7,6 +7,7 @@ import {RequirementsPage} from '@/features/requirements/RequirementsPage';
 import {requirementsFixture} from '@/features/requirements/fixtures';
 
 vi.mock('@/i18n/navigation', () => ({
+  useRouter: () => ({push: vi.fn()}),
   usePathname: () => '/requirements',
   Link: ({locale, href, ...props}: {locale?: string; href: string; children: React.ReactNode}) =>
     <a href={locale === 'en' ? `/en${href}` : href} {...props} />

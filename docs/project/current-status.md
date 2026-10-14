@@ -10,11 +10,11 @@
 
 **Domain strategy:** Single domain
 
-**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and the experiences represented by all thirty-four approved mockups have fixture/browser-local implementations, with documented unsupported actions; backend/auth integrations are not.
+**Technical stack:** Accepted in [ADR-0002](../decisions/0002-application-architecture-and-stack.md), with authentication revised by [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md). The frontend foundation and the experiences represented by all thirty-five approved mockups have fixture/browser-local implementations, with documented unsupported actions; backend/auth integrations are not.
 
 ## Design state
 
-Thirty-four approved product mockups are tracked in `docs/design/mockups/`. They are canonical contracts requiring:
+Thirty-five approved product mockups are tracked in `docs/design/mockups/`. They are canonical contracts requiring:
 
 - UI fidelity as close to 1:1 as technically practical
 - Interaction fidelity as close to 1:1 as technically practical
@@ -25,6 +25,8 @@ Thirty-four approved product mockups are tracked in `docs/design/mockups/`. They
 The final logo is not yet designed and must not be invented.
 
 ## Implemented
+
+- E1-032Bf global workspace search — live normalized/deterministic matching over owned Vendors, current uploaded Documents and company Requirement templates/drafts, accurate grouped counts/all results in an internally scrolling panel, keyboard navigation and role-aware existing Details/Review/editor/Preview entry; stale/company isolation checks and temporary query reset, no API/search history; see [global search](../features/global-search.md)
 
 - E1-032Be shared section actions — Notifications and Billing use centralized RO/EN View all/Show less labels, stateful down/up chevrons and shared Button styling; Dashboard reuses the navigation mode with unchanged locale-aware destinations/right arrows; preview limits, filters and company state are unchanged
 
@@ -96,4 +98,4 @@ TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to
 
 ## Next
 
-The experiences represented by all thirty-four tracked canonical mockups have fixture/browser-local implementations with documented unsupported actions; product-owner visual approval remains pending. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).
+The experiences represented by all thirty-five tracked canonical mockups have fixture/browser-local implementations with documented unsupported actions; product-owner visual approval remains pending. The complete epic sequence through MVP remains undocumented and should be finalized as a separate planning checkpoint before broader backlog execution. The UI foundation is documented in [UI foundation](../design/ui-foundation.md).

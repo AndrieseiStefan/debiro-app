@@ -7,9 +7,10 @@ test('renders the canonical Romanian dashboard in the authenticated shell', asyn
   await expect(page.locator('html')).toHaveAttribute('lang', 'ro');
   await expect(page.getByRole('heading', {level: 1})).toHaveText('Bun venit, Andrei!');
   await expect(page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Dashboard'})).toHaveAttribute('aria-current', 'page');
-  await expect(page.getByRole('searchbox', {name: 'Caută furnizori, documente sau cerințe'})).toBeVisible();
-  await page.getByRole('searchbox').fill('Construct Pro');
-  await expect(page.getByRole('searchbox')).toHaveValue('Construct Pro');
+  await expect(page.getByRole('combobox', {name: 'Caută furnizori, documente sau cerințe'})).toBeVisible();
+  await page.getByRole('combobox').fill('Construct Pro');
+  await expect(page.getByRole('combobox')).toHaveValue('Construct Pro');
+  await page.keyboard.press('Escape');
   await expect(page.getByRole('heading', {name: 'Documente care necesită atenție'})).toBeVisible();
   await expect(page.getByRole('heading', {name: 'Status furnizori'})).toBeVisible();
   await expect(page.getByRole('heading', {name: 'Activitate recentă'})).toBeVisible();
@@ -42,7 +43,7 @@ test('keeps dashboard regions separated and document overflow contained', async 
       await page.setViewportSize({width, height});
       await expect(page.getByRole('heading', {level: 1})).toBeVisible();
       await expect(page.getByRole('navigation', {name: 'Navigare în aplicație'})).toBeVisible();
-      await expect(page.getByRole('searchbox')).toBeVisible();
+      await expect(page.getByRole('combobox')).toBeVisible();
       await expect(page.getByRole('heading', {name: 'Documente care necesită atenție'})).toBeVisible();
       await expect(page.getByRole('heading', {name: 'Status furnizori'})).toBeVisible();
 
@@ -140,7 +141,7 @@ test('keeps authenticated utilities and organization in the correct responsive s
       await page.setViewportSize({width, height});
       await expect(sidebar.getByText('DEBIRO')).toBeVisible();
       await expect(navigation.getByRole('link', {name: 'Dashboard'})).toBeVisible();
-      await expect(header.getByRole('searchbox', {name: 'Caută furnizori, documente sau cerințe'})).toBeVisible();
+      await expect(header.getByRole('combobox', {name: 'Caută furnizori, documente sau cerințe'})).toBeVisible();
       await expect(sidebar.getByRole('button', {name: 'Demo Company SRL'})).toBeVisible();
 
       const utilityRegion = width <= 800 ? sidebar : header;

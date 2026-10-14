@@ -1,4 +1,13 @@
 {
+  "GlobalSearch": {
+    "resultsFor": "Results for “{query}”", "total": "Found {count, plural, one {# result} other {# results}}",
+    "groups": {"vendors": "Vendors", "documents": "Documents", "requirements": "Requirements"},
+    "counts": {"vendors": "{count, plural, one {# vendor} other {# vendors}}", "documents": "{count, plural, one {# document} other {# documents}}", "requirements": "{count, plural, one {# requirement} other {# requirements}}"},
+    "readyTitle": "Search your company", "readyDescription": "Search vendors, documents or requirement templates.",
+    "emptyTitle": "No results found", "emptyDescription": "No vendors, documents or requirements match your search.",
+    "clear": "Clear search", "close": "Close search", "draft": "Draft",
+    "unavailable": "This result is no longer available. Try searching again."
+  },
   "SectionActions": {"viewAll": "View all", "showLess": "Show less"},
   "MyProfile": {
     "title": "My Profile", "description": "Manage your account information and personal preferences.", "breadcrumbLabel": "Profile navigation",

@@ -7,7 +7,6 @@ import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
 import {AuthenticatedBreadcrumbs} from '@/components/layout/AuthenticatedBreadcrumbs';
 import {AuthenticatedPageHeader, AuthenticatedPagePrimaryAction} from '@/components/layout/AuthenticatedPageHeader';
-import {StatusBadge, type StatusTone} from '@/components/ui/StatusBadge';
 import {EmptyState} from '@/components/ui/EmptyState';
 import {Button} from '@/components/ui/Button';
 import {Surface} from '@/components/ui/Surface';
@@ -24,9 +23,9 @@ import {projectVendorDocuments} from './projections';
 import {useDocumentRecords} from '@/features/documents/created-documents';
 import {useCompanyState} from '@/features/companies/company-state';
 import styles from './VendorsListPage.module.css';
+import {VendorComplianceBadge} from './VendorComplianceBadge';
 
 const statuses: VendorStatus[] = ['compliant', 'attention', 'noncompliant'];
-const statusTones: Record<VendorStatus, StatusTone> = {compliant: 'success', attention: 'warning', noncompliant: 'danger'};
 const statusIcons: Record<VendorStatus, AppIconName> = {compliant: 'check', attention: 'clock', noncompliant: 'close'};
 
 const categoryPaths: Record<VendorCategory, ReactNode> = {
@@ -44,14 +43,6 @@ function CategoryIcon({category}: {category: VendorCategory}) {
   return <svg aria-hidden="true" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{categoryPaths[category]}</svg>;
 }
 
-function VendorStatusBadge({status}: {status: VendorStatus}) {
-  const t = useTranslations('Vendors');
-  return <StatusBadge tone={statusTones[status]} className={styles.statusBadge}>
-    <span className={styles.statusIcon}><AppIcon name={statusIcons[status]} size={14} /></span>
-    {t(`status.${status}`)}
-  </StatusBadge>;
-}
-
 function VendorRow({vendor, locale, menuOpen, onMenuChange}: {vendor: VendorListItem; locale: string; menuOpen: boolean; onMenuChange: (open: boolean) => void}) {
   const t = useTranslations('Vendors');
   const initials = vendor.name.split(/\s+/).filter((word) => /[\p{L}\p{N}]/u.test(word)).slice(0, 2).map((word) => word[0]).join('').toUpperCase();
@@ -63,7 +54,7 @@ function VendorRow({vendor, locale, menuOpen, onMenuChange}: {vendor: VendorList
       <span className={styles.vendorName}><span className={styles.nameLine}><Link href={`/vendors/${vendor.id}`} aria-label={t('detailsAction', {name: vendor.name})}>{vendor.name}</Link>{vendor.lifecycleStatus === 'inactive' && <span className={styles.inactiveBadge}>{t('inactive')}</span>}</span><small>{t('registrationPrefix')}: {vendor.registrationNumber}</small></span>
     </div></td>
     <td><span className={styles.category}><CategoryIcon category={vendor.category} />{t(`category.${vendor.category}`)}</span></td>
-    <td><VendorStatusBadge status={vendor.status} /></td>
+    <td><VendorComplianceBadge status={vendor.status} /></td>
     <td><span className={styles.documents}><span className={styles.progressTrack}><span className={styles.progressFill} data-status={vendor.status} style={{width: `${documentPercent}%`}} /></span><span>{vendor.documentCount}/{vendor.documentTarget}</span></span></td>
     <td><time className={styles.expiry} dateTime={vendor.nextExpiry.date ?? undefined} data-tone={vendor.nextExpiry.tone}>{locale === 'en' ? vendor.nextExpiry.en : vendor.nextExpiry.ro}</time></td>
     <td className={styles.actionsCell}><VendorRowActions vendor={vendor} open={menuOpen} onOpenChange={onMenuChange}/></td>

@@ -4,4 +4,6 @@ Do not pre-create feature specifications. A feature document is created by the t
 
 Implemented screen records: [landing page](landing-page.md), [onboarding](onboarding.md), [login](login.md), [dashboard overview](dashboard.md), [Vendors List](vendors.md), [Vendor Details](vendor-details.md), [Document Requirements](requirements.md), [Invite Vendor drawer](invite-vendor.md), [Supplier Upload Portal](supplier-upload-portal.md), [Document Review](document-review.md), [Notifications and Audit Activity](notifications-audit.md), and [Documents](documents.md).
 
+The authenticated shell also provides [global workspace search](global-search.md) across owned Vendors, current Documents and company Requirement templates/drafts.
+
 Future feature documents are created only by tasks that define or implement those features; the roadmap does not pre-authorize speculative specifications.

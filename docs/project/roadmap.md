@@ -4,6 +4,8 @@ This roadmap records direction only. Detailed requirements are created by the ta
 
 ## Phase 0 — Product & Repository Foundation
 
+- E1-032Bf global search — implemented with local company-scoped matching, complete grouped results, keyboard navigation and existing role-aware entity destinations; no new results page/backend/history
+
 - E1-032Be section action consistency — implemented shared expansion/navigation modes, canonical localized labels and down/up vs right-arrow semantics, without preview/filter/ownership changes
 
 - E1-032Bd Plan & Billing interactions — implemented locally: canonical Company billing Drawer, three-invoice expansion, safe demo payment metadata, centralized existing-tier catalog and confirmed company-scoped upgrades with preserved trial state; provider billing remains deferred
@@ -17,7 +19,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 - E1-032A/E1-032A1 My Profile / My Invitations — implemented with shared global-user state, local received-invitation lifecycle, Profile-root breadcrumbs and in-place company switching; unsupported security/avatar actions omitted; product-owner visual approval remains pending
 
 - Repository memory — complete
-- Canonical mockup contract and thirty-four approved images — complete
+- Canonical mockup contract and thirty-five approved images — complete
 - Architecture and stack decision — complete (TASK-002)
 - UI foundation and canonical design system tooling — complete (TASK-003); no product screens approved
 - E1-001 canonical landing page — implemented; product-owner visual approval remains pending
@@ -47,7 +49,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 ## Agreed delivery sequence
 
 1. E1-001 landing page — implemented under an explicit task brief. The earlier complete-MVP epic planning checkpoint remains open.
-2. Implement approved mockup experiences using typed fixture/browser-local data — complete for all thirty-three tracked canonical mockup states.
+2. Implement approved mockup experiences using typed fixture/browser-local data — complete for all thirty-five tracked canonical mockup states.
 3. Visually and interactively compare them with the canonical mockups; obtain product-owner visual approval.
 4. Before expanding beyond the supplied E1 tasks, finalize the complete Epic sequence through MVP.
 5. Define data model and API contracts, then build backend/persistence and replace fixtures with real data.
@@ -69,4 +71,4 @@ These are roadmap directions, not detailed feature specifications or a finalized
 
 ## Next task
 
-All thirty-three tracked mockups have fixture/browser-local implementations. Product-owner visual approval and the broader MVP epic planning checkpoint remain open; backend and auth are not implemented.
+All thirty-five tracked mockups have fixture/browser-local implementations. Product-owner visual approval and the broader MVP epic planning checkpoint remain open; backend and auth are not implemented.
