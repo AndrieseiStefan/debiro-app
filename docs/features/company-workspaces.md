@@ -15,6 +15,8 @@ Vendor, template, document/version, requirement, company, audit and notification
 
 E1-032A [My Profile and received Invitations](my-profile-invitations.md) also use global tab-memory owners, never active-company filtering. Invitation acceptance adds/reuses the existing membership/access record without changing activeCompanyId or navigating. E1-032A1 explicit switching from these global routes preserves the exact destination/locale and mounted page state (drafts, filters and preferences), while shell role/company context updates. My Companies creation still intentionally enters the new Dashboard.
 
+E1-032Ba outgoing member invitations project from that same invitation owner by company, with active-company Administrator permissions. Member role/removal and invitation role/cancellation revalidate ownership and lifecycle at mutation time; changes in one company do not alter another company's membership or pending records. Received history remains identity-scoped.
+
 ## Demo and first run
 
 Only `demo-company` receives the existing 24 vendors, six template clones, configured Construct Pro requirements, document/history files and historical notice/audit examples. No empty-company selector falls back to them. A company created through My Companies starts with zero vendors, requirements, documents/versions, templates/custom types and events. Its existing company profile, Administrator membership and Starter plan are independent of operational data. My Companies remains user-global.

@@ -2,18 +2,20 @@ import {describe, expect, it} from 'vitest';
 import {companySettingsFixture} from '@/features/company-settings/fixtures';
 import {getCompanyMembershipSummary} from '@/features/company-settings/membership-summary';
 import type {CompanyMembership} from '@/features/company-settings/types';
+import {pendingCompanyInvitations, readInvitations} from '@/features/profile/invitations-state';
 
 describe('company billing membership summary', () => {
   it('derives active seats from the same company memberships as Members & Access', () => {
     const fixture = companySettingsFixture;
-    const initial = getCompanyMembershipSummary(fixture, []);
+    const pending = pendingCompanyInvitations(readInvitations(), fixture.company.id);
+    const initial = getCompanyMembershipSummary(fixture, pending);
     expect(initial).toMatchObject({activeCount: 2, pendingCount: 1, availableSeats: 3});
 
     const invitations: CompanyMembership[] = [
       {id: 'local-invite', companyId: fixture.company.id, fullName: 'Radu Ionescu', email: 'radu@demo.ro', role: 'viewer', status: 'invited'},
       {id: 'other-company-member', companyId: 'other-company', fullName: 'Other Member', email: 'other@demo.ro', role: 'administrator', status: 'active'}
     ];
-    const afterInvite = getCompanyMembershipSummary(fixture, invitations);
+    const afterInvite = getCompanyMembershipSummary(fixture, [...pending, ...invitations]);
     expect(afterInvite).toMatchObject({activeCount: 2, pendingCount: 2, availableSeats: 3});
     expect(afterInvite.members).toHaveLength(4);
     expect(afterInvite.members.every((member) => member.companyId === fixture.company.id)).toBe(true);

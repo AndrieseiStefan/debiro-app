@@ -5,7 +5,7 @@ import {createPortal} from 'react-dom';
 import {useTranslations} from 'next-intl';
 import {Link} from '@/i18n/navigation';
 import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
-import menuStyles from './VendorsListPage.module.css';
+import menuStyles from '@/components/ui/RowActionMenu.module.css';
 import styles from './VendorDetailsPage.module.css';
 
 export function VendorDocumentActions({name, reviewRoute, onRemove, actions, actionLabel, className, icon = 'more', withinDialog = false}: {name: string; reviewRoute?: string | null; onRemove?: () => void; actions?: {label: string; onClick?: () => void; href?: string; disabled?: boolean}[]; actionLabel?: string; className?: string; icon?: AppIconName; withinDialog?: boolean}) {

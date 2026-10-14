@@ -19,12 +19,21 @@ test('Plan & Billing renders the active company and safe fixture-backed billing 
   await expect(page.getByText('•••• 4242')).toBeVisible();
   await expect(page.getByRole('row', {name: /INV-2026-009/})).toContainText('Plătită');
 
-  for (const name of ['Upgrade plan', 'Vezi toate facturile', 'Actualizează datele de facturare', 'Schimbă cardul', 'Descarcă']) {
+  for (const name of ['Upgrade plan', 'Vezi toate facturile', 'Actualizează datele de facturare', 'Schimbă cardul']) {
     const action = page.getByRole('button', {name, exact: true}).first();
     await expect(action).toHaveAttribute('aria-disabled', 'true');
     await action.evaluate((button: HTMLButtonElement) => button.click());
     await expect(page).toHaveURL(/\/company\/settings\/billing$/);
   }
+  await expect(page.getByRole('button', {name: /Acțiuni.*INV-/})).toHaveCount(0);
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('row', {name: /INV-2026-009/}).getByRole('button', {name: 'Descarcă'}).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe('INV-2026-009-sample.csv');
+  const chunks: Uint8Array[] = [];
+  for await (const chunk of (await download.createReadStream())!) chunks.push(chunk);
+  const csv = Buffer.concat(chunks).toString('utf8');
+  expect(csv).toContain('NU ESTE O FACTURĂ OFICIALĂ'); expect(csv).toContain('Demo Company SRL'); expect(csv).toContain('29.00');
 });
 
 test('English Plan & Billing route retains company-scoped data and active navigation', async ({page}) => {

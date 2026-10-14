@@ -1,7 +1,7 @@
 import type {CompanyMembership, CompanySettingsViewModel} from './types';
 
 export function getCompanyMembershipSummary(view: CompanySettingsViewModel, localInvitations: CompanyMembership[]) {
-  const members = [...view.members, ...localInvitations].filter((member) => member.companyId === view.company.id);
+  const members = [...view.members.filter((member) => member.status === 'active'), ...localInvitations].filter((member) => member.companyId === view.company.id);
   const activeCount = members.filter((member) => member.status === 'active').length;
   const pendingCount = members.filter((member) => member.status === 'invited').length;
   return {

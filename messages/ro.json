@@ -14,6 +14,7 @@
     "periodicSummaryEnabled": "Rapoarte și rezumate", "periodicSummaryEnabledDescription": "Primește pe email rezumate periodice despre activitatea din contul tău."
   },
   "MyInvitations": {
+    "cancelled": "Anulate", "cancelledAt": "Anulată la", "cancelledStatus": "Anulată",
     "title": "Invitațiile mele", "description": "Gestionează invitațiile de la companii pentru a te alătura echipelor lor în DEBIRO.", "breadcrumbLabel": "Navigare invitații",
     "summaryLabel": "Sumar invitații", "total": "Total invitații", "pending": "Active", "expired": "Expirate", "accepted": "Acceptate", "rejected": "Refuzate", "all": "Toate invitațiile",
     "totalNote": "Toate invitațiile primite", "pendingNote": "Necesită acțiune", "expiredNote": "Nu mai pot fi acceptate", "acceptedNote": "Te-ai alăturat companiei",
@@ -541,6 +542,14 @@
     "validation": {"nameRequired": "Introdu denumirea companiei.", "taxIdRequired": "Introdu CUI-ul companiei.", "duplicate": "Există deja o companie accesibilă cu acest CUI.", "industryRequired": "Selectează industria.", "countryRequired": "Selectează țara.", "invalidOption": "Selectează o opțiune validă.", "invalidEmail": "Introdu o adresă de email validă.", "invalidUrl": "Introdu o adresă web validă."}
   },
   "CompanyMembers": {
+    "management": {
+      "close": "Închide schimbarea rolului",
+      "changeRole": "Schimbă rolul", "remove": "Elimină membrul", "cancelInvitation": "Anulează invitația", "keepInvitation": "Păstrează invitația",
+      "changeRoleTitle": "Schimbă rolul membrului", "identity": "{name} — {email}", "currentRole": "Rol actual: {role}", "confirmRoleTitle": "Schimbă rolul membrului?", "confirmRoleDescription": "Rolul lui {name} ({email}) va fi schimbat din {oldRole} în {newRole}.",
+      "removeTitle": "Elimini membrul?", "removeDescription": "{name} ({email}) nu va mai avea acces la {companyName}.", "cancelTitle": "Anulezi invitația?", "cancelDescription": "Invitația trimisă către {email} nu va mai putea fi acceptată.",
+      "saved": "Rolul a fost actualizat.", "removed": "Membrul a fost eliminat.", "cancelled": "Invitația a fost anulată.",
+      "errors": {"accessDenied": "Nu ai permisiunea de a gestiona membrii acestei companii.", "notFound": "Membrul sau invitația nu mai este disponibilă în compania activă.", "notPending": "Invitația nu mai este activă.", "lastAdministrator": "Compania trebuie să aibă cel puțin un Administrator.", "invalidRole": "Selectează un rol valid.", "self": "Nu îți poți modifica propriul acces aici."}
+    },
     "breadcrumbLabel": "Navigare pe pagină",
     "title": "Membri și acces",
     "description": "Administratorii pot invita membri și pot gestiona nivelurile de acces pentru compania activă.",
@@ -558,7 +567,7 @@
     "tableRegion": "Membrii companiei",
     "table": {"user": "UTILIZATOR", "email": "EMAIL", "role": "ROL", "status": "STATUS", "actions": "ACȚIUNI"},
     "you": "Tu",
-    "memberActions": "Acțiuni pentru {name} — indisponibile în demonstrație",
+    "memberActions": "Acțiuni pentru {name}",
     "membersCount": "Afișez 1 – {count} din {count} membri",
     "roleSectionTitle": "Despre roluri și permisiuni",
     "roles": {"administrator": "Administrator", "reviewer": "Reviewer", "viewer": "Viewer"},
@@ -592,6 +601,7 @@
     }
   },
   "CompanyBilling": {
+    "sampleDownload": "Descarcă un exemplu local, nu o factură oficială.",
     "breadcrumbLabel": "Navigare pe pagină",
     "title": "Plan și facturare",
     "description": "Gestionează abonamentul companiei active, datele de facturare și membrii incluși în plan.",
@@ -744,6 +754,7 @@
     "bannerHandwriting": "Mai mult decât conformitate"
   },
   "Notifications": {
+    "showLess": "Vezi mai puține",
     "breadcrumbLabel": "Navigare pe pagină",
     "title": "Notificări și Activitate de Audit",
     "description": "Vezi ce necesită atenția ta, urmărește notificările și verifică istoricul activităților.",

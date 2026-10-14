@@ -10,6 +10,7 @@
     "periodicSummaryEnabled": "Reports and summaries", "periodicSummaryEnabledDescription": "Receive periodic email summaries of your account activity."
   },
   "MyInvitations": {
+    "cancelled": "Cancelled", "cancelledAt": "Cancelled on", "cancelledStatus": "Cancelled",
     "title": "My Invitations", "description": "Manage company invitations to join their teams in DEBIRO.", "breadcrumbLabel": "Invitation navigation",
     "summaryLabel": "Invitation summary", "total": "Total invitations", "pending": "Active", "expired": "Expired", "accepted": "Accepted", "rejected": "Rejected", "all": "All invitations",
     "totalNote": "All invitations received", "pendingNote": "Action required", "expiredNote": "Can no longer be accepted", "acceptedNote": "You joined the company",
@@ -537,6 +538,14 @@
     "validation": {"nameRequired": "Enter the company name.", "taxIdRequired": "Enter the company tax ID.", "duplicate": "An accessible company with this tax ID already exists.", "industryRequired": "Select the industry.", "countryRequired": "Select the country.", "invalidOption": "Select a valid option.", "invalidEmail": "Enter a valid email address.", "invalidUrl": "Enter a valid website address."}
   },
   "CompanyMembers": {
+    "management": {
+      "close": "Close role change",
+      "changeRole": "Change role", "remove": "Remove member", "cancelInvitation": "Cancel invitation", "keepInvitation": "Keep invitation",
+      "changeRoleTitle": "Change member role", "identity": "{name} — {email}", "currentRole": "Current role: {role}", "confirmRoleTitle": "Change member role?", "confirmRoleDescription": "The role of {name} ({email}) will change from {oldRole} to {newRole}.",
+      "removeTitle": "Remove member?", "removeDescription": "{name} ({email}) will no longer have access to {companyName}.", "cancelTitle": "Cancel invitation?", "cancelDescription": "The invitation sent to {email} can no longer be accepted.",
+      "saved": "Role updated.", "removed": "Member removed.", "cancelled": "Invitation cancelled.",
+      "errors": {"accessDenied": "You do not have permission to manage members of this company.", "notFound": "The member or invitation is no longer available in the active company.", "notPending": "The invitation is no longer active.", "lastAdministrator": "The company must retain at least one Administrator.", "invalidRole": "Select a valid role.", "self": "You cannot change your own access here."}
+    },
     "breadcrumbLabel": "Page navigation",
     "title": "Members & access",
     "description": "Administrators can invite members and manage access levels for the active company.",
@@ -554,7 +563,7 @@
     "tableRegion": "Company members",
     "table": {"user": "USER", "email": "EMAIL", "role": "ROLE", "status": "STATUS", "actions": "ACTIONS"},
     "you": "You",
-    "memberActions": "Actions for {name} — unavailable in the demo",
+    "memberActions": "Actions for {name}",
     "membersCount": "Showing 1–{count} of {count} members",
     "roleSectionTitle": "About roles and permissions",
     "roles": {"administrator": "Administrator", "reviewer": "Reviewer", "viewer": "Viewer"},
@@ -588,6 +597,7 @@
     }
   },
   "CompanyBilling": {
+    "sampleDownload": "Download a local sample, not an official invoice.",
     "breadcrumbLabel": "Page navigation",
     "title": "Plan & billing",
     "description": "Manage the active company's subscription, billing details, and members included in the plan.",
@@ -740,6 +750,7 @@
     "bannerHandwriting": "More than compliance"
   },
   "Notifications": {
+    "showLess": "Show less",
     "breadcrumbLabel": "Page navigation",
     "title": "Notifications and Audit Activity",
     "description": "See what needs your attention, follow notifications, and review the activity history.",

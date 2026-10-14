@@ -6,8 +6,8 @@ import {AppIcon} from '@/components/layout/AppIcon';
 import {Button} from '@/components/ui/Button';
 import {Drawer, type DrawerPhase} from '@/components/ui/Drawer';
 import {Field} from '@/components/ui/Field';
-import {companyRoles, type CompanyMembership, type CompanyRole} from './types';
-import {RoleIcon} from './RoleVisual';
+import {type CompanyMembership, type CompanyRole} from './types';
+import {RoleSelector} from './RoleSelector';
 import styles from './InviteMemberDrawer.module.css';
 
 type Errors = Partial<Record<'name' | 'email' | 'role', string>>;
@@ -54,16 +54,7 @@ export function InviteMemberDrawer({phase, onClose, onExited, triggerRef, compan
       <Field id="invite-member-name" label={t('drawer.name')} required value={name} onChange={(event) => {setName(event.target.value); setErrors((current) => ({...current, name: undefined}));}} error={errors.name}/>
       <Field id="invite-member-email" label={t('drawer.email')} type="email" required value={email} onChange={(event) => {setEmail(event.target.value); setErrors((current) => ({...current, email: undefined}));}} error={errors.email}/>
       <Field id="invite-member-company" label={t('drawer.company')} value={company.name} readOnly required helperText={t('drawer.companyHelp')}/>
-      <fieldset className={styles.roles} aria-describedby={errors.role ? 'invite-member-role-error' : undefined}>
-        <legend>{t('drawer.role')} <span aria-hidden="true">*</span></legend>
-        <div className={styles.roleOptions}>{companyRoles.map((option) => <label key={option} className={styles.roleOption} data-selected={role === option}>
-          <input id={`invite-member-${option}`} type="radio" name="invite-member-role" value={option} checked={role === option} onChange={() => {setRole(option); setErrors((current) => ({...current, role: undefined}));}} required/>
-          <RoleIcon role={option} size={20} diameter={36}/>
-          <span className={styles.roleCopy}><strong>{t(`roles.${option}`)}</strong><small>{t(`roleDescriptions.${option}`)}</small></span>
-          {role === option && <AppIcon name="check" size={19}/>}
-        </label>)}</div>
-        {errors.role && <p id="invite-member-role-error" className={styles.error} role="alert">{errors.role}</p>}
-      </fieldset>
+      <RoleSelector id="invite-member" label={t('drawer.role')} value={role} error={errors.role} onChange={(value) => {setRole(value); setErrors((current) => ({...current, role: undefined}));}}/>
       <div className={styles.notice}><AppIcon name="info" size={21}/><p><strong>{t('drawer.subscriptionNoteTitle')}</strong><span>{t('drawer.subscriptionNote')}</span><small>{t('drawer.demoNotice')}</small></p></div>
       <div className={styles.actions}><Button variant="secondary" onClick={onClose}>{t('drawer.cancel')}</Button><Button type="submit"><AppIcon name="send" size={18}/>{t('drawer.submit')}</Button></div>
     </form>

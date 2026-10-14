@@ -17,14 +17,16 @@ import {SummaryMetricCard} from '@/features/dashboard/SummaryMetricCard';
 import {calendarDaysUntil, localizedDate} from '@/lib/fixture-clock';
 import {invitationCompanies, invitationCounts, invitationsForUser, invitationStatus, resolveInvitation, useInvitations, type InvitationStatus} from './invitations-state';
 import {useUserProfile} from './user-profile-state';
+import {useCompanyState} from '@/features/companies/company-state';
 import styles from './MyInvitationsPage.module.css';
 
-const tones: Record<InvitationStatus, StatusTone> = {pending: 'info', accepted: 'success', rejected: 'neutral', expired: 'danger'};
+const tones: Record<InvitationStatus, StatusTone> = {pending: 'info', accepted: 'success', rejected: 'neutral', expired: 'danger', cancelled: 'neutral'};
 export function MyInvitationsPage({locale}: {locale: string}) {
   const t = useTranslations('MyInvitations');
   const roles = useTranslations('CompanyMembers');
   const profile = useTranslations('Companies');
   const user = useUserProfile();
+  const companies = useCompanyState();
   const invitations = invitationsForUser(useInvitations(), user);
   const counts = invitationCounts(invitations);
   const [filter, setFilter] = useState<InvitationStatus | 'all'>('all');
@@ -48,11 +50,11 @@ export function MyInvitationsPage({locale}: {locale: string}) {
         <SummaryMetricCard title={t('accepted')} value={counts.accepted} note={t('acceptedNote')} icon="check" tone="gray"/>
       </section>
       <Surface className={styles.listPanel} role="region" aria-labelledby="invitation-list-title">
-        <div className={styles.listHeading}><AppIcon name="mail" size={26}/><div><h2 id="invitation-list-title">{t('listTitle')}</h2><p>{t('listDescription')}</p></div><SelectField id="invitation-filter" label={t('filterLabel')} controlSize="compact" value={filter} onChange={(event) => setFilter(event.target.value as typeof filter)}>{(['all', 'pending', 'accepted', 'expired', 'rejected'] as const).map((status) => <option key={status} value={status}>{t(status === 'all' ? 'all' : status)}</option>)}</SelectField></div>
+        <div className={styles.listHeading}><AppIcon name="mail" size={26}/><div><h2 id="invitation-list-title">{t('listTitle')}</h2><p>{t('listDescription')}</p></div><SelectField id="invitation-filter" label={t('filterLabel')} controlSize="compact" value={filter} onChange={(event) => setFilter(event.target.value as typeof filter)}>{(['all', 'pending', 'accepted', 'expired', 'rejected', 'cancelled'] as const).map((status) => <option key={status} value={status}>{t(status === 'all' ? 'all' : status)}</option>)}</SelectField></div>
         {feedback && <p role={feedback.error ? 'alert' : 'status'} className={styles.feedback} data-error={feedback.error}>{feedback.text}</p>}
         {!invitations.length ? <EmptyState icon={<AppIcon name="mail" size={28}/>} title={t('emptyTitle')} description={t('emptyDescription')}/> : !filtered.length ? <EmptyState title={t('filteredEmpty')}/> : <div className={styles.list}>
           {filtered.map((invitation) => {
-            const company = invitationCompanies.find((record) => record.id === invitation.companyId);
+            const company = companies.companies.find((record) => record.company.id === invitation.companyId)?.company ?? invitationCompanies.find((record) => record.id === invitation.companyId);
             const status = invitationStatus(invitation);
             return <Surface key={invitation.id} className={styles.invitation} data-invitation-id={invitation.id} data-status={status}>
               <span className={styles.companyIcon} data-status={status}><AppIcon name="building" size={28}/></span>
@@ -60,8 +62,8 @@ export function MyInvitationsPage({locale}: {locale: string}) {
               <div className={styles.detail}><span>{t('proposedRole')}</span><RoleBadge role={invitation.role} label={roles(`roles.${invitation.role}`)} iconSize={14}/></div>
               <div className={styles.detail}><span>{t('invitedBy')}</span><strong>{invitation.invitedByDisplayName}</strong><small>{invitation.invitedByEmail}</small></div>
               <div className={styles.detail}><span>{t('receivedAt')}</span><time dateTime={invitation.createdAt}>{localizedDate(invitation.createdAt)[language]}</time></div>
-              <div className={styles.detail}><span>{t(status === 'accepted' ? 'acceptedAt' : status === 'rejected' ? 'rejectedAt' : status === 'expired' ? 'expiredAt' : 'expiresIn')}</span>{status === 'pending' && <strong className={styles.remaining}>{t('days', {count: calendarDaysUntil(invitation.expiresAt)})}</strong>}<time dateTime={invitation.resolvedAt ?? invitation.expiresAt}>{localizedDate(invitation.resolvedAt ?? invitation.expiresAt)[language]}</time></div>
-              <div className={styles.actions}>{status === 'pending' ? <><Button onClick={() => resolve(invitation.id, 'accepted')}>{t('accept')}</Button><Button variant="destructive" onClick={() => setRejectId(invitation.id)}>{t('reject')}</Button></> : <StatusBadge tone={tones[status]}>{t(`status.${status}`)}</StatusBadge>}</div>
+              <div className={styles.detail}><span>{t(status === 'accepted' ? 'acceptedAt' : status === 'rejected' ? 'rejectedAt' : status === 'cancelled' ? 'cancelledAt' : status === 'expired' ? 'expiredAt' : 'expiresIn')}</span>{status === 'pending' && <strong className={styles.remaining}>{t('days', {count: calendarDaysUntil(invitation.expiresAt)})}</strong>}<time dateTime={invitation.resolvedAt ?? invitation.expiresAt}>{localizedDate(invitation.resolvedAt ?? invitation.expiresAt)[language]}</time></div>
+              <div className={styles.actions}>{status === 'pending' ? <><Button onClick={() => resolve(invitation.id, 'accepted')}>{t('accept')}</Button><Button variant="destructive" onClick={() => setRejectId(invitation.id)}>{t('reject')}</Button></> : <StatusBadge tone={tones[status]}>{t(status === 'cancelled' ? 'cancelledStatus' : `status.${status}`)}</StatusBadge>}</div>
             </Surface>;
           })}
         </div>}

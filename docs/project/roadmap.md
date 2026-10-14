@@ -4,6 +4,8 @@ This roadmap records direction only. Detailed requirements are created by the ta
 
 ## Phase 0 — Product & Repository Foundation
 
+- E1-032Ba secondary management actions — implemented locally: vendor KPI drill-down, notification toggles, member role/removal and invitation role/cancellation, invoice cleanup and owner-approved sample CSV download; backend services remain deferred
+
 - E1-032A/E1-032A1 My Profile / My Invitations — implemented with shared global-user state, local received-invitation lifecycle, Profile-root breadcrumbs and in-place company switching; unsupported security/avatar actions omitted; product-owner visual approval remains pending
 
 - Repository memory — complete

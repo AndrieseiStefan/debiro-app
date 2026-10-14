@@ -12,6 +12,8 @@ The authenticated shell uses the full available viewport width, not the public 1
 
 Dashboard layout must remain equivalent on direct load and after client-side navigation through Vendors, including its card and panel geometry.
 
+E1-032Ba makes the four vendor KPI cards whole-card locale-preserving links using the existing SummaryMetricCard/Surface treatment. Total enters `/vendors` without a compliance filter; the other cards enter `?status=compliant`, `attention` or `noncompliant`, initializing the existing Vendors filter. Zero counts remain navigable to the filtered empty result. Native link keyboard/modifier behavior, shared hover/focus treatment and the visual chevrons are retained; no nested action or new Dashboard destination is introduced.
+
 The bottom mountain artwork is a generated transparent illustration, not a mockup screenshot; its exact painting and the text-only brand differ from the raster reference. The canonical mockup is unchanged, and generated visual captures remain ignored, unapproved comparison artifacts.
 
 E1-031 scopes all projections to the active company before counts/filters and derives monthly helper values from owned events. Populated Dashboard does not regain a general Add Vendor CTA. See [workspace ownership and onboarding setup](company-workspaces.md).

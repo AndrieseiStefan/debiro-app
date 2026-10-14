@@ -2,7 +2,7 @@
 
 import {fixtureReferenceTime} from '@/lib/fixture-clock';
 import {useSyncExternalStore} from 'react';
-import {currentUser} from '@/features/companies/company-state';
+import {currentUser} from '@/features/profile/user-profile-state';
 import {companySettingsFixture} from '@/features/company-settings/fixtures';
 import type {AuditEvent} from './types';
 import {browserSession} from '@/lib/browser-session';

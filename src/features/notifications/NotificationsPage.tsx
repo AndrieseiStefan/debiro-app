@@ -17,6 +17,7 @@ import {useVendorRequirements} from '@/features/vendors/vendor-requirements';
 import {useVendorState, vendorListItems} from '@/features/vendors/created-vendors';
 import {companyAuditEvents, companyNotifications} from './company-projections';
 import {calendarDaysUntil} from '@/lib/fixture-clock';
+import {downloadCsv} from '@/lib/download-csv';
 import {notificationDocuments} from './document-projections';
 import {auditEventsToCsv, filterAuditEvents, filterNotifications, type ActivityCategory, type ActivityRange} from './selectors';
 import type {AuditEventType, NotificationsViewModel} from './types';
@@ -73,20 +74,13 @@ export function NotificationsPage({locale, view: initialView}: {locale: string; 
     setExpanded((current) => ({...current, [section]: !current[section]}));
   }
 
-  function showSection(section: 'expiring' | 'missing' | 'recent') {
-    setExpanded((current) => ({...current, [section]: true}));
-    if (section === 'recent') setCategory('all');
-    document.getElementById(`${section}-section`)?.scrollIntoView({behavior: 'smooth', block: 'start'});
+  function expansionAction(section: keyof typeof expanded, count: number, preview: number) {
+    return count > preview ? <button type="button" aria-expanded={expanded[section]} onClick={() => toggle(section)}>{t(expanded[section] ? 'showLess' : 'viewAll')} <AppIcon name="arrowRight" size={16}/></button> : null;
   }
 
   function exportAudit() {
     const csv = auditEventsToCsv(auditEvents, language);
-    const url = URL.createObjectURL(new Blob(['\uFEFF', csv], {type: 'text/csv;charset=utf-8'}));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = t('downloadFilename');
-    link.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    downloadCsv(t('downloadFilename'), csv);
   }
 
   function sectionTitle(title: string, count?: number) {
@@ -110,29 +104,29 @@ export function NotificationsPage({locale, view: initialView}: {locale: string; 
       <div className={styles.workspace}>
         <div className={styles.leftColumn}>
           <section className={styles.summaryGrid} aria-label={t('summaryLabel')}>
-            <Surface className={styles.summaryCard}><span className={styles.summaryIcon} data-tone="amber"><AppIcon name="clock" size={25} /></span><div><h2>{t('expiringTitle')}</h2><strong>{view.expiringDocuments.length}</strong><p>{t('expiringNote')}</p><button type="button" onClick={() => showSection('expiring')}>{t('viewAll')} <AppIcon name="arrowRight" size={15} /></button></div></Surface>
-            <Surface className={styles.summaryCard}><span className={styles.summaryIcon} data-tone="red"><AppIcon name="fileX" size={25} /></span><div><h2>{t('missingTitle')}</h2><strong>{view.missingDocuments.length}</strong><p>{t('missingNote')}</p><button type="button" onClick={() => showSection('missing')}>{t('viewAll')} <AppIcon name="arrowRight" size={15} /></button></div></Surface>
-            <Surface className={styles.summaryCard}><span className={styles.summaryIcon} data-tone="green"><AppIcon name="check" size={25} /></span><div><h2>{t('recentTitle')}</h2><strong>{rangedNotifications.length}</strong><p>{t(`recentNotes.${range}`)}</p><button type="button" onClick={() => showSection('recent')}>{t('viewAll')} <AppIcon name="arrowRight" size={15} /></button></div></Surface>
+            <Surface className={styles.summaryCard}><span className={styles.summaryIcon} data-tone="amber"><AppIcon name="clock" size={25} /></span><div><h2>{t('expiringTitle')}</h2><strong>{view.expiringDocuments.length}</strong><p>{t('expiringNote')}</p></div></Surface>
+            <Surface className={styles.summaryCard}><span className={styles.summaryIcon} data-tone="red"><AppIcon name="fileX" size={25} /></span><div><h2>{t('missingTitle')}</h2><strong>{view.missingDocuments.length}</strong><p>{t('missingNote')}</p></div></Surface>
+            <Surface className={styles.summaryCard}><span className={styles.summaryIcon} data-tone="green"><AppIcon name="check" size={25} /></span><div><h2>{t('recentTitle')}</h2><strong>{rangedNotifications.length}</strong><p>{t(`recentNotes.${range}`)}</p></div></Surface>
           </section>
 
           <Surface id="expiring-section" className={styles.panel} role="region" aria-label={t('expiringTitle')}>
-            <div className={styles.panelHeading}><h2><EventIcon type="document_expiring" />{sectionTitle(t('expiringTitle'), view.expiringDocuments.length)}</h2><button type="button" onClick={() => toggle('expiring')}>{t('viewAll')} <AppIcon name="arrowRight" size={16} /></button></div>
+            <div className={styles.panelHeading}><h2><EventIcon type="document_expiring" />{sectionTitle(t('expiringTitle'), view.expiringDocuments.length)}</h2>{expansionAction('expiring', view.expiringDocuments.length, 3)}</div>
             {view.expiringDocuments.length === 0 ? <EmptyState title={t('noExpiring')} /> : <div className={styles.tableScroll} role="region" aria-label={t('expiringTitle')} tabIndex={0}><table className={styles.table}><thead><tr><th scope="col">{t('expiringTable.vendor')}</th><th scope="col">{t('expiringTable.document')}</th><th scope="col">{t('expiringTable.expires')}</th><th scope="col">{t('expiringTable.remaining')}</th><th scope="col">{t('expiringTable.status')}</th></tr></thead><tbody>{expiringRows.map((item) => <tr key={item.id}><td>{item.vendorName}</td><td>{item.documentName[language]}</td><td><time dateTime={item.expiresAt}>{dateLabel(item.expiresAt, language)}</time></td><td><span className={styles.days}>{t('daysRemaining', {count: item.daysRemaining})}</span></td><td><StatusBadge tone="warning">{t('expiringStatus')}</StatusBadge></td></tr>)}</tbody></table></div>}
           </Surface>
 
           <Surface id="missing-section" className={styles.panel} role="region" aria-label={t('missingTitle')}>
-            <div className={styles.panelHeading}><h2><EventIcon type="document_missing" />{sectionTitle(t('missingTitle'), view.missingDocuments.length)}</h2><button type="button" onClick={() => toggle('missing')}>{t('viewAll')} <AppIcon name="arrowRight" size={16} /></button></div>
+            <div className={styles.panelHeading}><h2><EventIcon type="document_missing" />{sectionTitle(t('missingTitle'), view.missingDocuments.length)}</h2>{expansionAction('missing', view.missingDocuments.length, 3)}</div>
             {view.missingDocuments.length === 0 ? <EmptyState title={t('noMissing')} /> : <div className={styles.tableScroll} role="region" aria-label={t('missingTitle')} tabIndex={0}><table className={styles.table}><thead><tr><th scope="col">{t('missingTable.vendor')}</th><th scope="col">{t('missingTable.document')}</th><th scope="col">{t('missingTable.requirement')}</th><th scope="col">{t('missingTable.due')}</th><th scope="col">{t('missingTable.status')}</th></tr></thead><tbody>{missingRows.map((item) => <tr key={item.id}><td>{item.vendorName}</td><td>{item.documentName[language]}</td><td>{item.requirement[language]}</td><td>{item.dueAt ? <time dateTime={item.dueAt}>{dateLabel(item.dueAt, language)}</time> : '—'}</td><td><StatusBadge tone="danger">{t('missingStatus')}</StatusBadge></td></tr>)}</tbody></table></div>}
           </Surface>
 
           <Surface id="recent-section" className={styles.panel} role="region" aria-label={t('recentTitle')}>
-            <div className={styles.panelHeading}><h2><EventIcon type="document_upload" />{t('recentTitle')}</h2><button type="button" onClick={() => toggle('recent')}>{t('viewAll')} <AppIcon name="arrowRight" size={16} /></button></div>
+            <div className={styles.panelHeading}><h2><EventIcon type="document_upload" />{t('recentTitle')}</h2>{expansionAction('recent', visibleNotifications.length, 5)}</div>
             {activity.length === 0 ? <EmptyState title={t('noNotifications')} description={t('noNotificationsDescription')} /> : visibleNotifications.length === 0 ? <EmptyState title={t('noMatches')} description={t('noMatchesDescription')} action={<button className={styles.reset} type="button" onClick={() => {setCategory('all'); setRange('last30');}}>{t('resetFilters')}</button>} /> : <div className={styles.tableScroll} role="region" aria-label={t('recentTitle')} tabIndex={0}><table className={styles.table}><thead><tr><th scope="col">{t('recentTable.type')}</th><th scope="col">{t('recentTable.description')}</th><th scope="col">{t('recentTable.vendor')}</th><th scope="col">{t('recentTable.document')}</th><th scope="col">{t('recentTable.date')}</th></tr></thead><tbody>{recentRows.map((item) => <tr key={item.id} data-notification-id={item.id}><td><EventIcon type={item.type} /></td><td><strong title={item.description[language]}>{item.title[language]}</strong>{item.isUnread && <span className={styles.unread}>{t('unreadBadge')}</span>}</td><td>{item.vendorName ?? '—'}</td><td>{item.documentName?.[language] ?? '—'}</td><td><time dateTime={item.occurredAt}>{relativeDate(item.occurredAt)}</time></td></tr>)}</tbody></table></div>}
           </Surface>
         </div>
 
         <Surface className={styles.auditPanel} role="region" aria-labelledby="audit-title">
-          <div className={styles.panelHeading}><h2 id="audit-title"><AppIcon name="file" size={20} />{t('auditTitle')}</h2><button type="button" onClick={() => toggle('audit')}>{t('viewAll')} <AppIcon name="arrowRight" size={16} /></button></div>
+          <div className={styles.panelHeading}><h2 id="audit-title"><AppIcon name="file" size={20} />{t('auditTitle')}</h2>{expansionAction('audit', auditEvents.length, 6)}</div>
           {auditEvents.length === 0 ? <EmptyState title={t('noAudit')} /> : <ol className={styles.timeline}>{auditRows.map((event) => <li key={event.id} data-audit-id={event.id}><div className={styles.timelineSymbol}>{event.actorType === 'user' ? <span className={styles.avatar}>{event.actorName?.split(' ').map((part) => part[0]).join('').slice(0, 2)}</span> : <span className={styles.systemIcon}><AppIcon name="settings" size={18} /></span>}<EventIcon type={event.eventType} /></div><div className={styles.timelineCopy}><div className={styles.timelineMeta}><strong>{event.actorName ?? t('systemActor')}</strong><time dateTime={event.occurredAt}>{event.dateOnly ? dateLabel(event.occurredAt, language) : relativeDate(event.occurredAt)}</time></div><b>{event.action[language]}</b><p>{event.description[language]}</p></div></li>)}</ol>}
           <div className={styles.auditCallout}><span><AppIcon name="shield" size={24} /></span><div><strong>{t('auditCalloutTitle')}</strong><p>{t('auditCalloutDescription')}</p><button type="button" onClick={exportAudit}>{t('export')}</button></div></div>
         </Surface>

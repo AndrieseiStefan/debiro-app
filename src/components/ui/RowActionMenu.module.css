@@ -1,0 +1,6 @@
+.rowAction {background: transparent; border: 0; color: #4d6897; display: inline-flex; padding: 8px;}
+.rowMenu {background: var(--color-surface-elevated); border: 1px solid var(--color-border); border-radius: 10px; box-shadow: var(--shadow-card); padding: 5px; position: fixed; z-index: 100;}
+.rowMenu a, .rowMenu button {background: none; border: 0; border-radius: 6px; color: var(--color-text-primary); display: block; font-size: 13px; min-height: 40px; padding: 10px 12px; text-align: left; text-decoration: none; width: 100%;}
+.rowMenu a:hover, .rowMenu button:not(:disabled):hover {background: var(--color-neutral-soft);}
+.rowMenu button:disabled {color: var(--color-text-muted); cursor: not-allowed;}
+.rowMenu .destructive {color: var(--color-danger);}

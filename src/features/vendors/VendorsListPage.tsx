@@ -70,7 +70,7 @@ function VendorRow({vendor, locale, menuOpen, onMenuChange}: {vendor: VendorList
   </tr>;
 }
 
-export function VendorsListPage({locale, view}: {locale: string; view: VendorsListViewModel}) {
+export function VendorsListPage({locale, view, initialStatus = 'all'}: {locale: string; view: VendorsListViewModel; initialStatus?: VendorStatus | 'all'}) {
   const t = useTranslations('Vendors');
   const empty = useTranslations('CompanyWorkspace');
   const router = useRouter();
@@ -88,7 +88,7 @@ export function VendorsListPage({locale, view}: {locale: string; view: VendorsLi
   const finishAdd = useCallback(() => setAddPhase('closed'), []);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<VendorCategory | 'all'>('all');
-  const [status, setStatus] = useState<VendorStatus | 'all'>('all');
+  const [status, setStatus] = useState<VendorStatus | 'all'>(initialStatus);
   const [pageSize, setPageSize] = useState(8);
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<VendorSort | null>(null);

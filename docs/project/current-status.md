@@ -26,6 +26,8 @@ The final logo is not yet designed and must not be invented.
 
 ## Implemented
 
+- E1-032Ba secondary actions: whole-card Dashboard vendor-filter navigation, independent Notifications expansion/collapse without summary links, Administrator member/invitation management with ownership/last-admin guards, canonical invitation history, and invoice overflow cleanup with explicitly approved local sample CSV downloads; no backend/email/payment integration
+
 - E1-032A/E1-032A1 global My Profile and My Invitations — shared user identity/preferences, locale synchronization, atomic received-invitation accept/reject with shared company access and no automatic activation, live profile menu links/pending badge, Profile-root breadcrumbs and in-place company switching that retains global page state, and reused shell/control treatments; tab memory only; see [profile and invitations](../features/my-profile-invitations.md)
 
 - Canonical repository documentation and project-memory rules

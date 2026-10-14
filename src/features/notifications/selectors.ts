@@ -1,4 +1,5 @@
 import type {AuditEvent, NotificationActivityItem} from './types';
+import {csvCell} from '@/lib/csv';
 
 export type ActivityCategory = 'all' | 'unread' | 'reminders' | 'uploads' | 'status';
 export type ActivityRange = 'last30' | 'last7' | 'all';
@@ -24,11 +25,6 @@ export function filterNotifications(items: NotificationActivityItem[], category:
 
 export function filterAuditEvents(events: AuditEvent[], range: ActivityRange, referenceTime: string) {
   return events.filter((event) => withinRange(event.occurredAt, range, referenceTime)).sort((a, b) => b.occurredAt.localeCompare(a.occurredAt));
-}
-
-function csvCell(value: string) {
-  const safe = /^[=+\-@]/.test(value) ? `'${value}` : value;
-  return `"${safe.replaceAll('"', '""')}"`;
 }
 
 export function auditEventsToCsv(events: AuditEvent[], locale: 'ro' | 'en') {

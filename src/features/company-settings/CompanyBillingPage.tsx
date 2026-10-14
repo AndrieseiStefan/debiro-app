@@ -7,12 +7,14 @@ import {AuthenticatedPageHeader} from '@/components/layout/AuthenticatedPageHead
 import {AppIcon} from '@/components/layout/AppIcon';
 import {Button} from '@/components/ui/Button';
 import {Surface} from '@/components/ui/Surface';
-import {getActiveCompany, useCompanyState} from '@/features/companies/company-state';
+import {getActiveCompany, getCurrentMembership, useCompanyState} from '@/features/companies/company-state';
 import {useLocalInvitations} from './local-invitations';
 import {getCompanyMembershipSummary} from './membership-summary';
 import type {CompanySettingsViewModel} from './types';
 import styles from './CompanyBillingPage.module.css';
 import {currentMemberIdentity, useUserProfile} from '@/features/profile/user-profile-state';
+import {invoiceSample} from './invoice-sample';
+import {downloadCsv} from '@/lib/download-csv';
 
 function formatDate(date: string, locale: string) {
   return new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'ro-RO', {
@@ -29,8 +31,8 @@ export function CompanyBillingPage({locale, view: initialView}: {locale: string;
   const user = useUserProfile();
   const view = active ? {...initialView, currentUser: user, company: active.company, members: active.members.map((member) => currentMemberIdentity(member, user))} : {...initialView, currentUser: user};
   const localInvitations = useLocalInvitations(view.company.id);
-  const {members, activeCount, availableSeats} = getCompanyMembershipSummary(view, localInvitations);
-  const currentMembership = members.find((member) => member.isCurrentUser);
+  const {activeCount, availableSeats} = getCompanyMembershipSummary(view, localInvitations);
+  const currentMembership = active ? getCurrentMembership(active) : null;
   const roleName = currentMembership?.role === 'administrator' ? membersT('roles.administrator') :
     currentMembership?.role === 'reviewer' ? membersT('roles.reviewer') :
       currentMembership?.role === 'viewer' ? membersT('roles.viewer') : '—';
@@ -109,7 +111,7 @@ export function CompanyBillingPage({locale, view: initialView}: {locale: string;
           </tr></thead><tbody>{subscription.invoices.map((invoice) => <tr key={invoice.id}>
             <td>{invoice.number}</td><td>{formatDate(invoice.date, locale)}</td><td>{t('invoiceAmount', {amount: invoice.amountEur})}</td>
             <td><span className={styles.paid}><AppIcon name="check" size={14}/>{t('invoices.paid')}</span></td>
-            <td><div className={styles.invoiceActions}><button type="button" aria-disabled="true" title={t('demoUnavailable')}><AppIcon name="download" size={16}/>{t('invoices.download')}</button><button type="button" aria-disabled="true" title={t('demoUnavailable')} aria-label={t('invoices.moreActions', {number: invoice.number})}><AppIcon name="more" size={18}/></button></div></td>
+            <td><div className={styles.invoiceActions}><button type="button" title={t('sampleDownload')} onClick={() => {const sample = invoiceSample(company.id, invoice.id, locale); if (sample) downloadCsv(sample.filename, sample.csv);}}><AppIcon name="download" size={16}/>{t('invoices.download')}</button></div></td>
           </tr>)}{subscription.invoices.length === 0 && <tr><td colSpan={5}>{t('invoices.empty')}</td></tr>}</tbody></table>
         </div>
       </Surface>

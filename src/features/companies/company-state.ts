@@ -2,7 +2,8 @@
 
 import {useSyncExternalStore} from 'react';
 import {companySettingsFixture} from '@/features/company-settings/fixtures';
-import type {CompanyMembership, CompanySettingsViewModel} from '@/features/company-settings/types';
+import {companyRoles, type CompanyMembership, type CompanyRole, type CompanySettingsViewModel} from '@/features/company-settings/types';
+import {recordLocalAuditEvent} from '@/features/notifications/local-audit';
 import {browserSession} from '@/lib/browser-session';
 import {companyCountries, companyIndustries, companySizes, normalizeCompanyTaxId, type CompanyIndustry, type CompanySize} from './company-options';
 import {normalizeCompanyProfile, validateCompanyProfile, type CompanyProfileValues} from '@/features/company-settings/company-profile';
@@ -20,7 +21,7 @@ type CompanyState = {companies: AccessibleCompany[]; activeCompanyId: string | n
 
 const initialState: CompanyState = {
   companies: [
-    {company: companySettingsFixture.company, members: companySettingsFixture.members},
+    {company: companySettingsFixture.company, members: companySettingsFixture.members.filter((member) => member.status === 'active')},
     {
       company: {
         id: 'global-clean-services', name: 'Global Clean Services', taxId: 'RO87654321', country: 'RO',
@@ -59,6 +60,28 @@ export function getActiveCompany(snapshot: CompanyState) {
 export function getCurrentMembership(record: AccessibleCompany) {
   const member = record.members.find((member) => member.companyId === record.company.id && member.isCurrentUser && member.userId === readUserProfile().userId && member.status === 'active');
   return member ? currentMemberIdentity(member) : null;
+}
+
+export type MemberManagementResult = {ok: true} | {ok: false; reason: 'accessDenied' | 'notFound' | 'notPending' | 'lastAdministrator' | 'invalidRole' | 'self'};
+export function managedCompany(companyId: string) {
+  const active = getActiveCompany(session.state);
+  return active?.company.id === companyId && getCurrentMembership(active)?.role === 'administrator' ? active : null;
+}
+
+/** Revalidate ownership, permission and the last-admin invariant at mutation time. */
+export function manageCompanyMember(companyId: string, memberId: string, action: 'role' | 'remove', role?: CompanyRole): MemberManagementResult {
+  const company = managedCompany(companyId);
+  if (!company) return {ok: false, reason: 'accessDenied'};
+  const member = company.members.find((item) => item.id === memberId && item.companyId === companyId && item.status === 'active');
+  if (!member) return {ok: false, reason: 'notFound'};
+  if (action === 'role' && !companyRoles.includes(role as CompanyRole)) return {ok: false, reason: 'invalidRole'};
+  if (member.role === 'administrator' && (action === 'remove' || role !== 'administrator') && company.members.filter((item) => item.status === 'active' && item.role === 'administrator').length <= 1) return {ok: false, reason: 'lastAdministrator'};
+  if (member.userId === readUserProfile().userId || member.email.toLowerCase() === readUserProfile().email.toLowerCase()) return {ok: false, reason: 'self'};
+  if (action === 'role' && role === member.role) return {ok: true};
+  const members = action === 'remove' ? company.members.filter((item) => item !== member) : company.members.map((item) => item === member ? {...item, role: role!} : item);
+  publish({...session.state, companies: session.state.companies.map((item) => item === company ? {...item, members} : item)});
+  recordLocalAuditEvent(companyId, {eventType: 'other', action: {ro: action === 'remove' ? 'Membru eliminat' : 'Rol membru schimbat', en: action === 'remove' ? 'Member removed' : 'Member role changed'}, description: {ro: action === 'remove' ? `${member.fullName} (${member.email}) nu mai are acces la ${company.company.name}.` : `${member.fullName} (${member.email}): ${member.role} → ${role}.`, en: action === 'remove' ? `${member.fullName} (${member.email}) no longer has access to ${company.company.name}.` : `${member.fullName} (${member.email}): ${member.role} → ${role}.`}});
+  return {ok: true};
 }
 
 /** Accept access without entering the workspace. Existing active membership wins. */

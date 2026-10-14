@@ -26,7 +26,7 @@ test('category and date filters derive counts from fixtures without filtering au
   await expect(categories.getByRole('button', {name: /Toate 8/})).toBeVisible();
   await expect(categories.getByRole('button', {name: /Necitite 3/})).toBeVisible();
   await categories.getByRole('button', {name: /Necitite/}).click();
-  await recent.getByRole('button', {name: 'Vezi toate'}).click();
+  await expect(recent.getByRole('button', {name: 'Vezi toate'})).toHaveCount(0);
   await expect(recent.locator('tbody tr')).toHaveCount(3);
   await expect(recent.locator('tbody tr').filter({hasText: 'Necitit'})).toHaveCount(3);
   await expect(audit.locator('ol li')).toHaveCount(6);
@@ -77,8 +77,8 @@ test('responsive containment and client navigation stay stable', async ({page}) 
         const note = card.querySelector('p')!;
         const text = document.createRange();
         text.selectNodeContents(note);
-        const action = card.querySelector('button')!.getBoundingClientRect();
-        return [...text.getClientRects()].some((line) => line.left < action.right && line.right > action.left && line.top < action.bottom && line.bottom > action.top);
+        const action = card.querySelector('button')?.getBoundingClientRect();
+        return action ? [...text.getClientRects()].some((line) => line.left < action.right && line.right > action.left && line.top < action.bottom && line.bottom > action.top) : false;
       });
       return {documentWidth: document.documentElement.scrollWidth, mainRight: document.querySelector('main')!.getBoundingClientRect().right, auditRight: document.querySelector('[aria-labelledby="audit-title"]')!.getBoundingClientRect().right, auditTop: document.querySelector('[aria-labelledby="audit-title"]')!.getBoundingClientRect().top, recentBottom: document.querySelector('#recent-section')!.getBoundingClientRect().bottom, summaryOverlap};
     });

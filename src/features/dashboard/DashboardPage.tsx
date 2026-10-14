@@ -57,7 +57,7 @@ function SummaryMetricCard({id, value, note}: {id: keyof typeof metricAppearance
   const t = useTranslations('Dashboard');
   const appearance = metricAppearance[id];
 
-  return <SharedSummaryMetricCard title={t(`summary.${id}`)} value={value} note={note} icon={appearance.icon} tone={appearance.tone} chevron/>;
+  return <SharedSummaryMetricCard title={t(`summary.${id}`)} value={value} note={note} icon={appearance.icon} tone={appearance.tone} chevron href={id === 'total' ? '/vendors' : `/vendors?status=${id}`}/>;
 }
 
 function DocumentsAttentionPanel({view, locale}: {view: DashboardViewModel; locale: string}) {

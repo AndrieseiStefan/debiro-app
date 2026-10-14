@@ -40,7 +40,7 @@ describe('received company invitations', () => {
     expect(getCurrentMembership(invited)).toMatchObject({userId: readUserProfile().userId, role: 'administrator', status: 'active'});
     expect(invited.members).toHaveLength(1); expect(invited.company.subscription.invoices).toEqual([]);
     expect(readCompanyState().activeCompanyId).toBe(activeId);
-    expect(invitationCounts(readInvitations())).toMatchObject({pending: 0, accepted: 2});
+    expect(invitationCounts(invitationsForUser(readInvitations()))).toMatchObject({pending: 0, accepted: 2});
     expect(resolveInvitation(baseline[0].id, 'accepted')).toEqual({ok: false, reason: 'invalid'});
     expect(readCompanyState().companies.filter((record) => record.company.id === invited.company.id)).toHaveLength(1);
   });
@@ -54,7 +54,7 @@ describe('received company invitations', () => {
   it('retains rejected history without creating membership', () => {
     const before = readCompanyState(); expect(resolveInvitation(baseline[0].id, 'rejected')).toEqual({ok: true});
     expect(readCompanyState()).toBe(before); expect(readInvitations()[0]).toMatchObject({status: 'rejected', resolvedAt: fixtureReferenceTime});
-    expect(readInvitations()).toHaveLength(3); expect(invitationCounts(readInvitations()).pending).toBe(0);
+    expect(invitationsForUser(readInvitations())).toHaveLength(3); expect(invitationCounts(invitationsForUser(readInvitations())).pending).toBe(0);
   });
   it.each([
     [{expiresAt: '2026-09-30'}, 'expired'],

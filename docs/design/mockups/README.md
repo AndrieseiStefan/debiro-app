@@ -44,6 +44,8 @@ E1-032A1 supersedes the pictured Dashboard parent on the two 32a Profile-area pa
 
 E1-032A2 supersedes the separated avatar/chevron in authenticated headers with a compact circular avatar and an attached bottom-right chevron indicator. Profile dropdown content and interactions are otherwise unchanged.
 
+E1-032Ba makes Dashboard KPI cards filtered Vendors links, removes Notifications summary-card actions, and uses conditional section-level View all/Show less toggles. Members menus now follow the approved Administrator-only management/confirmation contract and omit self/readonly empty triggers. Invoice overflow menus are removed; the owner explicitly approved a clearly marked local CSV sample Download (not an official invoice). Existing layout, copy outside these actions and canonical images remain unchanged.
+
 ## Contract
 
 For every approved mockup, these are canonical:

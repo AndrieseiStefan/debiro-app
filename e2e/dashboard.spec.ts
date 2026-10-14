@@ -197,7 +197,7 @@ test('lets longer KPI copy wrap without colliding with its chevron', async ({pag
   await page.goto('/dashboard');
   await page.setViewportSize({width: 1200, height: 800});
   const geometry = await page.evaluate(() => {
-    const card = document.querySelector('section[aria-label="Status furnizori"]')!.firstElementChild!;
+    const card = document.querySelector('section[aria-label="Status furnizori"] > a')!.firstElementChild!;
     const copy = card.children[1];
     copy.querySelector('h2')!.textContent = 'Total furnizori și subcontractori cu documente';
     copy.querySelector('p')!.textContent = '+12345 față de luna trecută, cu activitate suplimentară';
@@ -239,7 +239,8 @@ test('uses fluid app width and keeps badges and KPI content uncut', async ({page
         const rect = (element: Element) => element.getBoundingClientRect();
         const main = rect(document.querySelector('main')!);
         const content = rect(document.querySelector('main > div')!);
-        const cards = Array.from(document.querySelector('section[aria-label="Status furnizori"]')!.children).map((element) => {
+        const cards = Array.from(document.querySelectorAll('section[aria-label="Status furnizori"] > a')).map((link) => {
+          const element = link.firstElementChild!;
           const card = rect(element);
           const [iconElement, copyElement, arrowElement] = Array.from(element.children);
           const icon = rect(iconElement);

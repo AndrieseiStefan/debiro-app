@@ -1,0 +1,13 @@
+.roles {border: 0; min-width: 0; padding: 0;}
+.roles legend {color: #1d3256; font-size: 14px; font-weight: 650; margin-bottom: 8px;}
+.roles legend span, .error {color: #dc2440;}
+.roleOptions {border: 1px solid #d7e4f6; border-radius: 9px; display: grid; gap: 4px; padding: 5px;}
+.roleOption {align-items: center; border: 1px solid transparent; border-radius: 7px; cursor: pointer; display: grid; gap: 10px; grid-template-columns: 36px minmax(0, 1fr) 19px; min-height: 66px; padding: 8px; position: relative;}
+.roleOption[data-selected='true'] {background: #eaf3ff; border-color: #b9d6ff;}
+.roleOption input {inset: 0; opacity: 0; position: absolute; width: 100%;}
+.roleOption:focus-within {outline: 3px solid var(--color-focus); outline-offset: 1px;}
+.roleCopy {display: grid; gap: 3px; min-width: 0;}
+.roleCopy strong {color: #152650; font-size: 13px;}
+.roleCopy small {color: #5676aa; font-size: 12px; line-height: 1.3;}
+.roleOption > svg {color: #075ceb;}
+.error {font-size: 12px; line-height: 1.4; margin-top: 6px;}

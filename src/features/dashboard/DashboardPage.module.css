@@ -53,6 +53,11 @@
   padding: 18px;
 }
 
+.metricLink {border-radius: var(--radius-card); color: inherit; min-width: 0; text-decoration: none;}
+.metricLink > div {height: 100%;}
+.metricLink:hover > div {border-color: #9bc2ff; box-shadow: var(--shadow-card);}
+.metricLink:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 2px;}
+
 .metricIcon {
   align-items: center;
   border-radius: 50%;
