@@ -1123,6 +1123,22 @@
     "calloutOne": "One set of rules.",
     "calloutTwo": "Every supplier compliant.",
     "newTemplate": "New Template",
+    "scope": {
+      "label": "Template destination",
+      "vendor": "Vendors",
+      "company": "Company",
+      "employee": "Employees",
+      "destination": "Destination: {name}",
+      "empty": "No templates in this category yet.",
+      "emptyTitle": "No templates yet",
+      "createDescription": "Create a template for the selected destination.",
+      "namePlaceholder": "e.g. Required documents",
+      "availability": "After saving, the template remains available only for the {name} destination.",
+      "invalid": "The template destination is invalid.",
+      "previewTitle": "Requirements preview",
+      "description": {"company": "Create and manage sets of required documents for your company.", "employee": "Create and manage sets of required documents for employees."},
+      "callout": {"company": "Company compliance.", "employee": "Employee compliance."}
+    },
     "starters": {
       "title": "DEBIRO suggestions",
       "description": "Choose a starter and add an editable copy to your company, or create a new template.",

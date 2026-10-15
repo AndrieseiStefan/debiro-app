@@ -2,6 +2,7 @@ import type {VendorCategory} from '@/features/vendors/types';
 import type {AppearanceColorKey, AppearanceIconKey} from './appearance';
 
 export type LocalizedText = {ro: string; en: string};
+export type RequirementTemplateScope = 'vendor' | 'company' | 'employee';
 
 // Presentation-only template rules. These are not uploaded supplier documents.
 export type RequirementRuleView = {
@@ -55,11 +56,12 @@ export type RequirementDocumentInput = Omit<DocumentRules, 'id' | 'templateId'> 
 export type RequirementTemplate = {
   id: string;
   companyId: string;
+  scope: RequirementTemplateScope;
   title: LocalizedText;
   subtitle: LocalizedText;
   iconKey: AppearanceIconKey;
   iconColorKey: AppearanceColorKey;
-  categoryId: VendorCategory;
+  categoryId: VendorCategory | null;
   documents: RequirementTemplateDocument[];
   starterTemplateId?: string;
   starterTemplateVersion?: number;
@@ -70,6 +72,7 @@ export type RequirementTemplate = {
 
 export type TemplateDraft = {
   id: string;
+  scope: RequirementTemplateScope;
   name: string;
   description: string;
   categoryId: VendorCategory | '';
@@ -85,6 +88,7 @@ export type TemplateDraft = {
 
 export type TemplateEditDraft = {
   templateId: string;
+  scope: RequirementTemplateScope;
   language: 'ro' | 'en';
   name: string;
   description: string;

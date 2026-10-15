@@ -27,9 +27,10 @@ import {
   addRequirementDocument, cloneStarterTemplate, deleteRequirementTemplate, discardExistingRequirementEdit, discardRequirementDraft, duplicateRequirementTemplate, getRequirementsWorkspace,
   removeRequirementDocument, saveExistingRequirementEdit, saveRequirementDraft, selectRequirementTemplate, startRequirementDraft,
   updateCustomRequirementDocument, updateExistingRequirementTemplate, updateRequirementDocument, updateRequirementDraft,
-  useRequirementsState, validateExistingRequirementEdit, validateRequirementDraft
+  useRequirementsState, validateExistingRequirementEdit, validateRequirementDraft, selectRequirementTemplateScope
 } from './requirements-state';
-import type {ExpiryWarningDays, RequirementTemplateDocument, RequirementsViewModel, ValidityMonths} from './types';
+import type {ExpiryWarningDays, RequirementTemplateDocument, RequirementTemplateScope, RequirementsViewModel, ValidityMonths} from './types';
+import {requirementTemplateScopes} from './template-scope';
 import type {DrawerPhase} from '@/components/ui/Drawer';
 import styles from './RequirementsPage.module.css';
 
@@ -54,8 +55,10 @@ export function RequirementsPage({locale, view, templateId}: {locale: string; vi
   const companyId = company?.company.id ?? '';
   const canCreate = Boolean(company && getCurrentMembership(company)?.role === 'administrator');
   const workspace = getRequirementsWorkspace(useRequirementsState(), companyId);
-  const draft = workspace.draft;
-  const selected = workspace.templates.find((template) => template.id === workspace.selectedId) ?? workspace.templates[0] ?? null;
+  const scope = workspace.selectedScope;
+  const scopedTemplates = workspace.templates.filter((template) => template.scope === scope);
+  const draft = workspace.draft?.scope === scope ? workspace.draft : null;
+  const selected = scopedTemplates.find((template) => template.id === workspace.selectedId) ?? scopedTemplates[0] ?? null;
   const editDraft = workspace.editDraft?.templateId === selected?.id ? workspace.editDraft : null;
   const documents = draft?.documents ?? editDraft?.documents ?? selected?.documents ?? [];
   const [query, setQuery] = useState('');
@@ -71,13 +74,15 @@ export function RequirementsPage({locale, view, templateId}: {locale: string; vi
   const pendingAction = useRef<(() => void) | null>(null);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const allowNavigation = useRef(false);
-  const visible = workspace.templates.filter((template) => (template.title[language] + ' ' + template.subtitle[language]).toLocaleLowerCase(locale).includes(query.trim().toLocaleLowerCase(locale)));
+  const visible = scopedTemplates.filter((template) => (template.title[language] + ' ' + template.subtitle[language]).toLocaleLowerCase(locale).includes(query.trim().toLocaleLowerCase(locale)));
   const draftValidation = draft ? validateRequirementDraft(workspace) : null;
   const editValidation = editDraft ? validateExistingRequirementEdit(workspace) : null;
   const activeValidation = draft ? draftValidation : editValidation;
   const customDocument = documents.find((document) => document.id === editingCustomId && document.customName !== undefined);
   const isDirty = Boolean(draft?.isDirty || editDraft?.isDirty);
   const appearance = draft ?? editDraft ?? selected ?? defaultAppearance;
+  const templateSubtitle = selected?.subtitle[language] || (selected?.categoryId ? vendors(('category.' + selected.categoryId) as 'category.construction') : t(`scope.${scope}`));
+  const previewDocuments = supplierPreviewDocuments(documents).map((document) => scope === 'vendor' ? document : {...document, status: 'missing' as const, uploadedFile: undefined, uploadedAt: undefined});
 
   function requestDiscard(action: () => void) {
     if (isDirty) {pendingAction.current = action; setConfirmDiscard(true);}
@@ -94,6 +99,7 @@ export function RequirementsPage({locale, view, templateId}: {locale: string; vi
     action?.();
   }
   function startNew() {if (canCreate) requestDiscard(() => {setShowStarters(false); startRequirementDraft(companyId); setValidation(null); setTab('documents');});}
+  function changeScope(next: RequirementTemplateScope) {requestDiscard(() => {selectRequirementTemplateScope(companyId, next); setShowStarters(false); setValidation(null); setTab('documents');});}
   function openStarters() {requestDiscard(() => {setShowStarters(true); setValidation(null);});}
   function useStarter(id: string) {
     const result = cloneStarterTemplate(companyId, id);
@@ -184,9 +190,11 @@ export function RequirementsPage({locale, view, templateId}: {locale: string; vi
 
   return <AuthenticatedAppShell locale={locale} currentPath="/requirements" organizationName={company?.company.name ?? view.organization.name} userName={view.user.fullName} userInitials={view.user.initials} notificationCount={view.notificationCount} scope="company-aware">
     <div className={styles.page}>
-      <AuthenticatedPageHeader context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: app('navigation.requirements')}]} />} title={t('title')} titleId="requirements-title" description={t('description')}
-        supportingContent={<div className={styles.headerCallout}><span className={styles.headerCalloutIcon}><AppIcon name="target" size={27}/></span><span>{t('calloutOne')}<br/>{t('calloutTwo')}</span></div>}
-        actions={<AuthenticatedPagePrimaryAction ref={addTemplateRef} icon="plus" onClick={openStarters}>{t('newTemplate')}</AuthenticatedPagePrimaryAction>}/>
+      <AuthenticatedPageHeader context={<AuthenticatedBreadcrumbs label={t('breadcrumbLabel')} items={[{label: app('navigation.requirements')}]} />} title={t('title')} titleId="requirements-title" description={scope === 'vendor' ? t('description') : t(`scope.description.${scope}`)}
+        supportingContent={<div className={styles.headerCallout}><span className={styles.headerCalloutIcon}><AppIcon name="target" size={27}/></span><span>{t('calloutOne')}<br/>{scope === 'vendor' ? t('calloutTwo') : t(`scope.callout.${scope}`)}</span></div>}
+        actions={<AuthenticatedPagePrimaryAction ref={addTemplateRef} icon="plus" disabled={scope !== 'vendor' && !canCreate} onClick={scope === 'vendor' ? openStarters : startNew}>{t('newTemplate')}</AuthenticatedPagePrimaryAction>}/>
+
+      <div className={styles.scopeSelector}><SelectField id="requirement-template-scope" label={t('scope.label')} value={scope} controlSize="compact" onChange={(event) => changeScope(event.target.value as RequirementTemplateScope)}>{requirementTemplateScopes.map((value) => <option key={value} value={value}>{t(`scope.${value}`)}</option>)}</SelectField></div>
 
       <div className={styles.workspace}>
         <Surface className={styles.templatePanel}>
@@ -195,35 +203,36 @@ export function RequirementsPage({locale, view, templateId}: {locale: string; vi
           <div className={styles.templateList}>
             {draft && <div className={styles.templateItem} data-selected="true" data-template-id={draft.id}><AppearanceIcon appearance={draft} size="list"/><span className={styles.templateCopy}><strong>{t('creation.draftListTitle')}</strong><span>{t('creation.draftListDescription')}</span><small>{t('documentCount', {count: draft.documents.length})}</small></span><AppIcon name="chevronRight" size={18}/></div>}
             {visible.map((template) => <button type="button" key={template.id} className={styles.templateItem} data-template-id={template.id} data-selected={!draft && selected?.id === template.id} aria-current={!draft && selected?.id === template.id ? 'true' : undefined} onClick={() => selectTemplate(template.id)}>
-              <AppearanceIcon appearance={template} size="list"/><span className={styles.templateCopy}><strong>{template.title[language]}</strong><span>{template.subtitle[language] || vendors(('category.' + template.categoryId) as 'category.construction')}</span><small>{t('documentCount', {count: template.documents.length})}</small></span><AppIcon name="chevronRight" size={18}/>
+              <AppearanceIcon appearance={template} size="list"/><span className={styles.templateCopy}><strong>{template.title[language]}</strong><span>{template.subtitle[language] || (template.categoryId ? vendors(('category.' + template.categoryId) as 'category.construction') : t(`scope.${scope}`))}</span><small>{t('documentCount', {count: template.documents.length})}</small></span><AppIcon name="chevronRight" size={18}/>
             </button>)}
-            {!draft && visible.length === 0 && <p className={styles.noResults}>{workspace.templates.length ? t('noResults') : t('creation.emptyCompanyDescription')}</p>}
+            {!draft && visible.length === 0 && <p className={styles.noResults}>{scopedTemplates.length ? t('noResults') : t('scope.empty')}</p>}
           </div>
-          <button type="button" className={styles.addTemplate} disabled={!canCreate} onClick={startNew}><span className={styles.addIcon}><AppIcon name="plus" size={26}/></span><span><strong>{t('addNewTemplate')}</strong><small>{t('addNewDescription')}</small></span></button>
+          <button type="button" className={styles.addTemplate} disabled={!canCreate} onClick={startNew}><span className={styles.addIcon}><AppIcon name="plus" size={26}/></span><span><strong>{t('addNewTemplate')}</strong><small>{scope === 'vendor' ? t('addNewDescription') : t('scope.createDescription')}</small></span></button>
         </Surface>
 
         <Surface className={styles.editor}>
-          {showStarters ? <StarterTemplateSelector key={companyId} locale={locale} templates={workspace.templates} canCreate={canCreate} onCustom={startNew} onUse={useStarter} onExisting={selectTemplate} onBack={() => {setShowStarters(false); addTemplateRef.current?.focus();}}/> : !canCreate && (draft || selected) ? <>
+          {(draft || selected) && <p className={styles.scopeSummary}>{t('scope.destination', {name: t(`scope.${scope}`)})}</p>}
+          {showStarters ? <StarterTemplateSelector key={companyId} locale={locale} templates={workspace.templates.filter((template) => template.scope === 'vendor')} canCreate={canCreate} onCustom={startNew} onUse={useStarter} onExisting={selectTemplate} onBack={() => {setShowStarters(false); addTemplateRef.current?.focus();}}/> : !canCreate && (draft || selected) ? <>
             <div className={styles.editorTop}><AppearanceIcon appearance={appearance}/><div className={styles.editorIdentity}><h2 ref={editorTitleRef} tabIndex={-1}>{draft ? draft.name || t('creation.draftListTitle') : selected?.title[language]}</h2><p>{draft ? draft.description : selected?.subtitle[language]}</p></div></div>
             <div className={styles.previewPanel} data-requirement-readonly>
-              <aside className={styles.previewNotice}><span><AppIcon name="info" size={20}/></span><div><h3>{t('preview.title')}</h3><p>{t('starters.readOnlyRole')}</p></div></aside>
-              <SupplierRequirementContext locale={locale} requester={{name: company?.company.name ?? view.organization.name, registrationNumber: company?.company.taxId}} supplier={previewSupplier}/>
-              <SupplierRequirementList locale={locale} documents={supplierPreviewDocuments(draft?.documents ?? selected?.documents ?? [])}/>
+              <aside className={styles.previewNotice}><span><AppIcon name="info" size={20}/></span><div><h3>{scope === 'vendor' ? t('preview.title') : t('scope.previewTitle')}</h3><p>{t('starters.readOnlyRole')}</p></div></aside>
+              {scope === 'vendor' && <SupplierRequirementContext locale={locale} requester={{name: company?.company.name ?? view.organization.name, registrationNumber: company?.company.taxId}} supplier={previewSupplier}/>}
+              <SupplierRequirementList locale={locale} documents={previewDocuments}/>
             </div>
           </> : <>
-          {draft ? <div className={styles.editorTop}><AppearancePicker appearance={draft} onChange={(next) => updateRequirementDraft(companyId, next)} label={t('appearance.templateLabel')}/><div className={styles.editorIdentity}><h2>{t('creation.title')}</h2><p>{t('creation.subtitle')}</p></div></div>
-            : selected ? <div className={styles.editorTop}><AppearancePicker appearance={appearance} onChange={(next) => updateExistingRequirementTemplate(companyId, language, next)} label={t('appearance.templateLabel')}/><div className={styles.editorIdentity}><h2 ref={editorTitleRef} tabIndex={-1}>{selected.title[language]}</h2><p>{selected.subtitle[language] || vendors(('category.' + selected.categoryId) as 'category.construction')}</p></div><div className={styles.editorActions}><Button variant="secondary" onClick={duplicateSelected}><ActionGlyph kind="copy"/>{t('duplicateTemplate')}</Button></div></div>
-            : <div className={styles.editorTop}><span className={styles.addIcon}><AppIcon name="file" size={29}/></span><div className={styles.editorIdentity}><h2>{t('creation.emptyCompanyTitle')}</h2><p>{t('creation.emptyCompanyDescription')}</p></div></div>}
-          {!draft && !selected && <div className={styles.starterUse}><Button onClick={openStarters}>{t('starters.title')}</Button><Button variant="secondary" disabled={!canCreate} onClick={startNew}>{t('starters.custom')}</Button></div>}
+          {draft ? <div className={styles.editorTop}><AppearancePicker appearance={draft} onChange={({iconKey, iconColorKey}) => updateRequirementDraft(companyId, {iconKey, iconColorKey})} label={t('appearance.templateLabel')}/><div className={styles.editorIdentity}><h2>{t('creation.title')}</h2><p>{scope === 'vendor' ? t('creation.subtitle') : t('scope.createDescription')}</p></div></div>
+            : selected ? <div className={styles.editorTop}><AppearancePicker appearance={appearance} onChange={({iconKey, iconColorKey}) => updateExistingRequirementTemplate(companyId, language, {iconKey, iconColorKey})} label={t('appearance.templateLabel')}/><div className={styles.editorIdentity}><h2 ref={editorTitleRef} tabIndex={-1}>{selected.title[language]}</h2><p>{templateSubtitle}</p></div><div className={styles.editorActions}><Button variant="secondary" onClick={duplicateSelected}><ActionGlyph kind="copy"/>{t('duplicateTemplate')}</Button></div></div>
+            : <div className={styles.editorTop}><span className={styles.addIcon}><AppIcon name="file" size={29}/></span><div className={styles.editorIdentity}><h2>{scope === 'vendor' ? t('creation.emptyCompanyTitle') : t('scope.emptyTitle')}</h2><p>{scope === 'vendor' ? t('creation.emptyCompanyDescription') : t('scope.createDescription')}</p></div></div>}
+          {!draft && !selected && <div className={styles.starterUse}>{scope === 'vendor' && <Button onClick={openStarters}>{t('starters.title')}</Button>}<Button variant="secondary" disabled={!canCreate} onClick={startNew}>{t('starters.custom')}</Button></div>}
 
           {(draft || selected) && <>
             <div className={styles.draftFields}>
-              <Field id="requirement-template-name" label={t('creation.name')} placeholder={t('creation.namePlaceholder')} required value={draft?.name ?? editDraft?.name ?? selected!.title[language]}
+              <Field id="requirement-template-name" label={t('creation.name')} placeholder={scope === 'vendor' ? t('creation.namePlaceholder') : t('scope.namePlaceholder')} required value={draft?.name ?? editDraft?.name ?? selected!.title[language]}
                 onChange={(event) => {if (draft) updateRequirementDraft(companyId, {name: event.target.value}); else updateExistingRequirementTemplate(companyId, language, {name: event.target.value}); setValidation(null);}}
                 error={validation === 'name' || (!draft && editValidation === 'name') ? t('creation.nameRequired') : validation === 'duplicateName' || activeValidation === 'duplicateName' ? t('creation.duplicateName') : undefined} controlSize="compact"/>
-              <SelectField id="requirement-template-category" label={t('creation.category')} placeholder={t('creation.categoryPlaceholder')} required value={draft?.categoryId ?? editDraft?.categoryId ?? selected!.categoryId}
+              {scope === 'vendor' && <SelectField id="requirement-template-category" label={t('creation.category')} placeholder={t('creation.categoryPlaceholder')} required value={draft?.categoryId ?? editDraft?.categoryId ?? selected?.categoryId ?? ''}
                 onChange={(event) => {if (draft) updateRequirementDraft(companyId, {categoryId: event.target.value as VendorCategory | ''}); else updateExistingRequirementTemplate(companyId, language, {categoryId: event.target.value as VendorCategory | ''}); setValidation(null);}}
-                error={validation === 'category' || (!draft && editValidation === 'category') ? t('creation.categoryRequired') : undefined} controlSize="compact">{vendorCategories.map((category) => <option key={category} value={category}>{vendors(('category.' + category) as 'category.construction')}</option>)}</SelectField>
+                error={validation === 'category' || (!draft && editValidation === 'category') ? t('creation.categoryRequired') : undefined} controlSize="compact">{vendorCategories.map((category) => <option key={category} value={category}>{vendors(('category.' + category) as 'category.construction')}</option>)}</SelectField>}
               <label className={styles.draftDescription}>{t('creation.description')}<textarea value={draft?.description ?? editDraft?.description ?? selected!.subtitle[language]}
                 onChange={(event) => {if (draft) updateRequirementDraft(companyId, {description: event.target.value}); else updateExistingRequirementTemplate(companyId, language, {description: event.target.value}); setValidation(null);}} placeholder={t('creation.descriptionPlaceholder')}/></label>
             </div>
@@ -254,15 +263,16 @@ export function RequirementsPage({locale, view, templateId}: {locale: string; vi
               {(validation === 'documents' || activeValidation === 'documents') && <p className={styles.draftError} role="alert">{t('creation.documentsRequired')}</p>}
               {(validation === 'invalidDocument' || activeValidation === 'invalidDocument') && <p className={styles.draftError} role="alert">{t('creation.invalidDocument')}</p>}
               {(validation === 'duplicateDocument' || activeValidation === 'duplicateDocument') && <p className={styles.draftError} role="alert">{t('drawer.duplicate')}</p>}
+              {validation === 'scope' && <p className={styles.draftError} role="alert">{t('scope.invalid')}</p>}
             </div>
             <div id="preview-panel" role="tabpanel" aria-labelledby="preview-tab" className={styles.previewPanel} hidden={tab !== 'preview'} tabIndex={0}>
               {tab === 'preview' && <>
-                <aside className={styles.previewNotice}><span><AppIcon name="info" size={20}/></span><div><h3>{t('preview.title')}</h3><p>{t('preview.description')}</p></div></aside>
-                <SupplierRequirementContext locale={locale} requester={{name: company?.company.name ?? view.organization.name, registrationNumber: company?.company.taxId}} supplier={previewSupplier}/>
-                <SupplierRequirementList locale={locale} documents={supplierPreviewDocuments(documents)}/>
+                <aside className={styles.previewNotice}><span><AppIcon name="info" size={20}/></span><div><h3>{scope === 'vendor' ? t('preview.title') : t('scope.previewTitle')}</h3><p>{scope === 'vendor' ? t('preview.description') : t('scope.destination', {name: t(`scope.${scope}`)})}</p></div></aside>
+                {scope === 'vendor' && <SupplierRequirementContext locale={locale} requester={{name: company?.company.name ?? view.organization.name, registrationNumber: company?.company.taxId}} supplier={previewSupplier}/>}
+                <SupplierRequirementList locale={locale} documents={previewDocuments}/>
               </>}
             </div>
-            <div className={styles.notice}><span><AppIcon name="info" size={20}/></span><p>{draft ? t('creation.draftNotice') : t('availability', {name: vendors(('category.' + (editDraft?.categoryId || selected!.categoryId)) as 'category.construction')})}</p></div>
+            <div className={styles.notice}><span><AppIcon name="info" size={20}/></span><p>{scope !== 'vendor' ? t('scope.availability', {name: t(`scope.${scope}`)}) : draft ? t('creation.draftNotice') : t('availability', {name: vendors(('category.' + (editDraft?.categoryId || selected!.categoryId)) as 'category.construction')})}</p></div>
             <div className={styles.footer}>{!draft && <Button variant="destructive" onClick={requestDelete}><ActionGlyph kind="trash"/>{t('deleteTemplate')}</Button>}<span className={styles.footerRight}><Button variant="secondary" onClick={() => {if (draft) requestDiscard(() => {}); else {discardExistingRequirementEdit(companyId); setEditingCustomId(null); setValidation(null);}}}>{t('cancel')}</Button><Button aria-disabled={draft ? Boolean(draftValidation) : !editDraft?.isDirty || Boolean(editValidation)} onClick={() => draft ? saveNew() : saveExisting()}><ActionGlyph kind="save"/>{t('saveTemplate')}</Button></span></div>
           </>}
           </>}

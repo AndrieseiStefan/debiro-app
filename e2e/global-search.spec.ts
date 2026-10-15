@@ -24,7 +24,7 @@ async function scenario(page: Page, options: {role?: 'viewer' | 'reviewer'; draf
       companies.listeners.forEach((notify) => notify());
     }
     if (options.draft) {
-      requirements.state = {...requirements.state, byCompany: {...requirements.state.byCompany, [companyId]: {...requirements.state.byCompany[companyId], draft: {id: 'search-draft', name: 'Șablon general Search', description: 'Incomplete search setup', categoryId: '', iconKey: 'file', iconColorKey: 'blue', documents: [], isNew: true, isDirty: true}}}};
+      requirements.state = {...requirements.state, byCompany: {...requirements.state.byCompany, [companyId]: {...requirements.state.byCompany[companyId], draft: {id: 'search-draft', scope: 'vendor', name: 'Șablon general Search', description: 'Incomplete search setup', categoryId: '', iconKey: 'file', iconColorKey: 'blue', documents: [], isNew: true, isDirty: true}}}};
       requirements.listeners.forEach((notify) => notify());
     }
     if (options.volume) {

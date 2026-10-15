@@ -10,6 +10,7 @@ import {Drawer, type DrawerPhase} from '@/components/ui/Drawer';
 import {AppearanceIcon} from '@/features/requirements/AppearancePicker';
 import {templateDocumentType} from '@/features/requirements/document-types';
 import type {RequirementTemplate} from '@/features/requirements/types';
+import {requirementTemplateScope} from '@/features/requirements/template-scope';
 import {assignmentSummary, type VendorRequirement} from './vendor-requirements';
 import type {VendorCategory} from './types';
 import styles from './ApplyTemplatesDrawer.module.css';
@@ -23,10 +24,11 @@ export function ApplyTemplatesDrawer({phase, onClose, onExited, triggerRef, temp
   const [selected, setSelected] = useState<string[]>([]);
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState(false);
-  const chosen = templates.filter((template) => selected.includes(template.id) && template.categoryId === category);
+  const vendorTemplates = templates.filter((template) => requirementTemplateScope(template) === 'vendor');
+  const chosen = vendorTemplates.filter((template) => selected.includes(template.id) && template.categoryId === category);
   const summary = assignmentSummary(chosen, requirements);
-  const compatible = templates.some((template) => template.categoryId === category);
-  const visible = templates.filter((template) => `${template.title[language]} ${template.subtitle[language]}`.toLocaleLowerCase(language).includes(query.trim().toLocaleLowerCase(language)))
+  const compatible = vendorTemplates.some((template) => template.categoryId === category);
+  const visible = vendorTemplates.filter((template) => `${template.title[language]} ${template.subtitle[language]}`.toLocaleLowerCase(language).includes(query.trim().toLocaleLowerCase(language)))
     .toSorted((a, b) => Number(b.categoryId === category) - Number(a.categoryId === category));
 
   return <Drawer phase={phase} onClose={onClose} onExited={onExited} triggerRef={triggerRef} titleId="apply-template-title" descriptionId="apply-template-description" closeLabel={t('close')} panelClassName={styles.panel} contentClassName={styles.content}>

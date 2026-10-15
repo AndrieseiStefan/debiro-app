@@ -1127,6 +1127,22 @@
     "calloutOne": "Un singur set de reguli.",
     "calloutTwo": "Toți furnizorii conformi.",
     "newTemplate": "Șablon nou",
+    "scope": {
+      "label": "Destinație șabloane",
+      "vendor": "Furnizori",
+      "company": "Companie",
+      "employee": "Angajați",
+      "destination": "Destinație: {name}",
+      "empty": "Nu există șabloane pentru această categorie.",
+      "emptyTitle": "Nu există șabloane",
+      "createDescription": "Creează un șablon pentru destinația selectată.",
+      "namePlaceholder": "Ex. Documente obligatorii",
+      "availability": "După salvare, șablonul rămâne disponibil numai pentru destinația {name}.",
+      "invalid": "Destinația șablonului nu este validă.",
+      "previewTitle": "Previzualizare cerințe",
+      "description": {"company": "Creează și gestionează seturi de documente necesare pentru companie.", "employee": "Creează și gestionează seturi de documente necesare pentru angajați."},
+      "callout": {"company": "Conformitate pentru companie.", "employee": "Conformitate pentru angajați."}
+    },
     "starters": {
       "title": "Sugestii DEBIRO",
       "description": "Alege un șablon de pornire și adaugă o copie editabilă în compania ta sau creează un șablon nou.",

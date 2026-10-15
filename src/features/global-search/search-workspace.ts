@@ -54,7 +54,8 @@ export function searchWorkspace(data: WorkspaceSearchData, companyId: string, qu
     add({type: 'document', id: document.id, companyId, title: document.documentName[locale], subtitle: `${document.filename} · ${type}`, vendorId: document.vendorId, vendorName: vendors.find((vendor) => vendor.id === document.vendorId)!.name, status: document.status, expiresAt: document.expiresAt}, [document.filename, type]);
   }
   for (const template of workspace.templates.filter((item) => item.companyId === companyId)) {
-    add({type: 'requirement', id: template.id, companyId, title: template.title[locale], subtitle: template.subtitle[locale] || labels.categories[template.categoryId], isDraft: false, appearance: template}, [template.subtitle[locale], labels.categories[template.categoryId]]);
+    const category = template.categoryId ? labels.categories[template.categoryId] : '';
+    add({type: 'requirement', id: template.id, companyId, title: template.title[locale], subtitle: template.subtitle[locale] || category, isDraft: false, appearance: template}, [template.subtitle[locale], category]);
   }
   const draft = workspace.draft;
   if (draft && [draft.name, draft.description, draft.categoryId ? labels.categories[draft.categoryId] : ''].some((field) => normalizeSearchQuery(field).includes(needle))) {

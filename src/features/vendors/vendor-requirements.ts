@@ -6,6 +6,7 @@ import {catalogDocument} from '@/features/requirements/catalog';
 import {documentIdentityKey, templateDocumentType, type DocumentTypeSnapshot} from '@/features/requirements/document-types';
 import {getCompanyDocumentTypes, getRequirementsWorkspace, readRequirementsState} from '@/features/requirements/requirements-state';
 import type {ExpiryWarningDays, LocalizedText, RequirementTemplate, ValidityMonths} from '@/features/requirements/types';
+import {templateAppliesToTarget} from '@/features/requirements/template-scope';
 import {activeDocuments, approvedCompliance, commitDocumentVersion, readDocumentRecords, reviewDateToIso, updateDocumentRecord, type CreatedDocument} from '@/features/documents/created-documents';
 import {canManuallyExpire} from '@/features/documents/compliance';
 import {documentAccess} from '@/features/documents/document-access';
@@ -76,7 +77,7 @@ export function applyVendorTemplates(companyId: string, vendorId: string, templa
   const available = getRequirementsWorkspace(readRequirementsState(), companyId).templates;
   const templates = [...new Set(templateIds)].map((id) => available.find((template) => template.id === id));
   const companyTypes = getCompanyDocumentTypes(readRequirementsState(), companyId);
-  if (!templates.length || templates.some((template) => !template || template.companyId !== companyId || template.categoryId !== vendor?.category || template.documents.some((document) => !templateDocumentType(document) || document.companyDocumentTypeId && !companyTypes.some((type) => type.id === document.companyDocumentTypeId)))) return null;
+  if (!templates.length || templates.some((template) => !template || template.companyId !== companyId || !templateAppliesToTarget(template, 'vendor', vendor?.category) || template.documents.some((document) => !templateDocumentType(document) || document.companyDocumentTypeId && !companyTypes.some((type) => type.id === document.companyDocumentTypeId)))) return null;
   const selected = templates as RequirementTemplate[];
   const workspace = getVendorRequirements(session.state, companyId, vendorId);
   const existingKeys = new Set(workspace.requirements.map(documentIdentityKey));

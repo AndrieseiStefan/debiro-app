@@ -5,6 +5,7 @@ import en from '../../messages/en.json';
 import ro from '../../messages/ro.json';
 import {RequirementsPage} from '@/features/requirements/RequirementsPage';
 import {requirementsFixture} from '@/features/requirements/fixtures';
+import {getActiveCompany, readCompanyState} from '@/features/companies/company-state';
 
 vi.mock('@/i18n/navigation', () => ({
   useRouter: () => ({push: vi.fn()}),
@@ -46,5 +47,41 @@ describe('document requirements', () => {
     expect(screen.getByRole('tab', {name: 'Required documents (4)'})).toBeVisible();
     fireEvent.change(screen.getByRole('searchbox', {name: 'Search templates'}), {target: {value: 'not-a-category'}});
     expect(screen.getByText('No templates match your search.')).toBeVisible();
+  });
+
+  it('reuses the editor without vendor category and guards dirty scope changes', () => {
+    renderRequirements('ro');
+    const scope = screen.getByRole('combobox', {name: 'Destinație șabloane'});
+    fireEvent.change(scope, {target: {value: 'company'}});
+    expect(screen.getByText('Nu există șabloane pentru această categorie.')).toBeVisible();
+    fireEvent.click(screen.getByRole('button', {name: 'Șablon nou'}));
+    expect(screen.queryByLabelText(/Categorie furnizor/)).not.toBeInTheDocument();
+    expect(screen.getByText('Destinație: Companie')).toBeVisible();
+    fireEvent.change(screen.getByLabelText(/Nume șablon/), {target: {value: 'Company draft'}});
+    fireEvent.change(scope, {target: {value: 'employee'}});
+    const confirmation = screen.getByRole('alertdialog');
+    fireEvent.click(within(confirmation).getByRole('button', {name: 'Continuă editarea'}));
+    expect(scope).toHaveValue('company');
+    expect(screen.getByLabelText(/Nume șablon/)).toHaveValue('Company draft');
+    fireEvent.change(scope, {target: {value: 'employee'}});
+    fireEvent.click(within(screen.getByRole('alertdialog')).getByRole('button', {name: 'Renunță la modificări'}));
+    expect(scope).toHaveValue('employee');
+    expect(screen.queryByLabelText(/Nume șablon/)).not.toBeInTheDocument();
+  });
+
+  it('does not grant creation controls to read-only memberships in any new scope', () => {
+    const company = getActiveCompany(readCompanyState())!;
+    const member = company.members.find((item) => item.isCurrentUser)!;
+    const role = member.role;
+    member.role = 'viewer';
+    const view = renderRequirements('en');
+    try {
+      for (const scope of ['company', 'employee']) {
+        fireEvent.change(screen.getByRole('combobox', {name: 'Template destination'}), {target: {value: scope}});
+        expect(screen.getByRole('button', {name: 'New Template'})).toBeDisabled();
+        expect(screen.getByRole('button', {name: /Add new template/})).toBeDisabled();
+        expect(screen.queryByLabelText(/Template name/)).not.toBeInTheDocument();
+      }
+    } finally {view.unmount(); member.role = role;}
   });
 });

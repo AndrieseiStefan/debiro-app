@@ -72,15 +72,22 @@ describe('canonical scoped result projection', () => {
     workspace.templates = [{...workspace.templates[0], title: {ro: 'Întreținere firmă', en: 'Company maintenance'}, subtitle: {ro: 'Descriere unică', en: 'Unique description'}}];
     expect(search(data, 'intretinere').requirements).toHaveLength(1);
     expect(search(data, 'descriere unica').requirements).toHaveLength(1);
-    expect(search(data, labels('ro').categories[workspace.templates[0].categoryId]).requirements).toHaveLength(1);
+    expect(search(data, labels('ro').categories[workspace.templates[0].categoryId!]).requirements).toHaveLength(1);
     expect(search(data, 'Certificat fiscal').requirements).toHaveLength(0);
     expect(search(data, 'Servicii IT').requirements).toHaveLength(0);
-    workspace.draft = {id: 'draft-general', name: 'Șablon general', description: 'Incomplete setup', categoryId: '', ...defaultAppearance, documents: [], isNew: true, isDirty: true};
+    workspace.draft = {id: 'draft-general', scope: 'vendor', name: 'Șablon general', description: 'Incomplete setup', categoryId: '', ...defaultAppearance, documents: [], isNew: true, isDirty: true};
     const before = structuredClone(workspace);
     expect(search(data, 'sablon general').requirements).toMatchObject([{id: 'draft-general', isDraft: true}]);
     expect(search(data, 'incomplete setup').requirements).toHaveLength(1);
     expect(searchResultHref({type: 'requirement', id: 'draft-general', companyId}, data)).toBe('/requirements?template=draft-general');
     expect(workspace).toEqual(before);
+  });
+
+  it('searches category-free scoped templates through the existing owned details route', () => {
+    const data = snapshot(), workspace = data.requirements.byCompany[companyId];
+    workspace.templates.push({...workspace.templates[0], id: 'company-scoped', scope: 'company', categoryId: null, title: {ro: 'Cerințe companie', en: 'Company requirements'}, subtitle: {ro: '', en: ''}});
+    expect(search(data, 'Company requirements', 'en').requirements).toMatchObject([{id: 'company-scoped', subtitle: ''}]);
+    expect(searchResultHref({type: 'requirement', id: 'company-scoped', companyId}, data)).toBe('/requirements?template=company-scoped');
   });
 
   it('uses exact/start/contains/secondary priority, alphabetical/ID ties and exposes every match', () => {

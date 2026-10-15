@@ -1,4 +1,6 @@
 .page {min-width: 0;}
+.scopeSelector {margin-top: var(--space-5); max-width: 280px;}
+.scopeSummary {color: var(--color-text-secondary); font-size: var(--text-caption); padding: var(--space-3) var(--space-4) 0;}
 .headerCallout {align-items: center; background: #eef6ff; border-radius: 10px; color: #0756be; display: flex; font-size: 14px; gap: 14px; line-height: 1.4; min-height: 80px; min-width: 271px; padding: 12px 16px; white-space: nowrap;}
 .page [data-page-primary-action] {min-width: 179px;}
 .headerCalloutIcon {align-items: center; background: #dcecff; border-radius: 50%; display: inline-flex; flex: 0 0 52px; height: 52px; justify-content: center;}

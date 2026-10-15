@@ -4,6 +4,8 @@ This roadmap records direction only. Detailed requirements are created by the ta
 
 ## Phase 0 — Product & Repository Foundation
 
+- E1C-001 template target scopes — implemented Vendor/Company/Employee templates through the existing company-owned session/editor, with backward-compatible vendor data and assignment rules; Company Documents and Employee workflows remain separate tasks
+
 - E1-032Bh/Bh1/Bh2/Bh3 Landing — implemented viewport-aware first presentation with surplus height distributed across two flexible internal gaps and only 40px bottom padding after Trust; native smooth one-page anchors with immediate reduced-motion fallback, coming-soon Resources and shared catalog/cards. Public Pricing fills the visible anchored viewport with its navy ambient background, compact centered cards, neutral recommendation and reduced-motion-safe marketing hover, without changing authenticated Upgrade. Real resources, commercial approval and verification of existing marketing claims remain deferred
 
 - E1-032Bg terminology — implemented UI-copy-only Templates / Șabloane naming across template-management entry points and Global Search; existing routes, data/contracts and vendor obligations remain unchanged
