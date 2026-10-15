@@ -108,9 +108,8 @@ export function LandingPage({locale, preview}: {locale: string; preview: Landing
         </div>
 
         <section id="pricing" className={styles.pricing} aria-labelledby="pricing-heading">
-          <div className={styles.pricingClouds} aria-hidden="true" />
+          <div className={styles.pricingAmbient} aria-hidden="true" />
           <PublicContainer className={styles.pricingInner}>
-            <span className={styles.pricingIcon}><LandingIcon name="tag" size={32} /></span>
             <div className={styles.pricingCopy}>
               <p className={styles.sectionEyebrow}>{t('pricingEyebrow')}</p>
               <h2 id="pricing-heading">{t('pricingHeading')}</h2>

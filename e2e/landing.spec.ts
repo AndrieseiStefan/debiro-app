@@ -108,7 +108,7 @@ test('keeps the landing page stable across the responsive viewport matrix', asyn
         const trustItems = Array.from(heroCopy.querySelector('ul')!.children);
         const cards = Array.from(sections[1].querySelectorAll('article'));
         const pricingInner = sections[3].children[1];
-        const pricingCopy = pricingInner.children[1];
+        const pricingCopy = pricingInner.querySelector('#pricing-heading')!.parentElement!;
         const pricingCards = Array.from(pricingInner.querySelectorAll('[data-plan-id]'));
         const heroDecoration = heroVisual.lastElementChild!;
         const headerInner = document.querySelector('header > div')!;
@@ -437,7 +437,7 @@ for (const english of [false, true]) {
 }
 
 test('viewport presentation and shared pricing remain naturally contained; captures for visual review', async ({page}) => {
-  await mkdir('artifacts/visual/e1-032bh', {recursive: true});
+  await mkdir('artifacts/visual/e1-032bh1', {recursive: true});
   for (const [width, height] of [[1920, 1080], [1448, 900], [1280, 800], [1448, 600], [1024, 768], [768, 900], [375, 812], [320, 700]]) {
     await page.setViewportSize({width, height});
     await page.goto('/');
@@ -446,26 +446,126 @@ test('viewport presentation and shared pricing remain naturally contained; captu
       const presentation = document.querySelector('[data-landing-presentation]')!.getBoundingClientRect();
       const header = document.querySelector('header')!.getBoundingClientRect();
       const pricing = document.querySelector('#pricing')!.getBoundingClientRect();
-      const cards = Array.from(document.querySelectorAll('#pricing [data-plan-id]'), (card) => {const r = card.getBoundingClientRect(); return {left: r.left, right: r.right, top: r.top};});
-      return {presentationHeight: presentation.height, headerHeight: header.height, pricingTop: pricing.top, presentationBottom: presentation.bottom, overflow: document.documentElement.scrollWidth, cards};
+      const proof = document.querySelector('[data-landing-presentation] > section:last-child')!;
+      const lowestTrust = Math.max(...Array.from(proof.querySelectorAll('*'), (element) => element.getBoundingClientRect().bottom));
+      const cards = Array.from(document.querySelectorAll('#pricing [data-plan-id]'), (card) => {const r = card.getBoundingClientRect(); return {left: r.left, right: r.right, top: r.top, width: r.width};});
+      const group = document.querySelector('#pricing [data-plan-context]')!.getBoundingClientRect();
+      return {presentationHeight: presentation.height, headerHeight: header.height, pricingTop: pricing.top, pricingHeight: pricing.height, trustBottomGap: presentation.bottom - lowestTrust, presentationBottom: presentation.bottom, overflow: document.documentElement.scrollWidth, cards, groupCenter: group.left + group.width / 2};
     });
     expect(geometry.presentationHeight).toBeGreaterThanOrEqual(height - geometry.headerHeight - 1);
     expect(geometry.pricingTop).toBeGreaterThanOrEqual(height);
     expect(geometry.pricingTop).toBe(geometry.presentationBottom);
+    expect(geometry.trustBottomGap).toBe(40);
+    expect(geometry.pricingHeight).toBeGreaterThanOrEqual(height - geometry.headerHeight - 1);
+    expect(geometry.groupCenter).toBeCloseTo(width / 2, 0);
     expect(geometry.overflow).toBeLessThanOrEqual(width);
-    for (const card of geometry.cards) {expect(card.left).toBeGreaterThanOrEqual(0); expect(card.right).toBeLessThanOrEqual(width);}
+    for (const card of geometry.cards) {expect(card.left).toBeGreaterThanOrEqual(0); expect(card.right).toBeLessThanOrEqual(width); expect(card.width).toBeLessThanOrEqual(340); expect(card.width).toBeCloseTo(geometry.cards[0].width, 0);}
     if (width >= 1200) expect(new Set(geometry.cards.map((card) => card.top)).size).toBe(1);
     else if (width >= 768) {expect(geometry.cards[0].top).toBe(geometry.cards[1].top); expect(geometry.cards[2].top).toBeGreaterThan(geometry.cards[0].top);}
     else expect(new Set(geometry.cards.map((card) => card.left)).size).toBe(1);
-    await page.screenshot({path: `artifacts/visual/e1-032bh/landing-${width}x${height}.png`});
-    if ([1448, 768, 375, 320].includes(width) && height !== 600) {
-      await page.locator('#pricing').screenshot({path: `artifacts/visual/e1-032bh/pricing-${width}.png`});
-    }
+    await page.screenshot({path: `artifacts/visual/e1-032bh1/landing-${width}x${height}.png`});
+    await page.locator('#pricing').screenshot({path: `artifacts/visual/e1-032bh1/pricing-${width}x${height}.png`});
   }
   await page.setViewportSize({width: 1448, height: 900});
-  await page.goto('/en');
-  await page.screenshot({path: 'artifacts/visual/e1-032bh/landing-en-desktop.png', fullPage: true});
-  await page.goto('/company/settings/billing');
-  await page.getByRole('button', {name: 'Upgrade plan', exact: true}).click();
-  await page.getByRole('dialog', {name: 'Upgrade plan', exact: true}).screenshot({path: 'artifacts/visual/e1-032bh/upgrade-desktop.png'});
+  await page.goto('/en#pricing');
+  await page.screenshot({path: 'artifacts/visual/e1-032bh1/pricing-en-desktop.png'});
+  for (const width of [1448, 375]) {
+    await page.setViewportSize({width, height: 900});
+    await page.goto('/company/settings/billing');
+    await page.getByRole('button', {name: 'Upgrade plan', exact: true}).click();
+    const modal = page.getByRole('dialog', {name: 'Upgrade plan', exact: true});
+    await expect(modal.locator('[data-current]')).toHaveAttribute('data-plan-id', 'Professional');
+    await expect(modal.locator('[data-recommended]')).toHaveAttribute('data-plan-id', 'Business');
+    const featured = modal.locator('[data-recommended]');
+    await expect(featured).toHaveCSS('transform', 'none');
+    await expect(featured).toHaveCSS('transition-duration', '0s');
+    await expect(featured).toHaveCSS('box-shadow', 'rgba(31, 83, 151, 0.05) 0px 8px 24px 0px');
+    await modal.screenshot({path: `artifacts/visual/e1-032bh1/upgrade-${width}.png`});
+    await page.keyboard.press('Escape');
+  }
+});
+
+test('premium pricing animates only decorative layers, lifts on fine-pointer hover and respects reduced motion', async ({page, browser}) => {
+  await mkdir('artifacts/visual/e1-032bh1', {recursive: true});
+  await page.setViewportSize({width: 1448, height: 900});
+  await page.emulateMedia({reducedMotion: 'no-preference'});
+  await page.goto('/#pricing');
+  const ambient = page.locator('#pricing > [aria-hidden="true"]');
+  await expect(ambient).toHaveCSS('pointer-events', 'none');
+  const layers = () => ambient.evaluate((element) => ['::before', '::after'].map((pseudo) => {
+    const s = getComputedStyle(element, pseudo);
+    return {animation: s.animationName, duration: s.animationDuration, transform: s.transform, opacity: s.opacity};
+  }));
+  const initial = await layers();
+  expect(initial.map((layer) => layer.duration)).toEqual(['16s', '20s']);
+  expect(initial.every((layer) => layer.animation !== 'none')).toBe(true);
+  await expect.poll(async () => (await layers())[0].transform).not.toBe(initial[0].transform);
+
+  const card = page.locator('#pricing [data-featured]');
+  const grid = page.locator('#pricing [data-plan-context]');
+  const before = await card.boundingBox(), gridBefore = await grid.boundingBox();
+  const cta = card.getByRole('link');
+  await card.hover();
+  await expect(card).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -4)');
+  const after = await card.boundingBox();
+  expect(before!.y - after!.y).toBe(4);
+  expect(after!.width).toBe(before!.width); expect(after!.height).toBe(before!.height);
+  expect(await grid.boundingBox()).toEqual(gridBefore);
+  await cta.focus(); await expect(cta).toHaveCSS('outline-style', 'solid');
+  await page.screenshot({path: 'artifacts/visual/e1-032bh1/pricing-hover.png', animations: 'disabled'});
+
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  expect((await layers()).every((layer) => layer.animation === 'none' && layer.transform === 'none')).toBe(true);
+  await card.hover(); await expect(card).toHaveCSS('transform', 'none');
+  await expect(card).toHaveCSS('transition-duration', '0s');
+  await expect(card).not.toHaveCSS('box-shadow', 'none');
+  await page.screenshot({path: 'artifacts/visual/e1-032bh1/pricing-reduced-motion.png'});
+
+  const touchContext = await browser.newContext({viewport: {width: 375, height: 812}, isMobile: true, hasTouch: true, reducedMotion: 'no-preference'});
+  try {
+    const touchPage = await touchContext.newPage();
+    await touchPage.goto('/#pricing');
+    const touchCard = touchPage.locator('#pricing [data-featured]');
+    await touchCard.tap({position: {x: 20, y: 70}});
+    await expect(touchCard).toHaveCSS('transform', 'none');
+    expect(await touchPage.evaluate(() => document.documentElement.scrollWidth)).toBe(375);
+  } finally {await touchContext.close();}
+});
+
+test('premium text and controls retain AA contrast, light surfaces and safe decoration stacking', async ({page}) => {
+  await page.goto('/#pricing');
+  const styles = await page.locator('#pricing').evaluate((section) => {
+    const color = (selector: string) => getComputedStyle(section.querySelector(selector)!).color;
+    const cards = Array.from(section.querySelectorAll('[data-plan-id]'));
+    return {
+      heading: color('h2'), eyebrow: color('p'), description: color('#pricing-heading + p'),
+      footnote: color('[data-plan-id] h3 + div + p'),
+      ribbon: color('[data-featured] > div:first-child'),
+      ribbonBackground: getComputedStyle(section.querySelector('[data-featured] > div:first-child')!).backgroundColor,
+      background: getComputedStyle(section).backgroundImage,
+      cardBackgrounds: cards.map((card) => getComputedStyle(card).backgroundColor),
+      decoration: getComputedStyle(section.firstElementChild!).zIndex,
+      content: getComputedStyle(section.children[1]).zIndex,
+      overflow: getComputedStyle(section).overflowY
+    };
+  });
+  const contrast = (foreground: string, background: string) => {
+    const luminance = (color: string) => {
+      const [r, g, b] = color.match(/[\d.]+/g)!.slice(0, 3).map(Number).map((value) => value / 255).map((value) => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4);
+      return .2126 * r + .7152 * g + .0722 * b;
+    };
+    const [dark, light] = [luminance(foreground), luminance(background)].sort((a, b) => a - b);
+    return (light + .05) / (dark + .05);
+  };
+  // Conservative maximum-light composite of both glows over the lightest navy base.
+  const maximumGlowBackground = 'rgb(32, 86, 156)';
+  expect(contrast(styles.heading, maximumGlowBackground)).toBeGreaterThanOrEqual(3);
+  expect(contrast(styles.eyebrow, maximumGlowBackground)).toBeGreaterThanOrEqual(4.5);
+  expect(contrast(styles.description, maximumGlowBackground)).toBeGreaterThanOrEqual(4.5);
+  expect(contrast(styles.footnote, 'rgb(233, 243, 255)')).toBeGreaterThanOrEqual(4.5);
+  expect(contrast(styles.ribbon, styles.ribbonBackground)).toBeGreaterThanOrEqual(4.5);
+  expect(styles.background).toContain('rgb(9, 21, 45)');
+  expect(styles.cardBackgrounds.every((color) => color === 'rgb(255, 255, 255)' || color === 'rgba(0, 0, 0, 0)')).toBe(true);
+  expect(styles.content).toBe('1'); expect(styles.decoration).toBe('auto');
+  expect(styles.overflow).toBe('visible');
 });

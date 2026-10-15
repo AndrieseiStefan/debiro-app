@@ -20,3 +20,23 @@
 .empty {color: var(--color-text-secondary); margin-top: var(--space-6); padding: var(--space-6);}
 @media (max-width: 1199px) {.cards {gap: 36px 16px; grid-template-columns: repeat(2, minmax(0, 1fr));}}
 @media (max-width: 767px) {.cards {grid-template-columns: minmax(0, 1fr);}.card {padding: 20px;}}
+
+/* Public presentation only. Upgrade keeps its original comparison geometry and states. */
+.cards[data-plan-context='marketing'] {margin: var(--space-6) auto 0; max-width: calc(3 * 340px + 2 * var(--space-4)); width: 100%;}
+.cards[data-plan-context='marketing'] .card {box-shadow: 0 20px 40px rgb(0 0 0 / 18%); transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;}
+.cards[data-plan-context='marketing'] .card[data-featured='true'] {box-shadow: 0 0 28px rgb(7 94 233 / 28%), 0 24px 48px rgb(0 0 0 / 24%);}
+.cards[data-plan-context='marketing'] .demoLabel {color: var(--color-text-secondary);}
+@media (max-width: 1199px) {
+  .cards[data-plan-context='marketing'] {max-width: calc(2 * 340px + var(--space-4));}
+  .cards[data-plan-context='marketing'] > .card:last-child:nth-child(odd) {grid-column: 1 / -1; justify-self: center; width: calc((100% - var(--space-4)) / 2);}
+}
+@media (max-width: 767px) {
+  .cards[data-plan-context='marketing'] {max-width: 340px;}
+  .cards[data-plan-context='marketing'] > .card:last-child:nth-child(odd) {width: 100%;}
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .cards[data-plan-context='marketing'] .card:hover {border-color: #4397ff; box-shadow: 0 0 32px rgb(7 94 233 / 34%), 0 28px 48px rgb(0 0 0 / 28%); transform: translateY(-4px);}
+}
+@media (prefers-reduced-motion: reduce) {
+  .cards[data-plan-context='marketing'] .card {transition: none;}
+}

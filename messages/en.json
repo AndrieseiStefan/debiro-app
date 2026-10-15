@@ -300,7 +300,7 @@
     }
   },
   "PlanCards": {
-    "featured": "Most popular choice",
+    "featured": "Recommended",
     "start": "Try for free",
     "empty": "Plans are currently unavailable."
   },

@@ -15,6 +15,8 @@ describe.each(['ro', 'en'] as const)('%s shared plan presentation', (locale) => 
     expect(Array.from(container.querySelectorAll('[data-plan-id]'), (card) => card.getAttribute('data-plan-id'))).toEqual(['Starter', 'Professional', 'Business']);
     expect(container.querySelectorAll('[data-featured]')).toHaveLength(1);
     expect(container.querySelector('[data-featured]')).toHaveAttribute('data-plan-id', 'Professional');
+    expect(container.querySelector('[data-featured]')).toHaveTextContent(locale === 'ro' ? 'Recomandat' : 'Recommended');
+    expect(container).not.toHaveTextContent(/popular/i);
     expect(container.querySelector('[data-current], [data-recommended]')).toBeNull();
     expect(container).not.toHaveTextContent(messages.CompanyBilling.upgrade.current);
     expect(container).not.toHaveTextContent('Trial');
