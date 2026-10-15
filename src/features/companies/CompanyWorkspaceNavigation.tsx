@@ -9,7 +9,7 @@ export function CompanyWorkspaceNavigation({children}: {children: ReactNode}) {
   const pathname = usePathname().replace(/^\/(?:en|ro)(?=\/|$)/, '') || '/';
   const router = useRouter();
   const globalProfileRoute = ['/profile', '/profile/companies', '/invitations'].includes(pathname);
-  const workspaceRoute = !globalProfileRoute && /^\/(dashboard|vendors|documents|requirements|notifications|company\/settings)(\/|$)/.test(pathname);
+  const workspaceRoute = !globalProfileRoute && /^\/(dashboard|vendors|documents|requirements|notifications|company\/(settings|documents|employees))(\/|$)/.test(pathname);
   const [entry, setEntry] = useState<{companyId: string | null; epoch: number}>({companyId: null, epoch: 0});
   // A route commit completes entry; keep its page key without an effect cascade.
   if (entry.companyId && pathname === '/dashboard') setEntry({...entry, companyId: null});

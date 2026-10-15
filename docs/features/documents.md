@@ -1,5 +1,7 @@
 # Documents (E1-011)
 
+E1C-002 keeps this existing vendor-document destination/source unchanged and adds a separate [Company Documents](company-documents.md) listing at `/company/documents`. Company-owned listing records are never routed into vendor review/details or included in this page's rows/counts/search.
+
 Current records and date/status aggregates follow the shared [2026 E1 fixture timeline](../project/fixture-data.md); relative expiry labels and review outcomes never use separate screen-specific clocks or totals.
 
 The global authenticated Documents page is available at `/documents` and `/en/documents`, with **Documente** active in the shared app shell. It follows [canonical mockup 11](../design/mockups/11-documents.png) using `AuthenticatedPageHeader`, summary cards, all/review tabs, shared search and filter controls, upload-date sort, document table, status badges, and eight-row pagination. Its 24 typed, deterministic summary fixtures explicitly associate every document with `vendorId` and `vendorName`; ownership is never inferred from AI-extracted text. The mockup's demo totals and dates are sample data, so visible counts derive from these fixtures instead. The fixtures initialize shared uploaded-document domain records; pending/approved/rejected review outcomes are no longer page-specific overrides.

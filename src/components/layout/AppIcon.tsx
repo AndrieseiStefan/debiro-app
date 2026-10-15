@@ -7,9 +7,10 @@ export type AppIconName =
   | 'building' | 'arrowRight' | 'userPlus' | 'fileX' | 'filter' | 'upload'
   | 'crown' | 'eye' | 'mail' | 'send' | 'creditCard' | 'edit' | 'download' | 'sort'
   | 'user' | 'external' | 'logout' | 'clipboard' | 'trash' | 'filePdf' | 'mapPin'
-  | 'box' | 'construction' | 'tools' | 'safety' | 'truck' | 'computer' | 'briefcase' | 'layers' | 'warning' | 'globe';
+  | 'box' | 'construction' | 'tools' | 'safety' | 'truck' | 'computer' | 'briefcase' | 'layers' | 'warning' | 'globe' | 'share';
 
 const paths: Record<AppIconName, ReactNode> = {
+  share: <><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></>,
   globe: <><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></>,
   mapPin: <><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></>,
   clipboard: <><rect x="5" y="4" width="14" height="18" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1" fill="white"/></>,

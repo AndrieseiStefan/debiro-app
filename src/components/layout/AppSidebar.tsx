@@ -15,6 +15,7 @@ const items = [
   {id: 'dashboard', icon: 'home', href: '/dashboard'},
   {id: 'suppliers', icon: 'users', href: '/vendors'},
   {id: 'documents', icon: 'file', href: '/documents'},
+  {id: 'company', icon: 'building'},
   {id: 'requirements', icon: 'shield', href: '/requirements'},
   {id: 'notifications', icon: 'bell', href: '/notifications'},
   {id: 'reports', icon: 'bars', href: '/reports', availability: 'comingSoon'},
@@ -23,6 +24,10 @@ const items = [
 
 let settingsExpansion: boolean | null = null;
 const settingsExpansionListeners = new Set<() => void>();
+let companyExpansion: boolean | null = null;
+const companyExpansionListeners = new Set<() => void>();
+function subscribeCompanyExpansion(listener: () => void) {companyExpansionListeners.add(listener); return () => {companyExpansionListeners.delete(listener);};}
+function setCompanyExpansion(expanded: boolean) {companyExpansion = expanded; companyExpansionListeners.forEach((listener) => listener());}
 
 function subscribeSettingsExpansion(listener: () => void) {
   settingsExpansionListeners.add(listener);
@@ -46,11 +51,14 @@ export function AppSidebar({locale, currentPath, notificationCount, notification
   const activeSection = pathname === '/' || pathname === '/dashboard' ? 'dashboard' :
     pathname === '/vendors' || pathname.startsWith('/vendors/') ? 'suppliers' :
       pathname === '/documents' || pathname.startsWith('/documents/') ? 'documents' :
+        /^\/company\/(documents|employees)(\/|$)/.test(pathname) ? 'company' :
       pathname === '/requirements' || pathname.startsWith('/requirements/') ? 'requirements' :
           pathname === '/notifications' || pathname.startsWith('/notifications/') ? 'notifications' :
             pathname === '/company/settings' || pathname.startsWith('/company/settings/') ? 'settings' : null;
   const settingsOverride = useSyncExternalStore(subscribeSettingsExpansion, () => settingsExpansion, () => null);
   const settingsExpanded = settingsOverride ?? activeSection === 'settings';
+  const companyOverride = useSyncExternalStore(subscribeCompanyExpansion, () => companyExpansion, () => null);
+  const companyExpanded = companyOverride ?? activeSection === 'company';
   const navigationRef = useRef<HTMLElement>(null);
 
   useLayoutEffect(() => {
@@ -58,7 +66,11 @@ export function AppSidebar({locale, currentPath, notificationCount, notification
   }, [activeSection, settingsOverride]);
 
   useLayoutEffect(() => {
-    if (activeSection !== 'settings' || !settingsExpanded || !window.matchMedia('(max-width: 800px)').matches) return;
+    if (activeSection === 'company') setCompanyExpansion(true);
+  }, [activeSection, pathname]);
+
+  useLayoutEffect(() => {
+    if (!(activeSection === 'settings' && settingsExpanded || activeSection === 'company' && companyExpanded) || !window.matchMedia?.('(max-width: 800px)')?.matches) return;
     const navigation = navigationRef.current;
     const active = navigation?.querySelector<HTMLElement>('[aria-current="page"]');
     if (!navigation || !active) return;
@@ -73,7 +85,7 @@ export function AppSidebar({locale, currentPath, notificationCount, notification
     const activeBounds = active.getBoundingClientRect();
     if (activeBounds.right > subnavBounds.right) subnav.scrollLeft += activeBounds.right - subnavBounds.right + 8;
     else if (activeBounds.left < subnavBounds.left) subnav.scrollLeft -= subnavBounds.left - activeBounds.left + 8;
-  }, [activeSection, pathname, settingsExpanded]);
+  }, [activeSection, pathname, settingsExpanded, companyExpanded]);
 
   return (
     <div className={styles.sidebarContents}>
@@ -89,6 +101,13 @@ export function AppSidebar({locale, currentPath, notificationCount, notification
       <nav ref={navigationRef} className={styles.navigation} aria-label={t('navigationLabel')}>
         {items.map((item) => {
           const content = <><AppIcon name={item.icon} size={22} /><span>{t(`navigation.${item.id}`)}</span>{item.id === 'notifications' && notificationCount > 0 && <span className={styles.notificationCount}>{notificationCount}</span>}</>;
+          if (item.id === 'company') return <div key={item.id} className={styles.settingsGroup} data-company-group data-expanded={companyExpanded}>
+            <button type="button" className={`${styles.navItem} ${styles.settingsToggle} ${activeSection === 'company' ? styles.active : ''}`} aria-label={t('navigation.company')} aria-expanded={companyExpanded} aria-controls={companyExpanded ? 'company-subnav' : undefined} onClick={() => setCompanyExpansion(!companyExpanded)}>{content}<AppIcon name="chevronDown" size={17}/></button>
+            {companyExpanded && <div id="company-subnav" className={styles.settingsSubnav}>
+              <SidebarNavigationItem href="/company/documents" active={pathname === '/company/documents' || pathname.startsWith('/company/documents/')} nested><AppIcon name="file" size={18}/>{t('navigation.companyDocuments')}</SidebarNavigationItem>
+              <SidebarNavigationItem href="/company/employees" active={pathname === '/company/employees' || pathname.startsWith('/company/employees/')} nested><AppIcon name="users" size={18}/>{t('navigation.employees')}</SidebarNavigationItem>
+            </div>}
+          </div>;
           if (item.id === 'settings') return <div key={item.id} className={styles.settingsGroup} data-expanded={settingsExpanded}>
             <button type="button" className={`${styles.navItem} ${styles.settingsToggle} ${activeSection === 'settings' ? styles.active : ''}`} aria-label={t('navigation.settings')} aria-expanded={settingsExpanded} aria-controls={settingsExpanded ? 'company-settings-subnav' : undefined} onClick={() => setSettingsExpansion(!settingsExpanded)}>{content}<AppIcon name="chevronDown" size={17} /></button>
             {settingsExpanded && <div id="company-settings-subnav" className={styles.settingsSubnav}>

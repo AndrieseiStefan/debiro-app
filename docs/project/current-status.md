@@ -26,6 +26,8 @@ The final logo is not yet designed and must not be invented.
 
 ## Implemented
 
+- E1C-002 Company Documents foundation — Company sidebar disclosure, owned listing and localized Employees Coming Soon routes; shared header/KPIs/search/filters/status/table/pagination, current-only derived totals, safe file eligibility and local selection, malformed/empty/access states, company-switch clearing and RO/EN responsive coverage. Existing vendor/scoped-template/review/compliance sources remain unchanged; upload/history and secure sharing remain deferred; see [Company Documents](../features/company-documents.md)
+
 - E1C-001 scoped requirement templates — additive Vendor/Company/Employee scope model with legacy vendor fallback, one existing list/editor, shared scope Select, category-free Company/Employee creation and editing, immutable scope/ownership, existing read-only permissions, company-keyed scope selection and strict vendor-only assignment eligibility. Vendor category rules, starter catalog/cloning, requirement snapshots, review and compliance behavior remain unchanged; Company Documents and Employees are not implemented here; see [template scopes](../features/requirements.md#target-scopes-e1c-001)
 
 - E1-032Bh/Bh1/Bh2/Bh3 Landing presentation and shared pricing — viewport-minimum hero/benefits/trust with two flexible internal gaps, 32px desktop top spacing and fixed 40px below bottom-aligned Trust; surplus height is distributed between groups, with natural scrolling on short screens. Native section anchors smooth-scroll when motion is allowed, preserving immediate reduced-motion navigation, history and locale hashes; reduced-width navigation and coming-soon Resources remain. Navy Pricing retains its full `100svh` anchored minimum, compact centered shared cards, slow CSS ambient light, neutral recommendation and marketing-only hover/reduced-motion treatment. Existing demo catalog and company-scoped Upgrade current/next/trial behavior remain unchanged; commercial/social-proof launch review remains open; see [Landing](../features/landing-page.md)
@@ -89,6 +91,10 @@ The final logo is not yet designed and must not be invented.
 ## Architecture decision
 
 TypeScript/Node.js 24 LTS, Next.js App Router modular monolith, typed fixture-to-real view boundary, same-origin JSON/API service boundary, Neon managed PostgreSQL with Drizzle, Clerk identity/sessions only, debiro-owned organization tenancy and PostgreSQL RLS, private R2 EU documents, pg-boss jobs drained by Railway cron, Poppler/Tesseract text processing, gated OpenAI structured extraction, Resend email, `next-intl`, Railway EU West hosting, Vitest and Playwright. The revised Initial MVP model is ~$18.7/month gross at 60% Neon activity (~$26.5 always-active ceiling); US identity/email transfer review remains a production gate. See [architecture](../architecture/README.md), [ADR-0003](../decisions/0003-cost-and-auth-architecture-review.md), and the [dated cost model](../architecture/cost-model.md).
+
+## Known validation limitation
+
+The production browser suite exercises direct-open vendor document drawers successfully, but those existing routes can emit `document is not defined` during server rendering from the shared Drawer portal (`document.body`), followed by client rendering. E1C-002 does not alter those Drawer mechanics or vendor flows. The new Company Documents/Employees routes render their initial listing/placeholder without open server-rendered portals.
 
 ## Not implemented
 

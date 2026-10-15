@@ -19,6 +19,11 @@ function view() {return <CompanyWorkspaceNavigation><Page/></CompanyWorkspaceNav
 beforeEach(() => {switchActiveCompany('demo-company'); navigation.pathname = '/requirements'; navigation.push.mockReset();});
 
 describe('shared company workspace entry', () => {
+  it.each(['/company/documents', '/company/employees', '/en/company/documents', '/en/company/employees'])('clears the new company page before switching from %s to Dashboard', (pathname) => {
+    navigation.pathname = pathname; render(view()); fireEvent.click(screen.getByText('Open drawer'));
+    act(() => {switchActiveCompany('global-clean-services');});
+    expect(navigation.push).toHaveBeenCalledWith('/dashboard'); expect(screen.queryByRole('main')).toBeNull(); expect(screen.queryByRole('dialog')).toBeNull();
+  });
   it('activates before navigation and unmounts the old page and portaled UI before entering Dashboard', () => {
     const companiesBefore = readCompanyState().companies;
     navigation.push.mockImplementation(() => expect(readCompanyState().activeCompanyId).toBe('global-clean-services'));

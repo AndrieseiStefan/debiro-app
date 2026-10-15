@@ -186,6 +186,8 @@ test('Members page and shared drawer remain contained at required widths', async
     await page.getByRole('button', {name: 'Invită membru'}).click();
     const dialog = page.getByRole('dialog', {name: 'Invită membru'});
     await expect(dialog).toBeVisible();
+    // Measure the settled drawer rather than its opening slide-in frame.
+    await dialog.evaluate(async (element) => {await Promise.all(element.getAnimations().map((animation) => animation.finished));});
     const bounds = await dialog.boundingBox();
     expect(bounds!.x, `${width}px drawer left`).toBeGreaterThanOrEqual(0);
     expect(bounds!.x + bounds!.width, `${width}px drawer right`).toBeLessThanOrEqual(width + 1);

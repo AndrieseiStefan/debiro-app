@@ -4,6 +4,8 @@ async function openDrawer(page: Page, language: 'ro' | 'en' = 'ro') {
   await page.getByRole('button', {name: language === 'ro' ? 'Adaugă furnizor' : 'Add supplier'}).click();
   const dialog = page.getByRole('dialog', {name: language === 'ro' ? 'Adaugă furnizor' : 'Add supplier'});
   await expect(dialog).toBeVisible();
+  // Geometry assertions must measure the settled drawer, not its first slide-in frame.
+  await dialog.evaluate(async (element) => {await Promise.all(element.getAnimations().map((animation) => animation.finished));});
   return dialog;
 }
 
