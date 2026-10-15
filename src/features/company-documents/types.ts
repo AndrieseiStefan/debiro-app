@@ -6,7 +6,11 @@ import type {ExpiryWarningDays, LocalizedText} from '@/features/requirements/typ
 export type CompanyDocumentRecord = Pick<CreatedDocument,
   'id' | 'companyId' | 'documentName' | 'documentType' | 'filename' | 'uploadedAt' | 'expiresAt' |
   'reviewOutcome' | 'supersededById' | 'previousDocumentId' | 'versionGroupId' | 'version' | 'manuallyExpiredAt'
-> & {issuer: string | null; updatedAt: string | null; updatedByDisplayName: string | null};
+> & {issuer: string | null; updatedAt: string | null; updatedByDisplayName: string | null;
+  // Optional additions keep E1C-002 tab-memory records readable without a reset/migration.
+  requirementId?: string; fileType?: string; fileSize?: number; createdAt?: string; uploadedBy?: string;
+  reviewedAt?: string | null; reviewedBy?: string | null; rejectionReason?: string | null;
+};
 
 export type CompanyDocumentRequirement = {
   id: string;
@@ -17,6 +21,9 @@ export type CompanyDocumentRequirement = {
   required: boolean;
   expiryWarningDays: ExpiryWarningDays;
   currentDocumentId: string | null;
+  templateId?: string | null;
+  templateRequirementId?: string | null;
+  createdAt?: string;
 };
 export type CompanyDocumentWorkspace = {requirements: CompanyDocumentRequirement[]; documents: CompanyDocumentRecord[]};
 export type CompanyDocumentsState = {byCompany: Record<string, CompanyDocumentWorkspace>};

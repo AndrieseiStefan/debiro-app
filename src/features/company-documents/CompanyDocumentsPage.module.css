@@ -29,6 +29,9 @@
 .identity, .updated {align-items: center; display: flex; gap: 12px; min-width: 0;}
 .identity > span:last-child, .updated > span:last-child {display: grid; gap: 5px;}
 .identity strong {color: #142448; font-size: 14px; font-weight: 650;}
+.documentLink {background: transparent; border: 0; color: #142448; cursor: pointer; font: inherit; font-weight: 650; padding: 0; text-align: left;}
+.documentLink:hover {color: var(--color-action-primary);}
+.documentLink:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 3px; border-radius: var(--radius-field);}
 .identity small, .updated small {color: #627da6; font-size: 12px;}
 .fileIcon {align-items: center; background: #e5f0ff; border-radius: 9px; color: #0660df; display: flex; flex: 0 0 42px; height: 44px; justify-content: center;}
 .fileIcon[data-status='missing'], .fileIcon[data-status='expired'] {background: #ffe8ee; color: #f12953;}

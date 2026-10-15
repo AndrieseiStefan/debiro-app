@@ -3,6 +3,7 @@
 import {vendorOwnedByCompany} from '@/features/vendors/created-vendors';
 import {documentAccess} from './document-access';
 import {documentFile, readDocumentRecords, type CreatedDocument} from './created-documents';
+import {downloadFile} from './download-file';
 
 export type DocumentSelection = {documentId?: string; documentAction?: string};
 
@@ -33,20 +34,5 @@ export function downloadDocument(companyId: string, id: string, vendorId?: strin
   const record = accessibleDocument(readDocumentRecords(), companyId, id, vendorId);
   const file = record && documentFile(companyId, id, record.vendorId);
   if (!record || !file) return false;
-  let url: string | undefined;
-  try {
-    url = URL.createObjectURL(file);
-    const anchor = document.createElement('a');
-    anchor.href = url; anchor.download = record.filename;
-    anchor.click();
-    return true;
-  } catch {
-    // Missing/stale bytes or a browser download failure must not become fake success.
-    return false;
-  } finally {
-    const downloadUrl = url;
-    if (downloadUrl) window.setTimeout(() => {
-      try {URL.revokeObjectURL(downloadUrl);} catch { /* The browser may already have invalidated this temporary reference. */ }
-    }, 1000);
-  }
+  return downloadFile(file, record.filename);
 }

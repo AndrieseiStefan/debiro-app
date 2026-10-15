@@ -20,6 +20,7 @@ import {accessibleDocument, documentHistory, documentManagementHref, downloadDoc
 import {uploadFileError} from './upload-file';
 import styles from './DocumentManagementDrawer.module.css';
 import {DocumentComplianceBadge} from './DocumentComplianceBadge';
+import {DocumentFileCard, DocumentVersionHistory} from './DocumentManagementViews';
 
 export function DocumentManagementDrawer({documentId, documentAction, contextPath, vendorId}: DocumentSelection & {contextPath: string; vendorId?: string}) {
   const triggerRef = useRef<HTMLElement>(null);
@@ -92,29 +93,24 @@ function DocumentDrawer({documentId, action, contextPath, vendorId, triggerRef}:
   function startDownload(item: CreatedDocument) {setDownloadFailed(!downloadDocument(companyId, item.id, vendorId ?? item.vendorId));}
   function download(item: CreatedDocument) {return <button className={styles.smallAction} type="button" disabled={!documentFile(companyId, item.id)} onClick={() => startDownload(item)}><AppIcon name="download" size={15}/>{t('download')}</button>;}
   function historyTimeline() {
-    return <ol className={styles.timeline}>{history.map((item) => {
+    return <DocumentVersionHistory entries={history.map((item) => {
       const isCurrent = !item.supersededById && item.reviewOutcome !== 'rejected';
       const hasFile = Boolean(documentFile(companyId, item.id));
       const internal = item.updateSource === 'internal';
       const outcome = item.reviewOutcome;
       const manuallyExpired = Boolean(item.manuallyExpiredAt);
-      return <li key={item.id} data-version={item.version ?? 1} data-version-state={outcome === 'rejected' ? 'rejected' : isCurrent ? 'current' : 'superseded'}>
-        <div className={styles.versionProvenance}><strong>v{item.version ?? 1}</strong><time dateTime={item.createdAt}>{uploadedDate(item)}</time><span>{item.uploadedBy || '—'}</span></div>
-        <div className={styles.versionSummary}><div className={styles.versionActions}>
+      return {id: item.id, version: item.version ?? 1, state: outcome === 'rejected' ? 'rejected' as const : isCurrent ? 'current' as const : 'superseded' as const,
+        dateTime: item.createdAt, date: uploadedDate(item), actor: item.uploadedBy || '—', summary: <>
           <StatusBadge indicator="none" tone={manuallyExpired ? 'danger' : internal || outcome === 'pending' ? 'info' : outcome === 'approved' ? 'success' : 'danger'} className={styles.historyOutcome}><AppIcon name={manuallyExpired ? 'clock' : internal ? 'clipboard' : outcome === 'approved' ? 'check' : outcome === 'rejected' ? 'close' : 'info'} size={13}/>{t(manuallyExpired ? 'manualExpiryOutcome' : internal ? 'internalOutcome' : outcome === 'pending' ? 'historyPending' : `outcome.${outcome}`)}</StatusBadge>
           {!isCurrent && hasFile && download(item)}
-        </div>
-          {isCurrent && <VendorDocumentActions withinDialog name={`v${item.version ?? 1}`} actionLabel={t('versionActions', {version: item.version ?? 1})} className={styles.versionMenu} actions={[
+        </>, menu: isCurrent && <VendorDocumentActions withinDialog name={`v${item.version ?? 1}`} actionLabel={t('versionActions', {version: item.version ?? 1})} className={styles.versionMenu} actions={[
             {label: t('openDetails'), onClick: () => navigate(item, 'details')},
             ...(hasFile ? [{label: t('download'), onClick: () => startDownload(item)}] : [])
-          ]}/>}
-        {isCurrent ? <span className={styles.currentVersion}>{t('current')}</span> : !manuallyExpired && outcome === 'approved' && item.expiresAt ? <small className={styles.versionContext}>{t('validUntil', {date: date(item.expiresAt)})}</small> : null}</div>
-      </li>;
-    })}</ol>;
+          ]}/>, context: isCurrent ? <span className={styles.currentVersion}>{t('current')}</span> : !manuallyExpired && outcome === 'approved' && item.expiresAt ? <small className={styles.versionContext}>{t('validUntil', {date: date(item.expiresAt)})}</small> : null};
+    })}/>;
   }
   function fileCard(item: CreatedDocument) {
-    const type = ({'application/pdf': 'PDF', 'image/jpeg': 'JPG', 'image/png': 'PNG'} as Record<string, string>)[item.fileType] ?? (item.fileType || '—');
-    return <div className={styles.fileCard}><AppIcon name={type === 'PDF' ? 'filePdf' : 'file'} size={32}/><span><strong>{item.filename}</strong><small>{type}{item.fileSize > 0 ? ` · ${Math.ceil(item.fileSize / 1024)} KB` : ''}</small></span>{details ? <Button variant="secondary" className={styles.fileDownload} disabled={!documentFile(companyId, item.id)} onClick={() => startDownload(item)}><AppIcon name="download" size={16}/>{t('download')}</Button> : download(item)}</div>;
+    return <DocumentFileCard filename={item.filename} fileType={item.fileType} fileSize={item.fileSize} action={details ? <Button variant="secondary" className={styles.fileDownload} disabled={!documentFile(companyId, item.id)} onClick={() => startDownload(item)}><AppIcon name="download" size={16}/>{t('download')}</Button> : download(item)}/>;
   }
   return <><Drawer phase={phase} onClose={close} onExited={exited} triggerRef={triggerRef} titleId="document-management-title" descriptionId="document-management-description" closeLabel={t('close')} size={details ? 'wide' : 'standard'} contentClassName={styles.content}>
     <DrawerHeader titleRef={headingRef} titleId="document-management-title" title={t(!available ? 'unavailableTitle' : mode === 'replace' ? 'replaceTitle' : mode === 'history' ? 'historyTitle' : mode === 'success' ? 'successTitle' : 'detailsTitle')} onBack={screens.length > 1 ? back : undefined} backLabel={t(screens[screens.length - 2]?.type === 'history' ? 'backToHistory' : 'backToDetails')}/>

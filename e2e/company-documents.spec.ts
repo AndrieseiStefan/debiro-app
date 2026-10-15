@@ -49,9 +49,9 @@ for (const en of [false, true]) {
     for (const checkbox of await page.getByRole('checkbox').all()) await expect(checkbox).toBeDisabled();
     await expect(page.getByRole('status')).toHaveText(en ? '0 selected' : '0 selectate');
     const add = page.getByRole('button', {name: en ? 'Add Documents' : 'Adaugă documente', exact: true});
-    await add.focus(); await expect(page.getByRole('tooltip')).toContainText(en ? 'available soon' : 'disponibile în curând');
-    await page.keyboard.press('Enter'); await expect(page.getByRole('dialog')).toHaveCount(0);
-    await page.keyboard.press('Escape');
+    await add.focus(); await page.keyboard.press('Enter');
+    await expect(page.getByRole('dialog', {name: en ? 'Add Document' : 'Adaugă document', exact: true})).toBeVisible();
+    await page.keyboard.press('Escape'); await expect(page.getByRole('dialog')).toHaveCount(0); await expect(add).toBeFocused();
     const download = page.getByRole('button', {name: en ? 'Download VAT certificate' : 'Descarcă Certificat TVA', exact: true});
     await download.hover(); await expect(page.getByRole('tooltip')).toContainText(en ? 'not available' : 'nu este disponibil');
     await page.keyboard.press('Escape');
@@ -160,7 +160,7 @@ test('malformed listing stays inside the existing error boundary; read-only and 
   await page.goto('/company/documents');
   for (const role of ['reviewer', 'viewer'] as const) {
     await scenario(page, {role}); await expect(page.locator('tbody tr')).toHaveCount(6);
-    await expect(page.getByRole('button', {name: 'Adaugă documente', exact: true})).toHaveAttribute('aria-disabled', 'true');
+    await expect(page.getByRole('button', {name: 'Adaugă documente', exact: true})).toBeDisabled();
   }
   await scenario(page, {noAccess: true}); await expect(page.getByRole('table')).toHaveCount(0);
   await expect(page.getByText('Nu există date pentru această companie în demonstrația locală.', {exact: true})).toBeVisible();

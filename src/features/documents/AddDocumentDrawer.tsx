@@ -1,7 +1,7 @@
 'use client';
 
 import {fixtureReferenceTime} from '@/lib/fixture-clock';
-import {useRef, useState, type ChangeEvent, type DragEvent, type FormEvent, type RefObject} from 'react';
+import {useRef, useState, type FormEvent, type RefObject, type ReactNode} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
 import {AppIcon} from '@/components/layout/AppIcon';
 import {Button} from '@/components/ui/Button';
@@ -13,6 +13,18 @@ import {availableDocumentTypes, uploadTypeValue, type DocumentTypeSnapshot} from
 import {getCompanyDocumentTypes, useRequirementsState} from '@/features/requirements/requirements-state';
 import {useCompanyState} from '@/features/companies/company-state';
 import styles from './AddDocumentDrawer.module.css';
+import {DocumentFileDropzone} from './DocumentFileDropzone';
+
+/** Shared upload shell; each owner supplies its own fields, validation and authorized transaction. */
+export function DocumentUploadDrawer({phase, onClose, onExited, triggerRef, title, description, children}: {
+  phase: DrawerPhase; onClose: () => void; onExited: () => void; triggerRef: RefObject<HTMLElement | null>; title: string; description: string; children: ReactNode;
+}) {
+  const t = useTranslations('AddDocument');
+  return <Drawer phase={phase} onClose={onClose} onExited={onExited} triggerRef={triggerRef} titleId="add-document-title" descriptionId="add-document-description" closeLabel={t('close')} panelClassName={styles.panel} contentClassName={styles.content}>
+    <header className={styles.header}><span className={styles.headerIcon}><AppIcon name="file" size={28}/></span><h2 id="add-document-title">{title}</h2></header>
+    <p id="add-document-description" className={styles.intro}>{description}</p>{children}
+  </Drawer>;
+}
 
 const maxBytes = 10 * 1024 * 1024;
 const fileTypes: Record<string, string> = {pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png'};
@@ -49,7 +61,6 @@ export function AddDocumentDrawer({phase, onClose, onExited, triggerRef, vendor,
   const language = useLocale() === 'en' ? 'en' : 'ro';
   const companyId = useCompanyState().activeCompanyId ?? '';
   const options = availableDocumentTypes(companyId, getCompanyDocumentTypes(useRequirementsState(), companyId));
-  const inputRef = useRef<HTMLInputElement>(null);
   const autoFilled = useRef<Partial<Details>>({});
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState('');
@@ -57,7 +68,6 @@ export function AddDocumentDrawer({phase, onClose, onExited, triggerRef, vendor,
   const selectedType = requiredType ?? options.find((option) => uploadTypeValue(option) === type);
   const [details, setDetails] = useState<Details>({number: '', issuedAt: '', expiresAt: '', issuer: ''});
   const [extract, setExtract] = useState(false);
-  const [dragging, setDragging] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const sample = extract && file && type ? getSimulatedExtraction(vendor.id, file.name, type as DocumentType) : null;
 
@@ -95,19 +105,6 @@ export function AddDocumentDrawer({phase, onClose, onExited, triggerRef, vendor,
     setErrors((current) => ({...current, file: error || undefined}));
     setFile(error ? null : selected);
     if (!error && extract) prefillSample(selected.name, type as DocumentType);
-  }
-
-  function chooseFile(event: ChangeEvent<HTMLInputElement>) {
-    const selected = event.currentTarget.files?.[0];
-    if (selected) validateFile(selected);
-    event.currentTarget.value = '';
-  }
-
-  function drop(event: DragEvent<HTMLDivElement>) {
-    event.preventDefault();
-    setDragging(false);
-    const selected = event.dataTransfer.files[0];
-    if (selected) validateFile(selected);
   }
 
   function updateDetails(key: keyof Details, value: string) {
@@ -160,18 +157,9 @@ export function AddDocumentDrawer({phase, onClose, onExited, triggerRef, vendor,
   }
 
   const canSubmit = Boolean(file && type);
-  return <Drawer phase={phase} onClose={onClose} onExited={onExited} triggerRef={triggerRef} titleId="add-document-title" descriptionId="add-document-description" closeLabel={t('close')} panelClassName={styles.panel} contentClassName={styles.content}>
-    <header className={styles.header}><span className={styles.headerIcon}><AppIcon name="file" size={28}/></span><h2 id="add-document-title">{t('title')}</h2></header>
-    <p id="add-document-description" className={styles.intro}>{t('description')}</p>
+  return <DocumentUploadDrawer phase={phase} onClose={onClose} onExited={onExited} triggerRef={triggerRef} title={t('title')} description={t('description')}>
     <form noValidate onSubmit={submit} className={styles.form}>
-      <div className={styles.dropzone} data-add-document-dropzone data-dragging={dragging || undefined} onDragEnter={(event) => {event.preventDefault(); setDragging(true);}} onDragOver={(event) => event.preventDefault()} onDragLeave={(event) => {event.preventDefault(); if (!event.currentTarget.contains(event.relatedTarget as Node)) setDragging(false);}} onDrop={drop}>
-        <input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className={styles.fileInput} aria-label={t('chooseFile')} aria-invalid={Boolean(errors.file)} aria-describedby={errors.file ? 'add-document-file-error' : undefined} onChange={chooseFile}/>
-        <span className={styles.uploadIcon}><AppIcon name="upload" size={29}/></span>
-        {file ? <strong className={styles.filename} title={file.name}>{file.name}</strong> : <strong>{t('dropPrompt')}</strong>}
-        <Button type="button" onClick={() => inputRef.current?.click()}><AppIcon name="upload" size={18}/>{t('chooseFile')}</Button>
-        <small>{file ? t('selectedSize', {size: file.size < 1024 ? `${file.size} B` : `${(file.size / 1024).toFixed(1)} KB`}) : t('fileHint')}</small>
-      </div>
-      {errors.file && <p id="add-document-file-error" className={styles.error} role="alert">{errors.file}</p>}
+      <DocumentFileDropzone file={file} error={errors.file} onSelect={validateFile}/>
       <div className={styles.extractionNotice}><div className={styles.noticeCopy}><AppIcon name="info" size={21}/><p>{t('extractionDescription')}</p></div><label className={styles.toggleRow}><input type="checkbox" checked={extract} onChange={(event) => {setExtract(event.target.checked); if (event.target.checked && file) prefillSample(file.name, type as DocumentType); else clearAutoFill();}}/><span className={styles.switch} aria-hidden="true"/>{t('extractionToggle')}</label>{extract && <p className={styles.extractionStatus} role="status">{sample ? t('sampleAvailable') : t('sampleUnavailable')}</p>}</div>
       <h3>{t('detailsTitle')}</h3>
       <div className={styles.selectField}><label htmlFor="add-document-type">{t('type')} <span>*</span></label><div className={styles.selectWrap}><AppIcon name="file" size={18}/><select id="add-document-type" value={type} data-empty={type === ''} required disabled={Boolean(requiredType)} aria-invalid={Boolean(errors.type)} aria-describedby={errors.type ? 'add-document-type-error' : undefined} onBlur={() => {if (!type) setErrors((current) => ({...current, type: t('typeRequired')}));}} onChange={(event) => {const selectedType = event.target.value; clearAutoFill(); setType(selectedType); setErrors((current) => ({...current, type: undefined})); if (extract && file) prefillSample(file.name, selectedType as DocumentType);}}><option value="">{t('typePlaceholder')}</option>{requiredType ? <option value={uploadTypeValue(requiredType)}>{requiredType.name[language]}</option> : <>{options.map((option) => <option key={uploadTypeValue(option)} value={uploadTypeValue(option)}>{option.name[language]}</option>)}{legacyTypes.map((item) => <option key={item} value={item}>{documentsT(`documentType.${item}`)}</option>)}</>}</select><AppIcon name="chevronDown" size={17}/></div>{errors.type && <p id="add-document-type-error" className={styles.error} role="alert">{errors.type}</p>}</div>
@@ -184,5 +172,5 @@ export function AddDocumentDrawer({phase, onClose, onExited, triggerRef, vendor,
       </div>
       <div className={styles.actions} data-add-document-actions><Button variant="secondary" onClick={onClose}>{t('cancel')}</Button><Button type="submit" disabled={!canSubmit}><AppIcon name="upload" size={18}/>{t('submit')}</Button></div>
     </form>
-  </Drawer>;
+  </DocumentUploadDrawer>;
 }

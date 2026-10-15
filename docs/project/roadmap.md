@@ -4,7 +4,9 @@ This roadmap records direction only. Detailed requirements are created by the ta
 
 ## Phase 0 — Product & Repository Foundation
 
-- E1C-002 Company Documents — implemented additive Company navigation and owned listing with honest KPIs, normalized filters/sort, eligible selection and pagination; Employees has a localized Coming Soon route. Upload/version management and secure sharing remain E1C-003/E1C-004 work, not simulated operations
+- E1C-003 Company Document Management — implemented guarded company uploads, Company-template requirement snapshots, review/metadata, version history, manual expiry and exact-byte preview/download. Existing vendor behavior is preserved; storage remains current-tab only and sharing remains E1C-004 work
+
+- E1C-002 Company Documents — implemented additive Company navigation and owned listing with honest KPIs, normalized filters/sort, eligible selection and pagination; Employees has a localized Coming Soon route. E1C-003 enables management; secure sharing remains E1C-004 work, not a simulated operation
 
 - E1C-001 template target scopes — implemented Vendor/Company/Employee templates through the existing company-owned session/editor, with backward-compatible vendor data and assignment rules; Company Documents and Employee workflows remain separate tasks
 

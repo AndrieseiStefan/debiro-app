@@ -112,7 +112,8 @@ for (const english of [false, true]) {
     await row.getByRole('link').click(); await page.getByRole('tab', {name: english ? 'Activity' : 'Activitate', exact: true}).click();
     await expect(page.locator('[data-event-type="vendor_inactive"]')).toHaveCount(1);
     await page.getByRole('navigation', {name: english ? 'Application navigation' : 'Navigare în aplicație'}).getByRole('link', {name: english ? /^Notifications/ : /^Notificări/}).click();
-    await expect(page.getByText(english ? 'Vendor marked inactive' : 'Furnizor dezactivat', {exact: true})).toBeVisible();
+    // The same event also appears in Audit; assert its notification row rather than ambiguous global copy.
+    await expect(page.locator('[data-notification-id]').filter({hasText: 'Renamed vendor'}).getByText(english ? 'Vendor marked inactive' : 'Furnizor dezactivat', {exact: true})).toBeVisible();
   });
   test(`${english ? 'EN' : 'RO'} notes: create/save/dirty guards/delete and company isolation`, async ({page}) => {
     await page.goto(`${prefix}/vendors`);

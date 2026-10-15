@@ -1,4 +1,4 @@
-import {act, fireEvent, render, screen, within} from '@testing-library/react';
+import {act, fireEvent, render, screen, waitFor, within} from '@testing-library/react';
 import {NextIntlClientProvider} from 'next-intl';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import ro from '../../messages/ro.json';
@@ -25,9 +25,9 @@ describe('Company Documents shared listing UI', () => {
     const summary = screen.getByRole('region', {name: copy.CompanyDocuments.summaryLabel});
     expect([...summary.querySelectorAll('strong')].map((item) => item.textContent)).toEqual(['5', '4', '0']);
     expect(screen.getAllByRole('checkbox').every((input) => input.hasAttribute('disabled'))).toBe(true);
-    const action = screen.getByRole('button', {name: copy.CompanyDocuments.addDocuments});
+    const action = screen.getByRole('button', {name: copy.CompanyDocuments.shareDocuments});
     expect(action).toHaveAttribute('aria-disabled', 'true'); act(() => action.focus());
-    expect(action).toHaveAccessibleDescription(copy.CompanyDocuments.uploadComingSoon);
+    expect(action).toHaveAccessibleDescription(copy.CompanyDocuments.sharingComingSoon);
     fireEvent.click(action); expect(screen.queryByRole('dialog')).toBeNull();
     fireEvent.keyDown(action, {key: 'Escape'});
     const download = screen.getAllByRole('button', {name: /^Descarcă |^Download /})[1];
@@ -77,5 +77,43 @@ describe('Company Documents shared listing UI', () => {
   it('renders a localized accessible Employees placeholder, not a feature or fake action', () => {
     view('en', true); expect(screen.getByRole('heading', {level: 1, name: 'Employees'})).toBeVisible();
     expect(screen.getByText(en.CompanyDocuments.employeesComingSoon)).toBeVisible(); expect(screen.queryByRole('table')).toBeNull();
+  });
+
+  it('reuses the upload drawer, retains recoverable input, and integrates pending review then rejection history', async () => {
+    view('en');
+    fireEvent.click(screen.getByRole('button', {name: en.CompanyDocuments.addDocuments}));
+    let dialog = screen.getByRole('dialog', {name: en.CompanyDocumentManagement.addTitle});
+    expect(within(dialog).getByRole('note')).toHaveTextContent(en.CompanyDocumentManagement.sessionNotice);
+    fireEvent.click(within(dialog).getByRole('button', {name: en.AddDocument.submit}));
+    expect(within(dialog).getByText(en.CompanyDocumentManagement.errors.file)).toBeVisible();
+    fireEvent.change(within(dialog).getByRole('textbox', {name: en.CompanyDocumentManagement.name}), {target: {value: 'UI company proof'}});
+    fireEvent.change(dialog.querySelector('#company-upload-type')!, {target: {value: 'tax'}});
+    fireEvent.change(dialog.querySelector('input[type=file]')!, {target: {files: [new File(['bytes'], 'proof.pdf', {type: 'application/pdf'})]}});
+    fireEvent.click(within(dialog).getByRole('button', {name: en.AddDocument.submit}));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    fireEvent.click(await screen.findByRole('button', {name: 'UI company proof'}, {timeout: 4000}));
+    dialog = screen.getByRole('dialog', {name: en.DocumentManagement.detailsTitle});
+    expect(within(dialog).getByText(en.CompanyDocuments.status.needs_review, {exact: true})).toBeVisible();
+    fireEvent.click(within(dialog).getByRole('button', {name: en.CompanyDocumentManagement.reject}));
+    const rejection = within(dialog).getByRole('form', {name: en.CompanyDocumentManagement.reject});
+    fireEvent.click(within(rejection).getByRole('button')); expect(within(dialog).getByRole('alert')).toHaveTextContent(en.CompanyDocumentManagement.errors.rejectionReason);
+    fireEvent.change(within(rejection).getByRole('textbox'), {target: {value: 'Not acceptable'}}); fireEvent.click(within(rejection).getByRole('button'));
+    expect(within(dialog).getByText(en.CompanyDocumentManagement.noCurrent)).toBeVisible();
+    fireEvent.click(within(dialog).getByRole('button', {name: en.DocumentManagement.viewAll}));
+    expect(dialog.querySelectorAll('[data-version]')).toHaveLength(1); expect(within(dialog).getByText(/Not acceptable/)).toBeVisible();
+  });
+
+  it('rejects a stale configured requirement without silently creating a standalone document', () => {
+    view('en');
+    const missing = screen.getByRole('row', {name: /Tax clearance record/});
+    fireEvent.click(within(missing).getByRole('button', {name: en.CompanyDocuments.upload}));
+    const dialog = screen.getByRole('dialog', {name: en.CompanyDocumentManagement.addTitle});
+    fireEvent.change(dialog.querySelector('input[type=file]')!, {target: {files: [new File(['bytes'], 'proof.pdf', {type: 'application/pdf'})]}});
+    act(() => {const state = structuredClone(initial); state.byCompany['demo-company'].requirements = state.byCompany['demo-company'].requirements.filter((item) => item.id !== 'company-requirement:criminal-record'); owner().state = state; owner().listeners.forEach((notify) => notify());});
+    fireEvent.change(dialog.querySelector('#company-upload-name')!, {target: {value: 'Stale proof'}}); fireEvent.change(dialog.querySelector('#company-upload-type')!, {target: {value: 'tax'}});
+    const before = structuredClone(owner().state);
+    fireEvent.click(within(dialog).getByRole('button', {name: en.AddDocument.submit}));
+    expect(within(dialog).getByRole('alert')).toHaveTextContent(en.CompanyDocumentManagement.errors.unavailable);
+    expect(owner().state).toEqual(before); expect(owner().files.size).toBe(0); expect(dialog.querySelector('#company-upload-name')).toHaveValue('Stale proof');
   });
 });

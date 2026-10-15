@@ -1,4 +1,21 @@
 {
+  "CompanyDocumentManagement": {
+    "versionLabel": "Versiune curentă",
+    "reviewedAt": "Revizuit la",
+    "previewUnsupported": "Acest browser nu poate afișa fișierul aici. Descarcă fișierul original pentru a-l vizualiza.",
+    "sessionNotice": "În această demonstrație, documentele și fișierele încărcate sunt păstrate doar în fila curentă. Reîncărcarea paginii le pierde.",
+    "expireDescription": "Documentul va rămâne disponibil în istoric, dar nu va mai fi considerat valid. Data originală de expirare este păstrată.",
+    "addTitle": "Adaugă document", "addDescription": "Încarcă un document propriu al companiei. Documentele noi necesită confirmare umană.",
+    "replaceTitle": "Încarcă versiune nouă", "replaceDescription": "Fișierul nou va necesita confirmare umană. Versiunile anterioare și fișierele lor originale rămân în istoric.",
+    "requirement": "Cerință a companiei", "standalone": "Document independent", "name": "Nume document", "documentType": "Tip document", "issuer": "Emitent (opțional)", "expiresAt": "Data expirării (opțional)", "required": "Document obligatoriu",
+    "applyTemplate": "Aplică un șablon al companiei", "template": "Șablon al companiei", "chooseTemplate": "Selectează un șablon", "noTemplates": "Nu există încă șabloane pentru companie. Poți încărca un document independent.", "templateApplied": "Șablon aplicat: {count} cerințe noi.",
+    "uploadExisting": "Pentru cerințele cu document curent, folosește Încarcă versiune nouă din Detalii.", "metadataTitle": "Editează metadatele", "metadataNotice": "Modificările necesită o nouă confirmare umană. Informațiile originale de încărcare și versiunile istorice sunt păstrate.",
+    "save": "Salvează modificările", "preview": "Vezi fișierul", "previewTitle": "Previzualizare document", "previewUnavailable": "Fișierul original nu este disponibil în această filă. Nu este generată o previzualizare sau un fișier înlocuitor.",
+    "confirm": "Confirmă documentul", "reject": "Respinge documentul", "rejectionReason": "Motivul respingerii", "humanReview": "Confirmarea umană nu reprezintă verificare independentă.",
+    "currentVersion": "Versiune curentă: v{version}", "noCurrent": "Această cerință nu are un document curent. Încarcă un fișier pentru a o îndeplini.", "history": "Istoric document", "noHistory": "Nu există încă versiuni încărcate.", "historical": "Versiune istorică", "reviewStatus": "Stare revizuire",
+    "success": {"added": "Document încărcat. Este necesară confirmarea umană.", "replaced": "Versiune nouă încărcată. Este necesară confirmarea umană.", "approved": "Document confirmat.", "rejected": "Document respins. Cerința este acum lipsă; istoricul este păstrat.", "metadata": "Metadate salvate. Este necesară o nouă confirmare umană.", "expired": "Document marcat ca expirat."},
+    "errors": {"access": "Nu ai permisiunea de a efectua această acțiune.", "unavailable": "Documentul sau cerința nu mai este disponibilă. Verifică firma curentă și încearcă din nou.", "invalid": "Verifică datele documentului.", "conflict": "Versiunea curentă s-a schimbat sau această acțiune nu mai este disponibilă.", "file": "Selectează un fișier.", "type": "Formatul fișierului nu este acceptat.", "size": "Fișierul depășește dimensiunea maximă permisă.", "empty": "Fișierul este gol. Selectează un fișier PDF, JPEG sau PNG care nu este gol.", "date": "Introdu o dată validă în format ZZ.LL.AAAA.", "name": "Introdu un nume pentru document.", "rejectionReason": "Introdu motivul respingerii."}
+  },
   "GlobalSearch": {
     "resultsFor": "Rezultate pentru „{query}”", "total": "Am găsit {count, plural, one {# rezultat} few {# rezultate} other {# de rezultate}}",
     "groups": {"vendors": "Furnizori", "documents": "Documente", "requirements": "Șabloane"},
@@ -1322,9 +1339,7 @@
     "breadcrumbLabel": "Navigare pe pagină",
     "description": "Gestionează și menține la zi documentele proprii ale companiei, pentru a fi mereu pregătite de partajare.",
     "shareDocuments": "Partajează documente", "addDocuments": "Adaugă documente",
-    "uploadComingSoon": "Adăugarea și înlocuirea documentelor companiei vor fi disponibile în curând.",
     "sharingComingSoon": "Partajarea securizată a documentelor companiei va fi disponibilă în curând.",
-    "managementComingSoon": "Gestionarea, descărcarea și istoricul documentelor companiei vor fi disponibile în curând.",
     "fileUnavailable": "Fișierul nu este disponibil în această demonstrație. Descărcarea este indisponibilă.",
     "employeesComingSoon": "Gestionarea angajaților va fi disponibilă în curând.",
     "summaryLabel": "Rezumat documente companie", "total": "Total documente", "attention": "Necesită atenție", "activeShares": "Partajări active",

@@ -3,20 +3,26 @@ import {normalizeDocumentName} from '@/features/requirements/catalog';
 import {fixtureReferenceTime} from '@/lib/fixture-clock';
 import type {CompanyDocumentListRow, CompanyDocumentRecord, CompanyDocumentRequirement, CompanyDocumentSort, CompanyDocumentsState} from './types';
 
-const documentTypes = ['tax', 'registration', 'fire', 'insurance', 'inspector', 'financial', 'environment', 'safety', 'iso', 'permit', 'custom'];
+export const companyDocumentTypes = ['tax', 'registration', 'fire', 'insurance', 'inspector', 'financial', 'environment', 'safety', 'iso', 'permit', 'custom'] as const;
+const documentTypes: readonly string[] = companyDocumentTypes;
 const isoDate = (value: unknown) => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}(?:T.*)?$/.test(value) && Number.isFinite(Date.parse(value)) && new Date(`${value.slice(0, 10)}T12:00:00Z`).toISOString().slice(0, 10) === value.slice(0, 10);
 const nullableDate = (value: unknown) => value === null || isoDate(value);
 const nullableText = (value: unknown) => value === null || typeof value === 'string';
 const localizedText = (value: {ro?: unknown; en?: unknown} | undefined) => typeof value?.ro === 'string' && typeof value?.en === 'string';
 function validRequirement(value: CompanyDocumentRequirement, companyId: string) {
   return value && typeof value.id === 'string' && value.companyId === companyId && localizedText(value.name) && documentTypes.includes(value.documentType) &&
-    nullableText(value.issuer) && typeof value.required === 'boolean' && [7, 15, 30, 60, 90].includes(value.expiryWarningDays) && nullableText(value.currentDocumentId);
+    nullableText(value.issuer) && typeof value.required === 'boolean' && [7, 15, 30, 60, 90].includes(value.expiryWarningDays) && nullableText(value.currentDocumentId) &&
+    (value.templateId === undefined || nullableText(value.templateId)) && (value.templateRequirementId === undefined || nullableText(value.templateRequirementId)) && (value.createdAt === undefined || isoDate(value.createdAt));
 }
 function validDocument(value: CompanyDocumentRecord, companyId: string) {
   return value && typeof value.id === 'string' && value.companyId === companyId && localizedText(value.documentName) && documentTypes.includes(value.documentType) &&
     typeof value.filename === 'string' && isoDate(value.uploadedAt) && nullableDate(value.expiresAt) && nullableDate(value.updatedAt) &&
     nullableText(value.issuer) && nullableText(value.updatedByDisplayName) && ['approved', 'pending', 'rejected'].includes(value.reviewOutcome) &&
-    (value.supersededById === undefined || typeof value.supersededById === 'string') && (value.manuallyExpiredAt === undefined || isoDate(value.manuallyExpiredAt));
+    (value.supersededById === undefined || typeof value.supersededById === 'string') && (value.manuallyExpiredAt === undefined || isoDate(value.manuallyExpiredAt)) &&
+    (value.requirementId === undefined || typeof value.requirementId === 'string') && (value.version === undefined || Number.isInteger(value.version) && value.version > 0) &&
+    (value.fileSize === undefined || Number.isFinite(value.fileSize) && value.fileSize >= 0) && (value.fileType === undefined || typeof value.fileType === 'string') &&
+    (value.createdAt === undefined || isoDate(value.createdAt)) && (value.uploadedBy === undefined || typeof value.uploadedBy === 'string') &&
+    (value.reviewedAt === undefined || nullableDate(value.reviewedAt)) && (value.reviewedBy === undefined || nullableText(value.reviewedBy)) && (value.rejectionReason === undefined || nullableText(value.rejectionReason));
 }
 const uniqueIds = (values: {id: string}[]) => new Set(values.map((value) => value.id)).size === values.length;
 
@@ -28,8 +34,11 @@ export function projectCompanyDocuments(snapshot: CompanyDocumentsState, company
   if (workspace === undefined) return empty;
   if (!workspace || !Array.isArray(workspace.requirements) || !Array.isArray(workspace.documents) ||
     !workspace.requirements.every((item) => validRequirement(item, companyId)) || !workspace.documents.every((item) => validDocument(item, companyId)) ||
-    !uniqueIds(workspace.requirements) || !uniqueIds(workspace.documents)) return {...empty, error: true};
-  const current = workspace.documents.filter((item) => !item.supersededById && item.reviewOutcome !== 'rejected');
+    !uniqueIds(workspace.requirements) || !uniqueIds(workspace.documents) ||
+    workspace.documents.some((document) => document.requirementId && !workspace.requirements.some((requirement) => requirement.id === document.requirementId)) ||
+    workspace.requirements.some((requirement) => workspace.documents.some((document) => document.id === requirement.currentDocumentId && document.requirementId && document.requirementId !== requirement.id))) return {...empty, error: true};
+  const current = workspace.documents.filter((item) => !item.supersededById && item.reviewOutcome !== 'rejected' &&
+    (!item.requirementId || workspace.requirements.some((requirement) => requirement.id === item.requirementId && requirement.currentDocumentId === item.id)));
   const linked = new Set<string>();
   function row(requirement: CompanyDocumentRequirement | null, document?: CompanyDocumentRecord): CompanyDocumentListRow {
     if (document) linked.add(document.id);
@@ -69,7 +78,7 @@ export function sortCompanyDocuments(rows: CompanyDocumentListRow[], sort: Compa
     else {
       const left = a[sort.column], right = b[sort.column];
       if (left === null || right === null) return left === right ? collator.compare(a.name, b.name) || a.id.localeCompare(b.id) : left === null ? 1 : -1;
-      primary = left.localeCompare(right);
+      primary = Date.parse(left) - Date.parse(right);
     }
     return primary * (sort.direction === 'ascending' ? 1 : -1) || collator.compare(a.name, b.name) || a.id.localeCompare(b.id);
   });
