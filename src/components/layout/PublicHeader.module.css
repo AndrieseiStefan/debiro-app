@@ -137,9 +137,10 @@
     grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  .mainNav {
-    display: none;
-  }
+  .marketingHeader {height: auto;}
+  .marketingHeader .headerInner {padding-block: 12px; row-gap: 8px;}
+  .mainNav {grid-column: 1 / -1; grid-row: 2; justify-content: center;}
+  .accountHeader .headerActions {grid-column: 2; grid-row: 1;}
 }
 
 @media (max-width: 767px) {
@@ -166,7 +167,10 @@
   }
 
   .mainNav {
-    display: none;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: center;
+    gap: var(--space-4);
   }
 
   .helpOnlyHeader {
@@ -187,6 +191,7 @@
 
 /* Existing header-local two-row collision point. */
 @media (max-width: 496px) {
+  .accountHeader .mainNav {grid-row: 3;}
   .accountHeader {
     row-gap: 8px;
   }

@@ -4,9 +4,17 @@
   min-width: 320px;
 }
 
+.presentation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  justify-content: space-between;
+  min-height: calc(100svh - var(--public-header-height));
+  padding-bottom: var(--space-8);
+}
+
 .hero {
   background: linear-gradient(170deg, #fff 0%, #f7fbff 51%, #fff 99%);
-  min-height: 532px;
   position: relative;
 }
 
@@ -51,15 +59,15 @@
 
 .heroInner {
   display: grid;
-  gap: 32px;
+  gap: var(--space-8);
   grid-template-columns: minmax(0, 555px) minmax(0, 1fr);
   position: relative;
+  padding-block: var(--space-8);
   z-index: 1;
 }
 
 .heroCopy {
   min-width: 0;
-  padding-top: 42px;
 }
 
 .eyebrow {
@@ -98,15 +106,15 @@
   font-size: 19px;
   letter-spacing: -0.015em;
   line-height: 1.52;
-  margin-top: 15px;
+  margin-top: var(--space-4);
   max-width: 505px;
 }
 
 .heroActions {
   align-items: center;
   display: flex;
-  gap: 22px;
-  margin-top: 23px;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
 }
 
 .heroCta {
@@ -168,7 +176,7 @@
   display: flex;
   gap: 17px;
   list-style: none;
-  margin: 20px 0 0;
+  margin: var(--space-5) 0 0;
   padding: 0;
   white-space: nowrap;
 }
@@ -195,12 +203,10 @@
 .heroVisual {
   container-type: inline-size;
   min-width: 0;
-  padding-top: 22px;
   position: relative;
 }
 
-.heroHandwriting,
-.pricingHandwriting {
+.heroHandwriting {
   color: #0655be;
   font-family: 'Comic Sans MS', 'Bradley Hand', cursive;
   font-size: 16px;
@@ -217,8 +223,7 @@
   width: 132px;
 }
 
-.heroHandwriting::after,
-.pricingHandwriting::after {
+.heroHandwriting::after {
   border-bottom: 2px solid currentColor;
   border-radius: 50%;
   content: '';
@@ -229,7 +234,6 @@
 
 .features {
   background: #fff;
-  padding: 10px 0 0;
   position: relative;
 }
 
@@ -253,21 +257,21 @@
   font-weight: 750;
   letter-spacing: -0.04em;
   line-height: 1.14;
-  margin-top: 5px;
+  margin-top: var(--space-3);
 }
 
 .sectionIntro > p:last-child {
   color: #435679;
   font-size: 15px;
   line-height: 1.35;
-  margin-top: 4px;
+  margin-top: var(--space-3);
 }
 
 .featureGrid {
   display: grid;
   gap: 16px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 16px;
+  margin-top: var(--space-6);
 }
 
 .featureCard {
@@ -279,8 +283,7 @@
   display: grid;
   gap: 21px;
   grid-template-columns: 69px minmax(0, 1fr);
-  min-height: 127px;
-  padding: 17px 17px 8px;
+  padding: var(--space-5);
 }
 
 .featureIcon {
@@ -362,7 +365,6 @@
 
 .proof {
   background: #fff;
-  padding: 23px 0 7px;
 }
 
 .proofInner {
@@ -466,23 +468,20 @@
 
 .pricing {
   background: linear-gradient(180deg, #f9fcff, #f0f8ff);
-  min-height: 120px;
-  overflow: hidden;
+  padding-block: var(--space-10);
   position: relative;
 }
 
 .pricingClouds {
   background:
     radial-gradient(ellipse 200px 80px at 4% 100%, #e2f1ff 0 85%, transparent 86%),
-    radial-gradient(ellipse 220px 60px at 70% 105%, #e4f1ff 0 83%, transparent 84%),
-    radial-gradient(ellipse 270px 90px at 98% 95%, #dbefff 0 79%, transparent 80%);
+    radial-gradient(ellipse 220px 60px at 70% 105%, #e4f1ff 0 83%, transparent 84%);
 }
 
 .pricingInner {
-  align-items: center;
-  display: flex;
-  gap: 24px;
-  min-height: 120px;
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: auto minmax(0, 1fr);
   position: relative;
 }
 
@@ -492,82 +491,28 @@
   border-radius: 50%;
   color: #0964dd;
   display: flex;
-  flex: 0 0 78px;
-  height: 78px;
+  height: 64px;
   justify-content: center;
+  width: 64px;
 }
 
-.pricingCopy {
-  flex: 0 1 543px;
-  position: relative;
-  z-index: 1;
-}
-
+.pricingCopy {align-self: center; min-width: 0;}
 .pricingCopy h2 {
-  font-size: 21px;
+  font-size: var(--text-section-title);
   font-weight: 750;
   letter-spacing: -0.025em;
   line-height: 1.2;
-  margin-top: 4px;
+  margin-top: var(--space-2);
 }
-
 .pricingCopy > p:last-child {
-  color: #455b7b;
-  font-size: 14px;
-  margin-top: 3px;
+  color: var(--color-text-secondary);
+  font-size: var(--text-body-small);
+  margin-top: var(--space-2);
 }
-
-.pricingButton {
-  align-items: center;
-  background: #fff;
-  border: 1px solid #c9dffc;
-  border-radius: 10px;
-  color: #065acb;
-  display: flex;
-  font-size: 13px;
-  font-weight: 600;
-  gap: 12px;
-  height: 45px;
-  justify-content: center;
-  margin-left: 0;
-  min-width: 188px;
-  position: relative;
-  z-index: 1;
-}
-
-.pricingButton[aria-disabled='true'] {
-  cursor: default;
-}
-
-.mountains {
-  bottom: 0;
-  height: 100px;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  width: 480px;
-}
-
-.mountains span {
-  bottom: 0;
-  clip-path: polygon(0 100%, 20% 75%, 34% 49%, 44% 80%, 60% 23%, 76% 77%, 88% 45%, 100% 100%);
-  height: 92px;
-  position: absolute;
-  right: -30px;
-  width: 440px;
-}
-
-.mountains span:nth-child(1) { background: #cce6ff; transform: translateX(-50px) scaleY(0.65); }
-.mountains span:nth-child(2) { background: #8fc6f9; transform: translateX(22px) scaleY(0.95); }
-.mountains span:nth-child(3) { background: #d9eeff; clip-path: polygon(0 100%, 28% 75%, 60% 23%, 69% 45%, 77% 78%, 100% 100%); transform: translateX(22px); }
-.mountains span:nth-child(4) { background: #f7fcff; clip-path: polygon(0 100%, 40% 90%, 60% 23%, 64% 38%, 67% 50%, 70% 44%, 74% 73%, 100% 100%); transform: translateX(22px); }
-
-.pricingHandwriting {
-  right: clamp(0px, calc(1448px - 100vw), 16px);
-  top: 28px;
-  width: 145px;
-  z-index: 1;
-}
+.pricingInner > [data-plan-context], .pricingInner > [role='status'] {grid-column: 1 / -1;}
+.resources {padding-block: var(--space-10);}
+.resources h2 {font-size: var(--text-section-title); line-height: 1.25;}
+.resources p {color: var(--color-text-secondary); font-size: var(--text-body-small); margin-top: var(--space-3);}
 
 @media (max-width: 1199px) {
   .heroInner {
@@ -576,7 +521,6 @@
   }
 
   .heroCopy {
-    padding-top: 32px;
     width: 100%;
   }
 
@@ -587,10 +531,6 @@
   .heroVisual {
     padding-top: 0;
     width: 100%;
-  }
-
-  .hero {
-    padding-bottom: 35px;
   }
 
   .heroTitle {
@@ -607,9 +547,7 @@
     white-space: normal;
   }
 
-  .heroHandwriting,
-  .pricingHandwriting,
-  .mountains {
+  .heroHandwriting {
     display: none;
   }
 
@@ -621,13 +559,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .pricingInner {
-    padding-block: 24px;
-  }
-
-  .pricingCopy {
-    flex: 1 1 auto;
-  }
 }
 
 @media (max-width: 767px) {
@@ -703,23 +634,4 @@
     border-right: 0;
   }
 
-  .pricingInner {
-    display: grid;
-    align-items: flex-start;
-    gap: 16px;
-    grid-template-columns: 50px minmax(0, 1fr);
-  }
-
-  .pricingIcon {
-    height: 50px;
-  }
-
-  .pricingCopy {
-    min-width: 0;
-  }
-
-  .pricingButton {
-    grid-column: 1 / -1;
-    width: 100%;
-  }
 }

@@ -7,16 +7,18 @@ import {LandingPage} from '@/features/landing/LandingPage';
 import {landingPreview} from '@/features/landing/fixtures';
 
 vi.mock('@/i18n/navigation', () => ({
+  getPathname: ({href}: {href: string}) => href,
   Link: ({locale, href, ...props}: {locale?: string; href: string; children: React.ReactNode}) =>
     <a href={locale === 'en' ? '/en' : href} {...props} />
 }));
+vi.mock('next/navigation', () => ({useRouter: () => ({push: vi.fn()})}));
 
 describe('landing page', () => {
   it('renders the canonical Romanian heading, primary CTA, navigation and text-only brand', () => {
     render(<NextIntlClientProvider locale="ro" messages={ro}><LandingPage locale="ro" preview={landingPreview} /></NextIntlClientProvider>);
     expect(screen.getByRole('heading', {level: 1})).toHaveTextContent('Toate documentele furnizorilor tăi, într-un singur loc.');
     expect(within(screen.getByRole('navigation', {name: 'Navigare principală'})).getByText('Prețuri')).toBeVisible();
-    expect(screen.getAllByRole('link', {name: /Încearcă gratuit/})).toHaveLength(2);
+    expect(screen.getAllByRole('link', {name: /Încearcă gratuit/})).toHaveLength(5);
     expect(screen.getByRole('link', {name: 'Autentificare'})).toHaveAttribute('href', '/login');
     for (const trial of screen.getAllByRole('link', {name: 'Încearcă gratuit'})) {
       expect(trial).toHaveAttribute('href', '/onboarding');

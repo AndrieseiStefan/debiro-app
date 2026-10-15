@@ -1,4 +1,5 @@
 import {expect, test} from '@playwright/test';
+import {mkdir} from 'node:fs/promises';
 import {boundaryViewports, headerBoundaryViewports, regressionViewports, viewports} from './support/viewports';
 
 test('renders canonical Romanian copy, navigation and textual branding', async ({page}) => {
@@ -40,7 +41,7 @@ test('account entry links preserve locale and support keyboard and browser Back'
         await page.goto(landing);
 
         const loginLink = page.getByRole('link', {name: loginLabel, exact: true});
-        const trialLinks = page.getByRole('link', {name: trialLabel, exact: true});
+        const trialLinks = page.locator('header, #product').getByRole('link', {name: trialLabel, exact: true});
         await expect(loginLink).not.toHaveAttribute('aria-disabled');
         await expect(trialLinks).toHaveCount(2);
         for (const link of await trialLinks.all()) await expect(link).not.toHaveAttribute('aria-disabled');
@@ -85,11 +86,7 @@ test('keeps the landing page stable across the responsive viewport matrix', asyn
       await expect(page.getByRole('link', {name: 'Autentificare'})).toBeVisible();
       await expect(page.getByRole('link', {name: 'RO', exact: true})).toBeVisible();
       await expect(page.getByRole('link', {name: 'EN', exact: true})).toBeVisible();
-      if (width < 864) {
-        await expect(page.getByRole('navigation', {name: 'Navigare principală'})).toBeHidden();
-      } else {
-        await expect(page.getByRole('navigation', {name: 'Navigare principală'})).toBeVisible();
-      }
+      await expect(page.getByRole('navigation', {name: 'Navigare principală'})).toBeVisible();
 
       const geometry = await page.evaluate(() => {
         const rect = (element: Element) => {
@@ -100,8 +97,8 @@ test('keeps the landing page stable across the responsive viewport matrix', asyn
           a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
         const anyOverlap = (boxes: ReturnType<typeof rect>[]) =>
           boxes.some((box, index) => boxes.slice(index + 1).some((other) => overlaps(box, other)));
-        const sections = document.querySelectorAll('main > section');
-        const contentContainers = Array.from(document.querySelectorAll('header > div, main > section > div'))
+        const sections = document.querySelectorAll('main section');
+        const contentContainers = Array.from(document.querySelectorAll('header > div, main section > div'))
           .filter((element) => getComputedStyle(element).maxWidth === '1350px');
         const heroInner = sections[0].children[1];
         const heroCopy = heroInner.children[0];
@@ -112,9 +109,8 @@ test('keeps the landing page stable across the responsive viewport matrix', asyn
         const cards = Array.from(sections[1].querySelectorAll('article'));
         const pricingInner = sections[3].children[1];
         const pricingCopy = pricingInner.children[1];
-        const pricingButton = pricingInner.querySelector('button')!;
+        const pricingCards = Array.from(pricingInner.querySelectorAll('[data-plan-id]'));
         const heroDecoration = heroVisual.lastElementChild!;
-        const pricingDecoration = pricingInner.lastElementChild!;
         const headerInner = document.querySelector('header > div')!;
         const headerActions = headerInner.children[2];
         const headerItems = [
@@ -128,8 +124,7 @@ test('keeps the landing page stable across the responsive viewport matrix', asyn
         const controlRects = controls.map(rect);
         const trustRects = trustItems.map(rect);
         const cardRects = cards.map(rect);
-        const pricingButtonRect = rect(pricingButton);
-        const decorations = [heroDecoration, pricingDecoration]
+        const decorations = [heroDecoration]
           .filter((element) => getComputedStyle(element).display !== 'none')
           .map(rect);
         return {
@@ -164,11 +159,11 @@ test('keeps the landing page stable across the responsive viewport matrix', asyn
             const title = card.querySelector('h3')!;
             return overlaps(rect(title), rect(title.nextElementSibling!));
           }),
-          pricingCollision: overlaps(pricingButtonRect, rect(pricingCopy)),
-          pricingButtonLeft: pricingButtonRect.left,
-          pricingButtonRight: pricingButtonRect.right,
+          pricingCollision: anyOverlap(pricingCards.map(rect)) || pricingCards.some((card) => overlaps(rect(card), rect(pricingCopy))),
+          pricingLeft: Math.min(...pricingCards.map((card) => rect(card).left)),
+          pricingRight: Math.max(...pricingCards.map((card) => rect(card).right)),
           decorationCollision: decorations.some((box) =>
-            [...controlRects, ...trustRects, ...cardRects, rect(pricingCopy), pricingButtonRect]
+            [...controlRects, ...trustRects, ...cardRects, rect(pricingCopy), ...pricingCards.map(rect)]
               .some((content) => overlaps(box, content))),
           decorationOutsideViewport: decorations.some((box) => box.left < 0 || box.right > innerWidth),
           headerCollision: anyOverlap(headerItems)
@@ -177,7 +172,7 @@ test('keeps the landing page stable across the responsive viewport matrix', asyn
 
       expect(geometry.scrollWidth).toBeLessThanOrEqual(width);
       expect(geometry.gutter).toBe(gutter);
-      expect(geometry.contentContainers).toHaveLength(5);
+      expect(geometry.contentContainers).toHaveLength(6);
       for (const container of geometry.contentContainers) {
         expect(container.left).toBeCloseTo(geometry.contentLeft, 0);
         expect(container.right).toBeCloseTo(geometry.contentRight, 0);
@@ -205,8 +200,8 @@ test('keeps the landing page stable across the responsive viewport matrix', asyn
       expect(geometry.cardCollision).toBe(false);
       expect(geometry.numberCollision).toBe(false);
       expect(geometry.pricingCollision).toBe(false);
-      expect(geometry.pricingButtonLeft).toBeGreaterThanOrEqual(gutter - 1);
-      expect(geometry.pricingButtonRight).toBeLessThanOrEqual(width - gutter + 1);
+      expect(geometry.pricingLeft).toBeGreaterThanOrEqual(gutter - 1);
+      expect(geometry.pricingRight).toBeLessThanOrEqual(width - gutter + 1);
       expect(geometry.decorationCollision).toBe(false);
       expect(geometry.decorationOutsideViewport).toBe(false);
       expect(geometry.headerCollision).toBe(false);
@@ -283,25 +278,30 @@ test('reflows only the reduced header when its content needs a second row', asyn
 
 test('keeps English copy and the preview within responsive gutters', async ({page}) => {
   await page.goto('/en');
-  for (const {width, gutter} of [{width: 950, gutter: 24}, {width: 480, gutter: 16}, {width: 320, gutter: 16}]) {
+  for (const {width, gutter} of [{width: 1024, gutter: 24}, {width: 950, gutter: 24}, {width: 864, gutter: 24}, {width: 863, gutter: 24}, {width: 768, gutter: 24}, {width: 480, gutter: 16}, {width: 375, gutter: 16}, {width: 320, gutter: 16}]) {
     await page.setViewportSize({width, height: 900});
     await expect(page.getByRole('heading', {level: 1})).toBeVisible();
     await expect(page.getByRole('link', {name: 'Try for free'}).first()).toBeVisible();
     const geometry = await page.evaluate(() => {
-      const preview = document.querySelector('main > section')!.children[1].children[1].firstElementChild!;
+      const preview = document.querySelector('#product')!.children[1].children[1].firstElementChild!;
       const bounds = preview.getBoundingClientRect();
-      return {scrollWidth: document.documentElement.scrollWidth, left: bounds.left, right: bounds.right};
+      const links = Array.from(document.querySelectorAll('header a'), (link) => link.getBoundingClientRect());
+      const collision = links.some((a, index) => links.slice(index + 1).some((b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top));
+      return {scrollWidth: document.documentElement.scrollWidth, left: bounds.left, right: bounds.right, collision, navLeft: Math.min(...links.map((link) => link.left)), navRight: Math.max(...links.map((link) => link.right))};
     });
     expect(geometry.scrollWidth).toBeLessThanOrEqual(width);
     expect(geometry.left).toBeGreaterThanOrEqual(gutter - 1);
     expect(geometry.right).toBeLessThanOrEqual(width - gutter + 1);
+    expect(geometry.collision).toBe(false);
+    expect(geometry.navLeft).toBeGreaterThanOrEqual(0);
+    expect(geometry.navRight).toBeLessThanOrEqual(width);
   }
 });
 
 test('uses one desktop content grid and centers both CTA labels and arrows', async ({page}) => {
   await page.goto('/');
   const grid = await page.evaluate(() =>
-    Array.from(document.querySelectorAll('header > div, main > section > div'))
+    Array.from(document.querySelectorAll('header > div, main section > div'))
       .filter((element) => getComputedStyle(element).maxWidth === '1350px')
       .map((element) => ({
         left: element.getBoundingClientRect().left,
@@ -310,13 +310,13 @@ test('uses one desktop content grid and centers both CTA labels and arrows', asy
         paddingRight: getComputedStyle(element).paddingRight
       }))
   );
-  expect(grid).toHaveLength(5);
+  expect(grid).toHaveLength(6);
   for (const container of grid) {
     expect(container).toEqual({left: 49, width: 1350, paddingLeft: '32px', paddingRight: '32px'});
   }
 
   const heroSpacing = await page.evaluate(() => {
-    const heroInner = document.querySelector('main > section')!.children[1];
+    const heroInner = document.querySelector('#product')!.children[1];
     const copy = heroInner.children[0];
     const preview = heroInner.children[1].firstElementChild!;
     const trustItems = Array.from(copy.querySelector('ul')!.children);
@@ -334,7 +334,7 @@ test('uses one desktop content grid and centers both CTA labels and arrows', asy
   expect(heroSpacing.previewWidth).toBeGreaterThanOrEqual(698);
   expect(heroSpacing.previewWidth).toBeLessThanOrEqual(700);
 
-  const links = await page.getByRole('link', {name: 'Încearcă gratuit'}).all();
+  const links = await page.locator('header, #product').getByRole('link', {name: 'Încearcă gratuit'}).all();
   expect(links).toHaveLength(2);
   for (const [index, link] of links.entries()) {
     const alignment = await link.evaluate((element) => {
@@ -372,4 +372,100 @@ test('provides a visible keyboard focus indicator', async ({page}) => {
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', {name: 'DEBIRO'})).toBeFocused();
   await expect(page.getByRole('link', {name: 'DEBIRO'})).toHaveCSS('outline-style', 'solid');
+});
+
+for (const english of [false, true]) {
+  const route = english ? '/en' : '/', language = english ? 'EN' : 'RO';
+  test(`${language} marketing anchors use native history, keyboard navigation and preserve locale anchors`, async ({page}) => {
+    await page.goto(route);
+    const origin = await page.evaluate(() => performance.timeOrigin);
+    const navigation = page.getByRole('navigation', {name: english ? 'Main navigation' : 'Navigare principală'});
+    for (const anchor of ['product', 'solutions', 'pricing', 'resources']) {
+      const link = navigation.locator(`[href="#${anchor}"]`);
+      await link.focus();
+      await expect(link).toHaveCSS('outline-style', 'solid');
+      await page.keyboard.press('Enter');
+      await expect(page).toHaveURL(`${route}#${anchor}`);
+      expect(await page.evaluate(() => performance.timeOrigin)).toBe(origin);
+      await expect(page.locator(`#${anchor}`)).toBeInViewport();
+      const heading = page.locator(`#${anchor}`).getByRole('heading').first();
+      await expect(heading).toBeInViewport();
+      expect((await heading.boundingBox())!.y).toBeGreaterThanOrEqual(0);
+    }
+    await page.goBack(); await expect(page).toHaveURL(`${route}#pricing`);
+    await page.goForward(); await expect(page).toHaveURL(`${route}#resources`);
+    await page.getByRole('link', {name: english ? 'RO' : 'EN', exact: true}).click();
+    await expect(page).toHaveURL(`${english ? '/' : '/en'}#resources`);
+    await expect(page.locator('#resources h2')).toBeInViewport();
+    await expect(page.locator('#resources a, #resources button')).toHaveCount(0);
+    await expect(page.locator('#resources')).toContainText(english ? 'Pregătim ghiduri și materiale care te vor ajuta să folosești DEBIRO.' : "We're preparing guides and materials to help you get the most out of DEBIRO.");
+    for (const hash of ['pricing', 'product']) {
+      await page.goto(`${route}#${hash}`);
+      await expect(page.locator(`#${hash} h${hash === 'product' ? 1 : 2}`).first()).toBeInViewport();
+    }
+    const previousScroll = await page.evaluate(() => scrollY);
+    await page.goto(`${route}#missing-section`);
+    expect(await page.evaluate(() => scrollY)).toBe(previousScroll);
+    await expect(page.locator('html')).toHaveCSS('scroll-behavior', 'auto');
+  });
+
+  test(`${language} public pricing uses all shared demo tiers, only marketing emphasis and existing signup`, async ({page}) => {
+    await page.goto(`${route}#pricing`);
+    const pricing = page.locator('#pricing');
+    await expect(pricing.locator('[data-plan-id]')).toHaveCount(3);
+    await expect(pricing.locator('[data-featured]')).toHaveAttribute('data-plan-id', 'Professional');
+    await expect(pricing.locator('[data-current], [data-recommended]')).toHaveCount(0);
+    await expect(pricing).not.toContainText('Trial');
+    await expect(page.getByText(english ? 'View all plans' : 'Vezi toate planurile', {exact: true})).toHaveCount(0);
+    for (const planId of ['Starter', 'Professional', 'Business']) {
+      const card = pricing.locator(`[data-plan-id="${planId}"]`);
+      await expect(card).toContainText(english ? 'E1 demo price' : 'Preț demonstrativ E1');
+      const link = card.getByRole('link');
+      await expect(link).toHaveAttribute('href', `${english ? '/en' : ''}/onboarding`);
+      await link.click();
+      await expect(page).toHaveURL(`${english ? '/en' : ''}/onboarding`);
+      await page.goBack(); await expect(page).toHaveURL(`${route}#pricing`);
+    }
+    await page.setViewportSize({width: 375, height: 812});
+    await page.goto(route);
+    const nav = page.getByRole('navigation', {name: english ? 'Main navigation' : 'Navigare principală'});
+    for (const anchor of ['product', 'solutions', 'pricing', 'resources']) {
+      await nav.locator(`[href="#${anchor}"]`).click();
+      await expect(page.locator(`#${anchor}`)).toBeInViewport();
+    }
+  });
+}
+
+test('viewport presentation and shared pricing remain naturally contained; captures for visual review', async ({page}) => {
+  await mkdir('artifacts/visual/e1-032bh', {recursive: true});
+  for (const [width, height] of [[1920, 1080], [1448, 900], [1280, 800], [1448, 600], [1024, 768], [768, 900], [375, 812], [320, 700]]) {
+    await page.setViewportSize({width, height});
+    await page.goto('/');
+    await page.evaluate(async () => {await document.fonts.ready;});
+    const geometry = await page.evaluate(() => {
+      const presentation = document.querySelector('[data-landing-presentation]')!.getBoundingClientRect();
+      const header = document.querySelector('header')!.getBoundingClientRect();
+      const pricing = document.querySelector('#pricing')!.getBoundingClientRect();
+      const cards = Array.from(document.querySelectorAll('#pricing [data-plan-id]'), (card) => {const r = card.getBoundingClientRect(); return {left: r.left, right: r.right, top: r.top};});
+      return {presentationHeight: presentation.height, headerHeight: header.height, pricingTop: pricing.top, presentationBottom: presentation.bottom, overflow: document.documentElement.scrollWidth, cards};
+    });
+    expect(geometry.presentationHeight).toBeGreaterThanOrEqual(height - geometry.headerHeight - 1);
+    expect(geometry.pricingTop).toBeGreaterThanOrEqual(height);
+    expect(geometry.pricingTop).toBe(geometry.presentationBottom);
+    expect(geometry.overflow).toBeLessThanOrEqual(width);
+    for (const card of geometry.cards) {expect(card.left).toBeGreaterThanOrEqual(0); expect(card.right).toBeLessThanOrEqual(width);}
+    if (width >= 1200) expect(new Set(geometry.cards.map((card) => card.top)).size).toBe(1);
+    else if (width >= 768) {expect(geometry.cards[0].top).toBe(geometry.cards[1].top); expect(geometry.cards[2].top).toBeGreaterThan(geometry.cards[0].top);}
+    else expect(new Set(geometry.cards.map((card) => card.left)).size).toBe(1);
+    await page.screenshot({path: `artifacts/visual/e1-032bh/landing-${width}x${height}.png`});
+    if ([1448, 768, 375, 320].includes(width) && height !== 600) {
+      await page.locator('#pricing').screenshot({path: `artifacts/visual/e1-032bh/pricing-${width}.png`});
+    }
+  }
+  await page.setViewportSize({width: 1448, height: 900});
+  await page.goto('/en');
+  await page.screenshot({path: 'artifacts/visual/e1-032bh/landing-en-desktop.png', fullPage: true});
+  await page.goto('/company/settings/billing');
+  await page.getByRole('button', {name: 'Upgrade plan', exact: true}).click();
+  await page.getByRole('dialog', {name: 'Upgrade plan', exact: true}).screenshot({path: 'artifacts/visual/e1-032bh/upgrade-desktop.png'});
 });

@@ -2,6 +2,8 @@ import {useTranslations} from 'next-intl';
 import {PublicContainer} from '@/components/layout/PublicContainer';
 import {PublicHeader} from '@/components/layout/PublicHeader';
 import {ButtonLink} from '@/components/ui/Button';
+import {PlanCards} from '@/features/company-settings/PlanCards';
+import {marketingPlanConfig} from '@/features/company-settings/plan-catalog';
 import {DashboardPreview} from './DashboardPreview';
 import {LandingIcon} from './LandingIcon';
 import type {LandingPreview} from './types';
@@ -27,83 +29,85 @@ export function LandingPage({locale, preview}: {locale: string; preview: Landing
       }} />
 
       <main>
-        <section className={styles.hero} aria-labelledby="landing-heading">
-          <div className={styles.heroClouds} aria-hidden="true" />
-          <PublicContainer className={styles.heroInner}>
-            <div className={styles.heroCopy}>
-              <p className={styles.eyebrow}>{t('heroEyebrow')}</p>
-              <h1 id="landing-heading" className={styles.heroTitle}>
-                <span>{t('heroTitleOne')}</span>{' '}
-                <span>{t('heroTitleTwo')}</span>{' '}
-                <span className={styles.heroTitleBlue}>{t('heroTitleThree')}</span>
-              </h1>
-              <p className={styles.heroDescription}>{t('heroDescription')}</p>
-              <div className={styles.heroActions}>
-                <ButtonLink href="/onboarding" className={styles.heroCta}>{t('tryFree')} <LandingIcon name="arrow" size={22} /></ButtonLink>
-                <button type="button" aria-disabled="true" className={styles.videoButton}>
-                  <span className={styles.playDisc}><LandingIcon name="play" size={20} /></span>
-                  <span><strong>{t('watchHow')}</strong><small>{t('videoDuration')}</small></span>
-                </button>
+        <div className={styles.presentation} data-landing-presentation>
+          <section id="product" className={styles.hero} aria-labelledby="landing-heading">
+            <div className={styles.heroClouds} aria-hidden="true" />
+            <PublicContainer className={styles.heroInner}>
+              <div className={styles.heroCopy}>
+                <p className={styles.eyebrow}>{t('heroEyebrow')}</p>
+                <h1 id="landing-heading" className={styles.heroTitle}>
+                  <span>{t('heroTitleOne')}</span>{' '}
+                  <span>{t('heroTitleTwo')}</span>{' '}
+                  <span className={styles.heroTitleBlue}>{t('heroTitleThree')}</span>
+                </h1>
+                <p className={styles.heroDescription}>{t('heroDescription')}</p>
+                <div className={styles.heroActions}>
+                  <ButtonLink href="/onboarding" className={styles.heroCta}>{t('tryFree')} <LandingIcon name="arrow" size={22} /></ButtonLink>
+                  <button type="button" aria-disabled="true" className={styles.videoButton}>
+                    <span className={styles.playDisc}><LandingIcon name="play" size={20} /></span>
+                    <span><strong>{t('watchHow')}</strong><small>{t('videoDuration')}</small></span>
+                  </button>
+                </div>
+                <ul className={styles.benefits}>
+                  <li><span className={styles.benefitCheck}><LandingIcon name="check" size={11} /></span>{t('benefitCard')}</li>
+                  <li><span className={styles.benefitCheck}><LandingIcon name="check" size={11} /></span>{t('benefitSetup')}</li>
+                  <li><span className={styles.benefitCheck}><LandingIcon name="check" size={11} /></span>{t('benefitSupport')}</li>
+                </ul>
               </div>
-              <ul className={styles.benefits}>
-                <li><span className={styles.benefitCheck}><LandingIcon name="check" size={11} /></span>{t('benefitCard')}</li>
-                <li><span className={styles.benefitCheck}><LandingIcon name="check" size={11} /></span>{t('benefitSetup')}</li>
-                <li><span className={styles.benefitCheck}><LandingIcon name="check" size={11} /></span>{t('benefitSupport')}</li>
-              </ul>
-            </div>
-            <div className={styles.heroVisual}>
-              <DashboardPreview preview={preview} locale={locale} />
-              <p className={styles.heroHandwriting}>{t('heroHandwriting')}</p>
-            </div>
-          </PublicContainer>
-        </section>
+              <div className={styles.heroVisual}>
+                <DashboardPreview preview={preview} locale={locale} />
+                <p className={styles.heroHandwriting}>{t('heroHandwriting')}</p>
+              </div>
+            </PublicContainer>
+          </section>
 
-        <section className={styles.features} aria-labelledby="feature-heading">
-          <PublicContainer>
-            <div className={styles.sectionIntro}>
-              <p className={styles.sectionEyebrow}>{t('featuresEyebrow')}</p>
-              <h2 id="feature-heading">{t('featuresHeading')}</h2>
-              <p>{t('featuresDescription')}</p>
-            </div>
-            <div className={styles.featureGrid}>
-              {features.map((feature) => (
-                <article className={styles.featureCard} key={feature.id}>
-                  <div className={`${styles.featureIcon} ${styles[feature.id]}`}><LandingIcon name={feature.icon} size={30} /></div>
-                  <div className={styles.featureText}>
-                    <h3>{t(`features.${feature.id}.title`)}</h3>
-                    <span className={styles.featureNumber} aria-hidden="true">{feature.number}</span>
-                    <p>{t(`features.${feature.id}.description`)}</p>
-                    <button type="button" aria-disabled="true" className={styles.learnMore}>{t('learnMore')} <LandingIcon name="arrow" size={16} /></button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </PublicContainer>
-        </section>
-
-        <section className={styles.proof} aria-label={t('proofLabel')}>
-          <PublicContainer className={styles.proofInner}>
-            <div className={styles.partners}>
-              <p className={styles.sectionEyebrow}>{t('trustEyebrow')}</p>
-              <div className={styles.partnerLogos} aria-label={t('partnerLabel')}>
-                {preview.partners.map((partner, index) => (
-                  <span className={`${styles.partner} ${styles[`partner${index}`]}`} key={partner}>
-                    <span className={styles.partnerSymbol} aria-hidden="true">{['✿', '◒', '✦', '⌂', '⬡', '◢'][index]}</span>
-                    <span>{partner}</span>
-                  </span>
+          <section id="solutions" className={styles.features} aria-labelledby="feature-heading">
+            <PublicContainer>
+              <div className={styles.sectionIntro}>
+                <p className={styles.sectionEyebrow}>{t('featuresEyebrow')}</p>
+                <h2 id="feature-heading">{t('featuresHeading')}</h2>
+                <p>{t('featuresDescription')}</p>
+              </div>
+              <div className={styles.featureGrid}>
+                {features.map((feature) => (
+                  <article className={styles.featureCard} key={feature.id}>
+                    <div className={`${styles.featureIcon} ${styles[feature.id]}`}><LandingIcon name={feature.icon} size={30} /></div>
+                    <div className={styles.featureText}>
+                      <h3>{t(`features.${feature.id}.title`)}</h3>
+                      <span className={styles.featureNumber} aria-hidden="true">{feature.number}</span>
+                      <p>{t(`features.${feature.id}.description`)}</p>
+                      <button type="button" aria-disabled="true" className={styles.learnMore}>{t('learnMore')} <LandingIcon name="arrow" size={16} /></button>
+                    </div>
+                  </article>
                 ))}
               </div>
-            </div>
-            <div className={styles.stats}>
-              <div className={styles.stat}><span className={styles.statIcon}><LandingIcon name="users" size={22} /></span><strong>500+</strong><span>{t('statSuppliers')}</span></div>
-              <div className={styles.stat}><span className={styles.statIcon}><LandingIcon name="clock" size={22} /></span><strong>98%</strong><span>{t('statOnTime')}</span></div>
-              <div className={styles.stat}><span className={styles.statIcon}><LandingIcon name="chart" size={22} /></span><strong>3x</strong><span>{t('statLessTime')}</span></div>
-              <div className={styles.stat}><span className={styles.statIcon}><LandingIcon name="heart" size={22} /></span><strong>99%</strong><span>{t('statHappy')}</span></div>
-            </div>
-          </PublicContainer>
-        </section>
+            </PublicContainer>
+          </section>
 
-        <section id="preturi" className={styles.pricing} aria-labelledby="pricing-heading">
+          <section className={styles.proof} aria-label={t('proofLabel')}>
+            <PublicContainer className={styles.proofInner}>
+              <div className={styles.partners}>
+                <p className={styles.sectionEyebrow}>{t('trustEyebrow')}</p>
+                <div className={styles.partnerLogos} aria-label={t('partnerLabel')}>
+                  {preview.partners.map((partner, index) => (
+                    <span className={`${styles.partner} ${styles[`partner${index}`]}`} key={partner}>
+                      <span className={styles.partnerSymbol} aria-hidden="true">{['✿', '◒', '✦', '⌂', '⬡', '◢'][index]}</span>
+                      <span>{partner}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className={styles.stats}>
+                <div className={styles.stat}><span className={styles.statIcon}><LandingIcon name="users" size={22} /></span><strong>500+</strong><span>{t('statSuppliers')}</span></div>
+                <div className={styles.stat}><span className={styles.statIcon}><LandingIcon name="clock" size={22} /></span><strong>98%</strong><span>{t('statOnTime')}</span></div>
+                <div className={styles.stat}><span className={styles.statIcon}><LandingIcon name="chart" size={22} /></span><strong>3x</strong><span>{t('statLessTime')}</span></div>
+                <div className={styles.stat}><span className={styles.statIcon}><LandingIcon name="heart" size={22} /></span><strong>99%</strong><span>{t('statHappy')}</span></div>
+              </div>
+            </PublicContainer>
+          </section>
+        </div>
+
+        <section id="pricing" className={styles.pricing} aria-labelledby="pricing-heading">
           <div className={styles.pricingClouds} aria-hidden="true" />
           <PublicContainer className={styles.pricingInner}>
             <span className={styles.pricingIcon}><LandingIcon name="tag" size={32} /></span>
@@ -112,9 +116,13 @@ export function LandingPage({locale, preview}: {locale: string; preview: Landing
               <h2 id="pricing-heading">{t('pricingHeading')}</h2>
               <p>{t('pricingDescription')}</p>
             </div>
-            <button type="button" aria-disabled="true" className={styles.pricingButton}>{t('viewPlans')} <LandingIcon name="arrow" size={18} /></button>
-            <div className={styles.mountains} aria-hidden="true"><span /><span /><span /><span /></div>
-            <p className={styles.pricingHandwriting}>{t('pricingHandwriting')}</p>
+            <PlanCards locale={locale} context="marketing" featuredPlanId={marketingPlanConfig.featuredPlanId}/>
+          </PublicContainer>
+        </section>
+        <section id="resources" className={styles.resources} aria-labelledby="resources-heading">
+          <PublicContainer>
+            <h2 id="resources-heading">{t('navResources')}</h2>
+            <p>{t('resourcesDescription')}</p>
           </PublicContainer>
         </section>
       </main>

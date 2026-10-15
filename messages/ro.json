@@ -266,8 +266,7 @@
     "pricingEyebrow": "PREȚURI TRANSPARENTE",
     "pricingHeading": "Planuri flexibile pentru orice dimensiune de companie.",
     "pricingDescription": "Începe gratuit și alege planul potrivit pe măsură ce crești.",
-    "viewPlans": "Vezi toate planurile",
-    "pricingHandwriting": "Parteneri siguri. Afaceri mai puternice.",
+    "resourcesDescription": "Pregătim ghiduri și materiale care te vor ajuta să folosești DEBIRO.",
     "dashboard": {
       "previewLabel": "Previzualizare a tabloului de bord DEBIRO pentru furnizori și documente",
       "taglineOne": "Parteneri siguri.",
@@ -303,6 +302,11 @@
       "activity": {"uploaded": "Document încărcat", "expiring": "Se apropie termenul de expirare", "expired": "Document expirat", "added": "Furnizor nou adăugat"},
       "statusLabels": {"expired": "Expirat", "expiring": "Expiră curând", "missing": "Lipsește"}
     }
+  },
+  "PlanCards": {
+    "featured": "Cea mai populară alegere",
+    "start": "Încearcă gratuit",
+    "empty": "Planurile nu sunt disponibile momentan."
   },
   "PublicHeader": {
     "languageLabel": "Limbă",

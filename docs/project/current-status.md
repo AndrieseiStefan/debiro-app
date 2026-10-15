@@ -26,6 +26,8 @@ The final logo is not yet designed and must not be invented.
 
 ## Implemented
 
+- E1-032Bh Landing presentation and shared pricing — viewport-minimum hero/benefits/trust composition with natural overflow, native Product/Solutions/Pricing/Resources anchors and hash-preserving locale changes, reduced-width navigation row, explicit coming-soon Resources and shared Upgrade/Landing cards from the existing demo catalog; marketing Professional emphasis is separate from company current/next/trial state; commercial/social-proof launch review remains open; see [Landing](../features/landing-page.md)
+
 - E1-032Bg template-management terminology — shared RO/EN catalogs name navigation/breadcrumbs/search groups Șabloane / Templates and page/list headings Șabloane de cerințe / Requirement Templates; approved description and New Template action, consistent section references/management links, with unchanged `/requirements` routes, workflows and assigned vendor-requirement terminology
 
 - E1-032Bf global workspace search — live normalized/deterministic matching over owned Vendors, current uploaded Documents and company Requirement templates/drafts, accurate grouped counts/all results in an internally scrolling panel, keyboard navigation and role-aware existing Details/Review/editor/Preview entry; stale/company isolation checks and temporary query reset, no API/search history; see [global search](../features/global-search.md)

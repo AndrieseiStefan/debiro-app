@@ -262,8 +262,7 @@
     "pricingEyebrow": "TRANSPARENT PRICING",
     "pricingHeading": "Flexible plans for companies of any size.",
     "pricingDescription": "Start free and choose the right plan as you grow.",
-    "viewPlans": "View all plans",
-    "pricingHandwriting": "Reliable partners. Stronger business.",
+    "resourcesDescription": "We're preparing guides and materials to help you get the most out of DEBIRO.",
     "dashboard": {
       "previewLabel": "Preview of the DEBIRO dashboard for suppliers and documents",
       "taglineOne": "Reliable partners.",
@@ -299,6 +298,11 @@
       "activity": {"uploaded": "Document uploaded", "expiring": "Approaching expiry", "expired": "Document expired", "added": "New supplier added"},
       "statusLabels": {"expired": "Expired", "expiring": "Expiring soon", "missing": "Missing"}
     }
+  },
+  "PlanCards": {
+    "featured": "Most popular choice",
+    "start": "Try for free",
+    "empty": "Plans are currently unavailable."
   },
   "PublicHeader": {
     "languageLabel": "Language",

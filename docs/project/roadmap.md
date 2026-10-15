@@ -4,6 +4,8 @@ This roadmap records direction only. Detailed requirements are created by the ta
 
 ## Phase 0 — Product & Repository Foundation
 
+- E1-032Bh Landing — implemented viewport-aware first presentation, one-page anchors, approved coming-soon Resources and shared catalog/cards with authenticated Upgrade; real resources, commercial approval and verification of existing marketing claims remain deferred
+
 - E1-032Bg terminology — implemented UI-copy-only Templates / Șabloane naming across template-management entry points and Global Search; existing routes, data/contracts and vendor obligations remain unchanged
 
 - E1-032Bf global search — implemented with local company-scoped matching, complete grouped results, keyboard navigation and existing role-aware entity destinations; no new results page/backend/history

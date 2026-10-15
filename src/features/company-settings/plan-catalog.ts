@@ -5,6 +5,9 @@ export const planCatalog = [
   {id: 'Business', name: {ro: 'Business', en: 'Business'}, rank: 2, available: true, monthlyPriceEur: 49, seatLimit: 10, capabilities: {unlimitedDocuments: true, customRequirements: true, notificationsAudit: true}}
 ] as const;
 export type CompanyPlanId = typeof planCatalog[number]['id'];
+export type PlanDefinition = Omit<typeof planCatalog[number], 'available'> & {available: boolean};
+/** Provisional public emphasis; independent of company subscriptions and upgrade eligibility. */
+export const marketingPlanConfig: {featuredPlanId: CompanyPlanId | null} = {featuredPlanId: 'Professional'};
 export function companyPlan(id: string) {return planCatalog.find((plan) => plan.id === id);}
 export function nextCompanyPlan(id: string) {const current = companyPlan(id); return current ? planCatalog.find((plan) => plan.available && plan.rank > current.rank) : undefined;}
 export function planSubscriptionFields(id: CompanyPlanId) {

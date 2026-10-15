@@ -122,8 +122,11 @@ test('configures page-specific actions within the shared public header', async (
       for (const edge of ['x', 'width', 'height'] as const) {
         expect(onboarding.brand[edge]).toBeCloseTo(landing.brand[edge], 0);
       }
-      if (width > 496 || width <= 396) {
+      if (width >= 864 || width <= 396) {
         expect(onboarding.brand.y).toBeCloseTo(landing.brand.y, 0);
+      } else if (width > 496) {
+        // The new marketing-links row sizes its own first row, without changing pre-auth geometry.
+        expect(Math.abs(onboarding.brand.y - landing.brand.y)).toBeLessThanOrEqual(1);
       }
       expect(onboarding.headerBackground).toBe(landing.headerBackground);
       expect(landing.brandText).toBe('DEBIRO');
@@ -137,7 +140,7 @@ test('configures page-specific actions within the shared public header', async (
       expect(onboarding.clipped).toBe(false);
       expect(landing.scrollWidth).toBeLessThanOrEqual(width);
       expect(onboarding.scrollWidth).toBeLessThanOrEqual(width);
-      if (width <= 496) {
+      if (width < 864) {
         expect(landing.header.height).toBeGreaterThan(66);
       } else {
         expect(landing.header.height).toBe(66);

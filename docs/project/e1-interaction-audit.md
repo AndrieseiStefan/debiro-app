@@ -26,7 +26,7 @@ Route coverage: 15 implemented product route families × 2 locales; three named 
 
 | Route | Screen / purpose / main entry | Status | Main gaps |
 | --- | --- | --- | --- |
-| `{ro,en}/` | Landing; public brand/marketing entry | PARTIAL | Login and free-trial links work; other marketing destinations remain undefined. |
+| `{ro,en}/` | Landing; public brand/marketing entry | PARTIAL | Login/free-trial links, native section anchors and shared demo pricing work (E1-032Bh); Resources is explicitly coming soon, video/feature detail remain deferred. |
 | `{ro,en}/login` | Existing-user sign-in UI; direct URL or Login's own sign-up link | PARTIAL | Local validation navigates to Dashboard without identity; forgot password/help unavailable. |
 | `{ro,en}/onboarding` | Three-step account setup UI; Login sign-up link/direct URL | PARTIAL | Company fields initialize shared Company on completion; user/auth and optional-step drafts remain separate. Industry/country/size use shared IDs. Help/legal URLs absent. |
 | `{ro,en}/upload/demo-construct-pro` | Supplier-facing invitation preview; Invite Vendor preview link | PARTIAL | Local upload changes Missing to In Review, shared review changes progress, rejection enables a new upload identity. Selected bytes remain private tab memory; internal document management is available from the authenticated lists. Remote storage/delivery and supplier-side uploaded-file management remain unavailable. Unknown tokens 404. |
@@ -53,10 +53,10 @@ The table accounts for all visible control **families**, including repeated rows
 | # | Screen | Control / action | Current behavior | Expected behavior / destination or mutation | Status | Priority |
 | ---: | --- | --- | --- | --- | --- | --- |
 | 01 | Public shell | `DEBIRO` brand; RO/EN | Brand returns to Landing; locale changes corresponding route. | Same. | IMPLEMENTED | — |
-| 02 | Landing | `Prețuri` | Scrolls to the teaser anchor. | Same for current teaser. | IMPLEMENTED | — |
+| 02 | Landing | `Prețuri` | Scrolls to `#pricing` with all available shared demo-tier cards; tier CTAs enter existing locale-aware Onboarding without plan handoff. | Same. Commercial approval pending. | IMPLEMENTED | — |
 | 03 | Landing | Header `Autentificare`; header/hero `Încearcă gratuit` | Locale-aware links navigate to existing Login/Onboarding and support keyboard activation and Back. | Same. | IMPLEMENTED | — |
-| 04 | Landing | Product/Solutions/Resources dropdown-looking header controls | Unavailable; no menus. | Decide menu content/destinations, or remove interaction affordance until ready. | DESIGN_REQUIRED | DESIGN_REQUIRED |
-| 05 | Landing | Hero video; three `Află mai multe`; `Vezi toate planurile` | Unavailable; no video, feature detail, or public pricing route. | Approve media/content/plan destinations or defer visibly. | DESIGN_REQUIRED | DESIGN_REQUIRED |
+| 04 | Landing | Product/Solutions/Resources dropdown-looking header controls | Native `#product` / `#solutions` / `#resources` anchors, no menus/child destinations; approved compact Resources coming-soon message. | Actual resource content still requires approval. | IMPLEMENTED | — |
+| 05 | Landing | Hero video; three `Află mai multe` | Unavailable; no video or feature-detail content. Redundant `Vezi toate planurile` removed in E1-032Bh. | Approve media/content or defer visibly. | DESIGN_REQUIRED | DESIGN_REQUIRED |
 | 06 | Public/pre-auth | Help on Login/Onboarding; Terms/Privacy on Onboarding | Focusable unavailable buttons; no destinations. | Approve help and legal destinations; Terms acceptance should reference accessible terms. | DESIGN_REQUIRED | DESIGN_REQUIRED |
 | 07 | Login | Email/password, validation, submit | Valid local input navigates to `/dashboard` without session. | Retain validation; authenticate/create a session only at auth integration. | PARTIAL | BACKEND_DEFERRED |
 | 08 | Login | Password visibility; `Începe gratuit` | Toggle works; sign-up links to locale-matched `/onboarding`. | Same. | IMPLEMENTED | — |
@@ -127,7 +127,7 @@ The table accounts for all visible control **families**, including repeated rows
 | 73 | Data surfaces | Loading, network error, retry | None on synchronous fixture screens; form/file validation errors are local. | Introduce per-screen loading/error/retry with API and persistence, not preemptively. | INTENTIONALLY_DEFERRED | BACKEND_DEFERRED |
 | 74 | Company Profile | Shared values, Save/Cancel, dirty navigation and read-only access | Onboarding/company creation initialize the same Company; Administrator Save validates/updates atomically, Cancel restores, company/sidebar/locale/Back changes protect drafts; Reviewer/Viewer read-only. | Same E1 contract; durable persistence and server authorization later. | IMPLEMENTED | — |
 
-Items that merely display data—contact cards, static KPI copy, notification rows without interactive markup, status badges, banner art—were not counted as controls. Conversely, static chevrons/sort glyphs and `aria-disabled` buttons were counted because they visually promise an action. No live `href="#"`, empty `onClick`, console-only action, or link to a missing product route was found in the inspected production UI; the working `#preturi` and `#portal-help` anchors are intentional.
+Items that merely display data—contact cards, static KPI copy, notification rows without interactive markup, status badges, banner art—were not counted as controls. Conversely, static chevrons/sort glyphs and `aria-disabled` buttons were counted because they visually promise an action. No live `href="#"`, empty `onClick`, console-only action, or link to a missing product route was found in the inspected production UI; the working Landing `#product` / `#solutions` / `#pricing` / `#resources` and Supplier Portal `#portal-help` anchors are intentional.
 
 ## 4. CRUD Coverage
 
@@ -161,11 +161,11 @@ Items that merely display data—contact cards, static KPI copy, notification ro
 
 Inventory rows **04–06, 09, 11, 16, 19–20, 24, 37, 53, 57, 63, 65–66, 68, 70** cover visually actionable controls that are inactive, incomplete, or lead to an incomplete flow. Not all are E1 coding tasks: provider-backed controls (for example Logout, official invoice download, real upload) have a concrete service dependency; undefined menus/screens require design. In particular:
 
-- Landing account-entry links are functional; remaining public marketing actions lack approved destinations or content.
+- Landing account-entry links, section anchors and shared demo pricing are functional; Resources remains explicitly coming soon and video/feature-detail content lacks approval. Existing demo social-proof figures/claims require launch verification.
 - Dashboard KPI, Documents and Recent Activity links work; chart/footer are informational. Dashboard row ellipses still do not provide a usable path (P1 as inventoried). Vendor Contacts/Activity/Notes, requirement upload/removal and contact-based invitation simulation are implemented.
 - Requirements `Previzualizare` is read-only and reflects current drafts; template Duplicate/Delete work as separate header/footer actions, while unrelated row ellipses remain deferred. The removed `Setări și aplicabilitate` tab must **not** be restored.
 - Reports remains visibly Coming Soon with accessible hover/focus/touch help and no navigation (E1-032Bc, explicitly post-MVP). Profile/Invitations links are implemented; Help/Logout remain unavailable profile rows.
-- My Companies company-card ellipses, Supplier Portal uploaded-row ellipses, Landing marketing controls, and Login forgot-password are also unavailable for the reasons classified above.
+- My Companies company-card ellipses, Supplier Portal uploaded-row ellipses, Landing video/feature-detail controls, and Login forgot-password are also unavailable for the reasons classified above.
 
 An `aria-disabled` affordance prevents accidental navigation, but it is still visible and does not itself resolve the product gap. Repeated controls are grouped here; §3 states their behavior and disposition individually.
 
@@ -230,7 +230,7 @@ Order reflects dependencies. E1-024, E1-025A/B/C/D, E1-026A/B and E1-027/A/B are
 | 5 / E1-030 — local scope complete | Company Profile and onboarding company binding | P0 | M | Active-company/global-user boundary | Approved mockup 30/brief implemented | Canonical active-company Save/Cancel, dirty guard, shared options/data and role-gated editing; My Profile/My Invitations/help remain separate. |
 | 6 / E1-031 | Company operational workspace (implemented) | P0 | L | Existing company-owned session stores | First-run behavior approved by E1-031; general setup retained as draft | Completed locally: normal zero/empty pages, setup entry, scoped mutations/projections and A/B isolation. |
 | 7 / E1-032 — first batch complete | Resolve secondary navigation and management menus | P1 | L | E1-026/029/030 | Remaining actions need design | E1-032Ba/Bb implement Dashboard vendor/document/activity navigation, uploaded-file attention semantics, Notifications toggles, member/invitation management and invoice cleanup/local sample download. Remaining contextual actions stay separately scoped. |
-| 8 / E1-033 | Decide public help/legal/marketing scope | P1 | S | Product/legal/content decisions | Yes | Approve destinations or explicit deferrals for public help/terms and video/features/pricing. Reports is already explicitly post-MVP under E1-032Bc. |
+| 8 / E1-033 | Decide public help/legal/marketing scope | P1 | S | Product/legal/content decisions | Yes | Approve destinations or explicit deferrals for public help/terms, video/features and actual Resources; approve provisional pricing and verify existing claims. Reports is already explicitly post-MVP under E1-032Bc. |
 
 The sequence intentionally does **not** include real auth, storage, email, OCR, payments, or backend-derived loading states as E1 UI tasks. P0 design-gated rows cannot begin implementation until Product Owner decisions exist. The exact boundary between a local E1 simulation and later backend behavior must remain visibly honest.
 

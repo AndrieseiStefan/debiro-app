@@ -8,6 +8,7 @@ import {onboardingFixture} from '@/features/onboarding/fixtures';
 import {getActiveCompany, readCompanyState} from '@/features/companies/company-state';
 import {companyCountries, companyIndustries, companySizes} from '@/features/companies/company-options';
 
+vi.mock('next/navigation', () => ({useRouter: () => ({push: vi.fn()})}));
 vi.mock('@/i18n/navigation', () => ({
   useRouter: () => ({push: vi.fn()}),
   Link: ({locale, href, ...props}: {locale?: string; href: string; children: React.ReactNode}) =>
