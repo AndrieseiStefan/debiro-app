@@ -4,7 +4,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 
 ## Phase 0 — Product & Repository Foundation
 
-- E1-032Bh/Bh1/Bh2 Landing — implemented viewport-aware first presentation with measured initial-viewport trust spacing, one-page anchors, coming-soon Resources and shared catalog/cards; public Pricing fills the visible anchored viewport with its navy ambient background, compact centered cards, neutral recommendation and reduced-motion-safe marketing hover, without changing authenticated Upgrade. Real resources, commercial approval and verification of existing marketing claims remain deferred
+- E1-032Bh/Bh1/Bh2/Bh3 Landing — implemented viewport-aware first presentation with compact measured spacing, at least 40px below Trust and surplus height below content rather than stretched gaps; native smooth one-page anchors with immediate reduced-motion fallback, coming-soon Resources and shared catalog/cards. Public Pricing fills the visible anchored viewport with its navy ambient background, compact centered cards, neutral recommendation and reduced-motion-safe marketing hover, without changing authenticated Upgrade. Real resources, commercial approval and verification of existing marketing claims remain deferred
 
 - E1-032Bg terminology — implemented UI-copy-only Templates / Șabloane naming across template-management entry points and Global Search; existing routes, data/contracts and vendor obligations remain unchanged
 

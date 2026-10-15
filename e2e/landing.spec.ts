@@ -455,7 +455,7 @@ test('viewport presentation and shared pricing remain naturally contained; captu
     expect(geometry.presentationHeight).toBeGreaterThanOrEqual(height - geometry.headerHeight - 1);
     expect(geometry.pricingTop).toBeGreaterThanOrEqual(height);
     expect(geometry.pricingTop).toBe(geometry.presentationBottom);
-    expect(geometry.trustBottomGap).toBe(40);
+    expect(geometry.trustBottomGap).toBeGreaterThanOrEqual(40);
     expect(geometry.pricingHeight).toBeGreaterThanOrEqual(height - 1);
     expect(geometry.groupCenter).toBeCloseTo(width / 2, 0);
     expect(geometry.overflow).toBeLessThanOrEqual(width);
@@ -489,7 +489,10 @@ test('premium pricing animates only decorative layers, lifts on fine-pointer hov
   await mkdir('artifacts/visual/e1-032bh1', {recursive: true});
   await page.setViewportSize({width: 1448, height: 900});
   await page.emulateMedia({reducedMotion: 'no-preference'});
-  await page.goto('/#pricing');
+  await page.goto('/');
+  await page.evaluate(async () => {await document.fonts.ready;});
+  await page.locator('header a[href="#pricing"]').click();
+  await expect.poll(() => page.locator('#pricing').evaluate((element) => Math.abs(element.getBoundingClientRect().top))).toBeLessThanOrEqual(1);
   const ambient = page.locator('#pricing > [aria-hidden="true"]');
   await expect(ambient).toHaveCSS('pointer-events', 'none');
   const layers = () => ambient.evaluate((element) => ['::before', '::after'].map((pseudo) => {
@@ -511,7 +514,9 @@ test('premium pricing animates only decorative layers, lifts on fine-pointer hov
   expect(before!.y - after!.y).toBe(4);
   expect(after!.width).toBe(before!.width); expect(after!.height).toBe(before!.height);
   expect(await grid.boundingBox()).toEqual(gridBefore);
-  await cta.focus(); await expect(cta).toHaveCSS('outline-style', 'solid');
+  await cta.focus();
+  await page.keyboard.press('Tab'); await page.keyboard.press('Shift+Tab');
+  await expect(cta).toBeFocused(); await expect(cta).toHaveCSS('outline-style', 'solid');
   await page.screenshot({path: 'artifacts/visual/e1-032bh1/pricing-hover.png', animations: 'disabled'});
 
   await page.emulateMedia({reducedMotion: 'reduce'});
@@ -531,6 +536,80 @@ test('premium pricing animates only decorative layers, lifts on fine-pointer hov
     expect(await touchPage.evaluate(() => document.documentElement.scrollWidth)).toBe(375);
   } finally {await touchContext.close();}
 });
+
+for (const locale of ['ro', 'en']) {
+  test(`${locale} native smooth anchors preserve destinations, history and reduced-motion behavior`, async ({page}) => {
+    test.setTimeout(90_000);
+    const route = locale === 'ro' ? '/' : '/en';
+    const settleAt = async (id: string) => {
+      await expect.poll(() => page.evaluate((target) => {
+        const top = document.getElementById(target)!.getBoundingClientRect().top + scrollY;
+        const destination = Math.min(top, document.documentElement.scrollHeight - innerHeight);
+        return Math.abs(scrollY - destination);
+      }, id)).toBeLessThanOrEqual(1);
+      await expect(page.locator(`#${id}`).getByRole('heading').first()).toBeInViewport();
+    };
+    for (const width of [1448, 375]) {
+      await page.setViewportSize({width, height: 900});
+      for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+        await page.emulateMedia({reducedMotion});
+        await page.goto(route);
+        await page.evaluate(async () => {await document.fonts.ready;});
+        const origin = await page.evaluate(() => performance.timeOrigin);
+        await expect(page.locator('html')).toHaveCSS('scroll-behavior', reducedMotion === 'reduce' ? 'auto' : 'smooth');
+        await page.evaluate(() => {
+          addEventListener('scroll', () => {
+            const root = document.documentElement;
+            const samples = JSON.parse(root.dataset.scrollSamples ?? '[]') as number[];
+            samples.push(scrollY);
+            root.dataset.scrollSamples = JSON.stringify(samples);
+          });
+        });
+        for (const id of ['product', 'solutions', 'pricing', 'resources']) {
+          // Bring the non-sticky navigation into view without adding test-generated smooth scrolling.
+          await page.evaluate(() => scrollTo({top: 0, behavior: 'instant'}));
+          await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+          const link = page.locator(`header a[href="#${id}"]`);
+          await link.focus();
+          // Record only activation, not a queued scroll event from resetting to the header.
+          await link.evaluate((element) => element.addEventListener('click', () => {
+            document.documentElement.dataset.scrollSamples = '[]';
+          }, {once: true}));
+          if (id === 'solutions' || id === 'resources') await page.keyboard.press('Enter');
+          else await link.click();
+          await expect(page).toHaveURL(`${route}#${id}`);
+          await settleAt(id);
+          expect(await page.evaluate(() => performance.timeOrigin)).toBe(origin);
+          const {samples, destination} = await page.evaluate(() => ({samples: JSON.parse(document.documentElement.dataset.scrollSamples ?? '[]') as number[], destination: scrollY}));
+          if (reducedMotion === 'no-preference' && id !== 'product') {
+            expect(samples.filter((position) => position > 0 && position < destination - 1).length).toBeGreaterThan(1);
+          } else if (reducedMotion === 'reduce') {
+            expect(samples.every((position) => Math.abs(position - destination) <= 1)).toBe(true);
+          }
+          if (id === 'pricing') {
+            expect((await page.locator('#resources').boundingBox())!.y).toBeGreaterThanOrEqual(899);
+          }
+        }
+        await page.goBack(); await expect(page).toHaveURL(`${route}#pricing`); await settleAt('pricing');
+        await page.goForward(); await expect(page).toHaveURL(`${route}#resources`); await settleAt('resources');
+        await page.getByRole('link', {name: locale === 'ro' ? 'EN' : 'RO', exact: true}).click();
+        await expect(page).toHaveURL(`${locale === 'ro' ? '/en' : '/'}#resources`);
+        await settleAt('resources');
+        expect(await page.evaluate(() => performance.timeOrigin)).toBe(origin);
+        await page.goto(`${route}#pricing`); await settleAt('pricing');
+        expect((await page.locator('#resources').boundingBox())!.y).toBeGreaterThanOrEqual(899);
+      }
+    }
+    // Landing's root scrolling style must not leak into other public/pre-auth screens.
+    await page.emulateMedia({reducedMotion: 'no-preference'});
+    await page.goto(route);
+    await page.locator('header a[href$="/login"]').click();
+    await expect(page).toHaveURL(`${locale === 'ro' ? '' : '/en'}/login`);
+    await expect(page.locator('html')).toHaveCSS('scroll-behavior', 'auto');
+    await page.goto(`${locale === 'ro' ? '' : '/en'}/onboarding`);
+    await expect(page.locator('html')).toHaveCSS('scroll-behavior', 'auto');
+  });
+}
 
 test('premium text and controls retain AA contrast, light surfaces and safe decoration stacking', async ({page}) => {
   await page.goto('/#pricing');
@@ -572,7 +651,7 @@ test('premium text and controls retain AA contrast, light surfaces and safe deco
 
 test('rendered Hero and native Pricing anchors have the intended visible viewport boundaries in RO/EN', async ({page}) => {
   test.setTimeout(90_000);
-  const captures = 'artifacts/visual/e1-032bh2/after';
+  const captures = 'artifacts/visual/e1-032bh3/after';
   await mkdir(captures, {recursive: true});
   const measurements = [];
   const anchorGeometry = () => page.evaluate(() => {
@@ -581,7 +660,7 @@ test('rendered Hero and native Pricing anchors have the intended visible viewpor
   });
   for (const locale of ['ro', 'en']) {
     const route = locale === 'ro' ? '/' : '/en';
-    for (const [width, height] of [[1920, 1080], [1448, 900], [1280, 800], [1448, 600], [2133, 1033], [1024, 768], [768, 900], [375, 812], [320, 700]]) {
+    for (const [width, height] of [[1920, 1080], [1448, 900], [1280, 800], [1448, 600], [2133, 1033], [1920, 1440], [1024, 768], [768, 900], [375, 812], [320, 700]]) {
       await page.setViewportSize({width, height});
       await page.goto(route);
       await page.evaluate(async () => {await document.fonts.ready;});
@@ -590,19 +669,28 @@ test('rendered Hero and native Pricing anchors have the intended visible viewpor
         const proof = presentation.lastElementChild!;
         const lowestTrust = Math.max(...Array.from(proof.querySelectorAll('*'), (element) => element.getBoundingClientRect().bottom));
         const boundary = presentation.getBoundingClientRect().bottom;
-        return {boundary, lowestTrust, sectionGap: boundary - lowestTrust, visibleGap: innerHeight - lowestTrust, overflow: document.documentElement.scrollWidth, headingSize: getComputedStyle(document.querySelector('#landing-heading')!).fontSize, descriptionSize: getComputedStyle(document.querySelector('#landing-heading + p')!).fontSize};
+        const copy = document.querySelector('#landing-heading')!.parentElement!;
+        const preview = document.querySelector('#product figure')!.getBoundingClientRect();
+        const heroBottom = Math.max(preview.bottom, ...Array.from(copy.children, (element) => element.getBoundingClientRect().bottom));
+        const heroTop = Math.min(preview.top, copy.firstElementChild!.getBoundingClientRect().top);
+        const cardsBottom = Math.max(...Array.from(document.querySelectorAll('#solutions article'), (element) => element.getBoundingClientRect().bottom));
+        return {boundary, lowestTrust, sectionGap: boundary - lowestTrust, visibleGap: innerHeight - lowestTrust, topGap: heroTop - document.querySelector('header')!.getBoundingClientRect().bottom, heroToHeading: document.querySelector('#feature-heading')!.getBoundingClientRect().top - heroBottom, cardsToTrustHeading: proof.querySelector('p')!.getBoundingClientRect().top - cardsBottom, overflow: document.documentElement.scrollWidth, headingSize: getComputedStyle(document.querySelector('#landing-heading')!).fontSize, descriptionSize: getComputedStyle(document.querySelector('#landing-heading + p')!).fontSize};
       });
-      expect(hero.sectionGap).toBeGreaterThanOrEqual(32);
-      expect(hero.sectionGap).toBeLessThanOrEqual(48);
+      // Surplus height belongs below trust, not between sections (approved E1-032Bh3 refinement).
+      expect(hero.sectionGap).toBeGreaterThanOrEqual(40);
       expect(hero.boundary).toBeGreaterThanOrEqual(height - 1);
       expect(hero.overflow).toBeLessThanOrEqual(width);
-      if (width >= 1200) {expect(hero.headingSize).toBe('52px'); expect(hero.descriptionSize).toBe('19px');}
-      if ((width === 1920 && height === 1080) || (width === 1448 && height === 900) || width === 2133) {
-        // This guards the actual initial screen, not just an off-screen padding declaration.
-        expect(hero.lowestTrust).toBeLessThanOrEqual(height - 32);
-        expect(hero.visibleGap).toBeLessThanOrEqual(48);
+      if (width >= 1200) {
+        expect(hero.headingSize).toBe('52px'); expect(hero.descriptionSize).toBe('19px');
+        expect(hero.topGap).toBeGreaterThanOrEqual(28); expect(hero.topGap).toBeLessThanOrEqual(36);
+        expect(hero.heroToHeading).toBeGreaterThanOrEqual(36); expect(hero.heroToHeading).toBeLessThanOrEqual(48);
+        expect(hero.cardsToTrustHeading).toBeGreaterThanOrEqual(36); expect(hero.cardsToTrustHeading).toBeLessThanOrEqual(48);
+      } else if (width >= 768) {
+        expect(hero.heroToHeading).toBeGreaterThanOrEqual(36); expect(hero.heroToHeading).toBeLessThanOrEqual(48);
+        expect(hero.cardsToTrustHeading).toBe(32);
       }
       await page.screenshot({path: `${captures}/hero-${locale}-${width}x${height}.png`});
+      await page.locator('[data-landing-presentation]').screenshot({path: `${captures}/presentation-${locale}-${width}x${height}.png`});
       await page.locator('header a[href="#pricing"]').click();
       await expect.poll(async () => Math.abs((await anchorGeometry()).top)).toBeLessThanOrEqual(1);
       await expect.poll(async () => (await anchorGeometry()).resourcesTop).toBeGreaterThanOrEqual(height - 1);
