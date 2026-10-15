@@ -26,7 +26,7 @@ The final logo is not yet designed and must not be invented.
 
 ## Implemented
 
-- E1-032Bh/Bh1 Landing presentation and shared pricing — viewport-minimum hero/benefits/trust with 40px trust-bottom spacing, native section anchors/hash-preserving locale changes, reduced-width navigation and coming-soon Resources; navy viewport-minimum Pricing uses compact centered shared cards, slow CSS ambient light, neutral recommendation and marketing-only hover/reduced-motion treatment. Existing demo catalog and company-scoped Upgrade current/next/trial behavior remain unchanged; commercial/social-proof launch review remains open; see [Landing](../features/landing-page.md)
+- E1-032Bh/Bh1/Bh2 Landing presentation and shared pricing — viewport-minimum hero/benefits/trust with height-aware desktop spacing and a visible 40px trust-bottom gap at 1448×900/1920×1080, native section anchors/hash-preserving locale changes, reduced-width navigation and coming-soon Resources; navy Pricing uses a full `100svh` minimum matching its off-screen-header anchor geometry, compact centered shared cards, slow CSS ambient light, neutral recommendation and marketing-only hover/reduced-motion treatment. Existing demo catalog and company-scoped Upgrade current/next/trial behavior remain unchanged; commercial/social-proof launch review remains open; see [Landing](../features/landing-page.md)
 
 - E1-032Bg template-management terminology — shared RO/EN catalogs name navigation/breadcrumbs/search groups Șabloane / Templates and page/list headings Șabloane de cerințe / Requirement Templates; approved description and New Template action, consistent section references/management links, with unchanged `/requirements` routes, workflows and assigned vendor-requirement terminology
 

@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {mkdir} from 'node:fs/promises';
+import {mkdir, writeFile} from 'node:fs/promises';
 import {boundaryViewports, headerBoundaryViewports, regressionViewports, viewports} from './support/viewports';
 
 test('renders canonical Romanian copy, navigation and textual branding', async ({page}) => {
@@ -456,7 +456,7 @@ test('viewport presentation and shared pricing remain naturally contained; captu
     expect(geometry.pricingTop).toBeGreaterThanOrEqual(height);
     expect(geometry.pricingTop).toBe(geometry.presentationBottom);
     expect(geometry.trustBottomGap).toBe(40);
-    expect(geometry.pricingHeight).toBeGreaterThanOrEqual(height - geometry.headerHeight - 1);
+    expect(geometry.pricingHeight).toBeGreaterThanOrEqual(height - 1);
     expect(geometry.groupCenter).toBeCloseTo(width / 2, 0);
     expect(geometry.overflow).toBeLessThanOrEqual(width);
     for (const card of geometry.cards) {expect(card.left).toBeGreaterThanOrEqual(0); expect(card.right).toBeLessThanOrEqual(width); expect(card.width).toBeLessThanOrEqual(340); expect(card.width).toBeCloseTo(geometry.cards[0].width, 0);}
@@ -568,4 +568,60 @@ test('premium text and controls retain AA contrast, light surfaces and safe deco
   expect(styles.cardBackgrounds.every((color) => color === 'rgb(255, 255, 255)' || color === 'rgba(0, 0, 0, 0)')).toBe(true);
   expect(styles.content).toBe('1'); expect(styles.decoration).toBe('auto');
   expect(styles.overflow).toBe('visible');
+});
+
+test('rendered Hero and native Pricing anchors have the intended visible viewport boundaries in RO/EN', async ({page}) => {
+  test.setTimeout(90_000);
+  const captures = 'artifacts/visual/e1-032bh2/after';
+  await mkdir(captures, {recursive: true});
+  const measurements = [];
+  const anchorGeometry = () => page.evaluate(() => {
+    const pricing = document.querySelector('#pricing')!.getBoundingClientRect();
+    return {top: pricing.top, bottom: pricing.bottom, resourcesTop: document.querySelector('#resources')!.getBoundingClientRect().top, headerBottom: document.querySelector('header')!.getBoundingClientRect().bottom, viewportHeight: innerHeight};
+  });
+  for (const locale of ['ro', 'en']) {
+    const route = locale === 'ro' ? '/' : '/en';
+    for (const [width, height] of [[1920, 1080], [1448, 900], [1280, 800], [1448, 600], [2133, 1033], [1024, 768], [768, 900], [375, 812], [320, 700]]) {
+      await page.setViewportSize({width, height});
+      await page.goto(route);
+      await page.evaluate(async () => {await document.fonts.ready;});
+      const hero = await page.evaluate(() => {
+        const presentation = document.querySelector('[data-landing-presentation]')!;
+        const proof = presentation.lastElementChild!;
+        const lowestTrust = Math.max(...Array.from(proof.querySelectorAll('*'), (element) => element.getBoundingClientRect().bottom));
+        const boundary = presentation.getBoundingClientRect().bottom;
+        return {boundary, lowestTrust, sectionGap: boundary - lowestTrust, visibleGap: innerHeight - lowestTrust, overflow: document.documentElement.scrollWidth, headingSize: getComputedStyle(document.querySelector('#landing-heading')!).fontSize, descriptionSize: getComputedStyle(document.querySelector('#landing-heading + p')!).fontSize};
+      });
+      expect(hero.sectionGap).toBeGreaterThanOrEqual(32);
+      expect(hero.sectionGap).toBeLessThanOrEqual(48);
+      expect(hero.boundary).toBeGreaterThanOrEqual(height - 1);
+      expect(hero.overflow).toBeLessThanOrEqual(width);
+      if (width >= 1200) {expect(hero.headingSize).toBe('52px'); expect(hero.descriptionSize).toBe('19px');}
+      if ((width === 1920 && height === 1080) || (width === 1448 && height === 900) || width === 2133) {
+        // This guards the actual initial screen, not just an off-screen padding declaration.
+        expect(hero.lowestTrust).toBeLessThanOrEqual(height - 32);
+        expect(hero.visibleGap).toBeLessThanOrEqual(48);
+      }
+      await page.screenshot({path: `${captures}/hero-${locale}-${width}x${height}.png`});
+      await page.locator('header a[href="#pricing"]').click();
+      await expect.poll(async () => Math.abs((await anchorGeometry()).top)).toBeLessThanOrEqual(1);
+      await expect.poll(async () => (await anchorGeometry()).resourcesTop).toBeGreaterThanOrEqual(height - 1);
+      const clicked = await anchorGeometry();
+      expect(Math.abs(clicked.top)).toBeLessThanOrEqual(1);
+      expect(clicked.headerBottom).toBeLessThanOrEqual(0);
+      expect(clicked.bottom).toBeGreaterThanOrEqual(height - 1);
+      expect(clicked.resourcesTop).toBeCloseTo(clicked.bottom, 0);
+      await expect(page.locator('#pricing-heading')).toBeInViewport();
+      await page.screenshot({path: `${captures}/pricing-click-${locale}-${width}x${height}.png`});
+      await page.goto(`${route}#pricing`);
+      await expect.poll(async () => Math.abs((await anchorGeometry()).top)).toBeLessThanOrEqual(1);
+      await expect.poll(async () => (await anchorGeometry()).resourcesTop).toBeGreaterThanOrEqual(height - 1);
+      const direct = await anchorGeometry();
+      expect(Math.abs(direct.top)).toBeLessThanOrEqual(1);
+      expect(direct.bottom).toBeGreaterThanOrEqual(height - 1);
+      expect(direct.resourcesTop).toBeCloseTo(direct.bottom, 0);
+      measurements.push({locale, width, height, hero, clicked, direct});
+    }
+  }
+  await writeFile(`${captures}/geometry.json`, JSON.stringify(measurements, null, 2));
 });
