@@ -455,7 +455,7 @@ test('viewport presentation and shared pricing remain naturally contained; captu
     expect(geometry.presentationHeight).toBeGreaterThanOrEqual(height - geometry.headerHeight - 1);
     expect(geometry.pricingTop).toBeGreaterThanOrEqual(height);
     expect(geometry.pricingTop).toBe(geometry.presentationBottom);
-    expect(geometry.trustBottomGap).toBeGreaterThanOrEqual(40);
+    expect(geometry.trustBottomGap).toBeCloseTo(40, 1);
     expect(geometry.pricingHeight).toBeGreaterThanOrEqual(height - 1);
     expect(geometry.groupCenter).toBeCloseTo(width / 2, 0);
     expect(geometry.overflow).toBeLessThanOrEqual(width);
@@ -649,9 +649,9 @@ test('premium text and controls retain AA contrast, light surfaces and safe deco
   expect(styles.overflow).toBe('visible');
 });
 
-test('rendered Hero and native Pricing anchors have the intended visible viewport boundaries in RO/EN', async ({page}) => {
+test('dynamic presentation gaps and native Pricing anchors preserve rendered boundaries in RO/EN', async ({page}) => {
   test.setTimeout(90_000);
-  const captures = 'artifacts/visual/e1-032bh3/after';
+  const captures = 'artifacts/visual/e1-032bh3/dynamic';
   await mkdir(captures, {recursive: true});
   const measurements = [];
   const anchorGeometry = () => page.evaluate(() => {
@@ -669,25 +669,33 @@ test('rendered Hero and native Pricing anchors have the intended visible viewpor
         const proof = presentation.lastElementChild!;
         const lowestTrust = Math.max(...Array.from(proof.querySelectorAll('*'), (element) => element.getBoundingClientRect().bottom));
         const boundary = presentation.getBoundingClientRect().bottom;
+        const groups = Array.from(presentation.children, (element) => element.getBoundingClientRect());
+        const groupGaps = [groups[1].top - groups[0].bottom, groups[2].top - groups[1].bottom];
+        const minimumGap = parseFloat(getComputedStyle(presentation).rowGap);
+        const trustMargin = parseFloat(getComputedStyle(proof).marginTop);
         const copy = document.querySelector('#landing-heading')!.parentElement!;
         const preview = document.querySelector('#product figure')!.getBoundingClientRect();
         const heroBottom = Math.max(preview.bottom, ...Array.from(copy.children, (element) => element.getBoundingClientRect().bottom));
         const heroTop = Math.min(preview.top, copy.firstElementChild!.getBoundingClientRect().top);
         const cardsBottom = Math.max(...Array.from(document.querySelectorAll('#solutions article'), (element) => element.getBoundingClientRect().bottom));
-        return {boundary, lowestTrust, sectionGap: boundary - lowestTrust, visibleGap: innerHeight - lowestTrust, topGap: heroTop - document.querySelector('header')!.getBoundingClientRect().bottom, heroToHeading: document.querySelector('#feature-heading')!.getBoundingClientRect().top - heroBottom, cardsToTrustHeading: proof.querySelector('p')!.getBoundingClientRect().top - cardsBottom, overflow: document.documentElement.scrollWidth, headingSize: getComputedStyle(document.querySelector('#landing-heading')!).fontSize, descriptionSize: getComputedStyle(document.querySelector('#landing-heading + p')!).fontSize};
+        return {boundary, lowestTrust, groupCount: groups.length, groupGaps, minimumGap, trustMargin, sectionGap: boundary - lowestTrust, visibleGap: innerHeight - lowestTrust, topGap: heroTop - document.querySelector('header')!.getBoundingClientRect().bottom, heroToHeading: document.querySelector('#feature-heading')!.getBoundingClientRect().top - heroBottom, cardsToTrustHeading: proof.querySelector('p')!.getBoundingClientRect().top - cardsBottom, overflow: document.documentElement.scrollWidth, headingSize: getComputedStyle(document.querySelector('#landing-heading')!).fontSize, descriptionSize: getComputedStyle(document.querySelector('#landing-heading + p')!).fontSize};
       });
-      // Surplus height belongs below trust, not between sections (approved E1-032Bh3 refinement).
-      expect(hero.sectionGap).toBeGreaterThanOrEqual(40);
+      // Only the two internal gaps absorb free height; the final content-to-boundary gap is fixed.
+      expect(hero.groupCount).toBe(3);
+      expect(hero.sectionGap).toBeCloseTo(40, 1);
+      expect(hero.groupGaps[0]).toBeGreaterThanOrEqual(hero.minimumGap - 0.1);
+      expect(hero.groupGaps[1] - hero.trustMargin).toBeGreaterThanOrEqual(hero.minimumGap - 0.1);
+      expect(hero.groupGaps[0]).toBeCloseTo(hero.groupGaps[1] - hero.trustMargin, 1);
       expect(hero.boundary).toBeGreaterThanOrEqual(height - 1);
       expect(hero.overflow).toBeLessThanOrEqual(width);
       if (width >= 1200) {
         expect(hero.headingSize).toBe('52px'); expect(hero.descriptionSize).toBe('19px');
         expect(hero.topGap).toBeGreaterThanOrEqual(28); expect(hero.topGap).toBeLessThanOrEqual(36);
-        expect(hero.heroToHeading).toBeGreaterThanOrEqual(36); expect(hero.heroToHeading).toBeLessThanOrEqual(48);
-        expect(hero.cardsToTrustHeading).toBeGreaterThanOrEqual(36); expect(hero.cardsToTrustHeading).toBeLessThanOrEqual(48);
+        expect(hero.heroToHeading).toBeGreaterThanOrEqual(36);
+        expect(hero.cardsToTrustHeading).toBeGreaterThanOrEqual(36);
       } else if (width >= 768) {
-        expect(hero.heroToHeading).toBeGreaterThanOrEqual(36); expect(hero.heroToHeading).toBeLessThanOrEqual(48);
-        expect(hero.cardsToTrustHeading).toBe(32);
+        expect(hero.heroToHeading).toBeGreaterThanOrEqual(36);
+        expect(hero.cardsToTrustHeading).toBeGreaterThanOrEqual(32);
       }
       await page.screenshot({path: `${captures}/hero-${locale}-${width}x${height}.png`});
       await page.locator('[data-landing-presentation]').screenshot({path: `${captures}/presentation-${locale}-${width}x${height}.png`});
@@ -710,6 +718,12 @@ test('rendered Hero and native Pricing anchors have the intended visible viewpor
       expect(direct.resourcesTop).toBeCloseTo(direct.bottom, 0);
       measurements.push({locale, width, height, hero, clicked, direct});
     }
+  }
+  for (const locale of ['ro', 'en']) {
+    const normal = measurements.find((row) => row.locale === locale && row.width === 1920 && row.height === 1080)!;
+    const tall = measurements.find((row) => row.locale === locale && row.width === 1920 && row.height === 1440)!;
+    // Same content/width: a 360px taller viewport adds 180px to each gap, never below Trust.
+    for (const index of [0, 1]) expect(tall.hero.groupGaps[index] - normal.hero.groupGaps[index]).toBeCloseTo(180, 1);
   }
   await writeFile(`${captures}/geometry.json`, JSON.stringify(measurements, null, 2));
 });
