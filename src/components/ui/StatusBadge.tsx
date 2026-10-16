@@ -6,7 +6,7 @@ export type StatusTone = 'success' | 'warning' | 'danger' | 'neutral' | 'info';
 export type StatusBadgeProps = HTMLAttributes<HTMLSpanElement> & {
   tone: StatusTone;
   indicator?: 'dot' | 'none';
-  size?: 'document' | 'compact';
+  size?: 'document' | 'compact' | 'source' | 'template';
 };
 
 export function StatusBadge({tone, indicator = 'dot', size, className, children, ...props}: StatusBadgeProps) {

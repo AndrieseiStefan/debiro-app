@@ -26,6 +26,8 @@ The final logo is not yet designed and must not be invented.
 
 ## Implemented
 
+- E1C-003C template grouping — stable automatic company-owned accent metadata, shared Source badges/row tints for Vendor and Company Documents, Company Source column and compact inline Vendor applied-template header. Existing provenance/removal, status/compliance, ownership and document lifecycle remain unchanged; employee reuse contract recorded in [UI Foundation](../design/ui-foundation.md#company-and-employee-ui-reuse-e1c-003b).
+
 - E1C-003B Company Documents UI consistency — compact shared fields/read-only treatment, corrected editable-select surface, shared document KPI/table/badge/button styles and visible list-level Set Documents from Template action. The existing scoped picker, permissions and operations are preserved; employee reuse and mandatory engineering guidance are recorded in [UI Foundation](../design/ui-foundation.md#company-and-employee-ui-reuse-e1c-003b)
 
 - E1C-003A Company upload UX — one shared upload drawer with explicit standalone/missing-row/replacement context, prepopulated bound document identity and optional internal standalone requirements; template application is a separate visible list action using the existing company-owned snapshot operation. No vendor, review, version, expiry or file behavior changes; see [Company Documents](../features/company-documents.md)

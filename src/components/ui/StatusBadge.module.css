@@ -22,6 +22,9 @@
 .badge[data-size='document'] {font-size: 12px; gap: 7px; min-height: 29px; padding: 5px 9px;}
 .badge[data-size='compact'] {font-size: 11px; gap: 5px; min-height: 23px; padding: 3px 7px;}
 .badge[data-size] svg {flex: 0 0 auto;}
+.badge[data-size='source'], .badge[data-size='template'] {max-width: 100%; min-height: 0; overflow-wrap: anywhere; white-space: normal; width: fit-content;}
+.badge[data-size='source'] {font-size: 11px; font-weight: 400; line-height: 1.35; padding: 4px 8px;}
+.badge[data-size='template'] {border: 1px solid var(--color-border); font-size: 12px; font-weight: 400; gap: 8px; padding: 5px 10px;}
 
 .success {
   background: var(--color-success-soft);
@@ -42,6 +45,7 @@
   background: var(--color-neutral-soft);
   color: var(--color-neutral);
 }
+.neutral[data-size='source']:not([data-template-accent]), .neutral[data-size='template']:not([data-template-accent]) {color: var(--color-text-secondary);}
 
 .info {
   background: var(--color-info-soft);

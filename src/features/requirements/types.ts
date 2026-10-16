@@ -1,5 +1,6 @@
 import type {VendorCategory} from '@/features/vendors/types';
 import type {AppearanceColorKey, AppearanceIconKey} from './appearance';
+import type {TemplateAccentToken} from './template-accents';
 
 export type LocalizedText = {ro: string; en: string};
 export type RequirementTemplateScope = 'vendor' | 'company' | 'employee';
@@ -56,6 +57,8 @@ export type RequirementDocumentInput = Omit<DocumentRules, 'id' | 'templateId'> 
 export type RequirementTemplate = {
   id: string;
   companyId: string;
+  /** Automatic grouping identity; independent of the user-editable icon appearance. */
+  accentToken?: TemplateAccentToken;
   scope: RequirementTemplateScope;
   title: LocalizedText;
   subtitle: LocalizedText;

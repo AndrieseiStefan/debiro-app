@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useRef, useState, type ReactNode} from 'react';
+import {Fragment, useEffect, useRef, useState, type ReactNode} from 'react';
 import {useTranslations} from 'next-intl';
 import {AuthenticatedAppShell} from '@/components/layout/AuthenticatedAppShell';
 import {AuthenticatedBreadcrumbs} from '@/components/layout/AuthenticatedBreadcrumbs';
@@ -19,6 +19,9 @@ import {Tooltip} from '@/components/ui/Tooltip';
 import {RowActionMenu} from '@/components/ui/RowActionMenu';
 import {Pagination} from '@/components/ui/Pagination';
 import tableStyles from '@/components/ui/DataTable.module.css';
+import {getRequirementsWorkspace, useRequirementsState} from '@/features/requirements/requirements-state';
+import {resolveTemplateSources, templateAccentStyle} from '@/features/requirements/template-accents';
+import {TemplateSourceLabels} from '@/features/requirements/TemplateSources';
 import {documentAccess} from '@/features/documents/document-access';
 import {CompanyDocumentManager, type CompanyManagementSelection} from './CompanyDocumentManager';
 import {CompanyTemplateDrawer} from './CompanyTemplateDrawer';
@@ -62,6 +65,7 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
   const templatesT = useTranslations('VendorTemplates');
   const common = useTranslations('DocumentManagement');
   const snapshot = useCompanyDocumentsState();
+  const templates = getRequirementsWorkspace(useRequirementsState(), companyId).templates;
   const {rows, error} = companyDocumentList(snapshot, companyId, locale);
   const [query, setQuery] = useState('');
   const [type, setType] = useState('all');
@@ -106,9 +110,12 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
   }
   function date(value: string | null) {return value ? <time dateTime={value}>{localizedDate(value)[locale]}</time> : '—';}
   function renderRow(row: CompanyDocumentListRow) {
-    return <tr key={row.id} data-company-document-row={row.id} data-current-document={row.currentDocumentId ?? undefined}>
+    const requirement = snapshot.byCompany[companyId]?.requirements.find((item) => item.id === row.requirementId && item.companyId === companyId);
+    const sources = resolveTemplateSources(templates, companyId, 'company', requirement?.templateId && requirement.templateRequirementId ? [requirement.templateId] : []), accent = sources[0]?.accentToken;
+    return <tr key={row.id} data-company-document-row={row.id} data-current-document={row.currentDocumentId ?? undefined} aria-selected={selected.includes(row.id)} data-template-accent={accent ?? undefined} style={templateAccentStyle(accent)}>
       <td><SelectionCheckbox label={t('selectDocument', {name: row.name})} checked={selected.includes(row.id)} disabled={!eligible.has(row.id)} onChange={() => toggleRow(row.id)}/></td>
       <td><div className={styles.identity}><span className={styles.fileIcon} data-status={row.status}><AppIcon name="file" size={21}/></span><span>{row.requirementId ? <button type="button" className={`${styles.documentLink} ${tableStyles.primary}`} onClick={() => openDocument(row)}>{row.name}</button> : <strong>{row.name}</strong>}<small>{t(`types.${row.documentType}`)}{row.issuer && <> · {row.issuer}</>}</small></span></div></td>
+      <td><TemplateSourceLabels sources={sources} hasTemplateSource={Boolean(requirement?.templateId || requirement?.templateRequirementId)} locale={locale}/></td>
       <td><StatusBadge size="document" tone={tones[row.status]} data-status={row.status}>{t(`status.${row.status}`)}</StatusBadge></td>
       <td className={styles.expiry} data-status={row.status}>{date(row.expiresAt)}</td>
       <td><div className={styles.updated}>{row.updatedByDisplayName && <Avatar initials={row.updatedByDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('')}/>}<span>{row.updatedByDisplayName ?? (row.currentDocumentId ? '—' : t('notUploaded'))}<small>{date(row.updatedAt)}</small></span></div></td>
@@ -150,7 +157,7 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
         {rows.length === 0 ? <EmptyState icon={<AppIcon name="file" size={28}/>} title={t('empty')} description={t('emptyDescription')}/> : filtered.length === 0 ? <EmptyState title={t('noMatches')} action={<Button variant="secondary" onClick={() => {resetFilters(); setQuery('');}}>{t('resetFilters')}</Button>}/> : <>
           <div className={styles.tableScroll} role="region" aria-label={t('tableRegion')} tabIndex={0}><table className={`${tableStyles.table} ${styles.table}`}>
             <thead><tr><th scope="col"><SelectionCheckbox label={t('selectPageHeader')} checked={onPage.length > 0 && checkedOnPage === onPage.length} mixed={checkedOnPage > 0 && checkedOnPage < onPage.length} disabled={onPage.length === 0} onChange={togglePage}/></th>
-              {columns.map((column) => <th key={column} scope="col" aria-sort={sort.column === column ? sort.direction : undefined}><button type="button" className={styles.sortHeader} onClick={() => sortColumn(column)}>{t(`table.${column}`)}<AppIcon name="sort" size={14}/></button></th>)}<th scope="col">{t('table.actions')}</th></tr></thead>
+              {columns.map((column) => <Fragment key={column}><th scope="col" aria-sort={sort.column === column ? sort.direction : undefined}><button type="button" className={styles.sortHeader} onClick={() => sortColumn(column)}>{t(`table.${column}`)}<AppIcon name="sort" size={14}/></button></th>{column === 'name' && <th scope="col" data-column="source">{templatesT('source')}</th>}</Fragment>)}<th scope="col">{t('table.actions')}</th></tr></thead>
             <tbody>{visible.map(renderRow)}</tbody>
           </table></div>
           <Pagination page={currentPage} pageCount={pageCount} pageSize={pageSize} total={filtered.length} onPage={setPage} onPageSize={(size) => {setPageSize(size); setPage(1);}}/>

@@ -4,6 +4,8 @@ This roadmap records direction only. Detailed requirements are created by the ta
 
 ## Phase 0 — Product & Repository Foundation
 
+- E1C-003C template visual identity — automatic stable accents, shared source/row grouping, Company Source column and inline Vendor applied chips; E1C-006 must reuse these patterns without employee-specific palette or provenance logic
+
 - E1C-003B UI consistency — shared Company Documents form/KPI/table presentation and visible template action; employee list/details/upload reuse contracts recorded for E1C-005/006, without implementing employee management
 
 - E1C-003 Company Document Management — implemented guarded company uploads, Company-template requirement snapshots, review/metadata, version history, manual expiry and exact-byte preview/download. Existing vendor behavior is preserved; storage remains current-tab only and sharing remains E1C-004 work

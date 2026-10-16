@@ -27,6 +27,23 @@
   --color-neutral-soft: #eaf0f8;
   --color-info: #1162d7;
   --color-info-soft: #e9f3ff;
+  /* Template grouping is independent of status and user-editable icon colors. */
+  --template-accent-blue: var(--color-action-primary);
+  --template-accent-green: var(--color-success);
+  --template-accent-orange: var(--color-warning);
+  --template-accent-violet: #9243cc;
+  --template-accent-teal: #087d83;
+  --template-accent-rose: #eb3650;
+  --template-accent-indigo: #4b55b9;
+  --template-accent-cyan: #087fa1;
+  --template-ink-blue: #134d9e;
+  --template-ink-green: #096044;
+  --template-ink-orange: #794500;
+  --template-ink-violet: #66308c;
+  --template-ink-teal: #07575b;
+  --template-ink-rose: #96213c;
+  --template-ink-indigo: #353c87;
+  --template-ink-cyan: #07546d;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;

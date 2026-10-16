@@ -1,0 +1,5 @@
+.sources {display: grid; gap: var(--space-1);}
+.accent[data-template-accent] {background: color-mix(in srgb, var(--template-accent) var(--template-badge-weight), white); border-color: color-mix(in srgb, var(--template-accent) 25%, white); color: var(--template-ink);}
+.remove {background: none; border: 0; color: inherit; cursor: pointer; display: inline-flex; flex: 0 0 auto; padding: 2px;}
+.remove:hover {background: rgb(0 0 0 / 5%);}
+.remove:focus-visible {border-radius: var(--radius-field); outline: 3px solid var(--color-focus); outline-offset: 2px;}

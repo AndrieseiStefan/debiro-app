@@ -177,7 +177,11 @@ test('RO/EN company listing captures and compact navigation stay viewport-contai
       expect(company.width).toBeCloseTo(reports.width, 2); expect(company.height).toBe(reports.height);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth), `${en ? 'EN' : 'RO'} ${width}px overflow`).toBeLessThanOrEqual(width);
-    if (width >= 1280) expect(await page.getByRole('region', {name: en ? 'Company documents table' : 'Tabel documente companie'}).evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+    const tableRegion = page.getByRole('region', {name: en ? 'Company documents table' : 'Tabel documente companie'});
+    // The added Source column uses the same focusable inner scroller when usable width is below its minimum.
+    const geometry = await tableRegion.evaluate((element) => ({available: element.clientWidth, actual: element.scrollWidth, minimum: parseFloat(getComputedStyle(element.querySelector('table')!).minWidth)}));
+    expect(geometry.actual).toBeLessThanOrEqual(Math.max(geometry.available, geometry.minimum) + 1);
+    if (width >= 1448) expect(geometry.actual - geometry.available).toBeLessThanOrEqual(1);
     const active = page.locator('#company-subnav a[aria-current="page"]'); await active.scrollIntoViewIfNeeded();
     const bounds = (await active.boundingBox())!; expect(bounds.x).toBeGreaterThanOrEqual(0); expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
     await page.screenshot({path: `artifacts/visual/e1c-002/${en ? 'en' : 'ro'}-${width}.png`, fullPage: true});

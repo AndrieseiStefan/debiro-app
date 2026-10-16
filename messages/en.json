@@ -1422,6 +1422,7 @@
     "no": "No",
     "templateSource": "Template: {name}",
     "manualSource": "Added manually",
+    "sourceUnavailable": "Source unavailable",
     "rowActions": "Actions for {name}",
     "review": "Review document",
     "successTitle": "Templates applied",

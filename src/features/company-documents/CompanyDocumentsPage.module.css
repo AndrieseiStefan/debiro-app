@@ -15,10 +15,11 @@
 .listHeader button > span {min-width: 0;}
 .unavailable {cursor: default;}
 .tableScroll {max-width: 100%; overflow-x: auto; scrollbar-width: thin;}
-.table {min-width: 940px;}
+.table {min-width: 1100px;}
 .table th:first-child, .table td:first-child {padding-left: 18px; width: 46px;}
-.table td:nth-child(2) {width: 31%;}
-.table td:nth-child(3) {white-space: nowrap;}
+.table td:nth-child(2) {width: 24%;}
+.table th[data-column='source'] {width: 20%;}
+.table td:nth-child(4) {white-space: nowrap;}
 .table td:last-child {min-width: 150px;}
 .table td {height: 63px;}
 .table input, .bulk input {accent-color: var(--color-action-primary); height: 18px; width: 18px;}

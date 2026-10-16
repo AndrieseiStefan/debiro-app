@@ -1426,6 +1426,7 @@
     "no": "Nu",
     "templateSource": "Șablon: {name}",
     "manualSource": "Adăugat manual",
+    "sourceUnavailable": "Sursă indisponibilă",
     "rowActions": "Acțiuni pentru {name}",
     "review": "Revizuiește documentul",
     "successTitle": "Șabloane aplicate",

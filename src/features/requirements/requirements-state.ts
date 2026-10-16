@@ -3,6 +3,7 @@
 import {fixtureReferenceTime} from '@/lib/fixture-clock';
 import {useSyncExternalStore} from 'react';
 import {browserSession} from '@/lib/browser-session';
+import {assignTemplateAccents, nextTemplateAccent} from './template-accents';
 import {vendorCategories, type VendorCategory} from '@/features/vendors/types';
 import {defaultAppearance, starterAppearance, validColorKey, validIconKey, type Appearance} from './appearance';
 import {catalogDocument, normalizeDocumentName} from './catalog';
@@ -21,7 +22,7 @@ export type RequirementsWorkspace = {templates: RequirementTemplate[]; selectedS
 type RequirementsState = {byCompany: Record<string, RequirementsWorkspace>; candidates: CatalogCandidate[]; companyDocumentTypes: CompanyDocumentType[]};
 type NewDocument = RequirementDocumentInput;
 
-const seededTemplates: RequirementTemplate[] = requirementsFixture.templates.map((template) => ({
+const seededTemplates: RequirementTemplate[] = assignTemplateAccents(requirementsFixture.templates.map((template) => ({
   id: template.id, companyId: 'demo-company', scope: 'vendor', title: template.title, subtitle: template.subtitle,
   ...starterAppearance(template.icon), categoryId: template.categoryId,
   starterTemplateId: `starter-${template.id}`, starterTemplateVersion: 1,
@@ -30,7 +31,7 @@ const seededTemplates: RequirementTemplate[] = requirementsFixture.templates.map
     id: `${template.id}:${rule.id}`, templateId: template.id, catalogDocumentTypeId: rule.id,
     required: rule.mandatory, expiryWarningDays: rule.alertDays, validityMonths: rule.validityMonths
   }))
-}));
+})) as RequirementTemplate[]);
 const emptyWorkspace: RequirementsWorkspace = {templates: [], selectedScope: 'vendor', selectedId: null, draft: null, editDraft: null};
 const initialState: RequirementsState = {
   byCompany: {'demo-company': {templates: seededTemplates, selectedScope: 'vendor', selectedId: seededTemplates[0]?.id ?? null, draft: null, editDraft: null}},
@@ -38,7 +39,7 @@ const initialState: RequirementsState = {
 };
 const session = browserSession(Symbol.for('debiro.requirements-session'), () => ({state: initialState, listeners: new Set<() => void>()}));
 function subscribe(listener: () => void) {session.listeners.add(listener); return () => {session.listeners.delete(listener);};}
-function publish(next: RequirementsState) {session.state = next; session.listeners.forEach((listener) => listener());}
+function publish(next: RequirementsState) {session.state = backfillTemplateAccents(next); session.listeners.forEach((listener) => listener());}
 export function useRequirementsState() {return useSyncExternalStore(subscribe, () => session.state, () => initialState);}
 export function readRequirementsState() {return session.state;}
 function readableDocuments(value: unknown): value is RequirementTemplateDocument[] {
@@ -52,11 +53,26 @@ function readableTemplate(template: RequirementTemplate | null | undefined, comp
     typeof template.title?.ro === 'string' && typeof template.title?.en === 'string' &&
     typeof template.subtitle?.ro === 'string' && typeof template.subtitle?.en === 'string' && readableDocuments(template.documents) && requirementTemplateScope(template) !== null);
 }
-/** Read-compatible projection only: old browser-session records are not rewritten or reset. */
+/** Add only visual metadata to legacy records; preserve every other field, draft and unreadable entry. */
+function backfillTemplateAccents(snapshot: RequirementsState): RequirementsState {
+  let changed = false;
+  const byCompany = Object.fromEntries(Object.entries(snapshot.byCompany).map(([companyId, workspace]) => {
+    if (!Array.isArray(workspace?.templates)) return [companyId, workspace];
+    const owned = assignTemplateAccents(workspace.templates.filter((template) => readableTemplate(template, companyId)));
+    let index = 0;
+    const templates = workspace.templates.map((template) => readableTemplate(template, companyId) ? owned[index++] : template);
+    if (templates.every((template, index) => template === workspace.templates[index])) return [companyId, workspace];
+    changed = true; return [companyId, {...workspace, templates}];
+  }));
+  return changed ? {...snapshot, byCompany} : snapshot;
+}
+// Existing browser sessions are extended once at module initialization, never during render.
+session.state = backfillTemplateAccents(session.state);
+/** Read-compatible projection only: reads never rewrite or reset browser-session records. */
 export function getRequirementsWorkspace(snapshot: RequirementsState, companyId: string): RequirementsWorkspace {
   const workspace = snapshot?.byCompany?.[companyId];
   if (!workspace || typeof workspace !== 'object') return emptyWorkspace;
-  const templates = Array.isArray(workspace.templates) ? workspace.templates.filter((template) => readableTemplate(template, companyId))
+  const templates = Array.isArray(workspace.templates) ? assignTemplateAccents(workspace.templates.filter((template) => readableTemplate(template, companyId)))
     .map((template) => template.scope === undefined ? {...template, scope: 'vendor' as const} : template) : [];
   const normalizeDraft = <T extends TemplateDraft | TemplateEditDraft>(draft: T | null): T | null => {
     if (!draft || typeof draft.name !== 'string' || typeof draft.description !== 'string' || !readableDocuments(draft.documents) || requirementTemplateScope(draft) === null) return null;
@@ -249,7 +265,7 @@ export function saveRequirementDraft(companyId: string): ReturnType<typeof valid
   const now = fixtureReferenceTime;
   const resolved = resolveCompanyDocumentTypes(companyId, draft.documents, session.state.companyDocumentTypes, now);
   const template: RequirementTemplate = {
-    id, companyId, scope: draft.scope, title: starter && Object.values(starter.title).includes(name) ? {...starter.title} : {ro: name, en: name},
+    id, companyId, scope: draft.scope, accentToken: nextTemplateAccent(workspace.templates), title: starter && Object.values(starter.title).includes(name) ? {...starter.title} : {ro: name, en: name},
     subtitle: starter && Object.values(starter.subtitle).includes(description) ? {...starter.subtitle} : {ro: description, en: description},
     iconKey: validIconKey(draft.iconKey), iconColorKey: validColorKey(draft.iconColorKey), categoryId: draft.scope === 'vendor' ? draft.categoryId as VendorCategory : null,
     duplicatedFromTemplateId: draft.duplicatedFromTemplateId, starterTemplateId: draft.starterTemplateId, starterTemplateVersion: draft.starterTemplateVersion, createdAt: now, updatedAt: now,
@@ -344,7 +360,7 @@ export function cloneStarterTemplate(companyId: string, starterId: string, docum
     title = {ro: `${source.title.ro} — copie${suffix}`, en: `${source.title.en} — copy${suffix}`}; number++;
   }
   if (validateTemplateFields(workspace, {scope: 'vendor', name: title.ro, categoryId: source.categoryId, documents: copied})) return {status: 'invalid'};
-  const template: RequirementTemplate = {id, companyId, scope: 'vendor', title, subtitle: {...source.subtitle}, categoryId: source.categoryId,
+  const template: RequirementTemplate = {id, companyId, scope: 'vendor', accentToken: nextTemplateAccent(workspace.templates), title, subtitle: {...source.subtitle}, categoryId: source.categoryId,
     iconKey: source.iconKey, iconColorKey: source.iconColorKey, documents: copied, starterTemplateId: source.id, starterTemplateVersion: source.version,
     createdAt: fixtureReferenceTime, updatedAt: fixtureReferenceTime};
   updateWorkspace(companyId, (current) => ({...current, templates: [...current.templates, template], selectedScope: 'vendor', selectedId: id, draft: null, editDraft: null}));
