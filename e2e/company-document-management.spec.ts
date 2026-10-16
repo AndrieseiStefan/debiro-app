@@ -16,7 +16,24 @@ async function companyPage(page: Page, english = false) {
   await nav.getByRole('link', {name: copy.AppShell.navigation.companyDocuments, exact: true}).click();
   await expect(page).toHaveURL(new RegExp(`${english ? '/en' : ''}/company/documents$`));
 }
-async function openAdd(page: Page, english = false) {const copy = copies(english); await page.getByRole('button', {name: copy.CompanyDocuments.addDocuments, exact: true}).click(); const dialog = page.getByRole('dialog', {name: copy.CompanyDocumentManagement.addTitle, exact: true}); await expect(dialog).toBeVisible(); return dialog;}
+async function simplifiedUpload(dialog: Locator) {
+  await expect(dialog.locator('#company-template, #company-upload-requirement, input[type=checkbox], details')).toHaveCount(0);
+  await expect(dialog).not.toContainText(/Document independent|Standalone document|Cerință a companiei|Company requirement/);
+  await dialog.evaluate(async (element) => {await Promise.all(element.getAnimations().map((animation) => animation.finished));});
+  const geometry = await dialog.evaluate((element) => {
+    const title = element.querySelector('h2')!, close = element.querySelector('button')!, range = document.createRange(); range.selectNodeContents(title);
+    const control = close.getBoundingClientRect();
+    return [...range.getClientRects()].every((text) => text.right <= control.left || text.top >= control.bottom);
+  });
+  expect(geometry).toBe(true);
+}
+async function openAdd(page: Page, english = false) {const copy = copies(english); await page.getByRole('button', {name: copy.CompanyDocuments.addDocuments, exact: true}).click(); const dialog = page.getByRole('dialog', {name: copy.CompanyDocumentManagement.addTitle, exact: true}); await expect(dialog).toBeVisible(); await simplifiedUpload(dialog); return dialog;}
+async function openTemplate(page: Page, english = false) {
+  const copy = copies(english);
+  await page.getByRole('button', {name: copy.CompanyDocuments.pageActions, exact: true}).focus(); await page.keyboard.press('Enter');
+  await expect(page.getByRole('menuitem', {name: copy.CompanyDocumentManagement.applyTemplate, exact: true})).toBeFocused(); await page.keyboard.press('Enter');
+  const dialog = page.getByRole('dialog', {name: copy.CompanyDocumentManagement.applyTemplate, exact: true}); await expect(dialog).toBeVisible(); return dialog;
+}
 async function close(page: Page) {await page.keyboard.press('Escape'); await expect(page.getByRole('dialog')).toHaveCount(0);}
 async function previewReady(page: Page, dialog: Locator, english: boolean) {
   if (await page.evaluate(() => navigator.pdfViewerEnabled)) await expect(dialog.getByTitle('company-proof.pdf')).toHaveAttribute('src', /^blob:/);
@@ -39,6 +56,12 @@ for (const english of [false, true]) {
     const copy = copies(english), t = copy.CompanyDocumentManagement, common = copy.DocumentManagement, name = `Company lifecycle ${english ? 'EN' : 'RO'}`;
     await page.goto(`${english ? '/en' : ''}/company/documents`);
     const row = await standalone(page, name, english);
+    const associated = await page.evaluate(() => {
+      const workspace = (Reflect.get(window, Symbol.for('debiro.company-documents-session')) as {state: CompanyDocumentsState}).state.byCompany['demo-company'];
+      const requirement = workspace.requirements.at(-1)!;
+      return {companyId: requirement.companyId, required: requirement.required, associated: workspace.documents.find((item) => item.id === requirement.currentDocumentId)?.requirementId === requirement.id};
+    });
+    expect(associated).toEqual({companyId: 'demo-company', required: false, associated: true});
     await expect(row.locator('[data-tone][data-status]')).toHaveText(copy.CompanyDocuments.status.needs_review);
     const id = await row.getAttribute('data-current-document');
     let dialog = await details(page, row, name, english);
@@ -63,6 +86,9 @@ for (const english of [false, true]) {
     dialog = await details(page, row, name, english);
     await dialog.getByRole('button', {name: t.replaceTitle, exact: true}).click();
     dialog = page.getByRole('dialog', {name: t.replaceTitle, exact: true});
+    await simplifiedUpload(dialog);
+    await expect(dialog.locator('#company-upload-name')).toHaveValue(name); await expect(dialog.locator('#company-upload-name')).toHaveAttribute('readonly');
+    await expect(dialog.locator('#company-upload-type')).toHaveValue(copy.CompanyDocuments.types.tax); await expect(dialog.locator('#company-upload-type')).toHaveAttribute('readonly');
     const before = await page.evaluate(() => JSON.stringify((Reflect.get(window, Symbol.for('debiro.company-documents-session')) as {state: CompanyDocumentsState}).state));
     await dialog.getByRole('button', {name: copy.AddDocument.submit, exact: true}).click(); await expect(dialog.getByRole('alert')).toContainText(t.errors.file);
     await dialog.locator('input[type=file]').setInputFiles(await file(2)); await dialog.locator('#company-upload-expires').fill('31.02.2027');
@@ -88,6 +114,7 @@ for (const english of [false, true]) {
     expect(await downloadBytes(page, dialog.locator('li[data-version="2"]').getByRole('button', {name: common.download, exact: true}))).toEqual((await file(2)).buffer);
     await close(page); await row.getByRole('button', {name: copy.CompanyDocuments.upload, exact: true}).click();
     dialog = page.getByRole('dialog', {name: t.addTitle, exact: true}); await dialog.locator('input[type=file]').setInputFiles(await file(3)); await dialog.locator('#company-upload-expires').fill('31.12.2029');
+    await simplifiedUpload(dialog); await expect(dialog.locator('#company-upload-name')).toHaveValue(name);
     await dialog.getByRole('button', {name: copy.AddDocument.submit, exact: true}).click(); await expect(dialog).not.toBeVisible();
     dialog = await details(page, row, name, english); await dialog.getByRole('button', {name: t.confirm, exact: true}).click();
     await dialog.getByRole('button', {name: common.markExpired, exact: true}).click();
@@ -115,14 +142,36 @@ for (const english of [false, true]) {
       await drawer.getByRole('button', {name: english ? /^Tax certificate/ : /^Certificat fiscal/}).click(); await drawer.getByRole('button', {name: english ? 'Add document' : 'Adaugă documentul', exact: true}).click(); await expect(drawer).not.toBeVisible();
       await page.getByRole('button', {name: english ? 'Save template' : 'Salvează șablon', exact: true}).click();
     }
-    await companyPage(page, english); let dialog = await openAdd(page, english);
-    await dialog.locator('summary').click(); await expect(dialog.locator('#company-template option')).toHaveText([t.chooseTemplate, 'company proof template']);
+    await companyPage(page, english);
+    const trigger = page.getByRole('button', {name: copy.CompanyDocuments.pageActions, exact: true});
+    let dialog = await openTemplate(page, english);
+    await expect(dialog.locator('input[type=file], #company-upload-name')).toHaveCount(0);
+    await expect(dialog.locator('#company-template option')).toHaveText([t.chooseTemplate, 'company proof template']);
+    const documentsBefore = await page.evaluate(() => JSON.stringify((Reflect.get(window, Symbol.for('debiro.company-documents-session')) as {state: CompanyDocumentsState}).state.byCompany['demo-company'].documents));
     await dialog.locator('#company-template').selectOption({label: 'company proof template'}); await dialog.getByRole('button', {name: t.applyTemplate, exact: true}).click();
     await expect(dialog.getByRole('status')).toHaveText(t.templateApplied.replace('{count}', '1'));
+    expect(await page.evaluate(() => JSON.stringify((Reflect.get(window, Symbol.for('debiro.company-documents-session')) as {state: CompanyDocumentsState}).state.byCompany['demo-company'].documents))).toBe(documentsBefore);
     await dialog.getByRole('button', {name: t.applyTemplate, exact: true}).click(); await expect(dialog.getByRole('status')).toHaveText(t.templateApplied.replace('{count}', '0'));
-    const requirementId = await dialog.locator('#company-upload-requirement option').filter({hasText: english ? /^Tax certificate$/ : /^Certificat fiscal$/}).getAttribute('value');
-    await dialog.locator('#company-upload-requirement').selectOption(requirementId!); await dialog.locator('input[type=file]').setInputFiles(await file()); await dialog.getByRole('button', {name: copy.AddDocument.submit, exact: true}).click(); await expect(dialog).not.toBeVisible();
-    const row = page.locator(`[data-company-document-row="${requirementId}"]`); await row.getByRole('button', {name: english ? 'Tax certificate' : 'Certificat fiscal', exact: true}).click();
+    const requirement = await page.evaluate(() => (Reflect.get(window, Symbol.for('debiro.company-documents-session')) as {state: CompanyDocumentsState}).state.byCompany['demo-company'].requirements.at(-1)!);
+    expect(requirement.currentDocumentId).toBeNull(); expect(requirement.required).toBe(true);
+    await mkdir('artifacts/visual/e1c-003a', {recursive: true});
+    for (const width of [1448, 768, 375, 320]) {
+      await page.setViewportSize({width, height: 900});
+      await expect(dialog).toBeVisible(); expect(await dialog.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+      await page.screenshot({path: `artifacts/visual/e1c-003a/${english ? 'en' : 'ro'}-template-applied-${width}.png`, animations: 'disabled'});
+    }
+    await close(page); await expect(trigger).toBeFocused();
+    await page.setViewportSize({width: 1448, height: 900});
+    const row = page.locator(`[data-company-document-row="${requirement.id}"]`);
+    const before = await page.evaluate(() => (Reflect.get(window, Symbol.for('debiro.company-documents-session')) as {state: CompanyDocumentsState}).state.byCompany['demo-company'].requirements.length);
+    await row.getByRole('button', {name: copy.CompanyDocuments.upload, exact: true}).click(); dialog = page.getByRole('dialog', {name: t.addTitle, exact: true});
+    await simplifiedUpload(dialog);
+    await expect(dialog.locator('#company-upload-name')).toHaveValue(english ? 'Tax certificate' : 'Certificat fiscal');
+    await expect(dialog.locator('#company-upload-name')).toHaveAttribute('readonly');
+    await expect(dialog.locator('#company-upload-type')).toHaveValue(copy.CompanyDocuments.types.tax);
+    await dialog.locator('input[type=file]').setInputFiles(await file()); await dialog.getByRole('button', {name: copy.AddDocument.submit, exact: true}).click(); await expect(dialog).not.toBeVisible();
+    expect(await page.evaluate(() => (Reflect.get(window, Symbol.for('debiro.company-documents-session')) as {state: CompanyDocumentsState}).state.byCompany['demo-company'].requirements.length)).toBe(before);
+    await row.getByRole('button', {name: english ? 'Tax certificate' : 'Certificat fiscal', exact: true}).click();
     dialog = page.getByRole('dialog', {name: copy.DocumentManagement.detailsTitle, exact: true}); await expect(dialog.getByText(copy.DocumentManagement.required, {exact: true})).toBeVisible();
   });
 }
@@ -135,6 +184,7 @@ test('upload errors preserve form state; Reviewer/Viewer/inactive memberships ca
   }
   await dialog.locator('input[type=file]').setInputFiles(await file()); await dialog.getByRole('button', {name: en.AddDocument.submit, exact: true}).click(); await expect(dialog).not.toBeVisible();
   await role(page, 'reviewer'); await expect(page.getByRole('button', {name: en.CompanyDocuments.addDocuments, exact: true})).toBeDisabled();
+  await expect(page.getByRole('button', {name: en.CompanyDocuments.pageActions, exact: true})).toBeDisabled();
   const row = page.locator('[data-company-document-row]').filter({hasText: 'Validation proof'}); dialog = await details(page, row, 'Validation proof', true);
   await expect(dialog.getByRole('button', {name: en.CompanyDocumentManagement.replaceTitle, exact: true})).toBeDisabled(); await expect(dialog.getByRole('button', {name: en.CompanyDocumentManagement.confirm, exact: true})).toBeEnabled();
   await role(page, 'viewer'); await expect(dialog.getByRole('button', {name: en.CompanyDocumentManagement.confirm, exact: true})).toBeDisabled();
@@ -160,23 +210,66 @@ test('new company is empty; switching while a preview is open clears UI and pres
   await page.reload(); await expect(page.getByText('First company file', {exact: true})).toHaveCount(0);
 });
 
+test('company switching closes the separate template drawer and respects target workspace permissions', async ({page}) => {
+  await page.goto('/en/company/documents');
+  await openTemplate(page, true);
+  const before = await page.evaluate(() => JSON.stringify((Reflect.get(window, Symbol.for('debiro.company-documents-session')) as {state: CompanyDocumentsState}).state));
+  await page.evaluate(() => {
+    const owner = Reflect.get(window, Symbol.for('debiro.company-session')) as {state: ReturnType<typeof readCompanyState>; listeners: Set<() => void>};
+    owner.state = {...owner.state, activeCompanyId: 'global-clean-services'}; owner.listeners.forEach((notify) => notify());
+  });
+  await expect(page).toHaveURL(/\/en\/dashboard$/); await expect(page.getByRole('dialog')).toHaveCount(0);
+  await companyPage(page, true);
+  await expect(page.getByRole('button', {name: en.CompanyDocuments.pageActions, exact: true})).toBeDisabled();
+  await expect(page.getByRole('menuitem', {name: en.CompanyDocumentManagement.applyTemplate, exact: true})).toHaveCount(0);
+  expect(await page.evaluate(() => JSON.stringify((Reflect.get(window, Symbol.for('debiro.company-documents-session')) as {state: CompanyDocumentsState}).state))).toBe(before);
+});
+
 test('RO/EN upload/details/history captures remain contained at all required widths', async ({page}) => {
-  test.setTimeout(120_000); await mkdir('artifacts/visual/e1c-003', {recursive: true});
+  test.setTimeout(180_000); await mkdir('artifacts/visual/e1c-003a', {recursive: true});
   for (const english of [false, true]) for (const [width, height] of [[1448, 900], [1920, 1080], [1280, 800], [1024, 900], [768, 900], [375, 812], [320, 812]]) {
     const copy = copies(english); await page.setViewportSize({width, height}); await page.goto(`${english ? '/en' : ''}/company/documents`);
-    let dialog = await openAdd(page, english);
-    await page.screenshot({path: `artifacts/visual/e1c-003/${english ? 'en' : 'ro'}-upload-initial-${width}.png`, animations: 'disabled'});
+    const titleBounds = (await page.getByRole('heading', {level: 1}).boundingBox())!, actionsBounds = (await page.getByRole('button', {name: copy.CompanyDocuments.shareDocuments, exact: true}).boundingBox())!;
+    expect(titleBounds.x + titleBounds.width <= actionsBounds.x || titleBounds.y + titleBounds.height <= actionsBounds.y).toBe(true);
+    await page.screenshot({path: `artifacts/visual/e1c-003a/${english ? 'en' : 'ro'}-page-${width}.png`, animations: 'disabled'});
+    await openTemplate(page, english);
+    await expect(page.getByRole('dialog').getByText(copy.CompanyDocumentManagement.noTemplates, {exact: true})).toBeVisible();
+    await close(page);
+    const missing = page.locator('[data-company-document-row="company-requirement:criminal-record"]');
+    await missing.getByRole('button', {name: copy.CompanyDocuments.upload, exact: true}).click();
+    let dialog = page.getByRole('dialog', {name: copy.CompanyDocumentManagement.addTitle, exact: true});
+    await simplifiedUpload(dialog); await expect(dialog.locator('#company-upload-name')).not.toHaveValue('');
+    expect(await dialog.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+    await page.screenshot({path: `artifacts/visual/e1c-003a/${english ? 'en' : 'ro'}-bound-upload-${width}.png`, animations: 'disabled'});
+    if (width <= 375) {
+      await dialog.getByRole('button', {name: copy.AddDocument.submit, exact: true}).scrollIntoViewIfNeeded();
+      await expect(dialog.getByRole('button', {name: copy.AddDocument.cancel, exact: true})).toBeInViewport();
+      const contained = await dialog.getByRole('button', {name: copy.AddDocument.submit, exact: true}).evaluate((button) => {const content = button.querySelector('span')!.getBoundingClientRect(), bounds = button.getBoundingClientRect(); return content.left >= bounds.left && content.right <= bounds.right;}); expect(contained).toBe(true);
+      await page.screenshot({path: `artifacts/visual/e1c-003a/${english ? 'en' : 'ro'}-bound-upload-end-${width}.png`, animations: 'disabled'});
+    }
+    await close(page);
+    dialog = await openAdd(page, english);
+    await page.screenshot({path: `artifacts/visual/e1c-003a/${english ? 'en' : 'ro'}-upload-initial-${width}.png`, animations: 'disabled'});
+    if (width <= 375) {
+      await dialog.getByRole('button', {name: copy.AddDocument.submit, exact: true}).scrollIntoViewIfNeeded();
+      await expect(dialog.getByRole('button', {name: copy.AddDocument.cancel, exact: true})).toBeInViewport();
+      await page.screenshot({path: `artifacts/visual/e1c-003a/${english ? 'en' : 'ro'}-upload-end-${width}.png`, animations: 'disabled'});
+    }
     await dialog.getByRole('button', {name: copy.AddDocument.submit, exact: true}).click(); await expect(dialog.getByRole('alert').first()).toBeVisible();
     await dialog.evaluate(async (element) => {await Promise.all(element.getAnimations().map((animation) => animation.finished));});
     const bounds = (await dialog.boundingBox())!; expect(bounds.x).toBeGreaterThanOrEqual(0); expect(bounds.x + bounds.width).toBeLessThanOrEqual(width + 1);
-    await page.screenshot({path: `artifacts/visual/e1c-003/${english ? 'en' : 'ro'}-upload-${width}.png`}); await close(page);
+    await page.screenshot({path: `artifacts/visual/e1c-003a/${english ? 'en' : 'ro'}-upload-${width}.png`}); await close(page);
     const name = `Responsive proof ${width}`; const row = await standalone(page, name, english); dialog = await details(page, row, name, english);
     await dialog.evaluate(async (element) => {await Promise.all(element.getAnimations().map((animation) => animation.finished));});
     expect(await dialog.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
-    await page.screenshot({path: `artifacts/visual/e1c-003/${english ? 'en' : 'ro'}-details-${width}.png`});
+    await page.screenshot({path: `artifacts/visual/e1c-003a/${english ? 'en' : 'ro'}-details-${width}.png`});
     await dialog.getByRole('button', {name: copy.DocumentManagement.viewAll, exact: true}).click();
     expect(await dialog.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
-    await page.screenshot({path: `artifacts/visual/e1c-003/${english ? 'en' : 'ro'}-history-${width}.png`}); await close(page);
+    await page.screenshot({path: `artifacts/visual/e1c-003a/${english ? 'en' : 'ro'}-history-${width}.png`});
+    await dialog.getByRole('button', {name: copy.DocumentManagement.backToDetails}).click(); await dialog.getByRole('button', {name: copy.CompanyDocumentManagement.replaceTitle, exact: true}).click();
+    dialog = page.getByRole('dialog', {name: copy.CompanyDocumentManagement.replaceTitle, exact: true});
+    await simplifiedUpload(dialog); expect(await dialog.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+    await page.screenshot({path: `artifacts/visual/e1c-003a/${english ? 'en' : 'ro'}-replacement-${width}.png`, animations: 'disabled'}); await close(page);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
   }
 });

@@ -16,12 +16,13 @@ import styles from './AddDocumentDrawer.module.css';
 import {DocumentFileDropzone} from './DocumentFileDropzone';
 
 /** Shared upload shell; each owner supplies its own fields, validation and authorized transaction. */
-export function DocumentUploadDrawer({phase, onClose, onExited, triggerRef, title, description, children}: {
+export function DocumentUploadDrawer({phase, onClose, onExited, triggerRef, title, description, children, headerClassName}: {
   phase: DrawerPhase; onClose: () => void; onExited: () => void; triggerRef: RefObject<HTMLElement | null>; title: string; description: string; children: ReactNode;
+  headerClassName?: string;
 }) {
   const t = useTranslations('AddDocument');
   return <Drawer phase={phase} onClose={onClose} onExited={onExited} triggerRef={triggerRef} titleId="add-document-title" descriptionId="add-document-description" closeLabel={t('close')} panelClassName={styles.panel} contentClassName={styles.content}>
-    <header className={styles.header}><span className={styles.headerIcon}><AppIcon name="file" size={28}/></span><h2 id="add-document-title">{title}</h2></header>
+    <header className={[styles.header, headerClassName].filter(Boolean).join(' ')}><span className={styles.headerIcon}><AppIcon name="file" size={28}/></span><h2 id="add-document-title">{title}</h2></header>
     <p id="add-document-description" className={styles.intro}>{description}</p>{children}
   </Drawer>;
 }

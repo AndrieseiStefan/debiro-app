@@ -1,0 +1,7 @@
+/* Reserve the entire close-control hit area, including for the longer replacement title. */
+header.header {padding-right: 48px;}
+
+/* The full Romanian upload label and icon cannot fit in a half-width mobile action. */
+@media (max-width: 375px) {
+  div.actions {grid-template-columns: minmax(0, 1fr);}
+}

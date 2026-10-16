@@ -26,6 +26,8 @@ The final logo is not yet designed and must not be invented.
 
 ## Implemented
 
+- E1C-003A Company upload UX — one shared upload drawer with explicit standalone/missing-row/replacement context, prepopulated bound document identity and optional internal standalone requirements; template application is a separate secondary page action using the existing company-owned snapshot operation. No vendor, review, version, expiry or file behavior changes; see [Company Documents](../features/company-documents.md)
+
 - E1C-003 Company Document Management — authorized standalone/configured uploads, explicit Company-template snapshots, pending human review with rejection reasons, current metadata editing/reconfirmation, immutable version history, separate manual-expiry override, exact current/historical downloads and private tab-memory PDF/raster previews. Shared upload/details/history/download presentation is reused without vendor ownership/behavior changes. Reload/new tabs remain a documented E1 reset boundary; sharing remains deferred; see [Company Documents](../features/company-documents.md)
 
 - E1C-002 Company Documents foundation — Company sidebar disclosure, owned listing and localized Employees Coming Soon routes; shared header/KPIs/search/filters/status/table/pagination, current-only derived totals, safe file eligibility and local selection, malformed/empty/access states, company-switch clearing and RO/EN responsive coverage. Existing vendor/scoped-template/review/compliance sources remain unchanged; management is enabled by E1C-003 and secure sharing remains deferred; see [Company Documents](../features/company-documents.md)

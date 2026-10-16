@@ -42,6 +42,8 @@
 .rowActions button {font-size: 13px; min-height: 38px; padding-inline: 10px;}
 .rowActions .iconAction {padding: 8px;}
 .error {margin-top: 24px;}
+/* Keep the page's additional overflow action from squeezing its title at reduced widths. */
+@media (max-width: 1199px) {.header > :last-child {flex-direction: column;} .header > :last-child > :last-child {margin-top: 0; width: 100%;}}
 @media (max-width: 1400px) {.toolbar {grid-template-columns: minmax(200px, 1fr) minmax(290px, 1fr) auto;} .sort {grid-column: 1 / 3; grid-row: 2;} .toolbar > div:last-child {grid-column: 3; grid-row: 1;}}
 @media (max-width: 1000px) {.toolbar {grid-template-columns: minmax(0, 1fr) auto;} .toolbar > div:first-child {grid-column: 1 / -1;} .inlineFilters {grid-column: 1 / -1;} .sort {grid-column: 1; grid-row: 3;} .toolbar > div:last-child {grid-column: 2; grid-row: 3;}}
 @media (max-width: 600px) {.metrics {gap: 12px;} .toolbar {gap: 10px;} .inlineFilters {grid-template-columns: minmax(0, 1fr); gap: 10px;} .sort {grid-row: 3;} .bulk {align-items: stretch; flex-direction: column; padding: 14px;} .bulkActions button {flex: 1; white-space: normal;} .bulkActions .iconAction {flex: 0 0 38px;}}

@@ -20,6 +20,7 @@ import {RowActionMenu} from '@/components/ui/RowActionMenu';
 import {Pagination} from '@/components/ui/Pagination';
 import {documentAccess} from '@/features/documents/document-access';
 import {CompanyDocumentManager, type CompanyManagementSelection} from './CompanyDocumentManager';
+import {CompanyTemplateDrawer} from './CompanyTemplateDrawer';
 import {companyDocumentFile, companyDocumentHistory, downloadCompanyDocument} from './management';
 import {SummaryMetricCard} from '@/features/dashboard/SummaryMetricCard';
 import {getActiveCompany, useCompanyState} from '@/features/companies/company-state';
@@ -68,6 +69,8 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
   const [pageSize, setPageSize] = useState(10);
   const [selection, setSelection] = useState<Record<string, string>>({});
   const [activeDocument, setActiveDocument] = useState<CompanyManagementSelection | null>(null);
+  const [applyingTemplate, setApplyingTemplate] = useState(false);
+  const [pageMenu, setPageMenu] = useState(false);
   const [rowMenu, setRowMenu] = useState<string | null>(null);
   const [feedback, setFeedback] = useState('');
   const [downloadFailed, setDownloadFailed] = useState(false);
@@ -121,8 +124,8 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
   }
 
   return <div className={styles.page}>
-    <AuthenticatedPageHeader context={<AuthenticatedBreadcrumbs root={{label: app('navigation.company')}} items={[{label: t('title')}]} label={t('breadcrumbLabel')}/>} title={t('title')} titleId="company-documents-title" description={t('description')}
-      actions={<div className={styles.headerActions}><UnavailableAction icon="share" explanation={t('sharingComingSoon')}>{t('shareDocuments')}</UnavailableAction><AuthenticatedPagePrimaryAction icon="plus" disabled={!access.replace} onClick={() => {setFeedback(''); setActiveDocument({mode: 'add'});}}>{t('addDocuments')}</AuthenticatedPagePrimaryAction></div>}/>
+    <AuthenticatedPageHeader className={styles.header} context={<AuthenticatedBreadcrumbs root={{label: app('navigation.company')}} items={[{label: t('title')}]} label={t('breadcrumbLabel')}/>} title={t('title')} titleId="company-documents-title" description={t('description')}
+      actions={<div className={styles.headerActions}><UnavailableAction icon="share" explanation={t('sharingComingSoon')}>{t('shareDocuments')}</UnavailableAction><AuthenticatedPagePrimaryAction icon="plus" disabled={!access.replace} onClick={() => {setFeedback(''); setActiveDocument({mode: 'add'});}}>{t('addDocuments')}</AuthenticatedPagePrimaryAction>{access.replace ? <RowActionMenu label={t('pageActions')} items={[{label: management('applyTemplate'), onSelect: () => {setFeedback(''); setApplyingTemplate(true);}}]} open={pageMenu} onOpenChange={setPageMenu}/> : <Button variant="secondary" className={styles.iconAction} disabled aria-label={t('pageActions')}><AppIcon name="more" size={21}/></Button>}</div>}/>
     {feedback && <p role="status">{feedback}</p>}{downloadFailed && <p role="alert">{common('downloadUnavailable')}</p>}
     {error ? <Surface className={styles.error}><ErrorState title={states('errorTitle')} description={states('errorDescription')}/></Surface> : <>
       <section className={styles.metrics} aria-label={t('summaryLabel')}>
@@ -153,5 +156,6 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
       </Surface>
     </>}
     {activeDocument && <CompanyDocumentManager companyId={companyId} locale={locale} selection={activeDocument} onClose={() => setActiveDocument(null)} onSuccess={(kind) => setFeedback(management(`success.${kind}`))}/>}
+    {applyingTemplate && <CompanyTemplateDrawer companyId={companyId} locale={locale} onClose={() => setApplyingTemplate(false)}/>}
   </div>;
 }

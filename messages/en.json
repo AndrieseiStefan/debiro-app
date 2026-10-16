@@ -7,9 +7,10 @@
     "expireDescription": "The document remains available in history but will no longer count as valid. Its original expiration date is preserved.",
     "addTitle": "Add Document", "addDescription": "Upload a document belonging to your company. New uploads require human confirmation.",
     "replaceTitle": "Upload New Version", "replaceDescription": "The new file will require human confirmation. Previous versions and their original files remain in history.",
-    "requirement": "Company requirement", "standalone": "Standalone document", "name": "Document name", "documentType": "Document type", "issuer": "Issuer (optional)", "expiresAt": "Expiration date (optional)", "required": "Required document",
-    "applyTemplate": "Apply company template", "template": "Company template", "chooseTemplate": "Select a template", "noTemplates": "No company templates yet. You can upload a standalone document.", "templateApplied": "Template applied: {count} new requirements.",
-    "uploadExisting": "Requirements with a current document use Upload New Version from Details.", "metadataTitle": "Edit metadata", "metadataNotice": "Changes require human confirmation again. Original upload information and historical versions are preserved.",
+    "name": "Document name", "documentType": "Document type", "issuer": "Issuer (optional)", "expiresAt": "Expiration date (optional)",
+    "applyTemplate": "Apply Template", "template": "Company template", "chooseTemplate": "Select a template", "noTemplates": "No company templates yet.", "templateApplied": "Template applied: {count} new documents to upload.",
+    "templateDescription": "Choose a template to add the documents your company needs. Files are uploaded separately.",
+    "metadataTitle": "Edit metadata", "metadataNotice": "Changes require human confirmation again. Original upload information and historical versions are preserved.",
     "save": "Save changes", "preview": "View file", "previewTitle": "Document preview", "previewUnavailable": "The original file is not available in this tab. No substitute preview or file is generated.",
     "confirm": "Confirm document", "reject": "Reject document", "rejectionReason": "Rejection reason", "humanReview": "Human confirmation is not independent verification.",
     "currentVersion": "Current version: v{version}", "noCurrent": "This requirement has no current document. Upload a file to fulfill it.", "history": "Document history", "noHistory": "No uploaded versions yet.", "historical": "Historical version", "reviewStatus": "Review status",
@@ -1330,6 +1331,7 @@
     "pagination": "Pagination", "previousPage": "Previous page", "nextPage": "Next page", "pageNumber": "Page {page}"
   },
   "CompanyDocuments": {
+    "pageActions": "Company document actions",
     "tableRegion": "Company documents table",
     "title": "Company Documents",
     "breadcrumbLabel": "Page navigation",

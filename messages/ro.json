@@ -7,9 +7,10 @@
     "expireDescription": "Documentul va rămâne disponibil în istoric, dar nu va mai fi considerat valid. Data originală de expirare este păstrată.",
     "addTitle": "Adaugă document", "addDescription": "Încarcă un document propriu al companiei. Documentele noi necesită confirmare umană.",
     "replaceTitle": "Încarcă versiune nouă", "replaceDescription": "Fișierul nou va necesita confirmare umană. Versiunile anterioare și fișierele lor originale rămân în istoric.",
-    "requirement": "Cerință a companiei", "standalone": "Document independent", "name": "Nume document", "documentType": "Tip document", "issuer": "Emitent (opțional)", "expiresAt": "Data expirării (opțional)", "required": "Document obligatoriu",
-    "applyTemplate": "Aplică un șablon al companiei", "template": "Șablon al companiei", "chooseTemplate": "Selectează un șablon", "noTemplates": "Nu există încă șabloane pentru companie. Poți încărca un document independent.", "templateApplied": "Șablon aplicat: {count} cerințe noi.",
-    "uploadExisting": "Pentru cerințele cu document curent, folosește Încarcă versiune nouă din Detalii.", "metadataTitle": "Editează metadatele", "metadataNotice": "Modificările necesită o nouă confirmare umană. Informațiile originale de încărcare și versiunile istorice sunt păstrate.",
+    "name": "Nume document", "documentType": "Tip document", "issuer": "Emitent (opțional)", "expiresAt": "Data expirării (opțional)",
+    "applyTemplate": "Aplică șablon", "template": "Șablon al companiei", "chooseTemplate": "Selectează un șablon", "noTemplates": "Nu există încă șabloane pentru companie.", "templateApplied": "Șablon aplicat: {count} documente noi de încărcat.",
+    "templateDescription": "Alege un șablon pentru a adăuga documentele necesare ale companiei. Fișierele se încarcă separat.",
+    "metadataTitle": "Editează metadatele", "metadataNotice": "Modificările necesită o nouă confirmare umană. Informațiile originale de încărcare și versiunile istorice sunt păstrate.",
     "save": "Salvează modificările", "preview": "Vezi fișierul", "previewTitle": "Previzualizare document", "previewUnavailable": "Fișierul original nu este disponibil în această filă. Nu este generată o previzualizare sau un fișier înlocuitor.",
     "confirm": "Confirmă documentul", "reject": "Respinge documentul", "rejectionReason": "Motivul respingerii", "humanReview": "Confirmarea umană nu reprezintă verificare independentă.",
     "currentVersion": "Versiune curentă: v{version}", "noCurrent": "Această cerință nu are un document curent. Încarcă un fișier pentru a o îndeplini.", "history": "Istoric document", "noHistory": "Nu există încă versiuni încărcate.", "historical": "Versiune istorică", "reviewStatus": "Stare revizuire",
@@ -1334,6 +1335,7 @@
     "pagination": "Paginare", "previousPage": "Pagina anterioară", "nextPage": "Pagina următoare", "pageNumber": "Pagina {page}"
   },
   "CompanyDocuments": {
+    "pageActions": "Acțiuni documente companie",
     "tableRegion": "Tabel documente companie",
     "title": "Documente companie",
     "breadcrumbLabel": "Navigare pe pagină",

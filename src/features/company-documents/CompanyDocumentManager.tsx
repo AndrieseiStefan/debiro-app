@@ -55,7 +55,7 @@ export function CompanyDocumentManager({companyId, locale, selection, onClose, o
     if (!result.ok) {setError(t(`errors.${result.reason}`)); return;}
     setRejecting(false); setReason(''); success(decision);
   }
-  if (mode === 'add' || mode === 'replace') return <CompanyUploadDrawer companyId={companyId} locale={locale} requirementId={selection.requirementId} replacementId={mode === 'replace' ? selection.documentId ?? current?.id : undefined}
+  if (mode === 'add' || mode === 'replace') return <CompanyUploadDrawer companyId={companyId} locale={locale} context={mode === 'replace' ? {kind: 'replacement', requirementId: selection.requirementId ?? '', documentId: selection.documentId ?? current?.id ?? ''} : selection.requirementId ? {kind: 'requirement', requirementId: selection.requirementId} : {kind: 'standalone'}}
     phase={phase} triggerRef={triggerRef} onClose={close} onExited={onClose} onSuccess={(kind) => {onSuccess(kind); close();}}/>;
   const preview = details?.history.find((item) => item.id === previewId);
   return <><Drawer phase={phase} onClose={close} onExited={onClose} triggerRef={triggerRef} titleId="company-document-title" descriptionId="company-document-description" closeLabel={common('close')} size={mode === 'history' ? 'standard' : 'wide'} contentClassName={styles.content}>

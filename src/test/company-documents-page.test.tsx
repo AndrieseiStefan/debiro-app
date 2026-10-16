@@ -8,12 +8,15 @@ import {EmployeesComingSoonPage} from '@/features/company-documents/EmployeesCom
 import type {CompanyDocumentsState} from '@/features/company-documents/types';
 import {readCompanyDocumentsState} from '@/features/company-documents/company-documents-state';
 import {readCompanyState, switchActiveCompany} from '@/features/companies/company-state';
+import {readRequirementsState} from '@/features/requirements/requirements-state';
 
 vi.mock('@/i18n/navigation', () => ({usePathname: () => '/company/documents', useRouter: () => ({push: vi.fn()}), Link: ({href, ...props}: {href: string; children: React.ReactNode}) => <a href={href} {...props}/>}));
 type Session = {state: CompanyDocumentsState; files: Map<string, Map<string, Blob>>; listeners: Set<() => void>};
 const owner = () => Reflect.get(window, Symbol.for('debiro.company-documents-session')) as Session;
 const initial = readCompanyDocumentsState();
-afterEach(() => {owner().state = initial; owner().files.clear(); switchActiveCompany('demo-company');});
+const initialTemplates = readRequirementsState();
+const templateOwner = () => Reflect.get(window, Symbol.for('debiro.requirements-session')) as {state: ReturnType<typeof readRequirementsState>};
+afterEach(() => {owner().state = initial; owner().files.clear(); templateOwner().state = initialTemplates; switchActiveCompany('demo-company');});
 const view = (locale: 'ro' | 'en' = 'ro', employees = false) => render(<NextIntlClientProvider locale={locale} messages={locale === 'ro' ? ro : en}>{employees ? <EmployeesComingSoonPage locale={locale}/> : <CompanyDocumentsPage locale={locale}/>}</NextIntlClientProvider>);
 
 describe('Company Documents shared listing UI', () => {
@@ -84,6 +87,8 @@ describe('Company Documents shared listing UI', () => {
     fireEvent.click(screen.getByRole('button', {name: en.CompanyDocuments.addDocuments}));
     let dialog = screen.getByRole('dialog', {name: en.CompanyDocumentManagement.addTitle});
     expect(within(dialog).getByRole('note')).toHaveTextContent(en.CompanyDocumentManagement.sessionNotice);
+    expect(dialog.querySelector('#company-template, #company-upload-requirement, input[type=checkbox]')).toBeNull();
+    expect(within(dialog).queryByText(/standalone|company requirement/i)).toBeNull();
     fireEvent.click(within(dialog).getByRole('button', {name: en.AddDocument.submit}));
     expect(within(dialog).getByText(en.CompanyDocumentManagement.errors.file)).toBeVisible();
     fireEvent.change(within(dialog).getByRole('textbox', {name: en.CompanyDocumentManagement.name}), {target: {value: 'UI company proof'}});
@@ -91,6 +96,9 @@ describe('Company Documents shared listing UI', () => {
     fireEvent.change(dialog.querySelector('input[type=file]')!, {target: {files: [new File(['bytes'], 'proof.pdf', {type: 'application/pdf'})]}});
     fireEvent.click(within(dialog).getByRole('button', {name: en.AddDocument.submit}));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    const created = owner().state.byCompany['demo-company'].requirements.at(-1)!;
+    expect(created).toMatchObject({companyId: 'demo-company', required: false});
+    expect(owner().state.byCompany['demo-company'].documents.find((item) => item.id === created.currentDocumentId)?.requirementId).toBe(created.id);
     fireEvent.click(await screen.findByRole('button', {name: 'UI company proof'}, {timeout: 4000}));
     dialog = screen.getByRole('dialog', {name: en.DocumentManagement.detailsTitle});
     expect(within(dialog).getByText(en.CompanyDocuments.status.needs_review, {exact: true})).toBeVisible();
@@ -110,10 +118,72 @@ describe('Company Documents shared listing UI', () => {
     const dialog = screen.getByRole('dialog', {name: en.CompanyDocumentManagement.addTitle});
     fireEvent.change(dialog.querySelector('input[type=file]')!, {target: {files: [new File(['bytes'], 'proof.pdf', {type: 'application/pdf'})]}});
     act(() => {const state = structuredClone(initial); state.byCompany['demo-company'].requirements = state.byCompany['demo-company'].requirements.filter((item) => item.id !== 'company-requirement:criminal-record'); owner().state = state; owner().listeners.forEach((notify) => notify());});
-    fireEvent.change(dialog.querySelector('#company-upload-name')!, {target: {value: 'Stale proof'}}); fireEvent.change(dialog.querySelector('#company-upload-type')!, {target: {value: 'tax'}});
+    expect(dialog.querySelector('#company-upload-name')).toHaveAttribute('readonly');
+    expect(dialog.querySelector('#company-upload-type')).toHaveAttribute('readonly');
     const before = structuredClone(owner().state);
     fireEvent.click(within(dialog).getByRole('button', {name: en.AddDocument.submit}));
     expect(within(dialog).getByRole('alert')).toHaveTextContent(en.CompanyDocumentManagement.errors.unavailable);
-    expect(owner().state).toEqual(before); expect(owner().files.size).toBe(0); expect(dialog.querySelector('#company-upload-name')).toHaveValue('Stale proof');
+    expect(owner().state).toEqual(before); expect(owner().files.size).toBe(0);
+  });
+
+  it.each(['ro', 'en'] as const)('binds a missing-row upload without another requirement or technical selectors in %s', async (locale) => {
+    const copy = locale === 'ro' ? ro : en, requirement = initial.byCompany['demo-company'].requirements.find((item) => !item.currentDocumentId)!;
+    view(locale);
+    fireEvent.click(within(screen.getByRole('row', {name: new RegExp(requirement.name[locale])})).getByRole('button', {name: copy.CompanyDocuments.upload}));
+    const dialog = screen.getByRole('dialog', {name: copy.CompanyDocumentManagement.addTitle});
+    expect(dialog.querySelector('#company-upload-name')).toHaveValue(requirement.name[locale]);
+    expect(dialog.querySelector('#company-upload-name')).toHaveAttribute('readonly');
+    expect(dialog.querySelector('#company-upload-type')).toHaveValue(copy.CompanyDocuments.types[requirement.documentType]);
+    expect(dialog.querySelector('#company-upload-type')).toHaveAttribute('readonly');
+    expect(dialog.querySelector('#company-template, #company-upload-requirement, input[type=checkbox]')).toBeNull();
+    fireEvent.change(dialog.querySelector('input[type=file]')!, {target: {files: [new File(['bytes'], 'bound.pdf', {type: 'application/pdf'})]}});
+    fireEvent.change(dialog.querySelector('#company-upload-issuer')!, {target: {value: 'Issuer'}});
+    fireEvent.click(within(dialog).getByRole('button', {name: copy.AddDocument.submit}));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    const workspace = owner().state.byCompany['demo-company'];
+    expect(workspace.requirements).toHaveLength(initial.byCompany['demo-company'].requirements.length);
+    const saved = workspace.requirements.find((item) => item.id === requirement.id)!;
+    expect(saved).toEqual({...requirement, currentDocumentId: expect.any(String)});
+    expect(workspace.documents.find((item) => item.id === saved.currentDocumentId)).toMatchObject({companyId: 'demo-company', requirementId: requirement.id, issuer: 'Issuer', reviewOutcome: 'pending'});
+  });
+
+  it.each(['ro', 'en'] as const)('applies templates separately without files, duplicate requirements or foreign scopes in %s', async (locale) => {
+    const copy = locale === 'ro' ? ro : en, state = structuredClone(initialTemplates), base = state.byCompany['demo-company'].templates[0];
+    const companyTemplate = {...base, id: 'company-template', scope: 'company' as const, categoryId: null, documents: [{id: 'company-rule', templateId: 'company-template', catalogDocumentTypeId: 'tax', required: true, expiryWarningDays: 30 as const, validityMonths: 12 as const}]};
+    state.byCompany['demo-company'].templates.push(companyTemplate, {...companyTemplate, id: 'employee-template', scope: 'employee'});
+    templateOwner().state = state;
+    view(locale);
+    const trigger = screen.getByRole('button', {name: copy.CompanyDocuments.pageActions});
+    act(() => trigger.focus());
+    fireEvent.click(trigger);
+    fireEvent.click(screen.getByRole('menuitem', {name: copy.CompanyDocumentManagement.applyTemplate}));
+    const dialog = screen.getByRole('dialog', {name: copy.CompanyDocumentManagement.applyTemplate});
+    expect(within(dialog).getAllByRole('option').map((item) => item.textContent)).toEqual([copy.CompanyDocumentManagement.chooseTemplate, base.title[locale]]);
+    expect(dialog.querySelector('input[type=file], #company-upload-name')).toBeNull();
+    const apply = within(dialog).getByRole('button', {name: copy.CompanyDocumentManagement.applyTemplate});
+    expect(apply).toBeDisabled();
+    fireEvent.change(dialog.querySelector('#company-template')!, {target: {value: companyTemplate.id}});
+    fireEvent.click(apply);
+    expect(within(dialog).getByRole('status')).toHaveTextContent(copy.CompanyDocumentManagement.templateApplied.replace('{count}', '1'));
+    const workspace = owner().state.byCompany['demo-company'];
+    expect(workspace.requirements.at(-1)).toMatchObject({templateId: companyTemplate.id, currentDocumentId: null});
+    expect(workspace.documents).toEqual(initial.byCompany['demo-company'].documents); expect(owner().files.size).toBe(0);
+    fireEvent.click(apply);
+    expect(within(dialog).getByRole('status')).toHaveTextContent(copy.CompanyDocumentManagement.templateApplied.replace('{count}', '0'));
+    expect(owner().state.byCompany['demo-company']).toEqual(workspace);
+    expect(templateOwner().state).toEqual(state);
+    fireEvent.click(within(dialog).getByRole('button', {name: copy.DocumentManagement.cancel}));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(trigger).toHaveFocus();
+  });
+
+  it('shows an honest empty template state without an upload form', () => {
+    view('en');
+    fireEvent.click(screen.getByRole('button', {name: en.CompanyDocuments.pageActions}));
+    fireEvent.click(screen.getByRole('menuitem', {name: en.CompanyDocumentManagement.applyTemplate}));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText(en.CompanyDocumentManagement.noTemplates)).toBeVisible();
+    expect(within(dialog).getByRole('button', {name: en.CompanyDocumentManagement.applyTemplate})).toBeDisabled();
+    expect(dialog.querySelector('input[type=file], select')).toBeNull();
   });
 });
