@@ -18,6 +18,7 @@ import {FilterPanel} from '@/components/ui/FilterPanel';
 import {Tooltip} from '@/components/ui/Tooltip';
 import {RowActionMenu} from '@/components/ui/RowActionMenu';
 import {Pagination} from '@/components/ui/Pagination';
+import tableStyles from '@/components/ui/DataTable.module.css';
 import {documentAccess} from '@/features/documents/document-access';
 import {CompanyDocumentManager, type CompanyManagementSelection} from './CompanyDocumentManager';
 import {CompanyTemplateDrawer} from './CompanyTemplateDrawer';
@@ -34,10 +35,10 @@ const statuses: CompanyDocumentStatus[] = ['missing', 'needs_review', 'valid', '
 const tones: Record<CompanyDocumentStatus, StatusTone> = {missing: 'danger', needs_review: 'warning', valid: 'success', expiring_soon: 'warning', expired: 'danger'};
 const columns: CompanyDocumentSortColumn[] = ['name', 'status', 'expiresAt', 'updatedAt'];
 
-function UnavailableAction({children, icon, explanation, label, disabled = false, compact = false}: {
-  children?: ReactNode; icon: AppIconName; explanation: string; label?: string; disabled?: boolean; compact?: boolean;
+function UnavailableAction({children, icon, explanation, label, disabled = false, compact = false, size}: {
+  children?: ReactNode; icon: AppIconName; explanation: string; label?: string; disabled?: boolean; compact?: boolean; size?: 'compact';
 }) {
-  return <Tooltip content={explanation}>{(props) => <Button {...props} variant="secondary" className={`${styles.unavailable} ${compact ? styles.iconAction : ''}`} disabled={disabled} aria-disabled="true" aria-label={label}
+  return <Tooltip content={explanation}>{(props) => <Button {...props} variant="secondary" size={compact ? 'icon' : size} className={styles.unavailable} disabled={disabled} aria-disabled="true" aria-label={label}
     onKeyDown={(event) => {if (event.key === 'Enter' || event.key === ' ') event.preventDefault();}}><AppIcon name={icon} size={compact ? 18 : 21}/>{children}</Button>}</Tooltip>;
 }
 function SelectionCheckbox({label, checked, mixed = false, disabled, onChange}: {label: string; checked: boolean; mixed?: boolean; disabled: boolean; onChange: () => void}) {
@@ -58,6 +59,7 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
   const app = useTranslations('AppShell');
   const states = useTranslations('Foundation');
   const management = useTranslations('CompanyDocumentManagement');
+  const templatesT = useTranslations('VendorTemplates');
   const common = useTranslations('DocumentManagement');
   const snapshot = useCompanyDocumentsState();
   const {rows, error} = companyDocumentList(snapshot, companyId, locale);
@@ -70,7 +72,6 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
   const [selection, setSelection] = useState<Record<string, string>>({});
   const [activeDocument, setActiveDocument] = useState<CompanyManagementSelection | null>(null);
   const [applyingTemplate, setApplyingTemplate] = useState(false);
-  const [pageMenu, setPageMenu] = useState(false);
   const [rowMenu, setRowMenu] = useState<string | null>(null);
   const [feedback, setFeedback] = useState('');
   const [downloadFailed, setDownloadFailed] = useState(false);
@@ -99,21 +100,21 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
   function sortColumn(column: CompanyDocumentSortColumn) {setSort({column, direction: sort.column === column && sort.direction === 'ascending' ? 'descending' : 'ascending'}); setPage(1);}
   function fields(suffix = '') {
     return <>
-      <SelectField id={`company-document-type${suffix}`} label={t('typeFilter')} value={type} onChange={(event) => {setType(event.target.value); setPage(1);}}><option value="all">{t('allTypes')}</option>{typeOptions.map((value) => <option key={value} value={value}>{t(`types.${value}`)}</option>)}</SelectField>
-      <SelectField id={`company-document-status${suffix}`} label={t('statusFilter')} value={status} onChange={(event) => {setStatus(event.target.value); setPage(1);}}><option value="all">{t('allStatuses')}</option>{statuses.map((value) => <option key={value} value={value}>{t(`status.${value}`)}</option>)}</SelectField>
+      <SelectField controlSize="compact" id={`company-document-type${suffix}`} label={t('typeFilter')} value={type} onChange={(event) => {setType(event.target.value); setPage(1);}}><option value="all">{t('allTypes')}</option>{typeOptions.map((value) => <option key={value} value={value}>{t(`types.${value}`)}</option>)}</SelectField>
+      <SelectField controlSize="compact" id={`company-document-status${suffix}`} label={t('statusFilter')} value={status} onChange={(event) => {setStatus(event.target.value); setPage(1);}}><option value="all">{t('allStatuses')}</option>{statuses.map((value) => <option key={value} value={value}>{t(`status.${value}`)}</option>)}</SelectField>
     </>;
   }
   function date(value: string | null) {return value ? <time dateTime={value}>{localizedDate(value)[locale]}</time> : '—';}
   function renderRow(row: CompanyDocumentListRow) {
     return <tr key={row.id} data-company-document-row={row.id} data-current-document={row.currentDocumentId ?? undefined}>
       <td><SelectionCheckbox label={t('selectDocument', {name: row.name})} checked={selected.includes(row.id)} disabled={!eligible.has(row.id)} onChange={() => toggleRow(row.id)}/></td>
-      <td><div className={styles.identity}><span className={styles.fileIcon} data-status={row.status}><AppIcon name="file" size={24}/></span><span>{row.requirementId ? <button type="button" className={styles.documentLink} onClick={() => openDocument(row)}>{row.name}</button> : <strong>{row.name}</strong>}<small>{t(`types.${row.documentType}`)}{row.issuer && <> · {row.issuer}</>}</small></span></div></td>
-      <td><StatusBadge tone={tones[row.status]} data-status={row.status}>{t(`status.${row.status}`)}</StatusBadge></td>
+      <td><div className={styles.identity}><span className={styles.fileIcon} data-status={row.status}><AppIcon name="file" size={21}/></span><span>{row.requirementId ? <button type="button" className={`${styles.documentLink} ${tableStyles.primary}`} onClick={() => openDocument(row)}>{row.name}</button> : <strong>{row.name}</strong>}<small>{t(`types.${row.documentType}`)}{row.issuer && <> · {row.issuer}</>}</small></span></div></td>
+      <td><StatusBadge size="document" tone={tones[row.status]} data-status={row.status}>{t(`status.${row.status}`)}</StatusBadge></td>
       <td className={styles.expiry} data-status={row.status}>{date(row.expiresAt)}</td>
       <td><div className={styles.updated}>{row.updatedByDisplayName && <Avatar initials={row.updatedByDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('')}/>}<span>{row.updatedByDisplayName ?? (row.currentDocumentId ? '—' : t('notUploaded'))}<small>{date(row.updatedAt)}</small></span></div></td>
       <td><div className={styles.rowActions}>
-        {row.currentDocumentId ? <>{row.hasDownloadableFile && row.requirementId ? <Button variant="secondary" className={styles.iconAction} aria-label={t('downloadDocument', {name: row.name})} onClick={() => downloadRow(row)}><AppIcon name="download" size={18}/></Button> : <UnavailableAction compact icon="download" label={t('downloadDocument', {name: row.name})} explanation={t('fileUnavailable')}/>}<UnavailableAction compact icon="share" label={t('shareDocument', {name: row.name})} explanation={t('sharingComingSoon')}/></>
-          : <Button variant="secondary" disabled={!access.replace || !row.requirementId} onClick={() => openDocument(row, 'add')}><AppIcon name="upload" size={18}/>{t('upload')}</Button>}
+        {row.currentDocumentId ? <>{row.hasDownloadableFile && row.requirementId ? <Button variant="secondary" size="icon" aria-label={t('downloadDocument', {name: row.name})} onClick={() => downloadRow(row)}><AppIcon name="download" size={18}/></Button> : <UnavailableAction compact icon="download" label={t('downloadDocument', {name: row.name})} explanation={t('fileUnavailable')}/>}<UnavailableAction compact icon="share" label={t('shareDocument', {name: row.name})} explanation={t('sharingComingSoon')}/></>
+          : <Button variant="secondary" size="table" disabled={!access.replace || !row.requirementId} onClick={() => openDocument(row, 'add')}><AppIcon name="upload" size={18}/>{t('upload')}</Button>}
         {row.requirementId && <RowActionMenu label={t('rowActions', {name: row.name})} open={rowMenu === row.id} onOpenChange={(open) => setRowMenu(open ? row.id : null)} items={[
           {label: common('openDetails'), onSelect: () => openDocument(row)},
           ...(companyDocumentHistory(companyId, row.requirementId).length ? [{label: common('historyAction'), onSelect: () => openDocument(row, 'history')}] : []),
@@ -125,28 +126,29 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
 
   return <div className={styles.page}>
     <AuthenticatedPageHeader className={styles.header} context={<AuthenticatedBreadcrumbs root={{label: app('navigation.company')}} items={[{label: t('title')}]} label={t('breadcrumbLabel')}/>} title={t('title')} titleId="company-documents-title" description={t('description')}
-      actions={<div className={styles.headerActions}><UnavailableAction icon="share" explanation={t('sharingComingSoon')}>{t('shareDocuments')}</UnavailableAction><AuthenticatedPagePrimaryAction icon="plus" disabled={!access.replace} onClick={() => {setFeedback(''); setActiveDocument({mode: 'add'});}}>{t('addDocuments')}</AuthenticatedPagePrimaryAction>{access.replace ? <RowActionMenu label={t('pageActions')} items={[{label: management('applyTemplate'), onSelect: () => {setFeedback(''); setApplyingTemplate(true);}}]} open={pageMenu} onOpenChange={setPageMenu}/> : <Button variant="secondary" className={styles.iconAction} disabled aria-label={t('pageActions')}><AppIcon name="more" size={21}/></Button>}</div>}/>
+      actions={<div className={styles.headerActions}><UnavailableAction icon="share" explanation={t('sharingComingSoon')}>{t('shareDocuments')}</UnavailableAction><AuthenticatedPagePrimaryAction icon="plus" disabled={!access.replace} onClick={() => {setFeedback(''); setActiveDocument({mode: 'add'});}}>{t('addDocuments')}</AuthenticatedPagePrimaryAction></div>}/>
     {feedback && <p role="status">{feedback}</p>}{downloadFailed && <p role="alert">{common('downloadUnavailable')}</p>}
     {error ? <Surface className={styles.error}><ErrorState title={states('errorTitle')} description={states('errorDescription')}/></Surface> : <>
       <section className={styles.metrics} aria-label={t('summaryLabel')}>
-        <SummaryMetricCard title={t('total')} value={metrics.total} note={t('currentDocuments')} icon="file" tone="blue"/>
-        <SummaryMetricCard title={t('attention')} value={metrics.attention} note={t('attentionDescription')} icon="warning" tone="amber"/>
-        <SummaryMetricCard title={t('activeShares')} value={metrics.activeShares} note={t('sharesDescription')} icon="share" tone="green"/>
+        <SummaryMetricCard variant="documents" title={t('total')} value={metrics.total} note={t('currentDocuments')} icon="file" tone="blue"/>
+        <SummaryMetricCard variant="documents" title={t('attention')} value={metrics.attention} note={t('attentionDescription')} icon="warning" tone="amber"/>
+        <SummaryMetricCard variant="documents" title={t('activeShares')} value={metrics.activeShares} note={t('sharesDescription')} icon="share" tone="green"/>
       </section>
       <section className={styles.toolbar} aria-label={t('filters')}>
         <SearchInput label={t('searchLabel')} placeholder={t('searchPlaceholder')} value={query} onChange={(event) => {setQuery(event.target.value); setPage(1);}}/>
         <div className={styles.inlineFilters}>{fields()}</div>
-        <div className={styles.sort}><SelectField id="company-document-sort" label={t('sortLabel')} value={`${sort.column}:${sort.direction}`} onChange={(event) => {const [column, direction] = event.target.value.split(':') as [CompanyDocumentSortColumn, CompanyDocumentSort['direction']]; setSort({column, direction}); setPage(1);}}>{columns.flatMap((column) => (['ascending', 'descending'] as const).map((direction) => <option key={`${column}:${direction}`} value={`${column}:${direction}`}>{t(`sort.${column}`)} {direction === 'ascending' ? '↑' : '↓'}</option>))}</SelectField></div>
+        <div className={styles.sort}><SelectField controlSize="compact" id="company-document-sort" label={t('sortLabel')} value={`${sort.column}:${sort.direction}`} onChange={(event) => {const [column, direction] = event.target.value.split(':') as [CompanyDocumentSortColumn, CompanyDocumentSort['direction']]; setSort({column, direction}); setPage(1);}}>{columns.flatMap((column) => (['ascending', 'descending'] as const).map((direction) => <option key={`${column}:${direction}`} value={`${column}:${direction}`}>{t(`sort.${column}`)} {direction === 'ascending' ? '↑' : '↓'}</option>))}</SelectField></div>
         <FilterPanel activeCount={activeCount} onReset={resetFilters}>{fields('-panel')}</FilterPanel>
       </section>
       <Surface className={styles.list}>
+        <div className={styles.listHeader}><Button size="compact" disabled={!access.replace} onClick={() => {setFeedback(''); setApplyingTemplate(true);}}><AppIcon name="plus" size={18}/>{templatesT('title')}</Button></div>
         <div ref={bulkRef} className={styles.bulk}>
-          <div className={styles.selected}><SelectionCheckbox label={t('selectPage')} checked={onPage.length > 0 && checkedOnPage === onPage.length} mixed={checkedOnPage > 0 && checkedOnPage < onPage.length} disabled={onPage.length === 0} onChange={togglePage}/><span role="status" aria-live="polite">{t('selected', {count: selected.length})}</span></div>
-          <div className={styles.bulkActions}><Button variant="secondary" disabled={selected.length === 0} onClick={() => {const chosen = rows.filter((row) => selected.includes(row.id)); setDownloadFailed(chosen.some((row) => !row.requirementId || !row.currentDocumentId || !companyDocumentFile(companyId, row.requirementId, row.currentDocumentId)) || !chosen.every((row) => Boolean(row.requirementId && row.currentDocumentId && downloadCompanyDocument(companyId, row.requirementId, row.currentDocumentId))));}}><AppIcon name="download" size={21}/>{t('downloadSelected')}</Button><UnavailableAction icon="share" disabled={selected.length === 0} explanation={t('sharingComingSoon')}>{t('shareSelected')}</UnavailableAction>
-            {selected.length > 0 ? <RowActionMenu label={t('bulkActions')} items={[{label: t('deselectAll'), onSelect: deselectAll}]} open={bulkMenu} onOpenChange={setBulkMenu}/> : <Button variant="secondary" className={styles.iconAction} disabled aria-label={t('bulkActions')}><AppIcon name="more" size={18}/></Button>}</div>
+          <div className={`${styles.selected} ${tableStyles.selection}`}><SelectionCheckbox label={t('selectPage')} checked={onPage.length > 0 && checkedOnPage === onPage.length} mixed={checkedOnPage > 0 && checkedOnPage < onPage.length} disabled={onPage.length === 0} onChange={togglePage}/><span role="status" aria-live="polite">{t('selected', {count: selected.length})}</span></div>
+          <div className={styles.bulkActions}><Button variant="secondary" size="compact" disabled={selected.length === 0} onClick={() => {const chosen = rows.filter((row) => selected.includes(row.id)); setDownloadFailed(chosen.some((row) => !row.requirementId || !row.currentDocumentId || !companyDocumentFile(companyId, row.requirementId, row.currentDocumentId)) || !chosen.every((row) => Boolean(row.requirementId && row.currentDocumentId && downloadCompanyDocument(companyId, row.requirementId, row.currentDocumentId))));}}><AppIcon name="download" size={21}/>{t('downloadSelected')}</Button><UnavailableAction size="compact" icon="share" disabled={selected.length === 0} explanation={t('sharingComingSoon')}>{t('shareSelected')}</UnavailableAction>
+            {selected.length > 0 ? <RowActionMenu label={t('bulkActions')} items={[{label: t('deselectAll'), onSelect: deselectAll}]} open={bulkMenu} onOpenChange={setBulkMenu}/> : <Button variant="secondary" size="icon" disabled aria-label={t('bulkActions')}><AppIcon name="more" size={18}/></Button>}</div>
         </div>
         {rows.length === 0 ? <EmptyState icon={<AppIcon name="file" size={28}/>} title={t('empty')} description={t('emptyDescription')}/> : filtered.length === 0 ? <EmptyState title={t('noMatches')} action={<Button variant="secondary" onClick={() => {resetFilters(); setQuery('');}}>{t('resetFilters')}</Button>}/> : <>
-          <div className={styles.tableScroll} role="region" aria-label={t('tableRegion')} tabIndex={0}><table className={styles.table}>
+          <div className={styles.tableScroll} role="region" aria-label={t('tableRegion')} tabIndex={0}><table className={`${tableStyles.table} ${styles.table}`}>
             <thead><tr><th scope="col"><SelectionCheckbox label={t('selectPageHeader')} checked={onPage.length > 0 && checkedOnPage === onPage.length} mixed={checkedOnPage > 0 && checkedOnPage < onPage.length} disabled={onPage.length === 0} onChange={togglePage}/></th>
               {columns.map((column) => <th key={column} scope="col" aria-sort={sort.column === column ? sort.direction : undefined}><button type="button" className={styles.sortHeader} onClick={() => sortColumn(column)}>{t(`table.${column}`)}<AppIcon name="sort" size={14}/></button></th>)}<th scope="col">{t('table.actions')}</th></tr></thead>
             <tbody>{visible.map(renderRow)}</tbody>

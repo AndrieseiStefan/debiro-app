@@ -4,7 +4,7 @@ import {useCallback, useRef, useState, type FormEvent} from 'react';
 import {useTranslations} from 'next-intl';
 import {Drawer, DrawerHeader} from '@/components/ui/Drawer';
 import {SelectField} from '@/components/ui/SelectField';
-import {Button} from '@/components/ui/Button';
+import {Button, ButtonLink} from '@/components/ui/Button';
 import {documentAccess} from '@/features/documents/document-access';
 import {getRequirementsWorkspace, useRequirementsState} from '@/features/requirements/requirements-state';
 import {templateAppliesToTarget} from '@/features/requirements/template-scope';
@@ -13,7 +13,7 @@ import styles from '@/features/documents/AddDocumentDrawer.module.css';
 
 /** The existing company-template application flow, separate from file upload. */
 export function CompanyTemplateDrawer({companyId, locale, onClose}: {companyId: string; locale: 'ro' | 'en'; onClose: () => void}) {
-  const t = useTranslations('CompanyDocumentManagement'), common = useTranslations('DocumentManagement');
+  const t = useTranslations('CompanyDocumentManagement'), common = useTranslations('DocumentManagement'), templatesT = useTranslations('VendorTemplates');
   const templates = getRequirementsWorkspace(useRequirementsState(), companyId).templates.filter((item) => templateAppliesToTarget(item, 'company'));
   const triggerRef = useRef<HTMLElement | null>(typeof document !== 'undefined' && document.activeElement instanceof HTMLElement ? document.activeElement : null);
   const [phase, setPhase] = useState<'open' | 'closing'>('open');
@@ -26,10 +26,10 @@ export function CompanyTemplateDrawer({companyId, locale, onClose}: {companyId: 
     else {setError(''); setMessage(t('templateApplied', {count: result.added}));}
   }
   return <Drawer phase={phase} onClose={close} onExited={onClose} triggerRef={triggerRef} titleId="company-template-title" descriptionId="company-template-description" closeLabel={common('close')} contentClassName={styles.content}>
-    <DrawerHeader titleId="company-template-title" title={t('applyTemplate')}/>
+    <DrawerHeader titleId="company-template-title" title={templatesT('title')}/>
     <p id="company-template-description" className={styles.intro}>{t('templateDescription')}</p>
     <form noValidate onSubmit={submit} className={styles.form}>
-      {templates.length ? <SelectField id="company-template" label={t('template')} placeholder={t('chooseTemplate')} value={templateId} onChange={(event) => {setTemplateId(event.target.value); setMessage(''); setError('');}}>{templates.map((template) => <option key={template.id} value={template.id}>{template.title[locale]}</option>)}</SelectField> : <p>{t('noTemplates')}</p>}
+      {templates.length ? <SelectField controlSize="compact" id="company-template" label={t('template')} placeholder={t('chooseTemplate')} value={templateId} onChange={(event) => {setTemplateId(event.target.value); setMessage(''); setError('');}}>{templates.map((template) => <option key={template.id} value={template.id}>{template.title[locale]}</option>)}</SelectField> : <><p>{t('noTemplates')}</p>{documentAccess(companyId).replace && <ButtonLink variant="secondary" href="/requirements">{templatesT('openRequirements')}</ButtonLink>}</>}
       {message && <p role="status">{message}</p>}{error && <p role="alert" className={styles.error}>{error}</p>}
       <div className={styles.actions}><Button variant="secondary" onClick={close}>{common('cancel')}</Button><Button type="submit" disabled={!templateId || !documentAccess(companyId).replace}>{t('applyTemplate')}</Button></div>
     </form>

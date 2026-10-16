@@ -493,7 +493,9 @@ test('renews an expiring file and removes only its previous version from next ex
   await close(page, false);
   await expect(page.getByRole('row', {name: /renewed-insurance.pdf/})).toContainText('Valid');
   await sidebar(page, false, 'Notificări');
-  await expect(page.getByRole('row', {name: /Global Clean Services Poliță RCA/})).toHaveCount(0);
+  const expiring = page.getByRole('table').filter({has: page.getByRole('columnheader', {name: 'ZILE RĂMASE', exact: true})});
+  await expect(expiring).toBeVisible();
+  await expect(expiring.getByRole('row', {name: /Global Clean Services Poliță RCA/})).toHaveCount(0);
   await sidebar(page, false, 'Furnizori');
   await expect(page.locator('[data-vendor-id="global-clean"]')).toContainText('2099');
 });

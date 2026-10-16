@@ -24,6 +24,10 @@ describe('Company Documents shared listing UI', () => {
     const copy = locale === 'ro' ? ro : en;
     view(locale);
     expect(screen.getByRole('heading', {level: 1})).toHaveTextContent(copy.CompanyDocuments.title);
+    const templateAction = screen.getByRole('button', {name: copy.VendorTemplates.title});
+    expect(templateAction).toBeVisible(); expect(templateAction).toHaveAttribute('data-size', 'compact');
+    expect(templateAction.closest('[aria-labelledby="company-documents-title"]')).toBeNull();
+    expect(screen.queryByRole('menuitem', {name: copy.CompanyDocumentManagement.applyTemplate})).toBeNull();
     expect(screen.getByRole('navigation', {name: copy.CompanyDocuments.breadcrumbLabel})).toHaveTextContent(`${copy.AppShell.navigation.company}${copy.CompanyDocuments.title}`);
     const summary = screen.getByRole('region', {name: copy.CompanyDocuments.summaryLabel});
     expect([...summary.querySelectorAll('strong')].map((item) => item.textContent)).toEqual(['5', '4', '0']);
@@ -49,17 +53,29 @@ describe('Company Documents shared listing UI', () => {
     expect(within(screen.getByRole('table')).getAllByRole('row')).toHaveLength(7);
   });
 
-  it('preserves eligible selection across pages, supports deselect all, and resets page on filtering', () => {
+  it('preserves eligible selection and pagination when applying a template, supports deselect all, and resets page on filtering', async () => {
     const snapshot = structuredClone(initial), workspace = snapshot.byCompany['demo-company'];
     const base = workspace.requirements[0], record = workspace.documents[0];
     workspace.requirements = Array.from({length: 22}, (_, index) => ({...base, id: `req-${index}`, currentDocumentId: `doc-${index}`, name: {ro: `Document ${index}`, en: `Document ${index}`}}));
     workspace.documents = workspace.requirements.map((item, index) => ({...record, id: item.currentDocumentId!, documentName: item.name, issuer: index < 3 ? 'ONRC' : 'Other'}));
     owner().state = snapshot; owner().files.set('demo-company', new Map(workspace.documents.map((doc) => [doc.id, new Blob(['test-only actual bytes'])])));
+    const templates = structuredClone(initialTemplates), template = {...templates.byCompany['demo-company'].templates[0], scope: 'company' as const, categoryId: null};
+    templates.byCompany['demo-company'].templates.push({...template, id: 'pagination-template', documents: [{id: 'pagination-rule', templateId: 'pagination-template', catalogDocumentTypeId: 'tax', required: true, expiryWarningDays: 30, validityMonths: 12}]});
+    templateOwner().state = templates;
     view('en');
     fireEvent.click(screen.getByRole('checkbox', {name: en.CompanyDocuments.selectPage})); expect(screen.getByRole('status')).toHaveTextContent('10 selected');
     fireEvent.click(screen.getByRole('button', {name: 'Next page'}));
     expect(screen.getByRole('status')).toHaveTextContent('10 selected');
     fireEvent.click(screen.getByRole('checkbox', {name: en.CompanyDocuments.selectPage})); expect(screen.getByRole('status')).toHaveTextContent('20 selected');
+    fireEvent.click(screen.getByRole('button', {name: en.VendorTemplates.title}));
+    const dialog = screen.getByRole('dialog');
+    fireEvent.change(dialog.querySelector('#company-template')!, {target: {value: 'pagination-template'}});
+    fireEvent.click(within(dialog).getByRole('button', {name: en.CompanyDocumentManagement.applyTemplate}));
+    fireEvent.click(within(dialog).getByRole('button', {name: en.DocumentManagement.cancel}));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByRole('status')).toHaveTextContent('20 selected');
+    expect(screen.getByRole('button', {name: 'Page 2'})).toHaveAttribute('aria-current', 'page');
+    expect(owner().state.byCompany['demo-company'].documents).toEqual(workspace.documents);
     fireEvent.click(screen.getByRole('button', {name: en.CompanyDocuments.bulkActions}));
     fireEvent.click(screen.getByRole('menuitem', {name: en.CompanyDocuments.deselectAll})); expect(screen.getByRole('status')).toHaveTextContent('0 selected');
     fireEvent.change(screen.getByRole('searchbox'), {target: {value: 'ONRC'}});
@@ -88,6 +104,7 @@ describe('Company Documents shared listing UI', () => {
     let dialog = screen.getByRole('dialog', {name: en.CompanyDocumentManagement.addTitle});
     expect(within(dialog).getByRole('note')).toHaveTextContent(en.CompanyDocumentManagement.sessionNotice);
     expect(dialog.querySelector('#company-template, #company-upload-requirement, input[type=checkbox]')).toBeNull();
+    for (const id of ['name', 'type', 'issuer', 'expires']) expect(dialog.querySelector(`#company-upload-${id}`)).toHaveAttribute('data-size', 'compact');
     expect(within(dialog).queryByText(/standalone|company requirement/i)).toBeNull();
     fireEvent.click(within(dialog).getByRole('button', {name: en.AddDocument.submit}));
     expect(within(dialog).getByText(en.CompanyDocumentManagement.errors.file)).toBeVisible();
@@ -120,6 +137,7 @@ describe('Company Documents shared listing UI', () => {
     act(() => {const state = structuredClone(initial); state.byCompany['demo-company'].requirements = state.byCompany['demo-company'].requirements.filter((item) => item.id !== 'company-requirement:criminal-record'); owner().state = state; owner().listeners.forEach((notify) => notify());});
     expect(dialog.querySelector('#company-upload-name')).toHaveAttribute('readonly');
     expect(dialog.querySelector('#company-upload-type')).toHaveAttribute('readonly');
+    for (const id of ['name', 'type', 'issuer', 'expires']) expect(dialog.querySelector(`#company-upload-${id}`)).toHaveAttribute('data-size', 'compact');
     const before = structuredClone(owner().state);
     fireEvent.click(within(dialog).getByRole('button', {name: en.AddDocument.submit}));
     expect(within(dialog).getByRole('alert')).toHaveTextContent(en.CompanyDocumentManagement.errors.unavailable);
@@ -153,11 +171,10 @@ describe('Company Documents shared listing UI', () => {
     state.byCompany['demo-company'].templates.push(companyTemplate, {...companyTemplate, id: 'employee-template', scope: 'employee'});
     templateOwner().state = state;
     view(locale);
-    const trigger = screen.getByRole('button', {name: copy.CompanyDocuments.pageActions});
+    const trigger = screen.getByRole('button', {name: copy.VendorTemplates.title});
     act(() => trigger.focus());
     fireEvent.click(trigger);
-    fireEvent.click(screen.getByRole('menuitem', {name: copy.CompanyDocumentManagement.applyTemplate}));
-    const dialog = screen.getByRole('dialog', {name: copy.CompanyDocumentManagement.applyTemplate});
+    const dialog = screen.getByRole('dialog', {name: copy.VendorTemplates.title});
     expect(within(dialog).getAllByRole('option').map((item) => item.textContent)).toEqual([copy.CompanyDocumentManagement.chooseTemplate, base.title[locale]]);
     expect(dialog.querySelector('input[type=file], #company-upload-name')).toBeNull();
     const apply = within(dialog).getByRole('button', {name: copy.CompanyDocumentManagement.applyTemplate});
@@ -179,11 +196,25 @@ describe('Company Documents shared listing UI', () => {
 
   it('shows an honest empty template state without an upload form', () => {
     view('en');
-    fireEvent.click(screen.getByRole('button', {name: en.CompanyDocuments.pageActions}));
-    fireEvent.click(screen.getByRole('menuitem', {name: en.CompanyDocumentManagement.applyTemplate}));
+    fireEvent.click(screen.getByRole('button', {name: en.VendorTemplates.title}));
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByText(en.CompanyDocumentManagement.noTemplates)).toBeVisible();
     expect(within(dialog).getByRole('button', {name: en.CompanyDocumentManagement.applyTemplate})).toBeDisabled();
     expect(dialog.querySelector('input[type=file], select')).toBeNull();
+    expect(within(dialog).getByRole('link', {name: en.VendorTemplates.openRequirements})).toHaveAttribute('href', '/requirements');
+  });
+
+  it('rejects a selected template that becomes cross-scope without changing document data or reporting success', () => {
+    const state = structuredClone(initialTemplates), base = state.byCompany['demo-company'].templates[0];
+    const template = {...base, scope: 'company' as const, categoryId: null};
+    state.byCompany['demo-company'].templates = [template]; templateOwner().state = state;
+    view('en'); fireEvent.click(screen.getByRole('button', {name: en.VendorTemplates.title}));
+    const dialog = screen.getByRole('dialog');
+    fireEvent.change(dialog.querySelector('#company-template')!, {target: {value: template.id}});
+    templateOwner().state = {...state, byCompany: {...state.byCompany, 'demo-company': {...state.byCompany['demo-company'], templates: [{...template, scope: 'employee'}]}}};
+    const before = structuredClone(owner().state);
+    fireEvent.click(within(dialog).getByRole('button', {name: en.CompanyDocumentManagement.applyTemplate}));
+    expect(within(dialog).getByRole('alert')).toHaveTextContent(en.CompanyDocumentManagement.errors.unavailable);
+    expect(within(dialog).queryByRole('status')).toBeNull(); expect(owner().state).toEqual(before); expect(owner().files.size).toBe(0);
   });
 });

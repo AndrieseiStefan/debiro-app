@@ -1,8 +1,8 @@
 import {expect, test, type Page} from '@playwright/test';
 
 async function openSelector(page: Page, english = false) {
-  await page.getByRole('button', {name: english ? 'Set up documents from templates' : 'Setează documente din șablon', exact: true}).click();
-  return page.getByRole('dialog', {name: english ? 'Set up documents from templates' : 'Setează documente din șablon', exact: true});
+  await page.getByRole('button', {name: english ? 'Set Documents from Template' : 'Setează documente din șablon', exact: true}).click();
+  return page.getByRole('dialog', {name: english ? 'Set Documents from Template' : 'Setează documente din șablon', exact: true});
 }
 async function applyConstruction(page: Page, english = false, multiple = false) {
   const drawer = await openSelector(page, english);
@@ -177,7 +177,7 @@ test('English selection/upload/removal and narrow drawer/modal containment follo
     }
     await page.keyboard.press('Escape');
     await expect(summary).not.toBeVisible();
-    await expect(page.getByRole('button', {name: 'Set up documents from templates', exact: true})).toBeFocused();
+    await expect(page.getByRole('button', {name: 'Set Documents from Template', exact: true})).toBeFocused();
   }
   await applyConstruction(page, true);
   const row = page.getByRole('row').filter({hasText: 'Work permit'});

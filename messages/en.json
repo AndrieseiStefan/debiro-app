@@ -1331,7 +1331,6 @@
     "pagination": "Pagination", "previousPage": "Previous page", "nextPage": "Next page", "pageNumber": "Page {page}"
   },
   "CompanyDocuments": {
-    "pageActions": "Company document actions",
     "tableRegion": "Company documents table",
     "title": "Company Documents",
     "breadcrumbLabel": "Page navigation",
@@ -1385,7 +1384,7 @@
     "loadingLabel": "Loading content"
   },
   "VendorTemplates": {
-    "title": "Set up documents from templates",
+    "title": "Set Documents from Template",
     "close": "Close template selector",
     "description": "Select one or more templates to add the relevant documents for this supplier. Only documents that do not already exist will be added.",
     "confirmTitle": "Apply templates",

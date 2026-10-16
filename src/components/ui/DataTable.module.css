@@ -1,0 +1,8 @@
+/* Established Vendor Details document-table presentation; features own columns and data. */
+.table {border-collapse: collapse; color: #193258; font-size: 13px; text-align: left; width: 100%;}
+.table th {background: #f0f6ff; color: #55719c; font-size: 11px; font-weight: 600; height: 39px; letter-spacing: .015em; white-space: nowrap;}
+.table th, .table td {border-bottom: 1px solid #e2ebf8; padding: 8px 14px;}
+.table strong {font-weight: 650; line-height: 1.25;}
+.primary {font-weight: 700; line-height: inherit;}
+.table small {color: #647fa4; display: block; font-size: 12px; line-height: 1.25; margin-top: 3px;}
+.selection {color: #58709a; font-size: 13px;}

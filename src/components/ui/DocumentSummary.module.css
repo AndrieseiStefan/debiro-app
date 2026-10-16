@@ -1,0 +1,31 @@
+/* Canonical Documents summary variant, shared with company-owned document views. */
+.card {height: 119px; min-width: 0; overflow: hidden; padding: 0;}
+.body, .action {align-items: flex-start; background: transparent; border: 0; color: inherit; display: flex; gap: 19px; height: 100%; padding: 16px 15px; text-align: left; width: 100%;}
+.action {cursor: pointer;}
+.action:hover {background: #f8fbff;}
+.icon {align-items: center; background: #e4efff; border-radius: 50%; color: #0764db; display: inline-flex; flex: 0 0 48px; height: 48px; justify-content: center;}
+.card[data-status='review'] .icon {background: #ffe4e9; color: #df304b;}
+.card[data-status='valid'] .icon {background: #e2f7ef; color: #079b6d;}
+.card[data-status='expiring'] .icon {background: #fff0d7; color: #dc8b00;}
+.copy {display: grid; min-width: 0; padding-top: 1px;}
+.copy > :first-child {color: #1a2b4c; font-size: 13px; font-weight: 700; line-height: 1.25;}
+.copy > :nth-child(2) {color: #14223d; font-size: 29px; font-weight: 700; line-height: 1.15; margin-top: 7px;}
+.copy > :last-child {color: #069666; font-size: 12px; font-weight: 600; margin-top: 6px; white-space: nowrap;}
+.card[data-status='review'] .copy > :last-child {color: #d92543;}
+.card[data-status='expiring'] .copy > :last-child {color: #cb7600;}
+.chevron {color: #5578af; flex: 0 0 auto; margin-left: auto; margin-top: 2px;}
+@media (max-width: 767px) {
+  .card {height: 108px;}
+  .body, .action {gap: 9px; padding: 12px 10px;}
+  .icon {flex-basis: 36px; height: 36px;}
+  .icon svg {height: 19px; width: 19px;}
+  .copy > :first-child {font-size: 11px;}
+  .copy > :nth-child(2) {font-size: 24px;}
+  .copy > :last-child {font-size: 10px; white-space: normal;}
+  .chevron {display: none;}
+}
+@media (max-width: 380px) {
+  .body, .action {gap: 6px; padding-inline: 7px;}
+  .icon {flex-basis: 30px; height: 30px;}
+  .icon svg {height: 17px; width: 17px;}
+}

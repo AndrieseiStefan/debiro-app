@@ -9,6 +9,7 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
   loading?: boolean;
   loadingLabel?: string;
+  size?: 'compact' | 'table' | 'icon';
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button({
@@ -19,6 +20,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   disabled,
   type = 'button',
   className,
+  size,
   ...props
 }: ButtonProps, ref) {
   return (
@@ -27,6 +29,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ref={ref}
       type={type}
       className={[styles.button, styles[variant], className].filter(Boolean).join(' ')}
+      data-size={size}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       aria-label={loading ? (loadingLabel ?? props['aria-label']) : props['aria-label']}

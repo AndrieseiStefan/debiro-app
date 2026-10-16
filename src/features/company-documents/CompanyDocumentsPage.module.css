@@ -8,43 +8,38 @@
 .sort {min-width: 0;}
 .list {overflow: hidden; padding: 0;}
 .bulk {align-items: center; display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; min-height: 74px; padding: 12px 18px;}
-.selected {align-items: center; color: #315e9e; display: flex; font-size: 14px; gap: 20px;}
+.selected {align-items: center; display: flex; gap: 20px;}
 .bulkActions, .rowActions {align-items: center; display: flex; flex-wrap: wrap; gap: 8px;}
-.bulkActions button {font-size: 13px; min-height: 40px; padding-inline: 12px;}
+.listHeader {display: flex; justify-content: flex-end; padding: var(--space-3) var(--space-4);}
+.listHeader button {max-width: 100%; white-space: normal;}
+.listHeader button > span {min-width: 0;}
 .unavailable {cursor: default;}
-.iconAction {height: 38px; min-height: 38px; padding: 8px; width: 38px;}
 .tableScroll {max-width: 100%; overflow-x: auto; scrollbar-width: thin;}
-.table {border-collapse: collapse; color: #203a61; font-size: 14px; min-width: 940px; text-align: left; width: 100%;}
-.table th {background: #f1f7ff; color: #4f6fa1; font-size: 11px; font-weight: 600; height: 42px; white-space: nowrap;}
-.table td, .table th {border-bottom: 1px solid var(--color-border-subtle); padding: 12px 14px;}
+.table {min-width: 940px;}
 .table th:first-child, .table td:first-child {padding-left: 18px; width: 46px;}
 .table td:nth-child(2) {width: 31%;}
 .table td:nth-child(3) {white-space: nowrap;}
 .table td:last-child {min-width: 150px;}
-.table td {height: 78px;}
+.table td {height: 63px;}
 .table input, .bulk input {accent-color: var(--color-action-primary); height: 18px; width: 18px;}
 .table input:focus-visible, .bulk input:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 2px;}
 .sortHeader {align-items: center; background: transparent; border: 0; color: inherit; display: flex; font: inherit; gap: 9px; padding: 0; text-align: left; text-transform: uppercase;}
 .sortHeader:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 3px;}
 .identity, .updated {align-items: center; display: flex; gap: 12px; min-width: 0;}
-.identity > span:last-child, .updated > span:last-child {display: grid; gap: 5px;}
-.identity strong {color: #142448; font-size: 14px; font-weight: 650;}
-.documentLink {background: transparent; border: 0; color: #142448; cursor: pointer; font: inherit; font-weight: 650; padding: 0; text-align: left;}
+.identity > span:last-child, .updated > span:last-child {display: grid;}
+.documentLink {background: transparent; border: 0; color: inherit; cursor: pointer; padding: 0; text-align: left;}
 .documentLink:hover {color: var(--color-action-primary);}
 .documentLink:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 3px; border-radius: var(--radius-field);}
-.identity small, .updated small {color: #627da6; font-size: 12px;}
-.fileIcon {align-items: center; background: #e5f0ff; border-radius: 9px; color: #0660df; display: flex; flex: 0 0 42px; height: 44px; justify-content: center;}
+.fileIcon {align-items: center; background: #e5f0ff; border-radius: var(--radius-field); color: #0660df; display: flex; flex: 0 0 38px; height: 38px; justify-content: center;}
 .fileIcon[data-status='missing'], .fileIcon[data-status='expired'] {background: #ffe8ee; color: #f12953;}
 .fileIcon[data-status='expiring_soon'], .fileIcon[data-status='needs_review'] {background: #fff1d5; color: #e18a00;}
 .expiry[data-status='expired'] {color: #ed1a3d;}
 .expiry[data-status='expiring_soon'] {color: #cc7900;}
 .rowActions {flex-wrap: nowrap;}
-.rowActions button {font-size: 13px; min-height: 38px; padding-inline: 10px;}
-.rowActions .iconAction {padding: 8px;}
 .error {margin-top: 24px;}
-/* Keep the page's additional overflow action from squeezing its title at reduced widths. */
+/* Keep the page-header actions from squeezing its title at reduced widths. */
 @media (max-width: 1199px) {.header > :last-child {flex-direction: column;} .header > :last-child > :last-child {margin-top: 0; width: 100%;}}
 @media (max-width: 1400px) {.toolbar {grid-template-columns: minmax(200px, 1fr) minmax(290px, 1fr) auto;} .sort {grid-column: 1 / 3; grid-row: 2;} .toolbar > div:last-child {grid-column: 3; grid-row: 1;}}
 @media (max-width: 1000px) {.toolbar {grid-template-columns: minmax(0, 1fr) auto;} .toolbar > div:first-child {grid-column: 1 / -1;} .inlineFilters {grid-column: 1 / -1;} .sort {grid-column: 1; grid-row: 3;} .toolbar > div:last-child {grid-column: 2; grid-row: 3;}}
-@media (max-width: 600px) {.metrics {gap: 12px;} .toolbar {gap: 10px;} .inlineFilters {grid-template-columns: minmax(0, 1fr); gap: 10px;} .sort {grid-row: 3;} .bulk {align-items: stretch; flex-direction: column; padding: 14px;} .bulkActions button {flex: 1; white-space: normal;} .bulkActions .iconAction {flex: 0 0 38px;}}
+@media (max-width: 600px) {.metrics {gap: 12px;} .toolbar {gap: 10px;} .inlineFilters {grid-template-columns: minmax(0, 1fr); gap: 10px;} .sort {grid-row: 3;} .bulk {align-items: stretch; flex-direction: column; padding: 14px;} .bulkActions button {flex: 1; white-space: normal;} .bulkActions button[data-size='icon'] {flex: 0 0 38px;}}
 @media (max-width: 767px) {.headerActions {align-items: stretch; flex-direction: column;}}

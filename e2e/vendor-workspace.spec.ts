@@ -71,7 +71,7 @@ for (const english of [false, true]) {
     await page.getByRole('button', {name: english ? 'Invite supplier' : 'Invită furnizor', exact: true}).click();
     await page.getByRole('dialog').getByRole('button', {name: english ? 'Send invitation' : 'Trimite invitația'}).click();
     await page.keyboard.press('Escape'); await expect(page.getByRole('dialog')).toHaveCount(0);
-    await page.getByRole('button', {name: english ? 'Set up documents from templates' : 'Setează documente din șablon'}).click();
+    await page.getByRole('button', {name: english ? 'Set Documents from Template' : 'Setează documente din șablon'}).click();
     const selector = page.getByRole('dialog');
     await selector.getByRole('checkbox', {name: english ? /^Maintenance services/ : /^Servicii de mentenanță/}).check();
     await selector.getByRole('button', {name: english ? /^Apply 1 / : /^Aplică 1 /}).click();
@@ -222,7 +222,7 @@ for (const english of [false, true]) {
     await page.getByRole('searchbox', {name: english ? 'Search documents' : 'Caută documente'}).fill('no-matching-document');
     await expect(banner).toHaveText(message(1));
     await page.getByRole('searchbox', {name: english ? 'Search documents' : 'Caută documente'}).fill('');
-    await page.getByRole('button', {name: english ? 'Set up documents from templates' : 'Setează documente din șablon'}).click();
+    await page.getByRole('button', {name: english ? 'Set Documents from Template' : 'Setează documente din șablon'}).click();
     const selector = page.getByRole('dialog');
     await selector.getByRole('checkbox', {name: english ? /^Construction subcontractor/ : /^Subcontractor construcții/}).check();
     await selector.getByRole('button', {name: english ? 'Apply 1 template' : 'Aplică 1 șablon'}).click();

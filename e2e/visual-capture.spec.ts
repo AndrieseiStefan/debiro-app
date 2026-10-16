@@ -318,8 +318,8 @@ test('capture an unapproved route screenshot for manual mockup comparison', asyn
     } else if (action === 'template-selector' || action === 'template-summary' || action === 'template-applied' || action === 'template-remove-association' || action === 'template-remove-uploaded') {
       if (route !== '/vendors/construct-pro' && route !== '/en/vendors/construct-pro') throw new Error('Template assignment capture requires the canonical vendor route.');
       const english = route.startsWith('/en');
-      await page.getByRole('button', {name: english ? 'Set up documents from templates' : 'Setează documente din șablon', exact: true}).click();
-      const selector = page.getByRole('dialog', {name: english ? 'Set up documents from templates' : 'Setează documente din șablon', exact: true});
+      await page.getByRole('button', {name: english ? 'Set Documents from Template' : 'Setează documente din șablon', exact: true}).click();
+      const selector = page.getByRole('dialog', {name: english ? 'Set Documents from Template' : 'Setează documente din șablon', exact: true});
       await selector.getByRole('checkbox', {name: english ? /^Construction subcontractor/ : /^Subcontractor construcții/}).check();
       await selector.getByRole('checkbox', {name: english ? /^Maintenance services/ : /^Servicii de mentenanță/}).check();
       if (action !== 'template-selector') {

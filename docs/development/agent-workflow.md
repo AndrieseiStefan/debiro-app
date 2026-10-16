@@ -25,3 +25,11 @@
 ## Context principle
 
 Repository context is authoritative over repeated prompt context. Future prompts should provide task-specific deltas rather than repeat the entire project history.
+
+## Mandatory UI reuse
+
+- Inspect existing equivalent UI and shared components before adding controls or CSS. Shared components are the source of truth for equivalent styling; approved mockups define composition and locked copy.
+- Reuse Field/SelectField size variants, read-only/error semantics, SearchInput, Button, StatusBadge, shared table presentation, KPI variants, Pagination and Drawer. Do not define feature-local font scales, field heights, colors, borders, radii or focus rules already owned by a shared primitive.
+- If a reusable variant is genuinely missing, extract the existing treatment with an opt-in API, preserve default consumers, and regression-check every affected screen. Do not build redundant wrappers or duplicate a working picker/workflow.
+- Compare computed typography/control geometry at identical viewport, zoom and device scale, and inspect actual desktop/mobile captures. Tests alone do not establish visual consistency. Preserve intentionally different, documented density variants rather than performing a global redesign.
+- Company/employee features own composition, target-scoped data and permissions, not parallel design systems. Preserve session data, domain operations, ownership, and vendor behavior. The accepted employee reuse contract is in [UI Foundation](../design/ui-foundation.md#company-and-employee-ui-reuse-e1c-003b).

@@ -1335,7 +1335,6 @@
     "pagination": "Paginare", "previousPage": "Pagina anterioară", "nextPage": "Pagina următoare", "pageNumber": "Pagina {page}"
   },
   "CompanyDocuments": {
-    "pageActions": "Acțiuni documente companie",
     "tableRegion": "Tabel documente companie",
     "title": "Documente companie",
     "breadcrumbLabel": "Navigare pe pagină",

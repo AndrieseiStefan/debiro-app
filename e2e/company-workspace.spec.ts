@@ -63,7 +63,7 @@ for (const english of [false, true]) {
     await expect(page.getByRole('heading', {name: 'B Template', exact: true})).toBeVisible();
     await workspaceSection(page, 'vendors', english);
     await page.getByRole('link', {name: english ? 'Details for B Vendor' : 'Detalii pentru B Vendor'}).click();
-    await page.getByRole('button', {name: english ? 'Set up documents from templates' : 'Setează documente din șablon', exact: true}).click();
+    await page.getByRole('button', {name: english ? 'Set Documents from Template' : 'Setează documente din șablon', exact: true}).click();
     const assign = page.getByRole('dialog');
     await expect(assign.getByText('Subcontractor construcții')).toHaveCount(0);
     await assign.getByRole('checkbox', {name: /^B Template/}).check();

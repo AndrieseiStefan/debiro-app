@@ -97,7 +97,7 @@ function MetadataForm({companyId, requirementId, record, locale, onCancel, onSav
   const [values, setValues] = useState({name: record.documentName[locale], issuer: record.issuer ?? '', expiresAt: isoToReviewDate(record.expiresAt)}), [error, setError] = useState('');
   function submit(event: FormEvent) {event.preventDefault(); const result = updateCompanyDocumentMetadata(companyId, requirementId, record.id, {...values, language: locale}); if (!result.ok) setError(t(`errors.${result.reason}`)); else onSaved();}
   return <form noValidate className={styles.form} onSubmit={submit}><p className={styles.info}>{t('metadataNotice')}</p>
-    {(['name', 'issuer', 'expiresAt'] as const).map((key) => <Field key={key} id={`company-metadata-${key}`} required={key === 'name'} label={t(key)} value={values[key]} placeholder={key === 'expiresAt' ? 'DD.MM.YYYY' : undefined} onChange={(event) => setValues({...values, [key]: event.target.value})}/>)}
+    {(['name', 'issuer', 'expiresAt'] as const).map((key) => <Field controlSize="compact" key={key} id={`company-metadata-${key}`} required={key === 'name'} label={t(key)} value={values[key]} placeholder={key === 'expiresAt' ? 'DD.MM.YYYY' : undefined} onChange={(event) => setValues({...values, [key]: event.target.value})}/>)}
     {error && <p role="alert" className={styles.error}>{error}</p>}<div className={styles.formActions}><Button variant="secondary" onClick={onCancel}>{common('cancel')}</Button><Button type="submit" disabled={values.name === record.documentName[locale] && values.issuer === (record.issuer ?? '') && values.expiresAt === isoToReviewDate(record.expiresAt)}>{t('save')}</Button></div>
   </form>;
 }

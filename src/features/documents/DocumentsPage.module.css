@@ -1,20 +1,5 @@
 .page {min-width: 0;}
 .summaryGrid {display: grid; gap: 10px; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 24px;}
-.summaryCard {height: 119px; min-width: 0; overflow: hidden; padding: 0;}
-.summaryBody, .summaryAction {align-items: flex-start; background: transparent; border: 0; color: inherit; display: flex; gap: 19px; height: 100%; padding: 16px 15px; text-align: left; width: 100%;}
-.summaryAction {cursor: pointer;}
-.summaryAction:hover {background: #f8fbff;}
-.summaryIcon {align-items: center; background: #e4efff; border-radius: 50%; color: #0764db; display: inline-flex; flex: 0 0 48px; height: 48px; justify-content: center;}
-.summaryCard[data-status='review'] .summaryIcon {background: #ffe4e9; color: #df304b;}
-.summaryCard[data-status='valid'] .summaryIcon {background: #e2f7ef; color: #079b6d;}
-.summaryCard[data-status='expiring'] .summaryIcon {background: #fff0d7; color: #dc8b00;}
-.summaryCopy {display: grid; min-width: 0; padding-top: 1px;}
-.summaryCopy strong {color: #1a2b4c; font-size: 13px; font-weight: 700; line-height: 1.25;}
-.summaryCopy b {color: #14223d; font-size: 29px; line-height: 1.15; margin-top: 7px;}
-.summaryCopy small {color: #069666; font-size: 12px; font-weight: 600; margin-top: 6px; white-space: nowrap;}
-.summaryCard[data-status='review'] .summaryCopy small {color: #d92543;}
-.summaryCard[data-status='expiring'] .summaryCopy small {color: #cb7600;}
-.summaryChevron {color: #5578af; flex: 0 0 auto; margin-left: auto; margin-top: 2px;}
 
 .tabs {border-top: 1px solid #e0eafa; display: flex; gap: 32px; margin-top: 17px; min-width: 0; overflow-x: auto; padding: 0 11px; scrollbar-width: thin;}
 .tabs button {align-items: center; background: transparent; border: 0; border-bottom: 3px solid transparent; color: #405574; display: inline-flex; flex: 0 0 auto; font-size: 14px; font-weight: 700; gap: 9px; min-height: 50px; padding: 0; white-space: nowrap;}
@@ -54,9 +39,6 @@
 .documentText a, .documentText strong {color: #142a4d; font-size: 12px; font-weight: 700; overflow: hidden; text-decoration: none; text-overflow: ellipsis; white-space: nowrap;}
 .documentText a:hover {color: #075ee9;}
 .documentText small {color: #647b9e; font-size: 11px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
-.statusBadge {font-size: 11px; gap: 5px; min-height: 23px; padding: 3px 7px;}
-.statusBadge > span:first-child {display: none;}
-.statusBadge svg {flex: 0 0 auto;}
 .expiry[data-status='expiring'] {color: #c97700;}
 .expiry[data-status='expired'] {color: #d52140;}
 .actionsCell {text-align: center;}
@@ -85,14 +67,6 @@
 }
 @media (max-width: 767px) {
   .summaryGrid {gap: 8px; margin-top: 16px;}
-  .summaryCard {height: 108px;}
-  .summaryBody, .summaryAction {gap: 9px; padding: 12px 10px;}
-  .summaryIcon {flex-basis: 36px; height: 36px;}
-  .summaryIcon svg {height: 19px; width: 19px;}
-  .summaryCopy strong {font-size: 11px;}
-  .summaryCopy b {font-size: 24px;}
-  .summaryCopy small {font-size: 10px; white-space: normal;}
-  .summaryChevron {display: none;}
   .tabs {gap: 20px; padding: 0 4px;}
   .toolbar {align-items: stretch; flex-direction: column;}
   .search {flex: 0 0 auto;}
@@ -100,9 +74,6 @@
   .tableFooter {align-items: flex-start; flex-direction: column;}
 }
 @media (max-width: 380px) {
-  .summaryBody, .summaryAction {gap: 6px; padding-inline: 7px;}
-  .summaryIcon {flex-basis: 30px; height: 30px;}
-  .summaryIcon svg {height: 17px; width: 17px;}
   .toolbarActions {justify-content: space-between;}
   .toolbarButton {font-size: 12px; padding-inline: 8px;}
 }

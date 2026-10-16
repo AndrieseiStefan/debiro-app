@@ -67,8 +67,8 @@ for (const en of [false, true]) {
     await expect(page.locator('#requirement-template-name')).toHaveValue('Scope Company');
     await workspaceSection(page, 'vendors', en);
     await page.locator(`a[href="${en ? '/en' : ''}/vendors/construct-pro"]`).first().click();
-    await page.getByRole('button', {name: en ? 'Set up documents from templates' : 'Setează documente din șablon', exact: true}).click();
-    const drawer = page.getByRole('dialog', {name: en ? 'Set up documents from templates' : 'Setează documente din șablon', exact: true});
+    await page.getByRole('button', {name: en ? 'Set Documents from Template' : 'Setează documente din șablon', exact: true}).click();
+    const drawer = page.getByRole('dialog', {name: en ? 'Set Documents from Template' : 'Setează documente din șablon', exact: true});
     await expect(drawer.getByText('Scope Company', {exact: true})).toHaveCount(0);
     await expect(drawer.getByText('Scope Employee Edited', {exact: true})).toHaveCount(0);
     await expect(drawer.getByRole('checkbox')).toHaveCount(6);

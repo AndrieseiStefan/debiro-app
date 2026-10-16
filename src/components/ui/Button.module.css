@@ -20,6 +20,11 @@
   opacity: 0.54;
 }
 
+/* Existing Vendor Documents template action and authenticated table controls. */
+.button[data-size='compact'] {font-size: 13px; min-height: 44px; padding-inline: 14px;}
+.button[data-size='table'] {font-size: 13px; min-height: 38px; padding-inline: 10px;}
+.button[data-size='icon'] {height: 38px; min-height: 38px; padding: 8px; width: 38px;}
+
 .content {
   align-items: center;
   display: inline-flex;

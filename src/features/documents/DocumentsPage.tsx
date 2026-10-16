@@ -22,6 +22,7 @@ import {useCompanyState} from '@/features/companies/company-state';
 import {fixtureReferenceDate} from '@/lib/fixture-clock';
 import {attentionDocumentStatuses, documentsAttentionHref} from './attention';
 import styles from './DocumentsPage.module.css';
+import summaryStyles from '@/components/ui/DocumentSummary.module.css';
 
 const pageSize = 8;
 const statuses: DocumentStatus[] = ['review', 'valid', 'expiring', 'expired'];
@@ -35,7 +36,7 @@ function displayDate(value: string, locale: string) {
 
 function DocumentStatusBadge({status}: {status: DocumentStatus}) {
   const t = useTranslations('Documents');
-  return <StatusBadge tone={tones[status]} className={styles.statusBadge} data-status={status}><AppIcon name={icons[status]} size={13} />{t(`status.${status}`)}</StatusBadge>;
+  return <StatusBadge tone={tones[status]} size="compact" indicator="none" data-status={status}><AppIcon name={icons[status]} size={13} />{t(`status.${status}`)}</StatusBadge>;
 }
 
 function DocumentRow({document, locale, contextPath}: {document: CreatedDocument; locale: string; contextPath: string}) {
@@ -126,8 +127,8 @@ export function DocumentsPage({locale, view, documentId, documentAction, attenti
         {(['total', 'review', 'valid', 'expiring'] as const).map((item) => {
           const count = item === 'total' ? documents.length : counts[item];
           const helper = item === 'total' ? t('summary.increase', {count: documents.filter((document) => document.uploadedAt.slice(0, 7) === fixtureReferenceDate.slice(0, 7)).length}) : t('summary.percent', {percent: documents.length ? Math.round(count / documents.length * 100) : 0});
-          const card = <><span className={styles.summaryIcon}><AppIcon name={item === 'total' ? 'file' : icons[item]} size={25} /></span><span className={styles.summaryCopy}><strong>{t(`summary.${item}`)}</strong><b>{count}</b><small>{helper}</small></span>{item === 'review' && <AppIcon name="chevronRight" size={19} className={styles.summaryChevron} />}</>;
-          return <Surface key={item} className={styles.summaryCard} data-status={item}>{item === 'review' ? <button type="button" onClick={() => {setTab('review'); setPage(1);}} aria-label={`${t('summary.review')}: ${count}`} className={styles.summaryAction}>{card}</button> : <div className={styles.summaryBody}>{card}</div>}</Surface>;
+          const card = <><span className={summaryStyles.icon}><AppIcon name={item === 'total' ? 'file' : icons[item]} size={25} /></span><span className={summaryStyles.copy}><strong>{t(`summary.${item}`)}</strong><b>{count}</b><small>{helper}</small></span>{item === 'review' && <AppIcon name="chevronRight" size={19} className={summaryStyles.chevron} />}</>;
+          return <Surface key={item} className={summaryStyles.card} data-status={item}>{item === 'review' ? <button type="button" onClick={() => {setTab('review'); setPage(1);}} aria-label={`${t('summary.review')}: ${count}`} className={summaryStyles.action}>{card}</button> : <div className={summaryStyles.body}>{card}</div>}</Surface>;
         })}
       </section>
 

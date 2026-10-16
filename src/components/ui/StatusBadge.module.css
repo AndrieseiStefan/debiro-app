@@ -18,6 +18,11 @@
   width: 8px;
 }
 
+/* Established Vendor Details and compact Documents table treatments. */
+.badge[data-size='document'] {font-size: 12px; gap: 7px; min-height: 29px; padding: 5px 9px;}
+.badge[data-size='compact'] {font-size: 11px; gap: 5px; min-height: 23px; padding: 3px 7px;}
+.badge[data-size] svg {flex: 0 0 auto;}
+
 .success {
   background: var(--color-success-soft);
   color: var(--color-success);
