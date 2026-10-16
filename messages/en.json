@@ -1,4 +1,18 @@
 {
+  "CompanyDocumentSharing": {
+    "description": "Selected documents can be shared securely by secure link or directly by email with partners, clients or authorities.",
+    "deliveryMethod": "Delivery Method", "link": "Secure Link", "email": "Email",
+    "name": "Package Name", "recipientName": "Recipient", "recipientPlaceholder": "Name or company (optional)", "recipientEmail": "Recipient Email",
+    "expiresOn": "Expires On", "datePlaceholder": "DD.MM.YYYY", "expiryPolicy": "Preview: defaults to 7 days, maximum 30 days. Provisional policy for the secure service; dates in UTC.",
+    "selectedDocuments": "Selected Documents ({count})", "noEligible": "There are no eligible documents with available files in this tab. Upload a file to prepare a package.",
+    "fileUnavailable": "The original file is not available in this tab.", "notUploaded": "There is no current uploaded version.", "removedDocument": "Unavailable document", "remove": "Remove",
+    "allowDownload": "Allow Download", "downloadHelp": "Configuration for the secure service. Original document permissions are unchanged.",
+    "passwordProtected": "Password Protect", "passwordHelp": "Configuration for the secure service; protection is not active in the preview.", "password": "Password", "message": "Optional Message",
+    "preparePreview": "Preview Package", "previewTitle": "Package Preview", "previewNotice": "Local preview. Documents have not been shared and no email has been sent.",
+    "yes": "Yes", "no": "No", "generateLink": "Generate Link", "sendEmail": "Send Email",
+    "backendUnavailable": "External sharing will be available once the secure sharing service is enabled.",
+    "errors": {"name": "Enter a package name between 1 and 100 characters.", "email": "Enter a valid recipient email address.", "date": "Enter a valid DD.MM.YYYY date after today and within the next 30 days.", "password": "The password must be between 8 and 128 characters (provisional policy).", "message": "The message can contain at most 500 characters.", "empty": "Select at least one eligible document.", "file": "The original file is no longer available. Remove the document or upload the file and select it again.", "stale": "The selected version is no longer current or available. Remove the old selection and select the current version.", "access": "The active company or your access has changed. Reopen sharing in the current company.", "preview": "The preview could not be prepared. Check your selection and try again."}
+  },
   "CompanyDocumentManagement": {
     "versionLabel": "Current version",
     "reviewedAt": "Reviewed at",

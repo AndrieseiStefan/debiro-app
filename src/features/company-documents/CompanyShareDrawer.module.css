@@ -1,0 +1,26 @@
+.content {padding: var(--space-6);}
+.form {display: grid; gap: var(--space-4); margin-top: var(--space-4); min-width: 0;}
+.documents {border: 1px solid var(--color-border); border-radius: var(--radius-field); min-width: 0; overflow: hidden;}
+.selectionHeading {padding: var(--space-3) var(--space-4);}
+.selectionHeading strong, .documentCopy strong {font-size: var(--text-body-small); font-weight: 650;}
+.documentList {max-height: 280px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;}
+.document {align-items: center; border-top: 1px solid var(--color-border-subtle); display: flex; gap: var(--space-3); padding: var(--space-2) var(--space-3);}
+.document input {accent-color: var(--color-action-primary); flex: 0 0 18px; height: 18px; width: 18px;}
+.documentCopy {display: grid; flex: 1; gap: var(--space-1); min-width: 0; overflow-wrap: anywhere;}
+.documentCopy small {color: var(--color-text-secondary); font-size: var(--text-caption); line-height: 1.4;}
+.document > [data-tone] {flex: 0 0 auto;}
+.notice, .invalid {font-size: var(--text-caption); line-height: 1.4; padding: var(--space-3);}
+.notice {color: var(--color-text-secondary);}
+.invalid {align-items: center; color: var(--color-danger); display: flex; flex-wrap: wrap; gap: var(--space-2);}
+.invalid span {flex: 1; min-width: 0; overflow-wrap: anywhere;}
+.actions {display: flex; flex-wrap: wrap; gap: var(--space-3);}
+.actions > button {flex: 1; min-width: 0; white-space: normal;}
+.preview {background: var(--color-surface-soft); border-radius: var(--radius-field); color: var(--color-text-primary); display: grid; font-size: var(--text-body-small); gap: var(--space-3); padding: var(--space-4); overflow-wrap: anywhere;}
+.preview h3 {font-size: var(--text-card-title);}
+.preview dl {display: grid; gap: var(--space-2);}
+.preview dl > div {display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); justify-content: space-between;}
+.preview dt {color: var(--color-text-secondary);}
+.preview dd {margin: 0;}
+.preview ul {margin: 0; padding-left: var(--space-4);}
+.message {white-space: pre-wrap;}
+@media (max-width: 375px) {.content {padding: var(--space-5) var(--space-4);}.document {flex-wrap: wrap; gap: var(--space-2);}.document > [data-tone] {margin-left: 26px;}.documentCopy {flex-basis: calc(100% - 80px);}.actions {flex-direction: column;}}

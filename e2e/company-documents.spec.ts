@@ -103,7 +103,7 @@ for (const en of [false, true]) {
   });
 }
 
-test('real test-only file eligibility, pagination, selection across pages and safe unavailable bulk actions', async ({page}) => {
+test('real test-only file eligibility, pagination, selection across pages and local sharing preparation', async ({page}) => {
   await page.goto('/en/company/documents'); await scenario(page, {volume: true, files: true});
   await expect(page.locator('tbody tr')).toHaveCount(10);
   await page.getByRole('checkbox', {name: 'Select all eligible documents on this page', exact: true}).check();
@@ -115,9 +115,10 @@ test('real test-only file eligibility, pagination, selection across pages and sa
   await page.getByRole('button', {name: 'Next page', exact: true}).click(); await expect(page.locator('tbody tr')).toHaveCount(3);
   await page.getByRole('checkbox', {name: 'Select all eligible documents on this page', exact: true}).check(); await expect(page.getByRole('status')).toHaveText('23 selected');
   const share = page.getByRole('button', {name: 'Share Selected', exact: true});
-  await expect(share).toHaveAttribute('aria-disabled', 'true'); await share.focus();
-  await expect(page.getByRole('tooltip')).toContainText('Secure company document sharing'); await page.keyboard.press('Enter');
-  await expect(page.getByRole('dialog')).toHaveCount(0); await page.keyboard.press('Escape');
+  await expect(share).toBeEnabled(); await share.focus(); await page.keyboard.press('Enter');
+  await expect(page.getByRole('dialog').getByText('Selected Documents (23)', {exact: true})).toBeVisible();
+  await expect(page.getByRole('dialog')).toContainText('External sharing will be available once the secure sharing service is enabled.');
+  await page.keyboard.press('Escape'); await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.getByRole('button', {name: 'Selected document actions'}).click(); await page.getByRole('menuitem', {name: 'Deselect all'}).click();
   await expect(page.getByRole('status')).toHaveText('0 selected');
   await page.getByRole('searchbox').fill('ONRC'); await expect(page.locator('tbody tr')).toHaveCount(3);

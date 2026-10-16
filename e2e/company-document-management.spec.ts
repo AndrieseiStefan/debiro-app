@@ -127,7 +127,9 @@ for (const english of [false, true]) {
     await expect(dialog.locator('li[data-version="3"]')).toContainText('2029'); await close(page);
     await expect(row.locator('[data-tone][data-status]')).toHaveText(copy.CompanyDocuments.status.expired);
     expect(await page.locator('section[aria-label] [data-tone] strong').allTextContents()).toEqual(['6', '5', '0']);
-    await page.getByRole('button', {name: copy.CompanyDocuments.shareDocuments, exact: true}).focus(); await expect(page.getByRole('tooltip')).toContainText(english ? 'Secure company' : 'Partajarea securizată');
+    await page.getByRole('button', {name: copy.CompanyDocuments.shareDocuments, exact: true}).click();
+    await expect(page.getByRole('dialog')).toContainText(copy.CompanyDocumentSharing.backendUnavailable);
+    await close(page);
   });
 
   test(`${english ? 'EN' : 'RO'} applies only Company templates idempotently and preserves required snapshot`, async ({page}) => {

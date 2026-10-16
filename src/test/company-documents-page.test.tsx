@@ -20,7 +20,7 @@ afterEach(() => {owner().state = initial; owner().files.clear(); templateOwner()
 const view = (locale: 'ro' | 'en' = 'ro', employees = false) => render(<NextIntlClientProvider locale={locale} messages={locale === 'ro' ? ro : en}>{employees ? <EmployeesComingSoonPage locale={locale}/> : <CompanyDocumentsPage locale={locale}/>}</NextIntlClientProvider>);
 
 describe('Company Documents shared listing UI', () => {
-  it.each(['ro', 'en'] as const)('renders derived metrics, truthful disabled files and coming-soon actions in %s', (locale) => {
+  it.each(['ro', 'en'] as const)('renders derived metrics, truthful disabled files and sharing preparation in %s', async (locale) => {
     const copy = locale === 'ro' ? ro : en;
     view(locale);
     expect(screen.getByRole('heading', {level: 1})).toHaveTextContent(copy.CompanyDocuments.title);
@@ -40,10 +40,11 @@ describe('Company Documents shared listing UI', () => {
     expect([...summary.querySelectorAll('strong')].map((item) => item.textContent)).toEqual(['5', '4', '0']);
     expect(screen.getAllByRole('checkbox').every((input) => input.hasAttribute('disabled'))).toBe(true);
     const action = screen.getByRole('button', {name: copy.CompanyDocuments.shareDocuments});
-    expect(action).toHaveAttribute('aria-disabled', 'true'); act(() => action.focus());
-    expect(action).toHaveAccessibleDescription(copy.CompanyDocuments.sharingComingSoon);
-    fireEvent.click(action); expect(screen.queryByRole('dialog')).toBeNull();
-    fireEvent.keyDown(action, {key: 'Escape'});
+    expect(action).toBeEnabled(); act(() => action.focus());
+    fireEvent.click(action); expect(screen.getByRole('dialog')).toBeVisible();
+    expect(screen.getByText(copy.CompanyDocumentSharing.noEligible)).toBeVisible();
+    fireEvent.keyDown(document, {key: 'Escape'});
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     const download = screen.getAllByRole('button', {name: /^Descarcă |^Download /})[1];
     fireEvent.click(download); expect(screen.getByRole('tooltip')).toHaveTextContent(copy.CompanyDocuments.fileUnavailable);
   });

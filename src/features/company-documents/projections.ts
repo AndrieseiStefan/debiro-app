@@ -58,7 +58,7 @@ export function projectCompanyDocuments(snapshot: CompanyDocumentsState, company
 export function companyDocumentMetrics(rows: CompanyDocumentListRow[]) {
   return {total: new Set(rows.flatMap((row) => row.currentDocumentId ? [row.currentDocumentId] : [])).size,
     attention: new Set(rows.filter((row) => row.status === 'missing' ? row.required : row.status !== 'valid').map((row) => row.requirementId ?? row.id)).size,
-    activeShares: 0}; // No sharing domain exists until E1C-004.
+    activeShares: 0}; // Local package previews are not real active shares.
 }
 export function eligibleCompanyDocumentIds(rows: CompanyDocumentListRow[]) {
   return rows.filter((row) => row.currentDocumentId && row.hasDownloadableFile).map((row) => row.id);

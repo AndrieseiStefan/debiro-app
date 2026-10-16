@@ -25,6 +25,8 @@ import {TemplateSourceLabels} from '@/features/requirements/TemplateSources';
 import {documentAccess} from '@/features/documents/document-access';
 import {CompanyDocumentManager, type CompanyManagementSelection} from './CompanyDocumentManager';
 import {CompanyTemplateDrawer} from './CompanyTemplateDrawer';
+import {CompanyShareDrawer} from './CompanyShareDrawer';
+import {shareSelection, type ShareDocumentSelection} from './sharing';
 import {companyDocumentFile, companyDocumentHistory, downloadCompanyDocument} from './management';
 import {SummaryMetricCard} from '@/features/dashboard/SummaryMetricCard';
 import {getActiveCompany, useCompanyState} from '@/features/companies/company-state';
@@ -76,6 +78,7 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
   const [selection, setSelection] = useState<Record<string, string>>({});
   const [activeDocument, setActiveDocument] = useState<CompanyManagementSelection | null>(null);
   const [applyingTemplate, setApplyingTemplate] = useState(false);
+  const [sharing, setSharing] = useState<ShareDocumentSelection[] | null>(null);
   const [rowMenu, setRowMenu] = useState<string | null>(null);
   const [feedback, setFeedback] = useState('');
   const [downloadFailed, setDownloadFailed] = useState(false);
@@ -120,7 +123,7 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
       <td className={styles.expiry} data-status={row.status}>{date(row.expiresAt)}</td>
       <td><div className={styles.updated}>{row.updatedByDisplayName && <Avatar initials={row.updatedByDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('')}/>}<span>{row.updatedByDisplayName ?? (row.currentDocumentId ? '—' : t('notUploaded'))}<small>{date(row.updatedAt)}</small></span></div></td>
       <td><div className={styles.rowActions}>
-        {row.currentDocumentId ? <>{row.hasDownloadableFile && row.requirementId ? <Button variant="secondary" size="icon" aria-label={t('downloadDocument', {name: row.name})} onClick={() => downloadRow(row)}><AppIcon name="download" size={18}/></Button> : <UnavailableAction compact icon="download" label={t('downloadDocument', {name: row.name})} explanation={t('fileUnavailable')}/>}<UnavailableAction compact icon="share" label={t('shareDocument', {name: row.name})} explanation={t('sharingComingSoon')}/></>
+        {row.currentDocumentId ? <>{row.hasDownloadableFile && row.requirementId ? <Button variant="secondary" size="icon" aria-label={t('downloadDocument', {name: row.name})} onClick={() => downloadRow(row)}><AppIcon name="download" size={18}/></Button> : <UnavailableAction compact icon="download" label={t('downloadDocument', {name: row.name})} explanation={t('fileUnavailable')}/>}<Button variant="secondary" size="icon" aria-label={t('shareDocument', {name: row.name})} onClick={() => setSharing([{documentId: row.id, documentVersionId: row.currentDocumentId!}])}><AppIcon name="share" size={18}/></Button></>
           : <Button variant="secondary" size="table" disabled={!access.replace || !row.requirementId} onClick={() => openDocument(row, 'add')}><AppIcon name="upload" size={18}/>{t('upload')}</Button>}
         {row.requirementId && <RowActionMenu label={t('rowActions', {name: row.name})} open={rowMenu === row.id} onOpenChange={(open) => setRowMenu(open ? row.id : null)} items={[
           {label: common('openDetails'), onSelect: () => openDocument(row)},
@@ -133,7 +136,7 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
 
   return <div className={styles.page}>
     <AuthenticatedPageHeader className={styles.header} context={<AuthenticatedBreadcrumbs root={{label: app('navigation.company')}} items={[{label: t('title')}]} label={t('breadcrumbLabel')}/>} title={t('title')} titleId="company-documents-title" description={t('description')}
-      actions={<div className={styles.headerActions}><UnavailableAction icon="share" explanation={t('sharingComingSoon')}>{t('shareDocuments')}</UnavailableAction><AuthenticatedPagePrimaryAction icon="plus" disabled={!access.replace} onClick={() => {setFeedback(''); setActiveDocument({mode: 'add'});}}>{t('addDocuments')}</AuthenticatedPagePrimaryAction></div>}/>
+      actions={<div className={styles.headerActions}><Button variant="secondary" disabled={!access.visible} onClick={() => setSharing(shareSelection(rows, selected))}><AppIcon name="share" size={21}/>{t('shareDocuments')}</Button><AuthenticatedPagePrimaryAction icon="plus" disabled={!access.replace} onClick={() => {setFeedback(''); setActiveDocument({mode: 'add'});}}>{t('addDocuments')}</AuthenticatedPagePrimaryAction></div>}/>
     {feedback && <p role="status">{feedback}</p>}{downloadFailed && <p role="alert">{common('downloadUnavailable')}</p>}
     {error ? <Surface className={styles.error}><ErrorState title={states('errorTitle')} description={states('errorDescription')}/></Surface> : <>
       <section className={styles.metrics} aria-label={t('summaryLabel')}>
@@ -150,7 +153,7 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
       <Surface className={styles.list}>
         <div ref={bulkRef} className={styles.bulk}>
           <div className={`${styles.selected} ${tableStyles.selection}`}><SelectionCheckbox label={t('selectPage')} checked={onPage.length > 0 && checkedOnPage === onPage.length} mixed={checkedOnPage > 0 && checkedOnPage < onPage.length} disabled={onPage.length === 0} onChange={togglePage}/><span role="status" aria-live="polite">{t('selected', {count: selected.length})}</span></div>
-          <div className={styles.bulkActions}><Button variant="secondary" size="compact" disabled={selected.length === 0} onClick={() => {const chosen = rows.filter((row) => selected.includes(row.id)); setDownloadFailed(chosen.some((row) => !row.requirementId || !row.currentDocumentId || !companyDocumentFile(companyId, row.requirementId, row.currentDocumentId)) || !chosen.every((row) => Boolean(row.requirementId && row.currentDocumentId && downloadCompanyDocument(companyId, row.requirementId, row.currentDocumentId))));}}><AppIcon name="download" size={21}/>{t('downloadSelected')}</Button><UnavailableAction size="compact" icon="share" disabled={selected.length === 0} explanation={t('sharingComingSoon')}>{t('shareSelected')}</UnavailableAction>
+          <div className={styles.bulkActions}><Button variant="secondary" size="compact" disabled={selected.length === 0} onClick={() => {const chosen = rows.filter((row) => selected.includes(row.id)); setDownloadFailed(chosen.some((row) => !row.requirementId || !row.currentDocumentId || !companyDocumentFile(companyId, row.requirementId, row.currentDocumentId)) || !chosen.every((row) => Boolean(row.requirementId && row.currentDocumentId && downloadCompanyDocument(companyId, row.requirementId, row.currentDocumentId))));}}><AppIcon name="download" size={21}/>{t('downloadSelected')}</Button><Button variant="secondary" size="compact" disabled={selected.length === 0} onClick={() => setSharing(shareSelection(rows, selected))}><AppIcon name="share" size={21}/>{t('shareSelected')}</Button>
             <Button size="compact" disabled={!access.replace} onClick={() => {setFeedback(''); setApplyingTemplate(true);}}><AppIcon name="plus" size={18}/>{templatesT('title')}</Button>
             {selected.length > 0 ? <RowActionMenu label={t('bulkActions')} items={[{label: t('deselectAll'), onSelect: deselectAll}]} open={bulkMenu} onOpenChange={setBulkMenu}/> : <Button variant="secondary" size="icon" disabled aria-label={t('bulkActions')}><AppIcon name="more" size={18}/></Button>}</div>
         </div>
@@ -166,5 +169,6 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
     </>}
     {activeDocument && <CompanyDocumentManager companyId={companyId} locale={locale} selection={activeDocument} onClose={() => setActiveDocument(null)} onSuccess={(kind) => setFeedback(management(`success.${kind}`))}/>}
     {applyingTemplate && <CompanyTemplateDrawer companyId={companyId} locale={locale} onClose={() => setApplyingTemplate(false)}/>}
+    {sharing && <CompanyShareDrawer companyId={companyId} locale={locale} initialSelection={sharing} onClose={() => setSharing(null)}/>}
   </div>;
 }

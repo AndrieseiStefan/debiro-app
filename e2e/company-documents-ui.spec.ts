@@ -49,7 +49,7 @@ for (const locale of ['ro', 'en'] as const) {
     });
     await page.setViewportSize({width: 1448, height: 900});
     await toolbar.getByRole('checkbox', {name: copy.CompanyDocuments.selectPage, exact: true}).check();
-    await expect(toolbar.getByRole('status')).toHaveText(locale === 'ro' ? '1 selectat' : '1 selected'); await expect(download).toBeEnabled(); await expect(share).toHaveAttribute('aria-disabled', 'true'); await expect(more).toBeEnabled();
+    await expect(toolbar.getByRole('status')).toHaveText(locale === 'ro' ? '1 selectat' : '1 selected'); await expect(download).toBeEnabled(); await expect(share).toBeEnabled(); await expect(share).not.toHaveAttribute('aria-disabled', 'true'); await expect(more).toBeEnabled();
     const pending = page.waitForEvent('download'); await download.click(); await pending;
     await more.click(); await page.getByRole('menuitem', {name: copy.CompanyDocuments.deselectAll, exact: true}).click(); await expect(download).toBeDisabled();
   });

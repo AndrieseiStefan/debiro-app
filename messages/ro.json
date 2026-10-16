@@ -1,4 +1,18 @@
 {
+  "CompanyDocumentSharing": {
+    "description": "Documentele selectate pot fi partajate în siguranță, prin link securizat sau direct pe email, către parteneri, clienți sau autorități.",
+    "deliveryMethod": "Metodă de partajare", "link": "Link securizat", "email": "Email",
+    "name": "Nume pachet", "recipientName": "Destinatar", "recipientPlaceholder": "Nume sau companie (opțional)", "recipientEmail": "Email destinatar",
+    "expiresOn": "Expiră la", "datePlaceholder": "ZZ.LL.AAAA", "expiryPolicy": "Previzualizare: implicit 7 zile, maximum 30 de zile. Politică provizorie pentru serviciul securizat; date în UTC.",
+    "selectedDocuments": "Documente selectate ({count})", "noEligible": "Nu există documente eligibile cu fișiere disponibile în această filă. Încarcă un fișier pentru a pregăti pachetul.",
+    "fileUnavailable": "Fișierul original nu este disponibil în această filă.", "notUploaded": "Nu există o versiune curentă încărcată.", "removedDocument": "Document indisponibil", "remove": "Elimină",
+    "allowDownload": "Permite descărcare", "downloadHelp": "Configurare pentru serviciul securizat. Nu modifică permisiunile documentelor originale.",
+    "passwordProtected": "Protejează cu parolă", "passwordHelp": "Configurare pentru serviciul securizat; protecția nu este activă în previzualizare.", "password": "Parolă", "message": "Mesaj opțional",
+    "preparePreview": "Previzualizează pachetul", "previewTitle": "Previzualizare pachet", "previewNotice": "Previzualizare locală. Documentele nu au fost partajate și niciun email nu a fost trimis.",
+    "yes": "Da", "no": "Nu", "generateLink": "Generează link", "sendEmail": "Trimite email",
+    "backendUnavailable": "Partajarea externă va fi disponibilă după activarea serviciului securizat.",
+    "errors": {"name": "Introdu un nume de pachet între 1 și 100 de caractere.", "email": "Introdu o adresă de email validă pentru destinatar.", "date": "Introdu o dată validă în format ZZ.LL.AAAA, după ziua curentă și în următoarele 30 de zile.", "password": "Parola trebuie să aibă între 8 și 128 de caractere (politică provizorie).", "message": "Mesajul poate avea maximum 500 de caractere.", "empty": "Selectează cel puțin un document eligibil.", "file": "Fișierul original nu mai este disponibil. Elimină documentul sau încarcă fișierul și selectează-l din nou.", "stale": "Versiunea selectată nu mai este curentă sau disponibilă. Elimină selecția veche și selectează versiunea curentă.", "access": "Compania activă sau accesul s-a schimbat. Redeschide partajarea în compania curentă.", "preview": "Previzualizarea nu a putut fi pregătită. Verifică selecția și încearcă din nou."}
+  },
   "CompanyDocumentManagement": {
     "versionLabel": "Versiune curentă",
     "reviewedAt": "Revizuit la",
