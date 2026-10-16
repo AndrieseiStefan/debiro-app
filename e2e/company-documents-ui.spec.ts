@@ -13,6 +13,47 @@ async function close(page: Page) {await page.keyboard.press('Escape'); await exp
 
 for (const locale of ['ro', 'en'] as const) {
   const copy = locale === 'en' ? en : ro, prefix = locale === 'en' ? '/en' : '';
+  test(`${locale} company template action shares the compact bulk toolbar at desktop and wraps safely on mobile`, async ({page}) => {
+    test.setTimeout(60_000); await mkdir('artifacts/visual/e1c-003c/toolbar', {recursive: true});
+    await page.goto(`${prefix}/company/documents`);
+    const action = page.getByRole('button', {name: copy.VendorTemplates.title, exact: true}), toolbar = action.locator('xpath=../..');
+    const download = toolbar.getByRole('button', {name: copy.CompanyDocuments.downloadSelected, exact: true});
+    const share = toolbar.getByRole('button', {name: copy.CompanyDocuments.shareSelected, exact: true});
+    const more = toolbar.getByRole('button', {name: copy.CompanyDocuments.bulkActions, exact: true});
+    await expect(toolbar.getByRole('status')).toHaveText(locale === 'ro' ? '0 selectate' : '0 selected');
+    await expect(download).toBeDisabled(); await expect(share).toBeDisabled(); await expect(more).toBeDisabled(); await expect(action).toBeEnabled();
+    await expect(page.locator('[class*=listHeader]')).toHaveCount(0);
+    expect(await toolbar.getByRole('button').evaluateAll((buttons) => buttons.map((button) => button.getAttribute('aria-label') ?? button.textContent))).toEqual([
+      copy.CompanyDocuments.downloadSelected, copy.CompanyDocuments.shareSelected, copy.VendorTemplates.title, copy.CompanyDocuments.bulkActions
+    ]);
+    for (const [width, height] of [[1920, 1080], [1448, 900], [1280, 800], [768, 900], [375, 812], [320, 812]]) {
+      await page.setViewportSize({width, height}); await toolbar.scrollIntoViewIfNeeded();
+      const geometry = await toolbar.evaluate((element) => {
+        const box = element.getBoundingClientRect(), next = element.nextElementSibling!.getBoundingClientRect();
+        return {width: element.clientWidth, scroll: element.scrollWidth, bottom: box.bottom, tableTop: next.top,
+          controls: [...element.querySelectorAll('button, input, [role=status]')].map((control) => {const rect = control.getBoundingClientRect(); return {left: rect.left, right: rect.right, center: (rect.top + rect.bottom) / 2, clipped: control.scrollWidth > control.clientWidth + 1};})};
+      });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      expect(geometry.scroll).toBeLessThanOrEqual(geometry.width + 1); expect(Math.abs(geometry.bottom - geometry.tableTop)).toBeLessThanOrEqual(1);
+      for (const control of geometry.controls) {expect(control.left).toBeGreaterThanOrEqual(0); expect(control.right).toBeLessThanOrEqual(width); expect(control.clipped).toBe(false);}
+      if (width >= 1280) expect(Math.max(...geometry.controls.map((control) => control.center)) - Math.min(...geometry.controls.map((control) => control.center))).toBeLessThanOrEqual(1);
+      await page.screenshot({path: `artifacts/visual/e1c-003c/toolbar/${locale}-${width}.png`, animations: 'disabled'});
+      await action.focus(); await page.keyboard.press('Enter'); await expect(page.getByRole('dialog', {name: copy.VendorTemplates.title, exact: true})).toBeVisible(); await close(page); await expect(action).toBeFocused();
+    }
+    // Give one existing record actual test-only bytes; selection and download availability are unchanged.
+    await page.evaluate(() => {
+      const session = Reflect.get(window, Symbol.for('debiro.company-documents-session')) as {files: Map<string, Map<string, Blob>>; listeners: Set<() => void>; state: {byCompany: Record<string, {documents: {id: string; supersededById?: string}[]}>}};
+      const document = session.state.byCompany['demo-company'].documents.find((item) => !item.supersededById)!;
+      session.files.set('demo-company', new Map([[document.id, new Blob(['Toolbar regression test bytes'], {type: 'application/pdf'})]]));
+      session.state = {...session.state}; session.listeners.forEach((notify) => notify());
+    });
+    await page.setViewportSize({width: 1448, height: 900});
+    await toolbar.getByRole('checkbox', {name: copy.CompanyDocuments.selectPage, exact: true}).check();
+    await expect(toolbar.getByRole('status')).toHaveText(locale === 'ro' ? '1 selectat' : '1 selected'); await expect(download).toBeEnabled(); await expect(share).toHaveAttribute('aria-disabled', 'true'); await expect(more).toBeEnabled();
+    const pending = page.waitForEvent('download'); await download.click(); await pending;
+    await more.click(); await page.getByRole('menuitem', {name: copy.CompanyDocuments.deselectAll, exact: true}).click(); await expect(download).toBeDisabled();
+  });
+
   test(`${locale} shared Company Documents computed typography, controls, states and visible template action`, async ({page}) => {
     test.setTimeout(90_000); await mkdir('artifacts/visual/e1c-003b', {recursive: true});
     await page.setViewportSize({width: 1448, height: 900});

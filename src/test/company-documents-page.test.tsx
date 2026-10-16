@@ -27,6 +27,13 @@ describe('Company Documents shared listing UI', () => {
     const templateAction = screen.getByRole('button', {name: copy.VendorTemplates.title});
     expect(templateAction).toBeVisible(); expect(templateAction).toHaveAttribute('data-size', 'compact');
     expect(templateAction.closest('[aria-labelledby="company-documents-title"]')).toBeNull();
+    const toolbar = templateAction.parentElement!.parentElement!;
+    expect(within(toolbar).getByRole('status')).toHaveTextContent(locale === 'ro' ? '0 selectate' : '0 selected');
+    expect(within(toolbar).getByRole('checkbox', {name: copy.CompanyDocuments.selectPage})).toBeDisabled();
+    expect(within(toolbar).getAllByRole('button').map((button) => button.getAttribute('aria-label') ?? button.textContent)).toEqual([
+      copy.CompanyDocuments.downloadSelected, copy.CompanyDocuments.shareSelected, copy.VendorTemplates.title, copy.CompanyDocuments.bulkActions
+    ]);
+    expect(toolbar.nextElementSibling).toHaveAttribute('role', 'region');
     expect(screen.queryByRole('menuitem', {name: copy.CompanyDocumentManagement.applyTemplate})).toBeNull();
     expect(screen.getByRole('navigation', {name: copy.CompanyDocuments.breadcrumbLabel})).toHaveTextContent(`${copy.AppShell.navigation.company}${copy.CompanyDocuments.title}`);
     const summary = screen.getByRole('region', {name: copy.CompanyDocuments.summaryLabel});
