@@ -26,7 +26,7 @@ import {documentAccess} from '@/features/documents/document-access';
 import {CompanyDocumentManager, type CompanyManagementSelection} from './CompanyDocumentManager';
 import {CompanyTemplateDrawer} from './CompanyTemplateDrawer';
 import {CompanyShareDrawer} from './CompanyShareDrawer';
-import {shareSelection, type ShareDocumentSelection} from './sharing';
+import {inspectShareSelection, shareSelection, type ShareDocumentSelection} from './sharing';
 import {companyDocumentFile, companyDocumentHistory, downloadCompanyDocument} from './management';
 import {SummaryMetricCard} from '@/features/dashboard/SummaryMetricCard';
 import {getActiveCompany, useCompanyState} from '@/features/companies/company-state';
@@ -75,7 +75,7 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
   const [sort, setSort] = useState<CompanyDocumentSort>({column: 'expiresAt', direction: 'ascending'});
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [selection, setSelection] = useState<Record<string, string>>({});
+  const [selection, setSelection] = useState<Record<string, string | null>>({});
   const [activeDocument, setActiveDocument] = useState<CompanyManagementSelection | null>(null);
   const [applyingTemplate, setApplyingTemplate] = useState(false);
   const [sharing, setSharing] = useState<ShareDocumentSelection[] | null>(null);
@@ -91,16 +91,28 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
   const currentPage = Math.min(page, pageCount);
   const visible = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const eligible = new Set(eligibleCompanyDocumentIds(rows));
-  const selected = Object.entries(selection).filter(([id, version]) => eligible.has(id) && rows.some((row) => row.id === id && row.currentDocumentId === version)).map(([id]) => id);
-  const onPage = eligibleCompanyDocumentIds(visible);
+  const selected = Object.keys(selection);
+  const selectedItems = Object.entries(selection).map(([documentId, documentVersionId]) => ({documentId, documentVersionId}));
+  const canDownloadSelection = selected.length > 0 && selected.every((id) => eligible.has(id) && rows.some((row) => row.id === id && row.requirementId && row.currentDocumentId === selection[id]));
+  const onPage = visible.map((row) => row.id);
   const checkedOnPage = onPage.filter((id) => selected.includes(id)).length;
   const activeCount = Number(type !== 'all') + Number(status !== 'all');
   const typeOptions = [...new Set(rows.map((row) => row.documentType))].sort((a, b) => t(`types.${a}`).localeCompare(t(`types.${b}`), locale));
 
   function resetFilters() {setType('all'); setStatus('all'); setPage(1);}
-  function select(ids: string[]) {setSelection(Object.fromEntries(rows.filter((row) => ids.includes(row.id) && row.currentDocumentId).map((row) => [row.id, row.currentDocumentId!])));}
+  function select(ids: string[]) {setSelection((current) => Object.fromEntries(ids.flatMap((id) => {
+    if (Object.hasOwn(current, id)) return [[id, current[id]]];
+    const row = rows.find((row) => row.id === id && row.companyId === companyId);
+    return row ? [[id, row.currentDocumentId]] : [];
+  })));}
   function togglePage() {select(checkedOnPage === onPage.length ? selected.filter((id) => !onPage.includes(id)) : [...new Set([...selected, ...onPage])]);}
-  function toggleRow(id: string) {if (eligible.has(id)) select(selected.includes(id) ? selected.filter((value) => value !== id) : [...selected, id]);}
+  function toggleRow(id: string) {select(selected.includes(id) ? selected.filter((value) => value !== id) : [...selected, id]);}
+  function downloadSelected() {
+    const chosen = rows.filter((row) => selected.includes(row.id)), inspected = inspectShareSelection(companyId, selectedItems, locale);
+    // Preflight the complete selection before starting the first download; no undisclosed partial batch.
+    if (!selected.length || chosen.length !== selected.length || inspected.some((item) => item.problem || !item.hasAttachment) || chosen.some((row) => !row.requirementId || !row.currentDocumentId || !companyDocumentFile(companyId, row.requirementId, row.currentDocumentId))) {setDownloadFailed(true); return;}
+    setDownloadFailed(!chosen.every((row) => downloadCompanyDocument(companyId, row.requirementId!, row.currentDocumentId!)));
+  }
   function deselectAll() {setSelection({}); requestAnimationFrame(() => bulkRef.current?.querySelector<HTMLInputElement>('input:not(:disabled)')?.focus());}
   function openDocument(row: CompanyDocumentListRow, mode: 'details' | 'history' | 'replace' | 'add' = 'details') {if (row.requirementId) {setFeedback(''); setRowMenu(null); setActiveDocument({mode, requirementId: row.requirementId, documentId: row.currentDocumentId ?? undefined});}}
   function downloadRow(row: CompanyDocumentListRow) {setDownloadFailed(!row.requirementId || !row.currentDocumentId || !downloadCompanyDocument(companyId, row.requirementId, row.currentDocumentId));}
@@ -116,15 +128,16 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
     const requirement = snapshot.byCompany[companyId]?.requirements.find((item) => item.id === row.requirementId && item.companyId === companyId);
     const sources = resolveTemplateSources(templates, companyId, 'company', requirement?.templateId && requirement.templateRequirementId ? [requirement.templateId] : []), accent = sources[0]?.accentToken;
     return <tr key={row.id} data-company-document-row={row.id} data-current-document={row.currentDocumentId ?? undefined} aria-selected={selected.includes(row.id)} data-template-accent={accent ?? undefined} style={templateAccentStyle(accent)}>
-      <td><SelectionCheckbox label={t('selectDocument', {name: row.name})} checked={selected.includes(row.id)} disabled={!eligible.has(row.id)} onChange={() => toggleRow(row.id)}/></td>
+      <td><SelectionCheckbox label={t('selectDocument', {name: row.name})} checked={selected.includes(row.id)} disabled={false} onChange={() => toggleRow(row.id)}/></td>
       <td><div className={styles.identity}><span className={styles.fileIcon} data-status={row.status}><AppIcon name="file" size={21}/></span><span>{row.requirementId ? <button type="button" className={`${styles.documentLink} ${tableStyles.primary}`} onClick={() => openDocument(row)}>{row.name}</button> : <strong>{row.name}</strong>}<small>{t(`types.${row.documentType}`)}{row.issuer && <> · {row.issuer}</>}</small></span></div></td>
       <td><TemplateSourceLabels sources={sources} hasTemplateSource={Boolean(requirement?.templateId || requirement?.templateRequirementId)} locale={locale}/></td>
       <td><StatusBadge size="document" tone={tones[row.status]} data-status={row.status}>{t(`status.${row.status}`)}</StatusBadge></td>
       <td className={styles.expiry} data-status={row.status}>{date(row.expiresAt)}</td>
       <td><div className={styles.updated}>{row.updatedByDisplayName && <Avatar initials={row.updatedByDisplayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('')}/>}<span>{row.updatedByDisplayName ?? (row.currentDocumentId ? '—' : t('notUploaded'))}<small>{date(row.updatedAt)}</small></span></div></td>
       <td><div className={styles.rowActions}>
-        {row.currentDocumentId ? <>{row.hasDownloadableFile && row.requirementId ? <Button variant="secondary" size="icon" aria-label={t('downloadDocument', {name: row.name})} onClick={() => downloadRow(row)}><AppIcon name="download" size={18}/></Button> : <UnavailableAction compact icon="download" label={t('downloadDocument', {name: row.name})} explanation={t('fileUnavailable')}/>}<Button variant="secondary" size="icon" aria-label={t('shareDocument', {name: row.name})} onClick={() => setSharing([{documentId: row.id, documentVersionId: row.currentDocumentId!}])}><AppIcon name="share" size={18}/></Button></>
+        {row.currentDocumentId ? <>{row.hasDownloadableFile && row.requirementId ? <Button variant="secondary" size="icon" aria-label={t('downloadDocument', {name: row.name})} onClick={() => downloadRow(row)}><AppIcon name="download" size={18}/></Button> : <UnavailableAction compact icon="download" label={t('downloadDocument', {name: row.name})} explanation={t('fileUnavailable')}/>}</>
           : <Button variant="secondary" size="table" disabled={!access.replace || !row.requirementId} onClick={() => openDocument(row, 'add')}><AppIcon name="upload" size={18}/>{t('upload')}</Button>}
+        <Button variant="secondary" size="icon" aria-label={t('shareDocument', {name: row.name})} onClick={() => setSharing(shareSelection(rows, [row.id]))}><AppIcon name="share" size={18}/></Button>
         {row.requirementId && <RowActionMenu label={t('rowActions', {name: row.name})} open={rowMenu === row.id} onOpenChange={(open) => setRowMenu(open ? row.id : null)} items={[
           {label: common('openDetails'), onSelect: () => openDocument(row)},
           ...(companyDocumentHistory(companyId, row.requirementId).length ? [{label: common('historyAction'), onSelect: () => openDocument(row, 'history')}] : []),
@@ -136,7 +149,7 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
 
   return <div className={styles.page}>
     <AuthenticatedPageHeader className={styles.header} context={<AuthenticatedBreadcrumbs root={{label: app('navigation.company')}} items={[{label: t('title')}]} label={t('breadcrumbLabel')}/>} title={t('title')} titleId="company-documents-title" description={t('description')}
-      actions={<div className={styles.headerActions}><Button variant="secondary" disabled={!access.visible} onClick={() => setSharing(shareSelection(rows, selected))}><AppIcon name="share" size={21}/>{t('shareDocuments')}</Button><AuthenticatedPagePrimaryAction icon="plus" disabled={!access.replace} onClick={() => {setFeedback(''); setActiveDocument({mode: 'add'});}}>{t('addDocuments')}</AuthenticatedPagePrimaryAction></div>}/>
+      actions={<div className={styles.headerActions}><Button variant="secondary" disabled={!access.visible} onClick={() => setSharing(selectedItems)}><AppIcon name="share" size={21}/>{t('shareDocuments')}</Button><AuthenticatedPagePrimaryAction icon="plus" disabled={!access.replace} onClick={() => {setFeedback(''); setActiveDocument({mode: 'add'});}}>{t('addDocuments')}</AuthenticatedPagePrimaryAction></div>}/>
     {feedback && <p role="status">{feedback}</p>}{downloadFailed && <p role="alert">{common('downloadUnavailable')}</p>}
     {error ? <Surface className={styles.error}><ErrorState title={states('errorTitle')} description={states('errorDescription')}/></Surface> : <>
       <section className={styles.metrics} aria-label={t('summaryLabel')}>
@@ -153,7 +166,7 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
       <Surface className={styles.list}>
         <div ref={bulkRef} className={styles.bulk}>
           <div className={`${styles.selected} ${tableStyles.selection}`}><SelectionCheckbox label={t('selectPage')} checked={onPage.length > 0 && checkedOnPage === onPage.length} mixed={checkedOnPage > 0 && checkedOnPage < onPage.length} disabled={onPage.length === 0} onChange={togglePage}/><span role="status" aria-live="polite">{t('selected', {count: selected.length})}</span></div>
-          <div className={styles.bulkActions}><Button variant="secondary" size="compact" disabled={selected.length === 0} onClick={() => {const chosen = rows.filter((row) => selected.includes(row.id)); setDownloadFailed(chosen.some((row) => !row.requirementId || !row.currentDocumentId || !companyDocumentFile(companyId, row.requirementId, row.currentDocumentId)) || !chosen.every((row) => Boolean(row.requirementId && row.currentDocumentId && downloadCompanyDocument(companyId, row.requirementId, row.currentDocumentId))));}}><AppIcon name="download" size={21}/>{t('downloadSelected')}</Button><Button variant="secondary" size="compact" disabled={selected.length === 0} onClick={() => setSharing(shareSelection(rows, selected))}><AppIcon name="share" size={21}/>{t('shareSelected')}</Button>
+          <div className={styles.bulkActions}>{selected.length > 0 && !canDownloadSelection ? <UnavailableAction size="compact" icon="download" explanation={t('downloadSelectionUnavailable')}>{t('downloadSelected')}</UnavailableAction> : <Button variant="secondary" size="compact" disabled={!canDownloadSelection} onClick={downloadSelected}><AppIcon name="download" size={21}/>{t('downloadSelected')}</Button>}<Button variant="secondary" size="compact" disabled={selected.length === 0} onClick={() => setSharing(selectedItems)}><AppIcon name="share" size={21}/>{t('shareSelected')}</Button>
             <Button size="compact" disabled={!access.replace} onClick={() => {setFeedback(''); setApplyingTemplate(true);}}><AppIcon name="plus" size={18}/>{templatesT('title')}</Button>
             {selected.length > 0 ? <RowActionMenu label={t('bulkActions')} items={[{label: t('deselectAll'), onSelect: deselectAll}]} open={bulkMenu} onOpenChange={setBulkMenu}/> : <Button variant="secondary" size="icon" disabled aria-label={t('bulkActions')}><AppIcon name="more" size={18}/></Button>}</div>
         </div>

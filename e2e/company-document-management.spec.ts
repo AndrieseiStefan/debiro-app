@@ -95,7 +95,11 @@ for (const english of [false, true]) {
     await page.screenshot({path: `artifacts/visual/e1c-003/${english ? 'en' : 'ro'}-replacement-error.png`, animations: 'disabled'});
     expect(await page.evaluate(() => JSON.stringify((Reflect.get(window, Symbol.for('debiro.company-documents-session')) as {state: CompanyDocumentsState}).state))).toBe(before);
     await dialog.locator('#company-upload-expires').fill('31.12.2028'); await dialog.getByRole('button', {name: copy.AddDocument.submit, exact: true}).click(); await expect(dialog).not.toBeVisible();
-    await expect(row).not.toHaveAttribute('data-current-document', id!); await expect(page.getByRole('status').filter({hasText: /^0 (selected|selectate)$/})).toBeVisible();
+    await expect(row).not.toHaveAttribute('data-current-document', id!); await expect(page.getByRole('status').filter({hasText: /^1 (selected|selectat)$/})).toBeVisible();
+    await expect(row.getByRole('checkbox')).toBeChecked();
+    await expect(page.getByRole('button', {name: copy.CompanyDocuments.downloadSelected, exact: true})).toHaveAttribute('aria-disabled', 'true');
+    await page.getByRole('button', {name: copy.CompanyDocuments.shareSelected, exact: true}).click();
+    await expect(page.getByRole('dialog').getByRole('alert')).toContainText(copy.CompanyDocumentSharing.errors.stale); await close(page);
     dialog = await details(page, row, name, english);
     await dialog.getByRole('button', {name: t.reject, exact: true}).click();
     const rejection = dialog.getByRole('form', {name: t.reject});

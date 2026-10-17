@@ -5,7 +5,7 @@ import {eligibleCompanyDocumentIds} from './projections';
 import type {CompanyDocumentListRow} from './types';
 
 /** A logical listing identity and an exact uploaded version, never a name-based file lookup. */
-export type ShareDocumentSelection = {documentId: string; documentVersionId: string};
+export type ShareDocumentSelection = {documentId: string; documentVersionId: string | null};
 export type ShareForm = {
   name: string; deliveryMethod: 'link' | 'email'; recipientName: string; recipientEmail: string;
   expiresOn: string; allowDownload: boolean; passwordProtected: boolean; password: string; message: string;
@@ -15,13 +15,12 @@ export type ShareError = 'name' | 'email' | 'date' | 'password' | 'message' | 'e
 export type ShareErrors = Partial<Record<ShareField, ShareError>>;
 export type SharePreview = Omit<ShareForm, 'password' | 'expiresOn'> & {
   expiresAt: string;
-  documents: (ShareDocumentSelection & {name: string})[];
+  documents: (ShareDocumentSelection & {name: string; hasAttachment: boolean})[];
 };
 
-/** Same current-version/actual-byte eligibility as the existing Company Documents toolbar. */
+/** All owned listing rows are selectable; attachment eligibility is checked separately. */
 export function shareSelection(rows: CompanyDocumentListRow[], ids: string[]): ShareDocumentSelection[] {
-  const eligible = new Set(eligibleCompanyDocumentIds(rows));
-  return rows.filter((row) => eligible.has(row.id) && ids.includes(row.id)).map((row) => ({documentId: row.id, documentVersionId: row.currentDocumentId!}));
+  return rows.filter((row) => ids.includes(row.id)).map((row) => ({documentId: row.id, documentVersionId: row.currentDocumentId}));
 }
 
 /** Recheck live ownership, current identity and bytes; never silently substitute a replacement. */
@@ -32,8 +31,9 @@ export function inspectShareSelection(companyId: string, selection: ShareDocumen
   return selection.map((item) => {
     const row = rows.find((row) => row.companyId === companyId && row.id === item.documentId);
     const record = !error && Array.isArray(records) ? records.find((record) => record?.companyId === companyId && record.id === item.documentVersionId) : undefined;
-    const problem: ShareError | null = !documentAccess(companyId).visible ? 'access' : error || !row || !record || row.currentDocumentId !== item.documentVersionId ? 'stale' : !eligible.has(row.id) || !availableCompanyFile(companyId, item.documentVersionId) ? 'file' : null;
-    return {...item, name: documentAccess(companyId).visible ? record?.documentName[locale] ?? row?.name ?? null : null, problem};
+    const problem: ShareError | null = !documentAccess(companyId).visible ? 'access' : error || !row || row.currentDocumentId !== item.documentVersionId || item.documentVersionId !== null && !record ? 'stale' : null;
+    const hasAttachment = !problem && item.documentVersionId !== null && eligible.has(item.documentId) && Boolean(availableCompanyFile(companyId, item.documentVersionId));
+    return {...item, name: documentAccess(companyId).visible ? record?.documentName[locale] ?? row?.name ?? null : null, hasAttachment, problem};
   });
 }
 
@@ -68,7 +68,7 @@ export function prepareSharePreview(companyId: string, selection: ShareDocumentS
       recipientEmail: form.deliveryMethod === 'email' ? form.recipientEmail.trim() : '',
       expiresAt: `${reviewDateToIso(form.expiresOn)}T23:59:59.999Z`, allowDownload: form.allowDownload,
       passwordProtected: form.passwordProtected, message: form.message.trim(),
-      documents: documents.map(({documentId, documentVersionId, name}) => ({documentId, documentVersionId, name: name!}))
+      documents: documents.map(({documentId, documentVersionId, name, hasAttachment}) => ({documentId, documentVersionId, name: name!, hasAttachment}))
     }};
   } catch {return {ok: false, errors: {preview: 'preview'}};}
 }

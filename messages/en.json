@@ -1,5 +1,6 @@
 {
   "CompanyDocumentSharing": {
+    "missingAttachment": "This document has no attached file.", "missingAttachments": "{count} selected documents have no attached files.",
     "description": "Selected documents can be shared securely by secure link or directly by email with partners, clients or authorities.",
     "deliveryMethod": "Delivery Method", "link": "Secure Link", "email": "Email",
     "name": "Package Name", "recipientName": "Recipient", "recipientPlaceholder": "Name or company (optional)", "recipientEmail": "Recipient Email",
@@ -1361,7 +1362,8 @@
     "table": {"name": "Document", "status": "Status", "expiresAt": "Expiration Date", "updatedAt": "Updated by", "actions": "Actions"},
     "status": {"missing": "Missing", "needs_review": "In Review", "valid": "Valid", "expiring_soon": "Expiring Soon", "expired": "Expired"},
     "types": {"tax": "Tax document", "registration": "Official document", "insurance": "Insurance", "iso": "Certification", "fire": "Fire safety permit", "inspector": "Labour inspectorate document", "financial": "Financial document", "environment": "Environmental document", "safety": "Workplace safety document", "permit": "Work permit", "custom": "Custom document"},
-    "selectDocument": "Select {name}", "selectPage": "Select all eligible documents on this page", "selectPageHeader": "Select eligible table documents",
+    "selectDocument": "Select {name}", "selectPage": "Select all documents on this page", "selectPageHeader": "Select table documents",
+    "downloadSelectionUnavailable": "Every selected document must have a current version with an available file to download. Deselect documents without files or upload the missing attachments.",
     "selected": "{count} selected", "deselectAll": "Deselect all", "bulkActions": "Selected document actions",
     "downloadSelected": "Download Selected", "shareSelected": "Share Selected", "downloadDocument": "Download {name}", "shareDocument": "Share {name}", "rowActions": "Actions for {name}",
     "upload": "Upload", "notUploaded": "Not uploaded",

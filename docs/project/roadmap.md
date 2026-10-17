@@ -4,7 +4,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 
 ## Phase 0 — Product & Repository Foundation
 
-- E1C-004 Company document sharing preparation — implemented local exact-version selection/configuration/preview; server-generated links, external access, email delivery, expiry/revocation enforcement and share history await the documented E2 contract
+- E1C-004 Company document sharing preparation — implemented local selection/configuration/preview; E1C-004A allows all owned rows with nullable versions and missing-attachment warnings while preserving real-byte download/sharing requirements. Server-generated links, external access, email delivery, expiry/revocation enforcement and share history await the documented E2 contract
 
 - E1C-003C template visual identity — automatic stable accents, shared source/row grouping, Company Source column and inline Vendor applied chips; E1C-006 must reuse these patterns without employee-specific palette or provenance logic
 

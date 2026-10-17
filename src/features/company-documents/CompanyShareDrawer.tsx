@@ -14,7 +14,6 @@ import {useCompanyState} from '@/features/companies/company-state';
 import {localizedDate} from '@/lib/fixture-clock';
 import fieldStyles from '@/components/ui/Field.module.css';
 import {availableCompanyFile, companyDocumentList, useCompanyDocumentsState} from './company-documents-state';
-import {eligibleCompanyDocumentIds} from './projections';
 import {inspectShareSelection, prepareSharePreview, shareSelection, sharingDate, type ShareDocumentSelection, type ShareErrors, type ShareForm, type SharePreview} from './sharing';
 import type {CompanyDocumentStatus} from './types';
 import controls from '@/features/vendors/InviteVendorDrawer.module.css';
@@ -28,7 +27,6 @@ export function CompanyShareDrawer({companyId, locale, initialSelection, onClose
   const t = useTranslations('CompanyDocumentSharing'), documentsT = useTranslations('CompanyDocuments'), common = useTranslations('DocumentManagement');
   const companyState = useCompanyState(), snapshot = useCompanyDocumentsState();
   const {rows} = companyDocumentList(snapshot, companyId, locale);
-  const eligible = new Set(eligibleCompanyDocumentIds(rows));
   const triggerRef = useRef<HTMLElement | null>(typeof document !== 'undefined' && document.activeElement instanceof HTMLElement ? document.activeElement : null);
   const formRef = useRef<HTMLFormElement>(null), previewRef = useRef<HTMLElement>(null);
   const [phase, setPhase] = useState<'open' | 'closing'>('open');
@@ -37,6 +35,7 @@ export function CompanyShareDrawer({companyId, locale, initialSelection, onClose
   const [errors, setErrors] = useState<ShareErrors>({}), [preview, setPreview] = useState<SharePreview | null>(null);
   const close = useCallback(() => {setForm((value) => ({...value, password: '', recipientName: '', recipientEmail: ''})); setPreview(null); setSelection([]); setPhase('closing');}, []);
   const inspected = inspectShareSelection(companyId, selection, locale), invalid = inspected.filter((item) => item.problem);
+  const missingAttachments = inspected.filter((item) => !item.problem && !item.hasAttachment).length;
   function update<K extends keyof ShareForm>(key: K, value: ShareForm[K]) {setForm((current) => ({...current, [key]: value, ...(key === 'passwordProtected' && !value ? {password: ''} : {})})); setErrors({}); setPreview(null);}
   function toggle(id: string) {setSelection((current) => current.some((item) => item.documentId === id) ? current.filter((item) => item.documentId !== id) : [...current, ...shareSelection(rows, [id])]); setErrors({}); setPreview(null);}
   function submit(event: FormEvent) {
@@ -47,7 +46,7 @@ export function CompanyShareDrawer({companyId, locale, initialSelection, onClose
   }
   // The keyed page unmounts on switch. Also fail closed if access changes independently of routing.
   if (companyState.activeCompanyId !== companyId || !documentAccess(companyId).visible) return null;
-  const usablePreview = preview && !invalid.length;
+  const usablePreview = preview && !invalid.length ? {...preview, documents: preview.documents.map((item) => ({...item, hasAttachment: inspected.find((current) => current.documentId === item.documentId)?.hasAttachment ?? false}))} : null;
 
   return <Drawer phase={phase} onClose={close} onExited={onClose} triggerRef={triggerRef} titleId="company-share-title" descriptionId="company-share-description" closeLabel={common('close')} contentClassName={styles.content}>
     <DrawerHeader titleId="company-share-title" title={documentsT('shareDocuments')}/>
@@ -61,18 +60,19 @@ export function CompanyShareDrawer({companyId, locale, initialSelection, onClose
       {form.deliveryMethod === 'email' && <Field controlSize="compact" id="company-share-email" label={t('recipientEmail')} type="email" autoComplete="email" required value={form.recipientEmail} onChange={(event) => update('recipientEmail', event.target.value)} error={errors.recipientEmail && t(`errors.${errors.recipientEmail}`)}/>}
       <Field controlSize="compact" id="company-share-expires" label={t('expiresOn')} required placeholder={t('datePlaceholder')} value={form.expiresOn} onChange={(event) => update('expiresOn', event.target.value)} helperText={t('expiryPolicy')} error={errors.expiresOn && t(`errors.${errors.expiresOn}`)}/>
       <section className={styles.documents} aria-labelledby="company-share-documents">
-        <div className={styles.selectionHeading}><strong id="company-share-documents">{t('selectedDocuments', {count: selection.length})}</strong></div>
-        {eligible.size === 0 && <p className={styles.notice}>{t('noEligible')}</p>}
+        <div className={styles.selectionHeading}><strong id="company-share-documents" aria-live="polite">{t('selectedDocuments', {count: selection.length})}</strong></div>
+        {missingAttachments > 1 && <p className={styles.notice} role="status"><StatusBadge tone="warning" indicator="none" size="source"><AppIcon name="warning" size={15}/><span>{t('missingAttachments', {count: missingAttachments})}</span></StatusBadge></p>}
+        {rows.length === 0 && <p className={styles.notice}>{documentsT('empty')}</p>}
         <div className={styles.documentList}>
           {rows.toSorted((a, b) => Number(selection.some((item) => item.documentId === b.id)) - Number(selection.some((item) => item.documentId === a.id))).map((row) => {
             const selected = selection.some((item) => item.documentId === row.id), bytes = row.currentDocumentId && availableCompanyFile(companyId, row.currentDocumentId);
             const record = snapshot.byCompany[companyId]?.documents.find((item) => item.id === row.currentDocumentId);
             const fileType = bytes && (bytes.type || record?.fileType);
             return <label className={styles.document} key={row.id} data-share-document={row.id}>
-              <input type="checkbox" checked={selected} disabled={!selected && !eligible.has(row.id)} onChange={() => toggle(row.id)} aria-label={documentsT('selectDocument', {name: row.name})}/>
+              <input type="checkbox" checked={selected} onChange={() => toggle(row.id)} aria-label={documentsT('selectDocument', {name: row.name})} aria-describedby={!bytes ? `company-share-attachment-${row.id}` : undefined}/>
               <span className={listing.fileIcon} data-status={row.status}><AppIcon name="file" size={21}/></span>
               <span className={styles.documentCopy}><strong>{row.name}</strong><small>{documentsT(`types.${row.documentType}`)}{row.issuer && ` · ${row.issuer}`}{fileType && ` · ${fileType}`}</small>
-                {!eligible.has(row.id) && <small>{t(row.currentDocumentId ? 'fileUnavailable' : 'notUploaded')}</small>}
+                {!bytes && <StatusBadge id={`company-share-attachment-${row.id}`} tone="warning" indicator="none" size="source"><AppIcon name="warning" size={15}/><span>{t('missingAttachment')}</span></StatusBadge>}
               </span>
               <StatusBadge size="compact" tone={tones[row.status]}>{documentsT(`status.${row.status}`)}</StatusBadge>
             </label>;
@@ -91,10 +91,10 @@ export function CompanyShareDrawer({companyId, locale, initialSelection, onClose
       {errors.preview && <p role="alert" tabIndex={-1} className={controls.error}>{t(`errors.${errors.preview}`)}</p>}
       {usablePreview && <section ref={previewRef} tabIndex={-1} className={styles.preview} aria-labelledby="company-share-preview-title">
         <h3 id="company-share-preview-title">{t('previewTitle')}</h3><p>{t('previewNotice')}</p>
-        <dl><div><dt>{t('name')}</dt><dd>{preview.name}</dd></div><div><dt>{t('deliveryMethod')}</dt><dd>{t(preview.deliveryMethod)}</dd></div>
-          {preview.recipientName && <div><dt>{t('recipientName')}</dt><dd>{preview.recipientName}</dd></div>}{preview.recipientEmail && <div><dt>{t('recipientEmail')}</dt><dd>{preview.recipientEmail}</dd></div>}
-          <div><dt>{t('expiresOn')}</dt><dd>{localizedDate(preview.expiresAt)[locale]}</dd></div><div><dt>{t('allowDownload')}</dt><dd>{t(preview.allowDownload ? 'yes' : 'no')}</dd></div><div><dt>{t('passwordProtected')}</dt><dd>{t(preview.passwordProtected ? 'yes' : 'no')}</dd></div>
-        </dl><strong>{t('selectedDocuments', {count: preview.documents.length})}</strong><ul>{preview.documents.map((item) => <li key={item.documentId}>{item.name}</li>)}</ul>{preview.message && <p className={styles.message}>{preview.message}</p>}
+        <dl><div><dt>{t('name')}</dt><dd>{usablePreview.name}</dd></div><div><dt>{t('deliveryMethod')}</dt><dd>{t(usablePreview.deliveryMethod)}</dd></div>
+          {usablePreview.recipientName && <div><dt>{t('recipientName')}</dt><dd>{usablePreview.recipientName}</dd></div>}{usablePreview.recipientEmail && <div><dt>{t('recipientEmail')}</dt><dd>{usablePreview.recipientEmail}</dd></div>}
+          <div><dt>{t('expiresOn')}</dt><dd>{localizedDate(usablePreview.expiresAt)[locale]}</dd></div><div><dt>{t('allowDownload')}</dt><dd>{t(usablePreview.allowDownload ? 'yes' : 'no')}</dd></div><div><dt>{t('passwordProtected')}</dt><dd>{t(usablePreview.passwordProtected ? 'yes' : 'no')}</dd></div>
+        </dl><strong>{t('selectedDocuments', {count: usablePreview.documents.length})}</strong><ul>{usablePreview.documents.map((item) => <li key={item.documentId}>{item.name}{!item.hasAttachment && <StatusBadge tone="warning" indicator="none" size="source"><AppIcon name="warning" size={15}/><span>{t('missingAttachment')}</span></StatusBadge>}</li>)}</ul>{usablePreview.message && <p className={styles.message}>{usablePreview.message}</p>}
       </section>}
       <p id="company-share-unavailable" className={controls.demoNote}>{t('backendUnavailable')}</p>
       <div className={styles.actions}><Button variant="secondary" onClick={close}>{common('cancel')}</Button><Tooltip content={t('backendUnavailable')}>{(props) => <Button {...props} aria-disabled="true" onKeyDown={(event) => {if (event.key === 'Enter' || event.key === ' ') event.preventDefault();}}><AppIcon name={form.deliveryMethod === 'link' ? 'share' : 'send'} size={19}/>{t(form.deliveryMethod === 'link' ? 'generateLink' : 'sendEmail')}</Button>}</Tooltip></div>

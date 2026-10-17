@@ -1,5 +1,6 @@
 {
   "CompanyDocumentSharing": {
+    "missingAttachment": "Documentul nu are niciun fișier atașat.", "missingAttachments": "{count} documente selectate nu au fișiere atașate.",
     "description": "Documentele selectate pot fi partajate în siguranță, prin link securizat sau direct pe email, către parteneri, clienți sau autorități.",
     "deliveryMethod": "Metodă de partajare", "link": "Link securizat", "email": "Email",
     "name": "Nume pachet", "recipientName": "Destinatar", "recipientPlaceholder": "Nume sau companie (opțional)", "recipientEmail": "Email destinatar",
@@ -1365,7 +1366,8 @@
     "table": {"name": "Document", "status": "Status", "expiresAt": "Data expirării", "updatedAt": "Actualizat de", "actions": "Acțiuni"},
     "status": {"missing": "Lipsește", "needs_review": "În review", "valid": "Valid", "expiring_soon": "Expiră curând", "expired": "Expirat"},
     "types": {"tax": "Document fiscal", "registration": "Document oficial", "insurance": "Asigurare", "iso": "Certificare", "fire": "Autorizație ISU", "inspector": "Document ITM", "financial": "Document financiar", "environment": "Document de mediu", "safety": "Document SSM", "permit": "Autorizație de lucru", "custom": "Document personalizat"},
-    "selectDocument": "Selectează {name}", "selectPage": "Selectează toate documentele eligibile de pe pagină", "selectPageHeader": "Selectează documentele eligibile din tabel",
+    "selectDocument": "Selectează {name}", "selectPage": "Selectează toate documentele de pe pagină", "selectPageHeader": "Selectează documentele din tabel",
+    "downloadSelectionUnavailable": "Toate documentele selectate trebuie să aibă o versiune curentă cu un fișier disponibil pentru descărcare. Deselectează documentele fără fișiere sau încarcă atașamentele lipsă.",
     "selected": "{count, plural, one {# selectat} other {# selectate}}", "deselectAll": "Deselectează toate", "bulkActions": "Acțiuni pentru documentele selectate",
     "downloadSelected": "Descarcă selectate", "shareSelected": "Partajează selectate", "downloadDocument": "Descarcă {name}", "shareDocument": "Partajează {name}", "rowActions": "Acțiuni pentru {name}",
     "upload": "Încarcă", "notUploaded": "Nu a fost încărcat",

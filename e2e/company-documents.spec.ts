@@ -46,7 +46,7 @@ for (const en of [false, true]) {
     await expect(page.locator('tbody [data-tone][data-status="needs_review"]')).toHaveCount(1);
     await expect(page.locator('tbody [data-tone][data-status="valid"]')).toHaveCount(2);
     await expect(page.getByText(en ? 'Uploaded' : 'Încărcat', {exact: true})).toHaveCount(0);
-    for (const checkbox of await page.getByRole('checkbox').all()) await expect(checkbox).toBeDisabled();
+    for (const checkbox of await page.getByRole('checkbox').all()) await expect(checkbox).toBeEnabled();
     await expect(page.getByRole('status')).toHaveText(en ? '0 selected' : '0 selectate');
     const add = page.getByRole('button', {name: en ? 'Add Documents' : 'Adaugă documente', exact: true});
     await add.focus(); await page.keyboard.press('Enter');
@@ -104,16 +104,16 @@ for (const en of [false, true]) {
 }
 
 test('real test-only file eligibility, pagination, selection across pages and local sharing preparation', async ({page}) => {
-  await page.goto('/en/company/documents'); await scenario(page, {volume: true, files: true});
+  await page.goto('/en/company/documents'); await scenario(page, {volume: true});
   await expect(page.locator('tbody tr')).toHaveCount(10);
-  await page.getByRole('checkbox', {name: 'Select all eligible documents on this page', exact: true}).check();
+  await page.getByRole('checkbox', {name: 'Select all documents on this page', exact: true}).check();
   await expect(page.getByRole('status')).toHaveText('10 selected');
   await page.getByRole('button', {name: 'Next page', exact: true}).click();
-  await expect(page.getByRole('checkbox', {name: 'Select all eligible documents on this page', exact: true})).not.toBeChecked();
-  await page.getByRole('checkbox', {name: 'Select all eligible documents on this page', exact: true}).check();
+  await expect(page.getByRole('checkbox', {name: 'Select all documents on this page', exact: true})).not.toBeChecked();
+  await page.getByRole('checkbox', {name: 'Select all documents on this page', exact: true}).check();
   await expect(page.getByRole('status')).toHaveText('20 selected');
   await page.getByRole('button', {name: 'Next page', exact: true}).click(); await expect(page.locator('tbody tr')).toHaveCount(3);
-  await page.getByRole('checkbox', {name: 'Select all eligible documents on this page', exact: true}).check(); await expect(page.getByRole('status')).toHaveText('23 selected');
+  await page.getByRole('checkbox', {name: 'Select all documents on this page', exact: true}).check(); await expect(page.getByRole('status')).toHaveText('23 selected');
   const share = page.getByRole('button', {name: 'Share Selected', exact: true});
   await expect(share).toBeEnabled(); await share.focus(); await page.keyboard.press('Enter');
   await expect(page.getByRole('dialog').getByText('Selected Documents (23)', {exact: true})).toBeVisible();
@@ -125,7 +125,7 @@ test('real test-only file eligibility, pagination, selection across pages and lo
   await expect(page.getByRole('button', {name: 'Page 1', exact: true})).toHaveAttribute('aria-current', 'page');
   await page.getByRole('searchbox').fill(''); await page.getByRole('combobox', {name: 'Documents per page'}).selectOption('20'); await expect(page.locator('tbody tr')).toHaveCount(20);
   await mkdir('artifacts/visual/e1c-002', {recursive: true});
-  await page.getByRole('checkbox', {name: 'Select all eligible documents on this page', exact: true}).check();
+  await page.getByRole('checkbox', {name: 'Select all documents on this page', exact: true}).check();
   await page.screenshot({path: 'artifacts/visual/e1c-002/test-only-multiple-selection.png', fullPage: true});
 });
 
@@ -134,8 +134,8 @@ test('company switching clears transient state, preserves company-owned records 
   const vendorIds = await page.locator('[data-document-id]').evaluateAll((items) => items.map((item) => item.getAttribute('data-document-id')));
   const records = await page.evaluate(() => (Reflect.get(window, Symbol.for('debiro.document-session')) as {documents: ReturnType<typeof readDocumentRecords>}).documents.map((record) => ({id: record.id, companyId: record.companyId, vendorId: record.vendorId, status: record.status})));
   await page.getByRole('button', {name: 'Companie', exact: true}).click(); await page.getByRole('link', {name: 'Documente companie', exact: true}).click();
-  await scenario(page, {files: true}); await page.getByRole('checkbox', {name: 'Selectează toate documentele eligibile de pe pagină', exact: true}).check();
-  await expect(page.getByRole('status')).toHaveText('5 selectate'); await page.getByRole('searchbox').fill('ANAF');
+  await scenario(page, {files: true}); await page.getByRole('checkbox', {name: 'Selectează toate documentele de pe pagină', exact: true}).check();
+  await expect(page.getByRole('status')).toHaveText('6 selectate'); await page.getByRole('searchbox').fill('ANAF');
   await switchWorkspaceCompany(page, 'Demo Company SRL', 'Global Clean Services');
   await page.getByRole('link', {name: 'Documente companie', exact: true}).click();
   await expect(page.getByText('Nu există documente ale companiei.', {exact: true})).toBeVisible();

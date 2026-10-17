@@ -25,6 +25,44 @@ async function close() {
 afterEach(() => {owner().state = initial; owner().files.clear(); switchActiveCompany('demo-company');});
 
 describe('shared Company sharing drawer', () => {
+  it.each(['ro', 'en'] as const)('selects every unattached row, warns, previews all entries and discloses unavailable downloads in %s', async (locale) => {
+    const copy = locale === 'ro' ? ro : en, t = copy.CompanyDocumentSharing;
+    view(locale);
+    fireEvent.click(screen.getByRole('checkbox', {name: copy.CompanyDocuments.selectPage}));
+    expect(screen.getByRole('status')).toHaveTextContent('6');
+    const download = screen.getByRole('button', {name: copy.CompanyDocuments.downloadSelected});
+    expect(download).toHaveAttribute('aria-disabled', 'true'); act(() => download.focus());
+    expect(screen.getByRole('tooltip')).toHaveTextContent(copy.CompanyDocuments.downloadSelectionUnavailable);
+    fireEvent.click(screen.getByRole('button', {name: copy.CompanyDocuments.shareSelected}));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByRole('status')).toHaveTextContent(t.missingAttachments.replace('{count}', '6'));
+    expect(within(dialog).getAllByRole('checkbox')).toHaveLength(6);
+    for (const checkbox of within(dialog).getAllByRole('checkbox')) {expect(checkbox).toBeEnabled(); expect(checkbox).toBeChecked(); expect(checkbox).toHaveAccessibleDescription(t.missingAttachment);}
+    change('name', 'Package'); fireEvent.click(within(dialog).getByRole('button', {name: t.preparePreview}));
+    const preview = within(dialog).getByRole('region', {name: t.previewTitle});
+    expect(within(preview).getAllByRole('listitem')).toHaveLength(6); expect(within(preview).getAllByText(t.missingAttachment)).toHaveLength(6);
+    expect(owner().files.size).toBe(0); expect(owner().state).toBe(initial);
+    await close();
+    const missing = initial.byCompany['demo-company'].requirements.find((item) => item.currentDocumentId === null)!;
+    fireEvent.click(screen.getByRole('button', {name: copy.CompanyDocuments.shareDocument.replace('{name}', missing.name[locale])}));
+    expect(within(screen.getByRole('dialog')).getByRole('checkbox', {name: copy.CompanyDocuments.selectDocument.replace('{name}', missing.name[locale])})).toBeChecked();
+    expect(within(screen.getByRole('dialog')).queryByRole('status')).toBeNull();
+  });
+
+  it('keeps preview and table selection when an attachment disappears, and excludes incomplete bulk downloads', async () => {
+    const uploaded = upload('Available proof'); view('en');
+    fireEvent.click(screen.getByRole('checkbox', {name: 'Select Available proof'}));
+    expect(screen.getByRole('button', {name: en.CompanyDocuments.downloadSelected})).not.toHaveAttribute('aria-disabled');
+    fireEvent.click(screen.getByRole('button', {name: en.CompanyDocuments.shareSelected})); change('name', 'Package');
+    const dialog = screen.getByRole('dialog'); fireEvent.click(within(dialog).getByRole('button', {name: en.CompanyDocumentSharing.preparePreview}));
+    expect(within(within(dialog).getByRole('region', {name: en.CompanyDocumentSharing.previewTitle})).queryByText(en.CompanyDocumentSharing.missingAttachment)).toBeNull();
+    act(() => {owner().files.get('demo-company')!.delete(uploaded.document.id); owner().state = {...owner().state}; owner().listeners.forEach((notify) => notify());});
+    expect(within(dialog).getByRole('region', {name: en.CompanyDocumentSharing.previewTitle})).toHaveTextContent(en.CompanyDocumentSharing.missingAttachment);
+    await close(); expect(screen.getByRole('checkbox', {name: 'Select Available proof'})).toBeChecked();
+    expect(screen.getByRole('status')).toHaveTextContent('1 selected');
+    expect(screen.getByRole('button', {name: en.CompanyDocuments.downloadSelected})).toHaveAttribute('aria-disabled', 'true');
+  });
+
   it.each(['ro', 'en'] as const)('supports all three entry points and editable exact-version selection in %s', async (locale) => {
     const copy = locale === 'ro' ? ro : en, t = copy.CompanyDocumentSharing;
     const a = upload('Package proof A'), b = upload('Package proof B'); view(locale);
@@ -78,7 +116,9 @@ describe('shared Company sharing drawer', () => {
     fireEvent.click(within(dialog).getByRole('button', {name: en.CompanyDocumentSharing.remove}));
     const checkbox = within(dialog).getByRole('checkbox', {name: en.CompanyDocuments.selectDocument.replace('{name}', 'Old proof')}); fireEvent.click(checkbox);
     act(() => {owner().files.clear(); owner().state = {...owner().state}; owner().listeners.forEach((notify) => notify());});
-    expect(within(dialog).getByRole('alert')).toHaveTextContent(en.CompanyDocumentSharing.errors.file); expect(checkbox).toBeChecked();
+    expect(within(dialog).getByRole('checkbox', {name: 'Select Old proof'})).toHaveAccessibleDescription(en.CompanyDocumentSharing.missingAttachment); expect(checkbox).toBeChecked();
+    fireEvent.click(within(dialog).getByRole('button', {name: en.CompanyDocumentSharing.preparePreview}));
+    expect(within(dialog).getByRole('region', {name: en.CompanyDocumentSharing.previewTitle})).toHaveTextContent(en.CompanyDocumentSharing.missingAttachment);
   });
 
   it.each(['ro', 'en'] as const)('renders localized field validation without creating a preview in %s', (locale) => {

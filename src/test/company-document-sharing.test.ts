@@ -18,21 +18,42 @@ const rows = () => companyDocumentList(readCompanyDocumentsState(), companyId, '
 afterEach(() => {owner().state = initial; owner().files.clear(); switchActiveCompany(companyId); vi.restoreAllMocks();});
 
 describe('transient company sharing contracts', () => {
-  it('reuses exact current-version and real-byte eligibility, excluding missing/metadata/history and foreign files', () => {
-    expect(shareSelection(rows(), rows().map((row) => row.id))).toEqual([]);
+  it('selects all owned rows with nullable exact version identities, independently of attachments', () => {
+    const listing = rows(), all = shareSelection(listing, listing.map((row) => row.id));
+    expect(all).toEqual(listing.map((row) => ({documentId: row.id, documentVersionId: row.currentDocumentId})));
+    expect(all).toHaveLength(6); expect(all.filter((item) => item.documentVersionId === null)).toHaveLength(1);
+    expect(inspectShareSelection(companyId, all, 'en').every((item) => item.problem === null && !item.hasAttachment)).toBe(true);
     const uploaded = upload(), current = rows(), selections = shareSelection(current, [...current.map((row) => row.id), uploaded.requirementId]);
-    expect(selections).toEqual([{documentId: uploaded.requirementId, documentVersionId: uploaded.document.id}]);
-    expect(inspectShareSelection(companyId, selections, 'en')).toEqual([{...selections[0], name: 'Owned proof', problem: null}]);
+    expect(selections).toHaveLength(7);
+    expect(inspectShareSelection(companyId, shareSelection(current, [uploaded.requirementId]), 'en')).toEqual([{documentId: uploaded.requirementId, documentVersionId: uploaded.document.id, name: 'Owned proof', hasAttachment: true, problem: null}]);
     expect(prepareSharePreview('global-clean-services', selections, form(), 'en', now)).toEqual({ok: false, errors: {documents: 'access'}});
     expect(prepareSharePreview(companyId, [{documentId: 'vendor-record', documentVersionId: uploaded.document.id}], form(), 'en', now)).toEqual({ok: false, errors: {documents: 'stale'}});
   });
 
-  it('requires a nonempty package and reports missing bytes without dropping the selected version', () => {
+  it('requires a nonempty package but retains missing requirements, metadata and lost attachments in local preview', () => {
     expect(prepareSharePreview(companyId, [], form(), 'en', now)).toEqual({ok: false, errors: {documents: 'empty'}});
     const uploaded = upload(), selections = shareSelection(rows(), [uploaded.requirementId]);
     owner().files.clear();
-    expect(inspectShareSelection(companyId, selections, 'en')[0]).toMatchObject({...selections[0], problem: 'file'});
-    expect(prepareSharePreview(companyId, selections, form(), 'en', now)).toEqual({ok: false, errors: {documents: 'file'}});
+    expect(inspectShareSelection(companyId, selections, 'en')[0]).toMatchObject({...selections[0], hasAttachment: false, problem: null});
+    const selected = shareSelection(rows(), rows().map((row) => row.id)), result = prepareSharePreview(companyId, selected, form(), 'en', now);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.preview.documents).toHaveLength(7);
+      expect(result.preview.documents.every((item) => !item.hasAttachment)).toBe(true);
+      expect(result.preview.documents.find((item) => item.documentVersionId === null)).toMatchObject({documentId: 'company-requirement:criminal-record', hasAttachment: false});
+      expect(result.preview.documents.find((item) => item.documentId === uploaded.requirementId)?.documentVersionId).toBe(uploaded.document.id);
+    }
+  });
+
+  it('never assigns a new version to a selected missing requirement or drops a removed row silently', () => {
+    const missing = rows().find((row) => row.currentDocumentId === null)!, selected = shareSelection(rows(), [missing.id]);
+    const uploadResult = addCompanyDocument(companyId, {...input(), requirementId: missing.id}); expect(uploadResult.ok).toBe(true);
+    expect(selected).toEqual([{documentId: missing.id, documentVersionId: null}]);
+    expect(prepareSharePreview(companyId, selected, form(), 'en', now)).toEqual({ok: false, errors: {documents: 'stale'}});
+    const uploaded = upload(), withAttachment = shareSelection(rows(), [uploaded.requirementId]);
+    const workspace = owner().state.byCompany[companyId];
+    owner().state = {...owner().state, byCompany: {...owner().state.byCompany, [companyId]: {...workspace, documents: workspace.documents.filter((item) => item.id !== uploaded.document.id), requirements: workspace.requirements.filter((item) => item.id !== uploaded.requirementId)}}};
+    expect(prepareSharePreview(companyId, withAttachment, form(), 'en', now)).toEqual({ok: false, errors: {documents: 'stale'}});
   });
 
   it('rejects replacement/rejection/missing references and never silently substitutes new bytes', () => {
@@ -43,7 +64,7 @@ describe('transient company sharing contracts', () => {
     expect(prepareSharePreview(companyId, selections, form(), 'en', now)).toEqual({ok: false, errors: {documents: 'stale'}});
     const next = shareSelection(rows(), [uploaded.requirementId]);
     expect(next[0].documentVersionId).not.toBe(selections[0].documentVersionId);
-    expect(reviewCompanyDocument(companyId, uploaded.requirementId, next[0].documentVersionId, 'rejected', 'Not accepted').ok).toBe(true);
+    expect(reviewCompanyDocument(companyId, uploaded.requirementId, next[0].documentVersionId!, 'rejected', 'Not accepted').ok).toBe(true);
     expect(prepareSharePreview(companyId, next, form(), 'en', now)).toEqual({ok: false, errors: {documents: 'stale'}});
     owner().state = {...owner().state, byCompany: {...owner().state.byCompany, [companyId]: {...owner().state.byCompany[companyId], documents: null!}}};
     expect(inspectShareSelection(companyId, next, 'en')[0]).toMatchObject({name: null, problem: 'stale'});
@@ -70,7 +91,7 @@ describe('transient company sharing contracts', () => {
     const uploaded = upload(), selections = shareSelection(rows(), [uploaded.requirementId]);
     const before = readCompanyDocumentsState(), vendorBefore = readDocumentRecords(), companiesBefore = readCompanyState();
     const result = prepareSharePreview(companyId, selections, form({passwordProtected: true, password: 'never-persist-this', recipientName: ' Buyer ', message: ' Hello '}), 'en', now);
-    expect(result).toEqual({ok: true, preview: {name: 'Tender package', deliveryMethod: 'link', recipientName: 'Buyer', recipientEmail: '', expiresAt: '2026-12-06T23:59:59.999Z', allowDownload: true, passwordProtected: true, message: 'Hello', documents: [{...selections[0], name: 'Owned proof'}]}});
+    expect(result).toEqual({ok: true, preview: {name: 'Tender package', deliveryMethod: 'link', recipientName: 'Buyer', recipientEmail: '', expiresAt: '2026-12-06T23:59:59.999Z', allowDownload: true, passwordProtected: true, message: 'Hello', documents: [{...selections[0], name: 'Owned proof', hasAttachment: true}]}});
     expect(JSON.stringify(result)).not.toContain('never-persist-this'); expect(JSON.stringify(result)).not.toContain('private actual bytes');
     expect(readCompanyDocumentsState()).toBe(before); expect(readDocumentRecords()).toBe(vendorBefore); expect(readCompanyState()).toBe(companiesBefore);
     expect(companyDocumentMetrics(rows()).activeShares).toBe(0);

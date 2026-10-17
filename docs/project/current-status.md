@@ -26,7 +26,7 @@ The final logo is not yet designed and must not be invented.
 
 ## Implemented
 
-- E1C-004 Company sharing preparation — one shared drawer from header/bulk/row, exact current-version/actual-byte selection, local configuration/validation/preview, transient password handling and company isolation. External links/email/revocation remain deferred to the documented E2 security/API contract; Active Shares remains zero. See [Company Documents](../features/company-documents.md#company-sharing-preparation-e1c-004).
+- E1C-004 Company sharing preparation — one shared drawer from header/bulk/row, local configuration/validation/preview, transient password handling and company isolation. E1C-004A separates all-row selection from attachment eligibility: nullable exact versions, inline/summary missing-file warnings and truthful mixed/all-unattached previews; bulk downloads require real current files for the entire selection. External links/email/revocation remain deferred to the documented E2 security/API contract; Active Shares remains zero. See [Company Documents](../features/company-documents.md#company-sharing-preparation-e1c-004).
 
 - E1C-003C template grouping — stable automatic company-owned accent metadata, shared Source badges/row tints for Vendor and Company Documents, Company Source column and compact inline Vendor applied-template header. Existing provenance/removal, status/compliance, ownership and document lifecycle remain unchanged; employee reuse contract recorded in [UI Foundation](../design/ui-foundation.md#company-and-employee-ui-reuse-e1c-003b).
 

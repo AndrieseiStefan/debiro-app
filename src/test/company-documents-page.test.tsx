@@ -29,7 +29,7 @@ describe('Company Documents shared listing UI', () => {
     expect(templateAction.closest('[aria-labelledby="company-documents-title"]')).toBeNull();
     const toolbar = templateAction.parentElement!.parentElement!;
     expect(within(toolbar).getByRole('status')).toHaveTextContent(locale === 'ro' ? '0 selectate' : '0 selected');
-    expect(within(toolbar).getByRole('checkbox', {name: copy.CompanyDocuments.selectPage})).toBeDisabled();
+    expect(within(toolbar).getByRole('checkbox', {name: copy.CompanyDocuments.selectPage})).toBeEnabled();
     expect(within(toolbar).getAllByRole('button').map((button) => button.getAttribute('aria-label') ?? button.textContent)).toEqual([
       copy.CompanyDocuments.downloadSelected, copy.CompanyDocuments.shareSelected, copy.VendorTemplates.title, copy.CompanyDocuments.bulkActions
     ]);
@@ -38,11 +38,11 @@ describe('Company Documents shared listing UI', () => {
     expect(screen.getByRole('navigation', {name: copy.CompanyDocuments.breadcrumbLabel})).toHaveTextContent(`${copy.AppShell.navigation.company}${copy.CompanyDocuments.title}`);
     const summary = screen.getByRole('region', {name: copy.CompanyDocuments.summaryLabel});
     expect([...summary.querySelectorAll('strong')].map((item) => item.textContent)).toEqual(['5', '4', '0']);
-    expect(screen.getAllByRole('checkbox').every((input) => input.hasAttribute('disabled'))).toBe(true);
+    expect(screen.getAllByRole('checkbox').every((input) => !input.hasAttribute('disabled'))).toBe(true);
     const action = screen.getByRole('button', {name: copy.CompanyDocuments.shareDocuments});
     expect(action).toBeEnabled(); act(() => action.focus());
     fireEvent.click(action); expect(screen.getByRole('dialog')).toBeVisible();
-    expect(screen.getByText(copy.CompanyDocumentSharing.noEligible)).toBeVisible();
+    expect(within(screen.getByRole('dialog')).getAllByText(copy.CompanyDocumentSharing.missingAttachment)).toHaveLength(6);
     fireEvent.keyDown(document, {key: 'Escape'});
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     const download = screen.getAllByRole('button', {name: /^Descarcă |^Download /})[1];
@@ -61,12 +61,12 @@ describe('Company Documents shared listing UI', () => {
     expect(within(screen.getByRole('table')).getAllByRole('row')).toHaveLength(7);
   });
 
-  it('preserves eligible selection and pagination when applying a template, supports deselect all, and resets page on filtering', async () => {
+  it('preserves attachment-free selection and pagination when applying a template, supports deselect all, and resets page on filtering', async () => {
     const snapshot = structuredClone(initial), workspace = snapshot.byCompany['demo-company'];
     const base = workspace.requirements[0], record = workspace.documents[0];
     workspace.requirements = Array.from({length: 22}, (_, index) => ({...base, id: `req-${index}`, currentDocumentId: `doc-${index}`, name: {ro: `Document ${index}`, en: `Document ${index}`}}));
     workspace.documents = workspace.requirements.map((item, index) => ({...record, id: item.currentDocumentId!, documentName: item.name, issuer: index < 3 ? 'ONRC' : 'Other'}));
-    owner().state = snapshot; owner().files.set('demo-company', new Map(workspace.documents.map((doc) => [doc.id, new Blob(['test-only actual bytes'])])));
+    owner().state = snapshot;
     const templates = structuredClone(initialTemplates), template = {...templates.byCompany['demo-company'].templates[0], scope: 'company' as const, categoryId: null};
     templates.byCompany['demo-company'].templates.push({...template, id: 'pagination-template', documents: [{id: 'pagination-rule', templateId: 'pagination-template', catalogDocumentTypeId: 'tax', required: true, expiryWarningDays: 30, validityMonths: 12}]});
     templateOwner().state = templates;

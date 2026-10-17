@@ -40,7 +40,7 @@ for (const locale of ['ro', 'en'] as const) {
       await page.screenshot({path: `artifacts/visual/e1c-003c/toolbar/${locale}-${width}.png`, animations: 'disabled'});
       await action.focus(); await page.keyboard.press('Enter'); await expect(page.getByRole('dialog', {name: copy.VendorTemplates.title, exact: true})).toBeVisible(); await close(page); await expect(action).toBeFocused();
     }
-    // Give one existing record actual test-only bytes; selection and download availability are unchanged.
+    // Give one existing record actual test-only bytes; only this row can be downloaded alone.
     await page.evaluate(() => {
       const session = Reflect.get(window, Symbol.for('debiro.company-documents-session')) as {files: Map<string, Map<string, Blob>>; listeners: Set<() => void>; state: {byCompany: Record<string, {documents: {id: string; supersededById?: string}[]}>}};
       const document = session.state.byCompany['demo-company'].documents.find((item) => !item.supersededById)!;
@@ -48,7 +48,7 @@ for (const locale of ['ro', 'en'] as const) {
       session.state = {...session.state}; session.listeners.forEach((notify) => notify());
     });
     await page.setViewportSize({width: 1448, height: 900});
-    await toolbar.getByRole('checkbox', {name: copy.CompanyDocuments.selectPage, exact: true}).check();
+    await page.locator('[data-company-document-row="company-requirement:registration"]').getByRole('checkbox').check();
     await expect(toolbar.getByRole('status')).toHaveText(locale === 'ro' ? '1 selectat' : '1 selected'); await expect(download).toBeEnabled(); await expect(share).toBeEnabled(); await expect(share).not.toHaveAttribute('aria-disabled', 'true'); await expect(more).toBeEnabled();
     const pending = page.waitForEvent('download'); await download.click(); await pending;
     await more.click(); await page.getByRole('menuitem', {name: copy.CompanyDocuments.deselectAll, exact: true}).click(); await expect(download).toBeDisabled();
