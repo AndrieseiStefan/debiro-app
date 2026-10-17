@@ -31,7 +31,7 @@ const rowIds = (page: Page) => page.locator('[data-company-document-row]').evalu
 
 for (const en of [false, true]) {
   const prefix = en ? '/en' : '';
-  test(`${en ? 'EN' : 'RO'} Company group, listing semantics, locale entry and Employees placeholder`, async ({page}) => {
+  test(`${en ? 'EN' : 'RO'} Company group, listing semantics, locale entry and Employees workspace`, async ({page}) => {
     await page.goto(`${prefix}/company/documents`);
     const navigation = page.getByRole('navigation', {name: en ? 'Application navigation' : 'Navigare în aplicație'});
     const company = navigation.getByRole('button', {name: en ? 'Company' : 'Companie', exact: true});
@@ -58,7 +58,7 @@ for (const en of [false, true]) {
     await navigation.getByRole('link', {name: en ? 'Employees' : 'Angajați', exact: true}).click();
     await expect(page).toHaveURL(`${prefix}/company/employees`);
     await expect(page.getByRole('heading', {level: 1})).toHaveText(en ? 'Employees' : 'Angajați');
-    await expect(page.getByText(en ? 'Employee management will be available soon.' : 'Gestionarea angajaților va fi disponibilă în curând.')).toBeVisible();
+    await expect(page.getByRole('table')).toBeVisible();
     await expect(navigation.locator('a[aria-current="page"]')).toHaveAttribute('href', `${prefix}/company/employees`);
     await company.click(); await expect(company).toHaveAttribute('aria-expanded', 'false');
     await company.press('Enter'); await expect(company).toHaveAttribute('aria-expanded', 'true');

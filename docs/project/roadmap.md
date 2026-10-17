@@ -4,15 +4,17 @@ This roadmap records direction only. Detailed requirements are created by the ta
 
 ## Phase 0 — Product & Repository Foundation
 
+- E1C-005 Employee Management — implemented company-owned personnel list/create/edit, suggestions/departments, permissions, filtering/sorting/pagination and minimal Details. E1C-006 employee documents/templates/compliance and E1C-007 Dashboard/Notifications/Search integration remain deferred; existing vendor/company operations are preserved
+
 - E1C-004 Company document sharing preparation — implemented local selection/configuration/preview; E1C-004A allows all owned rows with nullable versions and missing-attachment warnings while preserving real-byte download/sharing requirements. Server-generated links, external access, email delivery, expiry/revocation enforcement and share history await the documented E2 contract
 
 - E1C-003C template visual identity — automatic stable accents, shared source/row grouping, Company Source column and inline Vendor applied chips; E1C-006 must reuse these patterns without employee-specific palette or provenance logic
 
-- E1C-003B UI consistency — shared Company Documents form/KPI/table presentation and visible template action; employee list/details/upload reuse contracts recorded for E1C-005/006, without implementing employee management
+- E1C-003B UI consistency — shared Company Documents form/KPI/table presentation and visible template action; employee list/Add/Edit reuse is implemented in E1C-005, while full document Details/upload reuse remains required for E1C-006
 
 - E1C-003 Company Document Management — implemented guarded company uploads, Company-template requirement snapshots, review/metadata, version history, manual expiry and exact-byte preview/download. Existing vendor behavior is preserved; storage remains current-tab only and external sharing remains E2 work
 
-- E1C-002 Company Documents — implemented additive Company navigation and owned listing with honest KPIs, normalized filters/sort, eligible selection and pagination; Employees has a localized Coming Soon route. E1C-003 enables management; secure external sharing remains E2 work, not a simulated operation
+- E1C-002 Company Documents — implemented additive Company navigation and owned listing with honest KPIs, normalized filters/sort, eligible selection and pagination; Employees now has the separate E1C-005 management workspace. E1C-003 enables management; secure external sharing remains E2 work, not a simulated operation
 
 - E1C-001 template target scopes — implemented Vendor/Company/Employee templates through the existing company-owned session/editor, with backward-compatible vendor data and assignment rules; Company Documents and Employee workflows remain separate tasks
 

@@ -4,7 +4,7 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import ro from '../../messages/ro.json';
 import en from '../../messages/en.json';
 import {CompanyDocumentsPage} from '@/features/company-documents/CompanyDocumentsPage';
-import {EmployeesComingSoonPage} from '@/features/company-documents/EmployeesComingSoonPage';
+import {EmployeesPage} from '@/features/employees/EmployeesPage';
 import type {CompanyDocumentsState} from '@/features/company-documents/types';
 import {readCompanyDocumentsState} from '@/features/company-documents/company-documents-state';
 import {readCompanyState, switchActiveCompany} from '@/features/companies/company-state';
@@ -17,7 +17,7 @@ const initial = readCompanyDocumentsState();
 const initialTemplates = readRequirementsState();
 const templateOwner = () => Reflect.get(window, Symbol.for('debiro.requirements-session')) as {state: ReturnType<typeof readRequirementsState>};
 afterEach(() => {owner().state = initial; owner().files.clear(); templateOwner().state = initialTemplates; switchActiveCompany('demo-company');});
-const view = (locale: 'ro' | 'en' = 'ro', employees = false) => render(<NextIntlClientProvider locale={locale} messages={locale === 'ro' ? ro : en}>{employees ? <EmployeesComingSoonPage locale={locale}/> : <CompanyDocumentsPage locale={locale}/>}</NextIntlClientProvider>);
+const view = (locale: 'ro' | 'en' = 'ro', employees = false) => render(<NextIntlClientProvider locale={locale} messages={locale === 'ro' ? ro : en}>{employees ? <EmployeesPage locale={locale}/> : <CompanyDocumentsPage locale={locale}/>}</NextIntlClientProvider>);
 
 describe('Company Documents shared listing UI', () => {
   it.each(['ro', 'en'] as const)('renders derived metrics, truthful disabled files and sharing preparation in %s', async (locale) => {
@@ -101,9 +101,9 @@ describe('Company Documents shared listing UI', () => {
     try {rendered.rerender(<NextIntlClientProvider locale="ro" messages={ro}><CompanyDocumentsPage locale="ro"/></NextIntlClientProvider>); expect(screen.queryByRole('heading', {level: 1})).toBeNull(); expect(screen.getByText(ro.AppShell.workspaceEmptyTitle)).toBeVisible();} finally {member.status = status;}
   });
 
-  it('renders a localized accessible Employees placeholder, not a feature or fake action', () => {
+  it('renders the localized Employees workspace without fake document metrics', () => {
     view('en', true); expect(screen.getByRole('heading', {level: 1, name: 'Employees'})).toBeVisible();
-    expect(screen.getByText(en.CompanyDocuments.employeesComingSoon)).toBeVisible(); expect(screen.queryByRole('table')).toBeNull();
+    expect(screen.getByText(en.Employees.description)).toBeVisible(); expect(screen.getByRole('table')).toBeVisible();
   });
 
   it('reuses the upload drawer, retains recoverable input, and integrates pending review then rejection history', async () => {

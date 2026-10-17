@@ -1,8 +1,8 @@
 import {setRequestLocale} from 'next-intl/server';
-import {EmployeesComingSoonPage} from '@/features/company-documents/EmployeesComingSoonPage';
+import {EmployeesPage} from '@/features/employees/EmployeesPage';
 
 export default async function EmployeesRoute({params}: {params: Promise<{locale: string}>}) {
   const {locale} = await params;
   setRequestLocale(locale);
-  return <EmployeesComingSoonPage locale={locale}/>;
+  return <EmployeesPage locale={locale}/>;
 }

@@ -13,6 +13,7 @@
 .copy > :last-child {color: #069666; font-size: 12px; font-weight: 600; margin-top: 6px; white-space: nowrap;}
 .card[data-status='review'] .copy > :last-child {color: #d92543;}
 .card[data-status='expiring'] .copy > :last-child {color: #cb7600;}
+.card[data-unavailable] .copy > :last-child {color: var(--color-text-secondary);}
 .chevron {color: #5578af; flex: 0 0 auto; margin-left: auto; margin-top: 2px;}
 @media (max-width: 767px) {
   .card {height: 108px;}
