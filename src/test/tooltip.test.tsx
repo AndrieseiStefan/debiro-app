@@ -21,7 +21,16 @@ describe.each(['hover', 'focus'] as const)('Tooltip %s placement', (interaction)
     const trigger = screen.getByRole('button');
     if (interaction === 'hover') fireEvent.pointerEnter(trigger); else act(() => trigger.focus());
     const tooltip = screen.getByRole('tooltip');
+    expect(tooltip).not.toHaveAttribute('data-layer');
     expect(tooltip).toHaveStyle({left: `${expected[0]}px`, top: `${expected[1]}px`});
     expect(trigger).toHaveAccessibleDescription('In progress · Coming soon');
   });
+});
+
+it('opts into the drawer layer without changing the trigger or accessible explanation', () => {
+  render(<Tooltip content="Sending unavailable" layer="drawer">{(props) => <button {...props} aria-disabled="true">Send Email</button>}</Tooltip>);
+  const trigger = screen.getByRole('button'); act(() => trigger.focus());
+  expect(screen.getByRole('tooltip')).toHaveAttribute('data-layer', 'drawer');
+  expect(trigger).toHaveAccessibleDescription('Sending unavailable');
+  expect(trigger).toHaveAttribute('aria-disabled', 'true');
 });

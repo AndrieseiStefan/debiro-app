@@ -1,7 +1,26 @@
 {
+  "EmployeeReminder": {
+    "description": "Trimite o informare personalizată angajatului prin email.",
+    "recipient": "Destinatar",
+    "subject": "Subiect",
+    "defaultSubject": "Informare din partea {company}",
+    "message": "Mesaj",
+    "messagePlaceholder": "Scrie mesajul pe care dorești să îl trimiți angajatului...",
+    "preview": "Previzualizează",
+    "back": "Înapoi la editare",
+    "send": "Trimite email",
+    "sendUnavailable": "Trimiterea emailurilor va fi disponibilă după activarea serviciului de notificări.",
+    "note": "Previzualizarea nu trimite emailuri și nu atașează documente.",
+    "noEmail": "Email indisponibil",
+    "invalidRecipient": "Angajatul nu are o adresă de email validă. Editează datele angajatului înainte de trimitere.",
+    "errors": {
+      "required": "Acest câmp este obligatoriu.",
+      "subjectLength": "Subiectul poate conține maximum 150 de caractere.",
+      "messageLength": "Mesajul poate conține maximum 5000 de caractere."
+    }
+  },
   "EmployeeDocuments": {
     "sendReminder": "Trimite reminder",
-    "reminderUnavailable": "Trimiterea reminderelor va fi disponibilă după activarea serviciului de notificări.",
     "department": "Departament", "phone": "Telefon",
     "title": "Detalii angajat",
     "description": "Gestionează documentele, datele și activitatea angajatului în companie.",

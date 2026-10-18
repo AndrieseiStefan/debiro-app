@@ -4,7 +4,9 @@ This roadmap records direction only. Detailed requirements are created by the ta
 
 ## Phase 0 — Product & Repository Foundation
 
-- E1C-006A Employees directory consistency — implemented Vendor presentation reuse, removal of directory selection/View controls, client row navigation/independent menus, shared filters and document-only bulk actions. Employee Reminder remains an honest unavailable-service control; real delivery is E2 work
+- E1C-006A2 Employee reminder composition — implemented temporary Administrator-only email draft and local preview through the existing action/shared Drawer, independent of documents; Resend/job delivery and the documented server contract remain E2 work
+
+- E1C-006A Employees directory consistency — implemented Vendor presentation reuse, removal of directory selection/View controls, client row navigation/independent menus, shared filters and document-only bulk actions. Employee Reminder opens local composition; only final email sending remains unavailable until E2
 
 - E1C-006 Employee Details and Documents — implemented Administrator-only employee document requirements/templates, shared upload/review/versions/history/viewer, exact files, metadata/manual expiry, current-only tracking/list KPIs and actual activity; company/employee isolation and existing Company/Vendor behavior preserved. E1C-007 Dashboard/Notifications/Search integration and production personnel privacy/retention remain deferred
 

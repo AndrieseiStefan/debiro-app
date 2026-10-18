@@ -7,7 +7,7 @@ import styles from './Tooltip.module.css';
 type TooltipTriggerProps = Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'aria-describedby' | 'onFocus' | 'onBlur' | 'onPointerEnter' | 'onPointerLeave' | 'onClick'> & {ref: RefObject<HTMLButtonElement | null>};
 
 /** A focusable button and portaled explanation, without a wrapper that changes control geometry. */
-export function Tooltip({content, placement = 'bottom', children}: {content: string; placement?: 'bottom' | 'right'; children: (props: TooltipTriggerProps) => ReactNode}) {
+export function Tooltip({content, placement = 'bottom', layer, children}: {content: string; placement?: 'bottom' | 'right'; layer?: 'drawer'; children: (props: TooltipTriggerProps) => ReactNode}) {
   const id = useId();
   const trigger = useRef<HTMLButtonElement>(null);
   const tooltip = useRef<HTMLDivElement>(null);
@@ -50,6 +50,6 @@ export function Tooltip({content, placement = 'bottom', children}: {content: str
 
   return <>
     {children({ref: trigger, 'aria-describedby': open ? id : undefined, onFocus: show, onBlur: close, onPointerEnter: show, onPointerLeave: leave, onClick: show})}
-    {open && createPortal(<div id={id} ref={tooltip} role="tooltip" className={styles.tooltip} style={position} onPointerEnter={show} onPointerLeave={leave}>{content}</div>, document.body)}
+    {open && createPortal(<div id={id} ref={tooltip} role="tooltip" data-layer={layer} className={styles.tooltip} style={position} onPointerEnter={show} onPointerLeave={leave}>{content}</div>, document.body)}
   </>;
 }

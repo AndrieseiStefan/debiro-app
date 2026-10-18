@@ -25,6 +25,7 @@ import {resolveTemplateSources, templateAccentStyle} from '@/features/requiremen
 import {employeeDocumentAdapter} from './employee-documents';
 import {employeeDocumentBytes, employeeDocumentWorkspace, useEmployeeState} from './employees-state';
 import {projectEmployeeDocuments} from './employee-document-projections';
+import {EmployeeReminderDrawer} from './EmployeeReminderDrawer';
 import table from '@/components/ui/DataTable.module.css';
 import list from '@/features/company-documents/CompanyDocumentsPage.module.css';
 import styles from './EmployeeDetails.module.css';
@@ -34,7 +35,7 @@ function Selection({label, checked, mixed = false, disabled, onChange}: {label: 
   return <input ref={ref} type="checkbox" aria-label={label} checked={checked} disabled={disabled} onChange={onChange}/>;
 }
 
-export function EmployeeDocumentPanel({companyId, employeeId, locale, selection, onSelection: setSelection}: {companyId: string; employeeId: string; locale: 'ro' | 'en'; selection: CompanyManagementSelection | null; onSelection: (selection: CompanyManagementSelection | null) => void}) {
+export function EmployeeDocumentPanel({companyId, employeeId, locale, selection, onSelection: setSelection, onEditEmployee}: {companyId: string; employeeId: string; locale: 'ro' | 'en'; selection: CompanyManagementSelection | null; onSelection: (selection: CompanyManagementSelection | null) => void; onEditEmployee: () => void}) {
   const t = useTranslations('EmployeeDocuments'), listing = useTranslations('CompanyDocuments'), common = useTranslations('DocumentManagement'), templatesT = useTranslations('VendorTemplates');
   const snapshot = useEmployeeState(), workspace = employeeDocumentWorkspace(companyId, employeeId, snapshot), adapter = employeeDocumentAdapter(companyId, employeeId);
   const templates = getRequirementsWorkspace(useRequirementsState(), companyId).templates;
@@ -44,6 +45,7 @@ export function EmployeeDocumentPanel({companyId, employeeId, locale, selection,
   const [sort, setSort] = useState<CompanyDocumentSort>({column: 'expiresAt', direction: 'ascending'}), [page, setPage] = useState(1), [pageSize, setPageSize] = useState(10);
   const [selected, setSelected] = useState<string[]>([]), [menu, setMenu] = useState<string | null>(null), [applying, setApplying] = useState(false);
   const [feedback, setFeedback] = useState(''), [failure, setFailure] = useState(false);
+  const [reminder, setReminder] = useState(false);
   const filtered = sortCompanyDocuments(filterCompanyDocuments(result.rows, query, type, status, (value) => listing(`types.${value}`)), sort, locale);
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize)), currentPage = Math.min(page, pageCount), visible = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const onPage = visible.map((row) => row.id), checked = onPage.filter((id) => selected.includes(id)).length;
@@ -69,10 +71,7 @@ export function EmployeeDocumentPanel({companyId, employeeId, locale, selection,
       {feedback && <p role="status" className={styles.feedback}>{feedback}</p>}{failure && <p role="alert" className={styles.feedback}>{common('downloadUnavailable')}</p>}
       <div className={list.bulk}><div className={`${list.selected} ${table.selection}`}><Selection label={listing('selectPage')} checked={onPage.length > 0 && checked === onPage.length} mixed={checked > 0 && checked < onPage.length} disabled={!onPage.length} onChange={togglePage}/><span role="status">{listing('selected', {count: selected.length})}</span></div><div className={list.bulkActions}>
         {allDownloadable ? <Button size="compact" variant="secondary" onClick={downloadSelection}><AppIcon name="download" size={18}/>{listing('downloadSelected')}</Button> : <Tooltip content={listing('downloadSelectionUnavailable')}>{(props) => <Button {...props} size="compact" variant="secondary" aria-disabled="true" onKeyDown={(event) => {if (['Enter', ' '].includes(event.key)) event.preventDefault();}}><AppIcon name="download" size={18}/>{listing('downloadSelected')}</Button>}</Tooltip>}
-        {/* Always render beside Download, including zero documents/requirements/selection; only delivery is unavailable. */}
-        <Tooltip content={t('reminderUnavailable')}>{(props) =>
-          <Button {...props} size="compact" variant="secondary" aria-disabled="true" onKeyDown={(event) => {if (['Enter', ' '].includes(event.key)) event.preventDefault();}}><AppIcon name="bell" size={18}/>{t('sendReminder')}</Button>
-        }</Tooltip>
+        <Button size="compact" variant="secondary" onClick={() => setReminder(true)}><AppIcon name="bell" size={18}/>{t('sendReminder')}</Button>
         <Button size="compact" onClick={() => setApplying(true)}><AppIcon name="plus" size={18}/>{templatesT('title')}</Button>
         <RowActionMenu label={listing('bulkActions')} open={menu === 'bulk'} onOpenChange={(open) => setMenu(open ? 'bulk' : null)} items={selected.length ? [{label: listing('deselectAll'), onSelect: () => setSelected([])}] : []}/>
       </div></div>
@@ -96,5 +95,6 @@ export function EmployeeDocumentPanel({companyId, employeeId, locale, selection,
     </Surface>
     {selection && <CompanyDocumentManager adapter={adapter} companyId={companyId} locale={locale} selection={selection} source={<TemplateSourceLabels sources={currentSource.values} hasTemplateSource={currentSource.hasSource} locale={locale}/>} onClose={() => setSelection(null)} onSuccess={(kind) => {setFeedback(t(`success.${kind}`)); reset(); setQuery('');}}/>}
     {applying && <CompanyTemplateDrawer adapter={adapter} companyId={companyId} locale={locale} onClose={() => setApplying(false)}/>}
+    {reminder && <EmployeeReminderDrawer companyId={companyId} employeeId={employeeId} onClose={() => setReminder(false)} onEditEmployee={onEditEmployee}/>}
   </>;
 }

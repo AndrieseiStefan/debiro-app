@@ -36,6 +36,15 @@
   color: #23395f;
 }
 
+/* Opt-in multiline geometry, following the existing administrative drawer textareas. */
+.textarea {
+  height: auto;
+  line-height: 1.45;
+  min-height: 130px;
+  padding-block: var(--space-3);
+  resize: vertical;
+}
+
 .selectWrap {
   align-items: center;
   display: flex;
