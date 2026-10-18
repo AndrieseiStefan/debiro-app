@@ -4,8 +4,15 @@ import {Link} from '@/i18n/navigation';
 import {Tooltip} from '@/components/ui/Tooltip';
 import styles from './DashboardPage.module.css';
 import documentStyles from '@/components/ui/DocumentSummary.module.css';
+import directory from '@/features/vendors/VendorsListPage.module.css';
 
-export function SummaryMetricCard({title, value, note, icon, tone, chevron = false, href, variant = 'dashboard', unavailable}: {title: string; value: number | null; note: string; icon: AppIconName; tone: 'blue' | 'green' | 'amber' | 'red' | 'gray'; chevron?: boolean; href?: string; variant?: 'dashboard' | 'documents'; unavailable?: string}) {
+export function SummaryMetricCard({title, value, note, icon, tone, chevron = false, href, variant = 'dashboard', unavailable}: {title: string; value: number | null; note: string; icon: AppIconName; tone: 'blue' | 'green' | 'amber' | 'red' | 'gray'; chevron?: boolean; href?: string; variant?: 'dashboard' | 'documents' | 'directory'; unavailable?: string}) {
+  if (variant === 'directory') {
+    const content = <><span className={directory.summaryIcon}><AppIcon name={icon} size={25}/></span><span className={directory.summaryCopy}><span>{title}</span><strong>{value ?? '—'}</strong></span></>;
+    return <Surface className={directory.summaryCard} data-status={tone === 'amber' ? 'attention' : tone === 'red' ? 'noncompliant' : tone === 'green' ? 'compliant' : 'all'}>
+      {unavailable ? <Tooltip content={unavailable}>{(props) => <button {...props} type="button" className={documentStyles.directoryAction} aria-label={`${title}: ${unavailable}`} aria-disabled="true" onKeyDown={(event) => {if (['Enter', ' '].includes(event.key)) event.preventDefault();}}>{content}</button>}</Tooltip> : content}
+    </Surface>;
+  }
   const content = <><span className={documentStyles.icon}><AppIcon name={icon} size={25}/></span><div className={documentStyles.copy}><h2>{title}</h2><strong>{value ?? '—'}</strong><p>{note}</p></div>{chevron && <AppIcon name="chevronRight" size={19} className={documentStyles.chevron}/>}</>;
   const card = variant === 'documents' ? <Surface className={documentStyles.card} data-unavailable={unavailable ? true : undefined} data-tone={tone} data-status={tone === 'amber' ? 'expiring' : tone === 'red' ? 'review' : tone === 'green' ? 'valid' : 'total'}>
     {unavailable ? <Tooltip content={unavailable}>{(props) => <button {...props} type="button" className={documentStyles.action} aria-label={`${title}: ${unavailable}`} aria-disabled="true" onKeyDown={(event) => {if (event.key === 'Enter' || event.key === ' ') event.preventDefault();}}>{content}</button>}</Tooltip> : <div className={documentStyles.body}>{content}</div>}

@@ -6,6 +6,7 @@ import {createDocumentFixtureFile} from '../src/features/documents/fixture-files
 import type {EmployeeState} from '../src/features/employees/types';
 import type {readCompanyState} from '../src/features/companies/company-state';
 import {switchWorkspaceCompany} from './support/company-workspace';
+import {openFilters} from './support/filters';
 
 // Full Chromium also verifies native PDF rendering; existing Company suites cover the plugin-less fallback.
 test.use({channel: 'chromium'});
@@ -76,6 +77,33 @@ for (const english of [false, true]) {
     await dialog.getByRole('button', {name: copy.DocumentManagement.markExpired, exact: true}).click(); await page.getByRole('alertdialog').getByRole('button', {name: copy.DocumentManagement.markExpired, exact: true}).click(); await expect(dialog).toContainText(copy.CompanyDocuments.status.expired); await close(page);
     await expect(page.getByRole('region', {name: copy.EmployeeDocuments.summaryLabel}).locator('strong')).toHaveText(['1', '0', '0', '0']); // Standalone is optional.
     await page.getByRole('tab', {name: copy.EmployeeDocuments.activity, exact: true}).click(); await expect(page.locator('[data-event-type="document_replaced"]')).toHaveCount(1); await expect(page.locator('[data-event-type="document_marked_expired"]')).toHaveCount(1);
+  });
+
+  test(`${english ? 'EN' : 'RO'} document-only selection, exact bulk download and unavailable reminder stay inside the employee workspace`, async ({page}) => {
+    test.setTimeout(60_000); const templateId = await createTemplate(page, english); await employeeDetails(page, english);
+    const main = page.locator('main'), download = main.getByRole('button', {name: copy.CompanyDocuments.downloadSelected, exact: true}), reminder = main.getByRole('button', {name: copy.EmployeeDocuments.sendReminder, exact: true});
+    await expect(download).toHaveAttribute('aria-disabled', 'true'); await expect(reminder).toHaveAttribute('aria-disabled', 'true'); expect(await download.evaluate((element) => element.nextElementSibling?.textContent)).toContain(copy.EmployeeDocuments.sendReminder);
+    const state = () => page.evaluate(() => JSON.stringify({employees: Reflect.get(window, Symbol.for('debiro.employees-session')).state, audit: Reflect.get(window, Symbol.for('debiro.local-audit-session')).events, read: [...Reflect.get(window, Symbol.for('debiro.notification-session')).readIds]}));
+    const before = await state(); await reminder.hover(); await expect(page.getByRole('tooltip')).toHaveText(copy.EmployeeDocuments.reminderUnavailable); await reminder.focus(); await page.keyboard.press('Enter'); await reminder.click({force: true}); expect(await state()).toBe(before); await page.screenshot({path: `artifacts/visual/e1c-006a/reminder-${english ? 'en' : 'ro'}.png`}); await page.keyboard.press('Escape');
+    await main.getByRole('button', {name: copy.VendorTemplates.title, exact: true}).first().click(); await page.locator('#company-template').selectOption(templateId); await page.getByRole('dialog').getByRole('button', {name: copy.CompanyDocumentManagement.applyTemplate, exact: true}).click(); await close(page);
+    for (let index = 0; index < 11; index++) await add(page, english, `Proof ${String(index).padStart(2, '0')}`);
+    await main.getByRole('button', {name: copy.DataPagination.pageNumber.replace('{page}', '1'), exact: true}).click(); await main.getByRole('checkbox', {name: copy.CompanyDocuments.selectPage, exact: true}).check(); await expect(main.getByRole('status').filter({hasText: /^(10 selected|10 selectate)$/})).toBeVisible();
+    await main.getByRole('button', {name: copy.DataPagination.nextPage, exact: true}).click(); await main.getByRole('checkbox', {name: copy.CompanyDocuments.selectPage, exact: true}).check(); await expect(main.getByRole('status').filter({hasText: /^(12 selected|12 selectate)$/})).toBeVisible(); await expect(download).toHaveAttribute('aria-disabled', 'true'); await page.screenshot({path: `artifacts/visual/e1c-006a/missing-selected-${english ? 'en' : 'ro'}.png`});
+    await main.getByRole('combobox', {name: copy.DataPagination.pageSize}).selectOption('20'); const missing = page.locator('tbody tr').filter({has: page.locator('[data-tone][data-status="missing"]')}); await missing.getByRole('checkbox').uncheck(); await expect(download).not.toHaveAttribute('aria-disabled');
+    await main.getByRole('button', {name: copy.CompanyDocuments.bulkActions, exact: true}).click(); await page.getByRole('menuitem', {name: copy.CompanyDocuments.deselectAll, exact: true}).click(); for (const name of ['Proof 00', 'Proof 01']) await page.getByRole('row', {name: new RegExp(name)}).getByRole('checkbox').check(); await expect(main.getByRole('status').filter({hasText: /^(2 selected|2 selectate)$/})).toBeVisible();
+    const downloads: import('@playwright/test').Download[] = []; page.on('download', (value) => downloads.push(value)); await download.click(); await expect.poll(() => downloads.length).toBe(2); for (const item of downloads) expect(await readFile((await item.path())!)).toEqual((await file()).buffer);
+    const populatedBefore = await state(); await reminder.click({force: true}); expect(await state()).toBe(populatedBefore); await expect(reminder).toHaveAttribute('aria-disabled', 'true');
+    for (const width of [1448, 768, 375, 320]) {
+      await page.setViewportSize({width, height: 900}); await reminder.locator('..').scrollIntoViewIfNeeded();
+      // Escape dismisses the explanation without moving focus; refocus from its adjacent control.
+      await download.focus(); await page.keyboard.press('Tab'); await expect(reminder).toBeFocused();
+      await expect(page.getByRole('tooltip')).toHaveText(copy.EmployeeDocuments.reminderUnavailable);
+      await reminder.locator('..').evaluate((element) => element.scrollIntoView({block: 'center'}));
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      expect(await reminder.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+      await page.screenshot({path: `artifacts/visual/e1c-006a/selected-${english ? 'en' : 'ro'}-${width}.png`}); await page.keyboard.press('Escape');
+    }
+    await page.setViewportSize({width: 1448, height: 900}); await employeeList(page, english); const filters = await openFilters(page); await filters.getByRole('combobox', {name: copy.EmployeeDocuments.trackingLabel}).selectOption('attention'); await expect(page.locator('tbody tr')).toHaveCount(1); await expect(page.locator('tbody')).toContainText('Andrei Popescu'); await page.keyboard.press('Escape'); await expect(main.getByRole('button', {name: copy.EmployeeDocuments.sendReminder, exact: true})).toHaveCount(0);
   });
 }
 

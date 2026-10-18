@@ -9,6 +9,6 @@
 /* A single grouping tint; never recolor row text or status badges. */
 .table tr[data-template-accent] {background: color-mix(in srgb, var(--template-accent) var(--template-row-weight), white);}
 .table tr[data-template-accent] small:not([data-status]) {color: var(--color-text-secondary);}
-.table tbody tr:hover {background: color-mix(in srgb, var(--template-accent, var(--color-info)) 10%, white);}
+.table tbody tr:hover, .interactive tbody tr:hover {background: color-mix(in srgb, var(--template-accent, var(--color-info)) 10%, white);}
 .table tbody tr[aria-selected='true'] {background: var(--color-surface-soft); box-shadow: inset 3px 0 var(--color-action-primary);}
-.table tbody tr:focus-within {outline: 2px solid var(--color-focus); outline-offset: -2px;}
+.table tbody tr:focus-within, .interactive tbody tr:focus-within {outline: 2px solid var(--color-focus); outline-offset: -2px;}

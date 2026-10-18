@@ -1,5 +1,7 @@
 {
   "EmployeeDocuments": {
+    "sendReminder": "Send Reminder",
+    "reminderUnavailable": "Sending reminders will be available once the notification service is enabled.",
     "department": "Department", "phone": "Phone",
     "title": "Employee Details",
     "description": "Manage the employee's documents, information and activity within the company.",
@@ -103,6 +105,9 @@
     "filters": "Employee search and filters",
     "search": "Search employees",
     "searchPlaceholder": "Search employees by name, job title, department...",
+    "employmentFilter": "Employment status",
+    "allTrackingStatuses": "All document statuses",
+    "showing": "Showing {start}–{end} of {count} employees",
     "statusFilter": "Filter by status",
     "departmentFilter": "Filter by department",
     "allStatuses": "All statuses",
@@ -1498,6 +1503,7 @@
     "copyright": "© {year} DEBIRO. All rights reserved."
   },
   "DataPagination": {
+    "perPage": "{count} per page",
     "show": "Show", "pageSize": "Documents per page", "ofTotal": "of {count} documents",
     "pagination": "Pagination", "previousPage": "Previous page", "nextPage": "Next page", "pageNumber": "Page {page}"
   },

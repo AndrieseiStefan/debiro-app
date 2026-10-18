@@ -70,4 +70,22 @@ describe('Employee Details shared document UI', () => {
     expect(getEmployeeActivity(companyId, employeeId).some((event) => event.type === 'employee_edited')).toBe(true);
     act(() => switchActiveCompany('global-clean-services')); expect(screen.getByText(en.Employees.empty)).toBeVisible();
   });
+
+  it.each(['ro', 'en'] as const)('keeps document selection and an adjacent truthful unavailable reminder without creating events in %s', (locale) => {
+    const copy = locale === 'ro' ? ro : en; view(locale); const before = readEmployeeState();
+    const download = screen.getByRole('button', {name: copy.CompanyDocuments.downloadSelected}), reminder = screen.getByRole('button', {name: copy.EmployeeDocuments.sendReminder});
+    expect(download).toHaveAttribute('aria-disabled', 'true'); expect(download.nextElementSibling).toBe(reminder); expect(reminder).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('checkbox', {name: copy.CompanyDocuments.selectPage})).toBeDisabled();
+    fireEvent.focus(reminder); expect(screen.getByRole('tooltip')).toHaveTextContent(copy.EmployeeDocuments.reminderUnavailable);
+    fireEvent.keyDown(reminder, {key: 'Enter'}); fireEvent.click(reminder); expect(readEmployeeState()).toBe(before); expect(getEmployeeActivity(companyId, employeeId)).toEqual([]);
+    expect(screen.queryByRole('status', {name: /sent|trimis/i})).toBeNull();
+  });
+
+  it('filters the directory by existing tracking projections without exposing the filter or document data to ordinary members', () => {
+    employeeDocumentEngine(companyId, employeeId).addCompanyDocument(companyId, {name: 'Needs internal review', documentType: 'custom', required: true, issuer: '', expiresAt: '', file: new File(['synthetic'], 'proof.pdf', {type: 'application/pdf'})});
+    view('en', true); fireEvent.click(screen.getByRole('button', {name: en.DataFilters.trigger}));
+    fireEvent.change(screen.getByRole('combobox', {name: en.EmployeeDocuments.trackingLabel}), {target: {value: 'attention'}}); expect(screen.getAllByRole('row')).toHaveLength(2); expect(screen.getByRole('row', {name: /Andrei Popescu/})).toBeVisible();
+    act(() => {companyOwner().state.companies[0].members.find((member) => member.isCurrentUser)!.role = 'viewer'; companyOwner().state = {...companyOwner().state}; companyOwner().listeners.forEach((notify) => notify());});
+    expect(screen.queryByRole('combobox', {name: en.EmployeeDocuments.trackingLabel})).toBeNull(); expect(screen.getAllByRole('row')).toHaveLength(9); expect(screen.queryByText('Needs internal review')).toBeNull();
+  });
 });

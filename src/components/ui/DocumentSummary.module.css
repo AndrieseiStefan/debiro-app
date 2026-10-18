@@ -2,6 +2,7 @@
 .card {height: 119px; min-width: 0; overflow: hidden; padding: 0;}
 .body, .action {align-items: flex-start; background: transparent; border: 0; color: inherit; display: flex; gap: 19px; height: 100%; padding: 16px 15px; text-align: left; width: 100%;}
 .action {cursor: pointer;}
+.directoryAction {align-items: center; background: none; border: 0; color: inherit; display: flex; font: inherit; gap: inherit; min-width: 0; padding: 0; text-align: left; width: 100%;}
 .action:hover {background: #f8fbff;}
 .icon {align-items: center; background: #e4efff; border-radius: 50%; color: #0764db; display: inline-flex; flex: 0 0 48px; height: 48px; justify-content: center;}
 .card[data-status='review'] .icon {background: #ffe4e9; color: #df304b;}

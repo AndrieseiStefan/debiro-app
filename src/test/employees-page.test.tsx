@@ -13,7 +13,7 @@ const push = vi.fn();
 vi.mock('@/i18n/navigation', () => ({usePathname: () => '/company/employees', useRouter: () => ({push}), Link: ({href, ...props}: {href: string; children: React.ReactNode}) => <a href={href} {...props}/>}));
 const initial = readEmployeeState();
 const owner = () => Reflect.get(window, Symbol.for('debiro.employees-session')) as {state: EmployeeState; listeners: Set<() => void>};
-afterEach(() => {owner().state = initial; switchActiveCompany('demo-company'); vi.restoreAllMocks();});
+afterEach(() => {owner().state = initial; switchActiveCompany('demo-company'); vi.restoreAllMocks(); push.mockClear();});
 const view = (locale: 'ro' | 'en' = 'en', employeeId?: string) => render(<NextIntlClientProvider locale={locale} messages={locale === 'en' ? en : ro}>{employeeId ? <EmployeeDetailsPage locale={locale} employeeId={employeeId}/> : <EmployeesPage locale={locale}/>}</NextIntlClientProvider>);
 function fill(dialog: HTMLElement, email = 'ana@example.test') {
   for (const [field, value] of Object.entries({firstName: 'Ana', lastName: 'Marinescu', email, phone: '+44 20 1234', jobTitle: 'New free-text title', hireDate: '28.02.2026'})) fireEvent.change(dialog.querySelector(`#employee-${field}`)!, {target: {value}});
@@ -27,8 +27,10 @@ describe('Employees shared list/drawer UI', () => {
     const summary = screen.getByRole('region', {name: copy.Employees.summaryLabel}); expect([...summary.querySelectorAll('strong')].map((item) => item.textContent)).toEqual(['8', '0', '0']);
     expect(within(screen.getByRole('table')).getAllByText(copy.Employees.notConfigured)).toHaveLength(16);
     expect(screen.getByRole('row', {name: /Marius Radu/})).toHaveTextContent(copy.Employees.inactive);
-    const download = screen.getByRole('button', {name: copy.Employees.download}); expect(download).toHaveAttribute('aria-disabled', 'true');
-    fireEvent.click(download); expect(screen.getByRole('tooltip')).toHaveTextContent(copy.Employees.bulkUnavailable); expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('checkbox')).toBeNull(); expect(screen.queryByRole('button', {name: copy.Employees.download})).toBeNull(); expect(screen.queryByRole('button', {name: copy.Employees.reminders})).toBeNull();
+    expect(screen.queryByRole('button', {name: copy.Employees.viewEmployee.replace('{name}', 'Andrei Popescu')})).toBeNull();
+    expect(screen.getAllByRole('columnheader')).toHaveLength(7); expect(screen.queryByRole('combobox', {name: copy.Employees.departmentFilter})).toBeNull();
+    fireEvent.click(screen.getByRole('button', {name: copy.DataFilters.trigger})); expect(screen.getByRole('combobox', {name: copy.Employees.departmentFilter})).toBeVisible();
     expect(screen.queryByText(/6\/7|5\/6/)).toBeNull();
   });
 
@@ -57,7 +59,7 @@ describe('Employees shared list/drawer UI', () => {
     const department = dialog.querySelector('#employee-department')!; fireEvent.focus(department); fireEvent.keyDown(department, {key: 'ArrowDown'}); fireEvent.keyDown(department, {key: 'Enter'});
     fireEvent.change(dialog.querySelector('#employee-status')!, {target: {value: 'inactive'}}); fireEvent.click(within(dialog).getByRole('button', {name: en.Employees.save}));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull()); expect(employeeWorkspace('demo-company').employees.find((item) => item.id === original.id)).toMatchObject({id: original.id, createdAt: original.createdAt, departmentId: null, employmentStatus: 'inactive'});
-    fireEvent.click(screen.getByRole('button', {name: 'Actions for Andrei Popescu'})); fireEvent.click(screen.getByRole('menuitem', {name: en.Employees.markActive})); expect(screen.getByRole('row', {name: /Andrei Popescu/})).toHaveTextContent('Active');
+    fireEvent.click(screen.getByRole('button', {name: 'Actions for Andrei Popescu'})); fireEvent.click(screen.getByRole('menuitem', {name: en.Employees.markActive})); expect(screen.getByRole('row', {name: /Andrei Popescu/})).toHaveAttribute('data-lifecycle', 'active');
   });
 
   it('does not consume Escape when free-text job title has no suggestion popup', async () => {
@@ -67,25 +69,24 @@ describe('Employees shared list/drawer UI', () => {
     fireEvent.keyDown(job, {key: 'Escape'}); await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
-  it('composes filters/sort, preserves page selection across pagination, supports deselect/reset and no matches', () => {
+  it('composes shared filters/sort/pagination without directory selection and preserves query on filter reset', () => {
     const state = structuredClone(initial), base = state.byCompany['demo-company'].employees[0];
     state.byCompany['demo-company'].employees = Array.from({length: 22}, (_, index) => ({...base, id: `employee-${index}`, firstName: `Person ${String(index).padStart(2, '0')}`, email: `person${index}@example.test`})); owner().state = state; view();
-    fireEvent.click(screen.getByRole('checkbox', {name: en.Employees.selectPage})); expect(screen.getByRole('status')).toHaveTextContent('10 selected');
-    fireEvent.click(screen.getByRole('button', {name: 'Next page'})); fireEvent.click(screen.getByRole('checkbox', {name: en.Employees.selectPageHeader})); expect(screen.getByRole('status')).toHaveTextContent('20 selected');
-    fireEvent.click(screen.getByRole('button', {name: en.Employees.bulkActions})); fireEvent.click(screen.getByRole('menuitem', {name: en.Employees.deselectAll})); expect(screen.getByRole('status')).toHaveTextContent('0 selected');
+    expect(screen.queryByRole('checkbox')).toBeNull(); fireEvent.click(screen.getByRole('button', {name: 'Next page'})); expect(screen.getAllByRole('row')[1]).toHaveTextContent('Person 10');
     fireEvent.click(screen.getByRole('button', {name: en.Employees.table.name})); expect(screen.getAllByRole('row')[1]).toHaveTextContent('Person 21');
     fireEvent.change(screen.getByRole('searchbox'), {target: {value: 'person 03'}}); expect(screen.getAllByRole('row')).toHaveLength(2);
-    fireEvent.change(document.querySelector('#employee-status-filter')!, {target: {value: 'inactive'}}); expect(screen.getByText(en.Employees.noMatches)).toBeVisible();
-    fireEvent.click(screen.getByRole('button', {name: en.Employees.resetFilters})); expect(screen.getByRole('searchbox')).toHaveValue(''); expect(screen.getAllByRole('row')).toHaveLength(11);
+    fireEvent.click(screen.getByRole('button', {name: en.DataFilters.trigger})); fireEvent.change(screen.getByRole('combobox', {name: en.Employees.employmentFilter}), {target: {value: 'inactive'}}); expect(screen.getByText(en.Employees.noMatches)).toBeVisible();
+    fireEvent.click(screen.getByRole('button', {name: en.DataFilters.reset})); expect(screen.getByRole('searchbox')).toHaveValue('person 03'); expect(screen.getAllByRole('row')).toHaveLength(2);
+    fireEvent.change(screen.getByRole('searchbox'), {target: {value: ''}}); expect(screen.getAllByRole('row')).toHaveLength(11);
   });
 
-  it('shows recoverable save errors without losing fields, handles malformed state, and clears drawer/selection across companies', async () => {
-    view(); fireEvent.click(screen.getByRole('checkbox', {name: en.Employees.selectPage})); fireEvent.click(screen.getByRole('button', {name: en.Employees.add}));
+  it('shows recoverable save errors without losing fields, handles malformed state, and clears drawers/filters across companies', async () => {
+    view(); fireEvent.click(screen.getByRole('button', {name: en.Employees.add}));
     const dialog = screen.getByRole('dialog'); fill(dialog);
     vi.spyOn(crypto, 'randomUUID').mockImplementationOnce(() => {throw new Error('unavailable');});
     fireEvent.click(within(dialog).getByRole('button', {name: en.Employees.add})); expect(within(dialog).getByRole('alert')).toHaveTextContent(en.Employees.errors.save); expect(dialog.querySelector('#employee-firstName')).toHaveValue('Ana');
     act(() => {switchActiveCompany('global-clean-services');}); expect(screen.queryByRole('dialog')).toBeNull(); expect(screen.getByText(en.Employees.empty)).toBeVisible(); expect(screen.queryByRole('button', {name: en.Employees.add})).toBeNull();
-    act(() => {switchActiveCompany('demo-company');}); expect(screen.getByRole('status')).toHaveTextContent('0 selected'); expect(screen.queryByRole('dialog')).toBeNull();
+    act(() => {switchActiveCompany('demo-company');}); expect(screen.queryByRole('checkbox')).toBeNull(); expect(screen.queryByRole('dialog')).toBeNull(); expect(screen.getByRole('searchbox')).toHaveValue('');
     act(() => {owner().state = {byCompany: {'demo-company': {employees: [null] as unknown as EmployeeState['byCompany'][string]['employees'], departments: []}}}; owner().listeners.forEach((notify) => notify());});
     expect(screen.getByRole('alert')).toHaveTextContent(en.Employees.errors.unavailable); expect(screen.queryByRole('table')).toBeNull();
   });
@@ -103,5 +104,14 @@ describe('Employees shared list/drawer UI', () => {
     member.role = 'viewer';
     try {view(); expect(screen.getByRole('table')).toBeVisible(); expect(screen.queryByRole('button', {name: en.Employees.add})).toBeNull(); expect(screen.queryByRole('button', {name: 'Actions for Andrei Popescu'})).toBeNull(); expect(screen.getByRole('link', {name: 'Andrei Popescu'})).toBeVisible();}
     finally {member.role = role;}
+  });
+
+  it('opens rows through client routing while native name links and portaled action menus remain independent', () => {
+    view(); const row = screen.getByRole('row', {name: /Andrei Popescu/}); fireEvent.click(within(row).getByText('Director General'));
+    expect(push).toHaveBeenCalledExactlyOnceWith('/company/employees/employee%3Aandrei-popescu'); push.mockClear();
+    expect(within(row).getByRole('link', {name: 'Andrei Popescu'})).toHaveAttribute('href', '/company/employees/employee%3Aandrei-popescu');
+    fireEvent.click(within(row).getByRole('button', {name: 'Actions for Andrei Popescu'})); expect(push).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('menuitem', {name: en.Employees.markInactive})); expect(push).not.toHaveBeenCalled(); expect(row).toHaveTextContent(en.Employees.inactive);
+    fireEvent.click(within(row).getByRole('button', {name: 'Actions for Andrei Popescu'})); fireEvent.click(screen.getByRole('menuitem', {name: en.Employees.edit})); expect(push).not.toHaveBeenCalled(); expect(screen.getByRole('dialog')).toBeVisible();
   });
 });

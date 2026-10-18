@@ -1,15 +1,9 @@
 .page {min-width: 0;}
-.toolbar {align-items: center; display: grid; gap: 12px; grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(160px, .55fr)); margin: 24px 0 18px;}
-.toolbar label {clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px;}
-.table {min-width: 1080px;}
+.page .summaryGrid {grid-template-columns: repeat(3, minmax(0, 1fr));}
 .table th {text-transform: uppercase;}
-.table td {height: 70px;}
-.table td:first-child, .table th:first-child {padding-left: 18px; width: 46px;}
-.table td:nth-child(2) {min-width: 230px;}
-.table td:last-child {width: 100px;}
-.documentProgress {display: grid; gap: 5px; justify-items: start;}
-.table input {accent-color: var(--color-action-primary); height: 18px; width: 18px;}
-.table input:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 2px;}
+.page .table th:nth-child(1) {width: 22%;}.page .table th:nth-child(2) {width: 13%;}.page .table th:nth-child(3) {width: 12%;}.page .table th:nth-child(4) {width: 20%;}.page .table th:nth-child(5) {width: 12%;}.page .table th:nth-child(6) {width: 14%;}.page .table th:nth-child(7) {width: 7%;}
+.table td:nth-child(2), .table td:nth-child(3), .table small {overflow: hidden; text-overflow: ellipsis;}
+.table tbody tr {cursor: pointer;}
 .name {color: inherit; text-decoration: none;}
 .name:hover {color: var(--color-action-primary);}
 .name:focus-visible {border-radius: var(--radius-field); outline: 3px solid var(--color-focus); outline-offset: 3px;}
@@ -29,7 +23,8 @@
 .details dl {display: grid; gap: 20px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0;}
 .details dt {color: var(--color-text-secondary); font-size: var(--text-caption); margin-bottom: 6px;}
 .details dd {margin: 0; overflow-wrap: anywhere;}
-@media (max-width: 1000px) {.toolbar {grid-template-columns: repeat(2, minmax(0, 1fr));} .toolbar > :first-child {grid-column: 1 / -1;} .details dl {grid-template-columns: repeat(2, minmax(0, 1fr));}}
-@media (max-width: 440px) {.toolbar, .formGrid, .details dl {grid-template-columns: minmax(0, 1fr);} .drawerContent {padding: 24px 16px;} .formSection {padding: 16px;} .details {padding: 18px;}}
+@media (max-width: 1199px) {.page .summaryGrid {grid-template-columns: repeat(2, minmax(0, 1fr));}}
+@media (max-width: 1000px) {.details dl {grid-template-columns: repeat(2, minmax(0, 1fr));}}
+@media (max-width: 440px) {.formGrid, .details dl {grid-template-columns: minmax(0, 1fr);} .drawerContent {padding: 24px 16px;} .formSection {padding: 16px;} .details {padding: 18px;}}
 @media (max-width: 360px) {.form .actions {grid-template-columns: minmax(0, 1fr);}}
 @media (max-width: 375px) {.form .actions[data-edit-employee-actions] {grid-template-columns: minmax(0, 1fr);}}

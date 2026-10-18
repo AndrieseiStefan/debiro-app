@@ -1,5 +1,6 @@
 import {expect, test, type Locator, type Page} from '@playwright/test';
 import {createWorkspaceCompany, switchWorkspaceCompany} from './support/company-workspace';
+import {openFilters} from './support/filters';
 import ro from '../messages/ro.json' with {type: 'json'};
 import en from '../messages/en.json' with {type: 'json'};
 
@@ -46,7 +47,7 @@ for (const english of [false, true]) {
     await dialog.locator('#employee-department').fill('finan'); await dialog.locator('#employee-department').press('ArrowDown'); await dialog.locator('#employee-department').press('ArrowDown'); await dialog.locator('#employee-department').press('Enter');
     await dialog.locator('#employee-status').selectOption('inactive'); await dialog.getByRole('button', {name: t.save}).click(); await expect(page.getByRole('dialog')).toHaveCount(0);
     row = page.getByRole('row', {name: /Ana Marinescu/}); await expect(row).toContainText('Financiar'); await expect(row).toContainText('Contabil'); await expect(row).toContainText(t.inactive);
-    await row.getByRole('button', {name: t.employeeActions.replace('{name}', 'Ana Marinescu')}).click(); await page.getByRole('menuitem', {name: t.markActive}).click(); await expect(row).toContainText(t.active);
+    await row.getByRole('button', {name: t.employeeActions.replace('{name}', 'Ana Marinescu')}).click(); await page.getByRole('menuitem', {name: t.markActive}).click(); await expect(row).toHaveAttribute('data-lifecycle', 'active');
     await row.getByRole('link', {name: 'Ana Marinescu'}).click(); await expect(page).toHaveURL(new RegExp(`${prefix}/company/employees/employee%3A`));
     await expect(page.getByRole('heading', {level: 1})).toHaveText(copy.EmployeeDocuments.title); await expect(page.getByText(copy.EmployeeDocuments.empty)).toBeVisible();
     await page.getByRole('navigation', {name: t.breadcrumbLabel}).getByRole('link', {name: t.title}).click();
@@ -56,20 +57,33 @@ for (const english of [false, true]) {
     await employeeNavigation(page, english); await expect(page.getByRole('row', {name: /Ana Marinescu/})).toBeVisible();
   });
 
-  test(`${english ? 'EN' : 'RO'} employee filters/sort/selection/unavailable actions/keyboard close retain established semantics`, async ({page}) => {
+  test(`${english ? 'EN' : 'RO'} employee filters/sort/row navigation/keyboard close retain established semantics`, async ({page}) => {
     await page.goto(prefix + '/company/employees');
-    await page.getByRole('searchbox', {name: t.search}).fill(' operational '); await page.locator('#employee-status-filter').selectOption('inactive'); await expect(page.locator('tbody tr')).toHaveCount(1); await expect(page.locator('tbody')).toContainText('Marius Radu');
-    await page.locator('#employee-department-filter').selectOption('employee-department:finance'); await expect(page.getByText(t.noMatches)).toBeVisible(); await page.getByRole('button', {name: t.resetFilters}).click();
+    await page.getByRole('searchbox', {name: t.search}).fill(' operational '); await openFilters(page); await page.locator('#employee-status-filter').selectOption('inactive'); await expect(page.locator('tbody tr')).toHaveCount(1); await expect(page.locator('tbody')).toContainText('Marius Radu');
+    await page.locator('#employee-department-filter').selectOption('employee-department:finance'); await expect(page.getByText(t.noMatches)).toBeVisible(); await page.getByRole('dialog').getByRole('button', {name: copy.DataFilters.reset, exact: true}).click(); await page.keyboard.press('Escape'); await page.getByRole('searchbox', {name: t.search}).fill('');
     await page.getByRole('columnheader', {name: t.table.name}).getByRole('button').click(); await expect(page.locator('tbody tr').first()).toContainText('Vlad Ionescu');
-    await page.getByRole('checkbox', {name: t.selectPage, exact: true}).check(); await expect(page.getByRole('status')).toHaveText(english ? '8 selected' : '8 selectate');
-    await page.getByRole('button', {name: t.bulkActions}).click(); await page.getByRole('menuitem', {name: t.deselectAll}).click(); await expect(page.getByRole('status')).toHaveText(english ? '0 selected' : '0 selectate');
-    const download = page.getByRole('button', {name: t.download}); await expect(download).toHaveAttribute('aria-disabled', 'true'); await download.focus(); await page.keyboard.press('Enter'); await expect(page.getByRole('tooltip')).toHaveText(t.bulkUnavailable); await page.keyboard.press('Escape');
+    await expect(page.getByRole('checkbox')).toHaveCount(0); await expect(page.getByRole('button', {name: t.download})).toHaveCount(0); await expect(page.getByRole('button', {name: t.reminders})).toHaveCount(0);
     const add = page.getByRole('button', {name: t.add, exact: true}); await add.focus(); await add.press('Enter'); const dialog = page.getByRole('dialog');
     await expect(page.locator('body')).toHaveCSS('overflow', 'hidden'); const job = dialog.locator('#employee-jobTitle'); await job.fill('cont'); await expect(page.getByRole('listbox')).toBeVisible();
     await job.press('Escape'); await expect(page.getByRole('listbox')).toHaveCount(0); await expect(dialog).toBeVisible(); await job.press('Escape'); await expect(dialog).toHaveCount(0); await expect(add).toBeFocused();
     await add.click(); await page.getByRole('dialog').getByRole('button', {name: copy.DocumentManagement.close, exact: true}).click(); await expect(page.getByRole('dialog')).toHaveCount(0);
     await add.click(); await page.locator('#employee-jobTitle').fill('A completely new job'); await page.locator('#employee-jobTitle').press('Escape'); await expect(page.getByRole('dialog')).toHaveCount(0);
     await add.click(); await page.mouse.click(10, 10); await expect(page.getByRole('dialog')).toHaveCount(0); await expect(add).toBeFocused();
+  });
+
+  test(`${english ? 'EN' : 'RO'} directory rows and native keyboard links navigate without reload while menu actions never navigate`, async ({page}) => {
+    await page.goto(prefix + '/company/employees'); const origin = await page.evaluate(() => performance.timeOrigin);
+    await expect(page.getByRole('checkbox')).toHaveCount(0); await expect(page.getByRole('columnheader')).toHaveCount(7);
+    await expect(page.getByRole('button', {name: t.viewEmployee.replace('{name}', 'Andrei Popescu')})).toHaveCount(0);
+    let row = page.getByRole('row', {name: /Andrei Popescu/}); await row.locator('td').nth(1).click(); await expect(page).toHaveURL(prefix + '/company/employees/employee%3Aandrei-popescu'); expect(await page.evaluate(() => performance.timeOrigin)).toBe(origin);
+    await page.goBack(); await expect(page).toHaveURL(prefix + '/company/employees'); row = page.getByRole('row', {name: /Andrei Popescu/});
+    const name = row.getByRole('link', {name: 'Andrei Popescu', exact: true}); await name.focus(); await page.keyboard.press('Tab'); await page.keyboard.press('Shift+Tab'); await expect(name).toBeFocused(); await expect(name).toHaveCSS('outline-style', 'solid'); await page.keyboard.press('Enter'); await expect(page).toHaveURL(prefix + '/company/employees/employee%3Aandrei-popescu'); expect(await page.evaluate(() => performance.timeOrigin)).toBe(origin);
+    await page.goBack(); row = page.getByRole('row', {name: /Andrei Popescu/}); await row.getByRole('button', {name: t.employeeActions.replace('{name}', 'Andrei Popescu')}).click(); await expect(page).toHaveURL(prefix + '/company/employees');
+    await page.getByRole('menuitem', {name: t.markInactive}).click(); await expect(row).toHaveAttribute('data-lifecycle', 'inactive'); await expect(page).toHaveURL(prefix + '/company/employees');
+    await row.getByRole('button', {name: t.employeeActions.replace('{name}', 'Andrei Popescu')}).click(); await page.getByRole('menuitem', {name: t.edit}).click(); await expect(page.getByRole('dialog')).toBeVisible(); await expect(page).toHaveURL(prefix + '/company/employees'); await page.keyboard.press('Escape');
+    const search = page.getByRole('searchbox', {name: t.search});
+    for (const needle of ['andrei.popescu@demo.ro', 'director general', 'management']) {await search.fill(needle); await expect(page.getByRole('row', {name: /Andrei Popescu/})).toBeVisible();}
+    await search.fill(''); const filter = await openFilters(page); await filter.getByRole('combobox', {name: copy.EmployeeDocuments.trackingLabel}).selectOption('not_configured'); await expect(page.locator('tbody tr')).toHaveCount(8); await expect(page.getByRole('button', {name: `${copy.DataFilters.trigger} (1)`})).toBeVisible();
   });
 }
 
@@ -81,12 +95,11 @@ test('employee isolation, empty company, no department, pagination and company-s
     await dialog.getByRole('button', {name: ro.Employees.add, exact: true}).click(); await expect(dialog).toHaveCount(0);
   }
   await page.getByRole('button', {name: 'Pagina 1', exact: true}).click(); await expect(page.locator('tbody tr')).toHaveCount(10);
-  await page.getByRole('checkbox', {name: ro.Employees.selectPage, exact: true}).check(); await page.getByRole('button', {name: 'Pagina următoare'}).click(); await expect(page.locator('tbody tr')).toHaveCount(1); await expect(page.getByRole('status').last()).toHaveText('10 selectate');
-  await page.getByRole('checkbox', {name: ro.Employees.selectPage, exact: true}).check(); await expect(page.getByRole('status').last()).toHaveText('11 selectate');
+  await expect(page.getByRole('checkbox')).toHaveCount(0); await page.getByRole('button', {name: 'Pagina următoare'}).click(); await expect(page.locator('tbody tr')).toHaveCount(1);
   await page.getByRole('combobox', {name: ro.Employees.pageSize}).selectOption('20'); await expect(page.locator('tbody tr')).toHaveCount(11);
   const employeeHref = await page.locator('tbody a').first().getAttribute('href');
   await switchWorkspaceCompany(page, 'Employee Workspace', 'Global Clean Services'); await employeeNavigation(page); await expect(page.getByText(ro.Employees.empty)).toBeVisible(); await expect(page.getByRole('button', {name: ro.Employees.add, exact: true})).toHaveCount(0);
-  await switchWorkspaceCompany(page, 'Global Clean Services', 'Employee Workspace'); await employeeNavigation(page); await expect(page.getByRole('status').last()).toHaveText('0 selectate');
+  await switchWorkspaceCompany(page, 'Global Clean Services', 'Employee Workspace'); await employeeNavigation(page); await expect(page.getByRole('checkbox')).toHaveCount(0);
   await page.locator(`a[href="${employeeHref}"]`).click(); await switchWorkspaceCompany(page, 'Employee Workspace', 'Demo Company SRL'); await expect(page).toHaveURL('/dashboard');
   await employeeNavigation(page); await expect(page.locator('tbody')).not.toContainText('Person 00');
   await page.getByRole('button', {name: ro.Employees.add, exact: true}).click(); await page.getByRole('dialog').locator('#employee-firstName').fill('Discard me');
@@ -103,6 +116,16 @@ for (const [width, height] of [[1920, 1080], [1448, 900], [1280, 800], [1024, 76
     await page.setViewportSize({width, height}); await page.goto('/company/employees');
     await expect(page.getByRole('table')).toBeVisible(); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({path: `artifacts/visual/e1c-005/employees-ro-${width}.png`, fullPage: true});
+    const geometry = async () => page.evaluate(() => {
+      const strong = document.querySelector('main section strong')!, card = strong.closest('[data-status]')!, table = document.querySelector('main table')!, th = table.querySelector('th')!, td = table.querySelector('td')!;
+      const style = (element: Element) => {const value = getComputedStyle(element); return {size: value.fontSize, weight: value.fontWeight, color: value.color, padding: value.padding, border: value.borderBottom};};
+      return {cardHeight: card.getBoundingClientRect().height, cardPadding: getComputedStyle(card).padding, label: style(strong.previousElementSibling!), value: style(strong), th: style(th), td: {...style(td), padding: getComputedStyle(td).padding}, rowHeight: table.querySelector('tbody tr')!.getBoundingClientRect().height};
+    });
+    const employeeGeometry = await geometry(); await expect(page.getByRole('checkbox')).toHaveCount(0);
+    expect(await page.getByRole('region', {name: ro.Employees.summaryLabel}).evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').length)).toBe(width > 1199 ? 3 : 2);
+    if (width >= 1448) expect(await page.getByRole('region', {name: ro.Employees.tableRegion}).evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+    expect(await page.getByRole('table').evaluate((table) => table.querySelector('thead')!.getBoundingClientRect().top - table.closest('[role="region"]')!.parentElement!.getBoundingClientRect().top)).toBeLessThanOrEqual(2);
+    await page.screenshot({path: `artifacts/visual/e1c-006a/employees-ro-${width}.png`, fullPage: true}); await page.goto('/vendors'); expect(await geometry()).toEqual(employeeGeometry); await page.screenshot({path: `artifacts/visual/e1c-006a/vendors-ro-${width}.png`, fullPage: true}); await page.goto('/company/employees');
     await page.getByRole('button', {name: ro.Employees.add, exact: true}).click(); const dialog = page.getByRole('dialog'); await expect(dialog).toBeVisible();
     await expect(dialog.locator('#employee-firstName')).toHaveCSS('height', '42px');
     await page.screenshot({path: `artifacts/visual/e1c-005/employee-add-ro-${width}.png`, fullPage: true});

@@ -199,7 +199,7 @@ describe('Company Documents shared listing UI', () => {
     expect(templateOwner().state).toEqual(state);
     fireEvent.click(within(dialog).getByRole('button', {name: copy.DocumentManagement.cancel}));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-    expect(trigger).toHaveFocus();
+    await waitFor(() => expect(trigger).toHaveFocus());
   });
 
   it('shows an honest empty template state without an upload form', () => {
