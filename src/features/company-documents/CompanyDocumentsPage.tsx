@@ -148,7 +148,7 @@ function CompanyDocumentsWorkspace({companyId, locale}: {companyId: string; loca
   }
 
   return <div className={styles.page}>
-    <AuthenticatedPageHeader className={styles.header} context={<AuthenticatedBreadcrumbs root={{label: app('navigation.company')}} items={[{label: t('title')}]} label={t('breadcrumbLabel')}/>} title={t('title')} titleId="company-documents-title" description={t('description')}
+    <AuthenticatedPageHeader className={styles.header} context={<AuthenticatedBreadcrumbs wrap items={[{label: app('navigation.company')}, {label: t('title')}]} label={t('breadcrumbLabel')}/>} title={t('title')} titleId="company-documents-title" description={t('description')}
       actions={<div className={styles.headerActions}><Button variant="secondary" disabled={!access.visible} onClick={() => setSharing(selectedItems)}><AppIcon name="share" size={21}/>{t('shareDocuments')}</Button><AuthenticatedPagePrimaryAction icon="plus" disabled={!access.replace} onClick={() => {setFeedback(''); setActiveDocument({mode: 'add'});}}>{t('addDocuments')}</AuthenticatedPagePrimaryAction></div>}/>
     {feedback && <p role="status">{feedback}</p>}{downloadFailed && <p role="alert">{common('downloadUnavailable')}</p>}
     {error ? <Surface className={styles.error}><ErrorState title={states('errorTitle')} description={states('errorDescription')}/></Surface> : <>

@@ -25,6 +25,11 @@ describe('Employee Details shared document UI', () => {
   it.each(['ro', 'en'] as const)('has truthful empty status, no fixture activity, accessible tabs and no obsolete drawer notice in %s', async (locale) => {
     const copy = locale === 'ro' ? ro : en; view(locale);
     expect(screen.getByRole('heading', {level: 1})).toHaveTextContent(copy.EmployeeDocuments.title); expect(screen.getByRole('heading', {level: 2, name: 'Andrei Popescu'})).toBeVisible();
+    const breadcrumb = screen.getByRole('navigation', {name: copy.Employees.breadcrumbLabel});
+    expect(breadcrumb.textContent).toBe(`${copy.AppShell.navigation.dashboard}${copy.AppShell.navigation.company}${copy.Employees.title}Andrei Popescu`);
+    expect(within(breadcrumb).getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(['/dashboard', '/company/employees']);
+    expect(within(breadcrumb).queryByRole('link', {name: copy.AppShell.navigation.company})).toBeNull();
+    expect(breadcrumb.querySelector('[aria-current="page"]')).toHaveTextContent('Andrei Popescu');
     expect(screen.getByRole('region', {name: copy.EmployeeDocuments.summaryLabel}).querySelectorAll('strong')).toHaveLength(4);
     expect([...screen.getByRole('region', {name: copy.EmployeeDocuments.summaryLabel}).querySelectorAll('strong')].map((item) => item.textContent)).toEqual(['0', '0', '0', '0']);
     expect(screen.getByText(copy.EmployeeDocuments.empty)).toBeVisible();

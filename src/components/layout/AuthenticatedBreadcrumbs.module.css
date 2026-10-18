@@ -4,3 +4,6 @@
 .item a {color: inherit; text-decoration: none;}
 .item a:hover {color: var(--color-action-primary); text-decoration: underline;}
 .item [aria-current='page'] {color: #172b4e; font-weight: 650;}
+.breadcrumbs[data-wrap='true'] {flex-wrap: wrap;}
+.breadcrumbs[data-wrap='true'] .item {flex-shrink: 0; max-width: 100%;}
+.breadcrumbs[data-wrap='true'] .item > :last-child {min-width: 0; overflow-wrap: anywhere;}

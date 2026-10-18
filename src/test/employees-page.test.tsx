@@ -23,7 +23,11 @@ describe('Employees shared list/drawer UI', () => {
   it.each(['ro', 'en'] as const)('renders localized shared list controls and truthful employee/document states in %s', (locale) => {
     const copy = locale === 'ro' ? ro : en; view(locale);
     expect(screen.getByRole('heading', {level: 1})).toHaveTextContent(copy.Employees.title);
-    expect(screen.getByRole('navigation', {name: copy.Employees.breadcrumbLabel})).toHaveTextContent(`${copy.AppShell.navigation.company}${copy.Employees.title}`);
+    const breadcrumb = screen.getByRole('navigation', {name: copy.Employees.breadcrumbLabel});
+    expect(breadcrumb.textContent).toBe(`${copy.AppShell.navigation.dashboard}${copy.AppShell.navigation.company}${copy.Employees.title}`);
+    expect(within(breadcrumb).getByRole('link', {name: copy.AppShell.navigation.dashboard})).toHaveAttribute('href', '/dashboard');
+    expect(within(breadcrumb).queryByRole('link', {name: copy.AppShell.navigation.company})).toBeNull();
+    expect(breadcrumb.querySelector('[aria-current="page"]')).toHaveTextContent(copy.Employees.title);
     const summary = screen.getByRole('region', {name: copy.Employees.summaryLabel}); expect([...summary.querySelectorAll('strong')].map((item) => item.textContent)).toEqual(['8', '0', '0']);
     expect(within(screen.getByRole('table')).getAllByText(copy.Employees.notConfigured)).toHaveLength(16);
     expect(screen.getByRole('row', {name: /Marius Radu/})).toHaveTextContent(copy.Employees.inactive);

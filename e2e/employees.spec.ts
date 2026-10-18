@@ -21,14 +21,14 @@ for (const english of [false, true]) {
   test(`${english ? 'EN' : 'RO'} employee direct details and invalid ID are truthful and locale-aware`, async ({page}) => {
     await page.goto(prefix + '/company/employees/employee%3Aandrei-popescu');
     await expect(page.getByRole('heading', {level: 1})).toHaveText(copy.EmployeeDocuments.title);
-    await expect(page.getByRole('navigation', {name: t.breadcrumbLabel})).toHaveText(`${copy.AppShell.navigation.company}${t.title}Andrei Popescu`);
+    await expect(page.getByRole('navigation', {name: t.breadcrumbLabel})).toHaveText(`${copy.AppShell.navigation.dashboard}${copy.AppShell.navigation.company}${t.title}Andrei Popescu`);
     await page.getByRole('navigation', {name: t.breadcrumbLabel}).getByRole('link', {name: t.title}).click(); await expect(page).toHaveURL(prefix + '/company/employees');
     await page.goto(prefix + '/company/employees/not-owned'); await expect(page.locator('main').getByRole('alert')).toContainText(t.employeeUnavailable);
     await expect(page.locator('main')).not.toContainText('andrei.popescu@demo.ro'); await page.getByRole('link', {name: t.back}).click(); await expect(page.getByRole('table')).toBeVisible();
   });
   test(`${english ? 'EN' : 'RO'} employees create/free title/inline department/duplicate validation/edit/status and details survive client navigation`, async ({page}) => {
     await page.goto(prefix + '/company/employees');
-    await expect(page.getByRole('navigation', {name: t.breadcrumbLabel})).toHaveText(`${copy.AppShell.navigation.company}${t.title}`);
+    await expect(page.getByRole('navigation', {name: t.breadcrumbLabel})).toHaveText(`${copy.AppShell.navigation.dashboard}${copy.AppShell.navigation.company}${t.title}`);
     const metrics = page.getByRole('region', {name: t.summaryLabel}); await expect(metrics.locator('strong')).toHaveText(['8', '0', '0']);
     await page.getByRole('button', {name: t.add, exact: true}).click(); let dialog = page.getByRole('dialog', {name: t.add});
     await fields(dialog, 'bad-email');

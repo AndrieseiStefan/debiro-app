@@ -35,7 +35,11 @@ describe('Company Documents shared listing UI', () => {
     ]);
     expect(toolbar.nextElementSibling).toHaveAttribute('role', 'region');
     expect(screen.queryByRole('menuitem', {name: copy.CompanyDocumentManagement.applyTemplate})).toBeNull();
-    expect(screen.getByRole('navigation', {name: copy.CompanyDocuments.breadcrumbLabel})).toHaveTextContent(`${copy.AppShell.navigation.company}${copy.CompanyDocuments.title}`);
+    const breadcrumb = screen.getByRole('navigation', {name: copy.CompanyDocuments.breadcrumbLabel});
+    expect(breadcrumb.textContent).toBe(`${copy.AppShell.navigation.dashboard}${copy.AppShell.navigation.company}${copy.CompanyDocuments.title}`);
+    expect(within(breadcrumb).getByRole('link', {name: copy.AppShell.navigation.dashboard})).toHaveAttribute('href', '/dashboard');
+    expect(within(breadcrumb).queryByRole('link', {name: copy.AppShell.navigation.company})).toBeNull();
+    expect(breadcrumb.querySelector('[aria-current="page"]')).toHaveTextContent(copy.CompanyDocuments.title);
     const summary = screen.getByRole('region', {name: copy.CompanyDocuments.summaryLabel});
     expect([...summary.querySelectorAll('strong')].map((item) => item.textContent)).toEqual(['5', '4', '0']);
     expect(screen.getAllByRole('checkbox').every((input) => !input.hasAttribute('disabled'))).toBe(true);

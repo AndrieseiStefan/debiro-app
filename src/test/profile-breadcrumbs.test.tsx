@@ -35,6 +35,13 @@ for (const locale of ['ro', 'en'] as const) {
     it('preserves the default Dashboard root for company-owned pages', () => {
       render(<NextIntlClientProvider locale={locale} messages={messages}><AuthenticatedBreadcrumbs label="Breadcrumb" items={[{label: 'Section'}]}/></NextIntlClientProvider>);
       expect(screen.getByRole('link', {name: 'Dashboard'})).toHaveAttribute('href', '/dashboard');
+      expect(screen.getByRole('navigation')).not.toHaveAttribute('data-wrap');
+    });
+    it('opts into shared wrapping without changing parent/current semantics', () => {
+      render(<NextIntlClientProvider locale={locale} messages={messages}><AuthenticatedBreadcrumbs wrap label="Breadcrumb" items={[{label: 'Company'}, {label: 'Employees', href: '/company/employees'}, {label: 'Employee'}]}/></NextIntlClientProvider>);
+      const breadcrumb = screen.getByRole('navigation'); expect(breadcrumb).toHaveAttribute('data-wrap', 'true');
+      expect(within(breadcrumb).getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(['/dashboard', '/company/employees']);
+      expect(within(breadcrumb).queryByRole('link', {name: 'Company'})).toBeNull(); expect(breadcrumb.querySelector('[aria-current="page"]')).toHaveTextContent('Employee');
     });
   });
 }

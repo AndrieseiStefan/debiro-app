@@ -1,4 +1,7 @@
 import {expect, test, type Page} from '@playwright/test';
+import ro from '../messages/ro.json' with {type: 'json'};
+import en from '../messages/en.json' with {type: 'json'};
+import {switchWorkspaceCompany} from './support/company-workspace';
 
 const sections = [
   {path: '/dashboard', ro: 'Dashboard', en: 'Dashboard', breadcrumbRo: null, breadcrumbEn: null},
@@ -149,5 +152,71 @@ for (const locale of ['ro', 'en'] as const) {
       await expect(navigation.locator('a[aria-current="page"]')).toHaveCount(1);
       await expect(navigation.locator('a[aria-current="page"]')).toHaveAttribute('href', `${prefix}${section}`);
     }
+  });
+}
+
+for (const english of [false, true]) {
+  const copy = english ? en : ro, prefix = english ? '/en' : '', locale = english ? 'en' : 'ro';
+  const group = {label: copy.AppShell.navigation.company}, settings = {label: copy.AppShell.navigation.settings};
+  const workspacePages: {path: string; items: {label: string; href?: string}[]}[] = [
+    {path: '/vendors', items: [{label: copy.Vendors.title}]},
+    {path: '/vendors/construct-pro', items: [{label: copy.Vendors.title, href: '/vendors'}, {label: 'Construct Pro SRL'}]},
+    {path: '/documents', items: [{label: copy.Documents.title}]},
+    {path: '/documents/construct-pro-tax-2024/review', items: [{label: copy.AppShell.navigation.documents, href: '/documents'}, {label: copy.DocumentReview.breadcrumbCurrent}]},
+    {path: '/requirements', items: [{label: copy.AppShell.navigation.requirements}]},
+    {path: '/notifications', items: [{label: copy.AppShell.navigation.notifications}]},
+    {path: '/company/documents', items: [group, {label: copy.CompanyDocuments.title}]},
+    {path: '/company/employees', items: [group, {label: copy.Employees.title}]},
+    {path: '/company/employees/employee%3Aandrei-popescu', items: [group, {label: copy.Employees.title, href: '/company/employees'}, {label: 'Andrei Popescu'}]},
+    {path: '/company/settings/profile', items: [settings, {label: copy.CompanyProfile.title}]},
+    {path: '/company/settings/members', items: [settings, {label: copy.CompanyMembers.title}]},
+    {path: '/company/settings/billing', items: [settings, {label: copy.CompanyBilling.title}]}
+  ];
+
+  test(`${locale.toUpperCase()} every workspace breadcrumb has one linked Dashboard and only real parent destinations`, async ({page}) => {
+    test.setTimeout(90_000);
+    for (const {path, items} of workspacePages) {
+      await page.goto(prefix + path);
+      const breadcrumb = page.locator('main').getByRole('navigation').first();
+      await expect(breadcrumb).toHaveText(copy.AppShell.navigation.dashboard + items.map((item) => item.label).join(''));
+      const dashboard = breadcrumb.getByRole('link', {name: copy.AppShell.navigation.dashboard, exact: true}); await expect(dashboard).toHaveCount(1); await expect(dashboard).toHaveAttribute('href', prefix + '/dashboard');
+      await expect(breadcrumb.locator('[aria-current="page"]')).toHaveCount(1); await expect(breadcrumb.locator('[aria-current="page"]')).toHaveText(items.at(-1)!.label);
+      for (const item of items) {
+        const link = breadcrumb.getByRole('link', {name: item.label, exact: true});
+        if (item.href) await expect(link).toHaveAttribute('href', prefix + item.href);
+        else await expect(link).toHaveCount(0);
+      }
+      await dashboard.focus(); await page.keyboard.press('Enter'); await expect(page).toHaveURL(prefix + '/dashboard');
+      await expect(page.getByRole('button', {name: 'Demo Company SRL', exact: true})).toBeVisible(); await expect(page.locator('main').getByRole('navigation')).toHaveCount(0);
+    }
+  });
+
+  test(`${locale.toUpperCase()} Company breadcrumb roots preserve the active company and locale on client navigation`, async ({page}) => {
+    await page.goto(prefix + '/company/documents'); await switchWorkspaceCompany(page, 'Demo Company SRL', 'Global Clean Services', english);
+    const nav = page.getByRole('navigation', {name: copy.AppShell.navigationLabel}), company = nav.getByRole('button', {name: group.label, exact: true});
+    if (await company.getAttribute('aria-expanded') !== 'true') await company.click();
+    for (const path of ['/company/documents', '/company/employees']) {
+      await nav.locator(`a[href="${prefix}${path}"]`).click();
+      const breadcrumb = page.locator('main').getByRole('navigation').first();
+      await breadcrumb.getByRole('link', {name: copy.AppShell.navigation.dashboard, exact: true}).click(); await expect(page).toHaveURL(prefix + '/dashboard');
+      await expect(page.getByRole('button', {name: 'Global Clean Services', exact: true})).toBeVisible(); await expect(page.locator('section[aria-label] [data-tone] strong').first()).toHaveText('0');
+    }
+  });
+
+  test(`${locale.toUpperCase()} Company breadcrumbs remain readable at mobile widths and locale switching retains the employee route`, async ({page}) => {
+    for (const width of [1448, 768, 375, 320]) for (const path of ['/company/documents', '/company/employees', '/company/employees/employee%3Aandrei-popescu']) {
+      await page.setViewportSize({width, height: 900}); await page.goto(prefix + path);
+      const breadcrumb = page.locator('main').getByRole('navigation').first(); await expect(breadcrumb).toBeInViewport();
+      // Measure actual text and chevrons, not only flex boxes, to detect squeezed breadcrumb content.
+      const layout = await breadcrumb.evaluate((element) => {
+        const rects = [...element.children].flatMap((item) => {const range = document.createRange(); range.selectNodeContents(item.lastElementChild!); const icon = item.querySelector('svg'); return [...range.getClientRects(), ...(icon ? [icon.getBoundingClientRect()] : [])].filter((rect) => rect.width && rect.height);});
+        return {contained: rects.every((rect) => rect.left >= 0 && rect.right <= innerWidth), separated: rects.every((rect, index) => rects.slice(index + 1).every((next) => rect.right <= next.left + 1 || next.right <= rect.left + 1 || rect.bottom <= next.top + 1 || next.bottom <= rect.top + 1))};
+      });
+      expect(layout.contained).toBe(true); expect(layout.separated).toBe(true); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.screenshot({path: `artifacts/visual/e1c-006a4/${path.split('/').at(-1)}-${locale}-${width}.png`});
+    }
+    const route = '/company/employees/employee%3Aandrei-popescu'; await page.getByRole('link', {name: english ? 'RO' : 'EN', exact: true}).filter({visible: true}).click(); await expect(page).toHaveURL((english ? '' : '/en') + route);
+    const next = english ? ro : en, breadcrumb = page.locator('main').getByRole('navigation').first(); await expect(breadcrumb).toHaveText(`${next.AppShell.navigation.dashboard}${next.AppShell.navigation.company}${next.Employees.title}Andrei Popescu`);
+    await breadcrumb.getByRole('link', {name: next.Employees.title, exact: true}).click(); await expect(page).toHaveURL((english ? '' : '/en') + '/company/employees');
   });
 }

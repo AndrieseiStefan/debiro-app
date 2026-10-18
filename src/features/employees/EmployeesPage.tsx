@@ -61,7 +61,7 @@ function EmployeesWorkspace({companyId, locale}: {companyId: string; locale: str
     router.push(href);
   }
   return <div className={styles.page}>
-    <AuthenticatedPageHeader context={<AuthenticatedBreadcrumbs root={{label: app('navigation.company')}} items={[{label: t('title')}]} label={t('breadcrumbLabel')}/>} title={t('title')} titleId="employees-title" description={t('description')}
+    <AuthenticatedPageHeader context={<AuthenticatedBreadcrumbs wrap items={[{label: app('navigation.company')}, {label: t('title')}]} label={t('breadcrumbLabel')}/>} title={t('title')} titleId="employees-title" description={t('description')}
       actions={access.manage && <AuthenticatedPagePrimaryAction icon="plus" onClick={() => {setFeedback(''); setEditing({});}}>{t('add')}</AuthenticatedPagePrimaryAction>}/>
     {feedback && <p role="status">{feedback}</p>}{failure && <p role="alert">{t('errors.save')}</p>}
     {workspace.error ? <Surface><ErrorState title={foundation('errorTitle')} description={t('errors.unavailable')}/></Surface> : <>

@@ -38,7 +38,7 @@ for (const en of [false, true]) {
     await expect(company).toHaveAttribute('aria-expanded', 'true');
     await expect(navigation.locator('a[aria-current="page"]')).toHaveCount(1);
     await expect(navigation.locator('a[aria-current="page"]')).toHaveAttribute('href', `${prefix}/company/documents`);
-    await expect(page.getByRole('navigation', {name: en ? 'Page navigation' : 'Navigare pe pagină'})).toHaveText(en ? 'CompanyCompany Documents' : 'CompanieDocumente companie');
+    await expect(page.getByRole('navigation', {name: en ? 'Page navigation' : 'Navigare pe pagină'})).toHaveText(en ? 'DashboardCompanyCompany Documents' : 'DashboardCompanieDocumente companie');
     await expect(page.getByRole('heading', {level: 1})).toHaveText(en ? 'Company Documents' : 'Documente companie');
     expect(await page.locator('section[aria-label] [data-tone] strong').allTextContents()).toEqual(['5', '4', '0']);
     await expect(page.locator('[data-company-document-row]')).toHaveCount(6);
