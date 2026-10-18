@@ -40,6 +40,53 @@ async function role(page: Page, role: 'administrator' | 'reviewer' | 'viewer') {
 
 for (const english of [false, true]) {
   const prefix = english ? '/en' : '', copy = english ? en : ro;
+  test(`${english ? 'EN' : 'RO'} reminder stays visible in empty, configured and uploaded document states at every toolbar breakpoint`, async ({page}) => {
+    test.setTimeout(60_000);
+    const templateId = await createTemplate(page, english); await employeeDetails(page, english);
+    const panel = page.getByRole('tabpanel', {name: copy.EmployeeDocuments.documents, exact: true});
+    const download = panel.getByRole('button', {name: copy.CompanyDocuments.downloadSelected, exact: true});
+    const reminder = panel.getByRole('button', {name: copy.EmployeeDocuments.sendReminder, exact: true});
+    const template = panel.getByRole('button', {name: copy.VendorTemplates.title, exact: true}).first();
+    const snapshot = () => page.evaluate(() => JSON.stringify({employees: Reflect.get(window, Symbol.for('debiro.employees-session')).state, audit: Reflect.get(window, Symbol.for('debiro.local-audit-session')).events, read: [...Reflect.get(window, Symbol.for('debiro.notification-session')).readIds]}));
+    async function verify(state: string) {
+      const before = await snapshot();
+      for (const width of [1448, 768, 375, 320]) {
+        await page.setViewportSize({width, height: 900});
+        await expect(reminder).toBeVisible(); await expect(reminder).toHaveAttribute('aria-disabled', 'true');
+        expect(await reminder.getAttribute('disabled')).toBeNull();
+        expect(await download.evaluate((element) => element.nextElementSibling?.textContent)).toBe(copy.EmployeeDocuments.sendReminder);
+        expect(await reminder.evaluate((element) => element.nextElementSibling?.textContent)).toBe(copy.VendorTemplates.title);
+        // Re-enter after Escape/resize instead of hovering a pointer that is already over the trigger.
+        await page.getByRole('heading', {level: 1}).hover(); await reminder.hover(); await expect(page.getByRole('tooltip')).toHaveText(copy.EmployeeDocuments.reminderUnavailable); await page.keyboard.press('Escape');
+        await page.getByRole('heading', {level: 1}).hover(); await download.focus(); await page.keyboard.press('Tab'); await expect(reminder).toBeFocused();
+        await expect(page.getByRole('tooltip')).toHaveText(copy.EmployeeDocuments.reminderUnavailable);
+        await page.keyboard.press('Enter'); await page.keyboard.press('Space'); await reminder.click({force: true});
+        expect(await snapshot()).toBe(before); await page.keyboard.press('Escape');
+        await reminder.locator('..').evaluate((element) => element.scrollIntoView({block: 'center'}));
+        const rects = [];
+        for (const control of [download, reminder, template]) {
+          await expect(control).toBeInViewport(); expect(await control.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+          const rect = await control.boundingBox(); expect(rect).not.toBeNull(); rects.push(rect!);
+        }
+        for (let index = 0; index < rects.length - 1; index++) {
+          const first = rects[index], second = rects[index + 1];
+          expect(first.x + first.width <= second.x + 1 || first.y + first.height <= second.y + 1).toBe(true);
+        }
+        if (width === 1448) expect(new Set(rects.map((rect) => Math.round(rect.y))).size).toBe(1);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        await page.screenshot({path: `artifacts/visual/e1c-006a1/${state}-${english ? 'en' : 'ro'}-${width}.png`});
+      }
+    }
+    await expect(page.getByText(copy.EmployeeDocuments.empty)).toBeVisible(); await verify('empty');
+    await page.setViewportSize({width: 1448, height: 900}); await template.click(); await page.locator('#company-template').selectOption(templateId);
+    await page.getByRole('dialog').getByRole('button', {name: copy.CompanyDocumentManagement.applyTemplate, exact: true}).click(); await close(page);
+    await expect(page.locator('tbody tr')).toHaveCount(1); await expect(download).toHaveAttribute('aria-disabled', 'true'); await verify('configured');
+    await page.setViewportSize({width: 1448, height: 900}); await add(page, english, 'Reminder proof');
+    await expect(page.locator('tbody tr')).toHaveCount(2); await expect(download).toHaveAttribute('aria-disabled', 'true'); await verify('uploaded');
+    // A client-side list/details round trip must use the same current action contract as direct entry.
+    await page.setViewportSize({width: 1448, height: 900}); await employeeList(page, english); await employeeDetails(page, english); await expect(reminder).toBeVisible();
+  });
+
   test(`${english ? 'EN' : 'RO'} empty employee documents, scoped template preview, duplicate apply, source and required upload`, async ({page}) => {
     const templateId = await createTemplate(page, english); await employeeDetails(page, english);
     await expect(page.getByText(copy.EmployeeDocuments.empty)).toBeVisible(); await expect(page.getByRole('region', {name: copy.EmployeeDocuments.summaryLabel}).locator('strong')).toHaveText(['0', '0', '0', '0']);

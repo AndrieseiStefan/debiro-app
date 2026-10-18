@@ -71,13 +71,25 @@ describe('Employee Details shared document UI', () => {
     act(() => switchActiveCompany('global-clean-services')); expect(screen.getByText(en.Employees.empty)).toBeVisible();
   });
 
-  it.each(['ro', 'en'] as const)('keeps document selection and an adjacent truthful unavailable reminder without creating events in %s', (locale) => {
-    const copy = locale === 'ro' ? ro : en; view(locale); const before = readEmployeeState();
+  it.each((['ro', 'en'] as const).flatMap((locale) => (['empty', 'configured', 'uploaded'] as const).map((state) => [locale, state] as const)))('always renders the unavailable reminder in the document toolbar in %s/%s', (locale, state) => {
+    const copy = locale === 'ro' ? ro : en, engine = employeeDocumentEngine(companyId, employeeId);
+    if (state === 'configured') {
+      const base = templateOwner().state.byCompany[companyId].templates[0];
+      templateOwner().state.byCompany[companyId].templates.push({...base, id: 'reminder-template', scope: 'employee', categoryId: null, documents: [{id: 'reminder-rule', templateId: 'reminder-template', catalogDocumentTypeId: 'safety', required: true, expiryWarningDays: 30, validityMonths: 12}]});
+      expect(engine.applyCompanyTemplate(companyId, 'reminder-template')).toEqual({ok: true, added: 1});
+    } else if (state === 'uploaded') {
+      expect(engine.addCompanyDocument(companyId, {name: 'Reminder proof', documentType: 'custom', issuer: '', expiresAt: '', file: new File(['synthetic proof'], 'proof.pdf', {type: 'application/pdf'})}).ok).toBe(true);
+    }
+    view(locale); const before = readEmployeeState(), activity = getEmployeeActivity(companyId, employeeId);
     const download = screen.getByRole('button', {name: copy.CompanyDocuments.downloadSelected}), reminder = screen.getByRole('button', {name: copy.EmployeeDocuments.sendReminder});
     expect(download).toHaveAttribute('aria-disabled', 'true'); expect(download.nextElementSibling).toBe(reminder); expect(reminder).toHaveAttribute('aria-disabled', 'true');
-    expect(screen.getByRole('checkbox', {name: copy.CompanyDocuments.selectPage})).toBeDisabled();
-    fireEvent.focus(reminder); expect(screen.getByRole('tooltip')).toHaveTextContent(copy.EmployeeDocuments.reminderUnavailable);
-    fireEvent.keyDown(reminder, {key: 'Enter'}); fireEvent.click(reminder); expect(readEmployeeState()).toBe(before); expect(getEmployeeActivity(companyId, employeeId)).toEqual([]);
+    expect(reminder).toBeVisible(); expect(reminder).not.toBeDisabled(); expect(reminder.nextElementSibling).toBe(screen.getAllByRole('button', {name: copy.VendorTemplates.title})[0]);
+    expect(screen.getByRole('checkbox', {name: copy.CompanyDocuments.selectPage}).hasAttribute('disabled')).toBe(state === 'empty');
+    fireEvent.pointerEnter(reminder); expect(screen.getByRole('tooltip')).toHaveTextContent(copy.EmployeeDocuments.reminderUnavailable);
+    fireEvent.keyDown(document, {key: 'Escape'}); expect(screen.queryByRole('tooltip')).toBeNull();
+    fireEvent.focus(reminder); expect(reminder).toHaveAttribute('aria-describedby', screen.getByRole('tooltip').id);
+    fireEvent.keyDown(reminder, {key: 'Enter'}); fireEvent.keyDown(reminder, {key: ' '}); fireEvent.click(reminder);
+    expect(readEmployeeState()).toBe(before); expect(getEmployeeActivity(companyId, employeeId)).toEqual(activity);
     expect(screen.queryByRole('status', {name: /sent|trimis/i})).toBeNull();
   });
 

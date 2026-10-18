@@ -69,7 +69,10 @@ export function EmployeeDocumentPanel({companyId, employeeId, locale, selection,
       {feedback && <p role="status" className={styles.feedback}>{feedback}</p>}{failure && <p role="alert" className={styles.feedback}>{common('downloadUnavailable')}</p>}
       <div className={list.bulk}><div className={`${list.selected} ${table.selection}`}><Selection label={listing('selectPage')} checked={onPage.length > 0 && checked === onPage.length} mixed={checked > 0 && checked < onPage.length} disabled={!onPage.length} onChange={togglePage}/><span role="status">{listing('selected', {count: selected.length})}</span></div><div className={list.bulkActions}>
         {allDownloadable ? <Button size="compact" variant="secondary" onClick={downloadSelection}><AppIcon name="download" size={18}/>{listing('downloadSelected')}</Button> : <Tooltip content={listing('downloadSelectionUnavailable')}>{(props) => <Button {...props} size="compact" variant="secondary" aria-disabled="true" onKeyDown={(event) => {if (['Enter', ' '].includes(event.key)) event.preventDefault();}}><AppIcon name="download" size={18}/>{listing('downloadSelected')}</Button>}</Tooltip>}
-        <Tooltip content={t('reminderUnavailable')}>{(props) => <Button {...props} size="compact" variant="secondary" aria-disabled="true" onKeyDown={(event) => {if (['Enter', ' '].includes(event.key)) event.preventDefault();}}><AppIcon name="bell" size={18}/>{t('sendReminder')}</Button>}</Tooltip>
+        {/* Always render beside Download, including zero documents/requirements/selection; only delivery is unavailable. */}
+        <Tooltip content={t('reminderUnavailable')}>{(props) =>
+          <Button {...props} size="compact" variant="secondary" aria-disabled="true" onKeyDown={(event) => {if (['Enter', ' '].includes(event.key)) event.preventDefault();}}><AppIcon name="bell" size={18}/>{t('sendReminder')}</Button>
+        }</Tooltip>
         <Button size="compact" onClick={() => setApplying(true)}><AppIcon name="plus" size={18}/>{templatesT('title')}</Button>
         <RowActionMenu label={listing('bulkActions')} open={menu === 'bulk'} onOpenChange={(open) => setMenu(open ? 'bulk' : null)} items={selected.length ? [{label: listing('deselectAll'), onSelect: () => setSelected([])}] : []}/>
       </div></div>
