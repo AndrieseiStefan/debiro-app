@@ -26,7 +26,9 @@ The final logo is not yet designed and must not be invented.
 
 ## Implemented
 
-- E1C-005 Employee Management — Company-owned list/Add/Edit, free-text job-title suggestions, atomic optional department creation/reuse, guarded employment status, normalized filters/sort, selection/pagination and minimal owned Details routes in RO/EN. Reuses existing UI/session patterns without changing vendor/company document state. Employee document metrics/actions remain explicitly unavailable; see [Employees](../features/employees.md).
+- E1C-006 Employee Details and Documents — full owned profile, shared employee-template picker/preview, source badges/tints, standalone/bound uploads, human review, replacement/history, exact-file viewer/download, metadata/manual expiry, actual activity and current-only list/Details tracking. Administrator-only personnel metadata/files/activity remain separate from basic membership access and Company Sharing. Existing Company lifecycle is reused through an ownership adapter, preserving Company/Vendor rules and old sessions; see [Employees](../features/employees.md).
+
+- E1C-005 Employee Management — Company-owned list/Add/Edit, free-text job-title suggestions, atomic optional department creation/reuse, guarded employment status, normalized filters/sort and selection/pagination in RO/EN. E1C-006 activates document metrics/Details and removes the obsolete Add/Edit notice without requiring configuration at creation. E1C-007 Dashboard/Notifications/Search integration remains deferred.
 
 - E1C-004 Company sharing preparation — one shared drawer from header/bulk/row, local configuration/validation/preview, transient password handling and company isolation. E1C-004A separates all-row selection from attachment eligibility: nullable exact versions, inline/summary missing-file warnings and truthful mixed/all-unattached previews; bulk downloads require real current files for the entire selection. External links/email/revocation remain deferred to the documented E2 security/API contract; Active Shares remains zero. See [Company Documents](../features/company-documents.md#company-sharing-preparation-e1c-004).
 

@@ -24,8 +24,8 @@ describe('Employees shared list/drawer UI', () => {
     const copy = locale === 'ro' ? ro : en; view(locale);
     expect(screen.getByRole('heading', {level: 1})).toHaveTextContent(copy.Employees.title);
     expect(screen.getByRole('navigation', {name: copy.Employees.breadcrumbLabel})).toHaveTextContent(`${copy.AppShell.navigation.company}${copy.Employees.title}`);
-    const summary = screen.getByRole('region', {name: copy.Employees.summaryLabel}); expect([...summary.querySelectorAll('strong')].map((item) => item.textContent)).toEqual(['8', '—', '—']);
-    expect(within(screen.getByRole('table')).getAllByText(copy.Employees.notConfigured)).toHaveLength(8);
+    const summary = screen.getByRole('region', {name: copy.Employees.summaryLabel}); expect([...summary.querySelectorAll('strong')].map((item) => item.textContent)).toEqual(['8', '0', '0']);
+    expect(within(screen.getByRole('table')).getAllByText(copy.Employees.notConfigured)).toHaveLength(16);
     expect(screen.getByRole('row', {name: /Marius Radu/})).toHaveTextContent(copy.Employees.inactive);
     const download = screen.getByRole('button', {name: copy.Employees.download}); expect(download).toHaveAttribute('aria-disabled', 'true');
     fireEvent.click(download); expect(screen.getByRole('tooltip')).toHaveTextContent(copy.Employees.bulkUnavailable); expect(screen.queryByRole('dialog')).toBeNull();
@@ -90,8 +90,8 @@ describe('Employees shared list/drawer UI', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(en.Employees.errors.unavailable); expect(screen.queryByRole('table')).toBeNull();
   });
 
-  it('provides minimal owned details and does not reveal invalid/foreign records', () => {
-    const rendered = view('en', initial.byCompany['demo-company'].employees[0].id); expect(screen.getByRole('heading', {level: 1})).toHaveTextContent('Andrei Popescu'); expect(screen.getByText(en.Employees.documentsDeferred)).toBeVisible();
+  it('provides owned details and does not reveal invalid/foreign records', () => {
+    const rendered = view('en', initial.byCompany['demo-company'].employees[0].id); expect(screen.getByRole('heading', {level: 1})).toHaveTextContent(en.EmployeeDocuments.title); expect(screen.getByText(en.EmployeeDocuments.empty)).toBeVisible();
     act(() => {switchActiveCompany('global-clean-services');}); expect(screen.getByRole('alert')).toHaveTextContent(en.Employees.employeeUnavailable); expect(screen.queryByText('andrei.popescu@demo.ro')).toBeNull();
     rendered.unmount(); view('en', 'invalid-id'); expect(screen.getByRole('link', {name: en.Employees.back})).toHaveAttribute('href', '/company/employees');
     const member = readCompanyState().companies[1].members[0]; const status = member.status; member.status = 'invited';

@@ -19,7 +19,7 @@ for (const english of [false, true]) {
   const prefix = english ? '/en' : '', copy = english ? en : ro, t = copy.Employees;
   test(`${english ? 'EN' : 'RO'} employee direct details and invalid ID are truthful and locale-aware`, async ({page}) => {
     await page.goto(prefix + '/company/employees/employee%3Aandrei-popescu');
-    await expect(page.getByRole('heading', {level: 1})).toHaveText('Andrei Popescu');
+    await expect(page.getByRole('heading', {level: 1})).toHaveText(copy.EmployeeDocuments.title);
     await expect(page.getByRole('navigation', {name: t.breadcrumbLabel})).toHaveText(`${copy.AppShell.navigation.company}${t.title}Andrei Popescu`);
     await page.getByRole('navigation', {name: t.breadcrumbLabel}).getByRole('link', {name: t.title}).click(); await expect(page).toHaveURL(prefix + '/company/employees');
     await page.goto(prefix + '/company/employees/not-owned'); await expect(page.locator('main').getByRole('alert')).toContainText(t.employeeUnavailable);
@@ -28,14 +28,14 @@ for (const english of [false, true]) {
   test(`${english ? 'EN' : 'RO'} employees create/free title/inline department/duplicate validation/edit/status and details survive client navigation`, async ({page}) => {
     await page.goto(prefix + '/company/employees');
     await expect(page.getByRole('navigation', {name: t.breadcrumbLabel})).toHaveText(`${copy.AppShell.navigation.company}${t.title}`);
-    const metrics = page.getByRole('region', {name: t.summaryLabel}); await expect(metrics.locator('strong')).toHaveText(['8', '—', '—']);
+    const metrics = page.getByRole('region', {name: t.summaryLabel}); await expect(metrics.locator('strong')).toHaveText(['8', '0', '0']);
     await page.getByRole('button', {name: t.add, exact: true}).click(); let dialog = page.getByRole('dialog', {name: t.add});
     await fields(dialog, 'bad-email');
     const department = dialog.locator('#employee-department'); await department.fill('Producție'); await department.press('ArrowDown'); await department.press('ArrowDown'); await department.press('Enter');
     await expect(dialog.getByText(t.departmentPending)).toBeVisible(); await dialog.getByRole('button', {name: t.add, exact: true}).click();
     await expect(dialog.getByText(t.errors.email)).toBeVisible(); await expect(dialog.locator('#employee-firstName')).toHaveValue('Ana');
     await dialog.locator('#employee-email').fill('ana.employee@example.test'); await dialog.getByRole('button', {name: t.add, exact: true}).dblclick(); await expect(page.getByRole('dialog')).toHaveCount(0);
-    let row = page.getByRole('row', {name: /Ana Marinescu/}); await expect(row).toContainText('Producție'); await expect(row).toContainText(t.notConfigured); await expect(metrics.locator('strong')).toHaveText(['9', '—', '—']);
+    let row = page.getByRole('row', {name: /Ana Marinescu/}); await expect(row).toContainText('Producție'); await expect(row).toContainText(t.notConfigured); await expect(metrics.locator('strong')).toHaveText(['9', '0', '0']);
     await page.getByRole('button', {name: t.add, exact: true}).click(); dialog = page.getByRole('dialog'); await fields(dialog, 'ANA.EMPLOYEE@EXAMPLE.TEST');
     await dialog.getByRole('button', {name: t.add, exact: true}).click(); await expect(dialog.getByText(t.errors.duplicateEmail)).toBeVisible();
     await dialog.getByRole('button', {name: copy.DocumentManagement.cancel, exact: true}).click(); await expect(page.getByRole('dialog')).toHaveCount(0);
@@ -48,7 +48,7 @@ for (const english of [false, true]) {
     row = page.getByRole('row', {name: /Ana Marinescu/}); await expect(row).toContainText('Financiar'); await expect(row).toContainText('Contabil'); await expect(row).toContainText(t.inactive);
     await row.getByRole('button', {name: t.employeeActions.replace('{name}', 'Ana Marinescu')}).click(); await page.getByRole('menuitem', {name: t.markActive}).click(); await expect(row).toContainText(t.active);
     await row.getByRole('link', {name: 'Ana Marinescu'}).click(); await expect(page).toHaveURL(new RegExp(`${prefix}/company/employees/employee%3A`));
-    await expect(page.getByRole('heading', {level: 1})).toHaveText('Ana Marinescu'); await expect(page.getByText(t.documentsDeferred)).toBeVisible();
+    await expect(page.getByRole('heading', {level: 1})).toHaveText(copy.EmployeeDocuments.title); await expect(page.getByText(copy.EmployeeDocuments.empty)).toBeVisible();
     await page.getByRole('navigation', {name: t.breadcrumbLabel}).getByRole('link', {name: t.title}).click();
     await page.getByRole('searchbox', {name: t.search}).fill('  PRODUCTIE '); await expect(page.getByText(t.noMatches)).toBeVisible();
     await page.getByRole('button', {name: t.resetFilters}).click(); await expect(page.getByRole('row', {name: /Ana Marinescu/})).toBeVisible();

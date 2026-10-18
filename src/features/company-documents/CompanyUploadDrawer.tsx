@@ -11,7 +11,7 @@ import {Button} from '@/components/ui/Button';
 import {AppIcon} from '@/components/layout/AppIcon';
 import type {DrawerPhase} from '@/components/ui/Drawer';
 import type {DocumentType} from '@/features/documents/types';
-import {addCompanyDocument, getCompanyDocumentDetails, replaceCompanyDocument} from './management';
+import {companyDocumentAdapter, type DocumentManagementAdapter} from './document-adapter';
 import {companyDocumentTypes} from './projections';
 import styles from '@/features/documents/AddDocumentDrawer.module.css';
 import uploadStyles from './CompanyUploadDrawer.module.css';
@@ -21,13 +21,14 @@ export type CompanyUploadContext =
   | {kind: 'requirement'; requirementId: string}
   | {kind: 'replacement'; requirementId: string; documentId: string};
 
-export function CompanyUploadDrawer({companyId, locale, context, phase, triggerRef, onClose, onExited, onSuccess}: {
-  companyId: string; locale: 'ro' | 'en'; context: CompanyUploadContext;
+export function CompanyUploadDrawer({companyId, locale, context, phase, triggerRef, onClose, onExited, onSuccess, adapter = companyDocumentAdapter}: {
+  adapter?: DocumentManagementAdapter; companyId: string; locale: 'ro' | 'en'; context: CompanyUploadContext;
   phase: DrawerPhase; triggerRef: RefObject<HTMLElement | null>; onClose: () => void; onExited: () => void; onSuccess: (kind: 'added' | 'replaced') => void;
 }) {
   const t = useTranslations('CompanyDocumentManagement'), common = useTranslations('AddDocument'), listing = useTranslations('CompanyDocuments');
+  const owner = useTranslations(adapter.scope === 'employee' ? 'EmployeeDocuments' : 'CompanyDocumentManagement');
   const standalone = context.kind === 'standalone';
-  const details = !standalone ? getCompanyDocumentDetails(companyId, context.requirementId) : null;
+  const details = !standalone ? adapter.getCompanyDocumentDetails(companyId, context.requirementId) : null;
   const requirement = details?.requirement;
   const replacement = context.kind === 'replacement';
   const [name, setName] = useState(''), [type, setType] = useState('');
@@ -51,11 +52,11 @@ export function CompanyUploadDrawer({companyId, locale, context, phase, triggerR
     if (Object.keys(next).length || !file) return;
     submitting.current = true;
     const input = {requirementId: !standalone ? context.requirementId : undefined, name: requirement?.name[locale] ?? name, documentType: requirement?.documentType ?? type as DocumentType, issuer, expiresAt, file};
-    const result = context.kind === 'replacement' ? replaceCompanyDocument(companyId, context.requirementId, context.documentId, input) : addCompanyDocument(companyId, input);
+    const result = context.kind === 'replacement' ? adapter.replaceCompanyDocument(companyId, context.requirementId, context.documentId, input) : adapter.addCompanyDocument(companyId, input);
     if (!result.ok) {setErrors({[result.reason === 'date' ? 'expiresAt' : 'form']: t(`errors.${result.reason}`)}); submitting.current = false; return;}
     onSuccess(replacement ? 'replaced' : 'added');
   }
-  return <DocumentUploadDrawer phase={phase} onClose={onClose} onExited={onExited} triggerRef={triggerRef} headerClassName={uploadStyles.header} title={t(replacement ? 'replaceTitle' : 'addTitle')} description={t(replacement ? 'replaceDescription' : 'addDescription')}>
+  return <DocumentUploadDrawer phase={phase} onClose={onClose} onExited={onExited} triggerRef={triggerRef} headerClassName={uploadStyles.header} title={t(replacement ? 'replaceTitle' : 'addTitle')} description={owner(replacement ? 'replaceDescription' : 'addDescription')}>
     <p role="note" className={styles.intro}>{t('sessionNotice')}</p>
     <form noValidate onSubmit={submit} className={styles.form}>
       <DocumentFileDropzone file={file} error={errors.file} onSelect={selectFile}/>

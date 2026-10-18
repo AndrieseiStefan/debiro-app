@@ -75,7 +75,6 @@ export function EmployeeDrawer({companyId, employeeId, onClose, onSuccess}: {com
           <SelectField controlSize="compact" id="employee-status" label={t('status')} required disabled={disabled} value={input.employmentStatus} onChange={(event) => update('employmentStatus', event.target.value as 'active' | 'inactive')} error={error('employmentStatus')}><option value="active">{t('active')}</option><option value="inactive">{t('inactive')}</option></SelectField>
         </div>
       </Surface>
-      <div className={formStyles.notice} role="note"><AppIcon name="info" size={22}/><p>{t('documentsDeferred')}</p></div>
       {(failure || unavailable || !access.manage) && <p role="alert" tabIndex={-1} className={formStyles.error}>{t(`errors.${failure || (!access.manage ? 'access' : 'unavailable')}`)}</p>}
       <div className={`${formStyles.actions} ${styles.actions}`} data-edit-employee-actions={employeeId ? true : undefined}><Button variant="secondary" onClick={close}>{common('cancel')}</Button><Button type="submit" disabled={disabled}><AppIcon name={employeeId ? 'check' : 'plus'} size={20}/>{t(employeeId ? 'save' : 'add')}</Button></div>
     </form>

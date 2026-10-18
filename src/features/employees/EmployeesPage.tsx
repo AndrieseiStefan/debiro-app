@@ -23,6 +23,9 @@ import {getActiveCompany, useCompanyState} from '@/features/companies/company-st
 import table from '@/components/ui/DataTable.module.css';
 import list from '@/features/company-documents/CompanyDocumentsPage.module.css';
 import {employeeAccess, employeeWorkspace, setEmployeeStatus, useEmployeeState} from './employees-state';
+import {employeeDocumentWorkspace} from './employees-state';
+import {employeeDocumentMetrics, employeeListDocumentMetrics, projectEmployeeDocuments} from './employee-document-projections';
+import progress from '@/features/vendors/VendorsListPage.module.css';
 import {departmentName, employeeName, filterEmployees, sortEmployees} from './projections';
 import {EmployeeDrawer} from './EmployeeDrawer';
 import type {EmployeeSort} from './types';
@@ -44,6 +47,10 @@ export function EmployeesPage({locale}: {locale: string}) {
 function EmployeesWorkspace({companyId, locale}: {companyId: string; locale: string}) {
   const t = useTranslations('Employees'), app = useTranslations('AppShell'), foundation = useTranslations('Foundation');
   const workspace = employeeWorkspace(companyId, useEmployeeState()), access = employeeAccess(companyId), router = useRouter();
+  const documentsT = useTranslations('EmployeeDocuments');
+  const documentMetrics = new Map(workspace.employees.map((employee) => {const owned = employeeDocumentWorkspace(companyId, employee.id); const projection = owned && projectEmployeeDocuments(owned, companyId, employee.id, locale === 'en' ? 'en' : 'ro'); return [employee.id, projection && !projection.error ? employeeDocumentMetrics(projection.rows) : null];}));
+  const activeMetrics = employeeListDocumentMetrics(workspace.employees, documentMetrics);
+  const privateMetricsAvailable = access.manage && !activeMetrics.error;
   const [query, setQuery] = useState(''), [status, setStatus] = useState('all'), [department, setDepartment] = useState('all');
   const [sort, setSort] = useState<EmployeeSort>({column: 'name', direction: 'ascending'});
   const [page, setPage] = useState(1), [pageSize, setPageSize] = useState(10), [selected, setSelected] = useState<string[]>([]);
@@ -65,8 +72,8 @@ function EmployeesWorkspace({companyId, locale}: {companyId: string; locale: str
     {workspace.error ? <Surface className={list.error}><ErrorState title={foundation('errorTitle')} description={t('errors.unavailable')}/></Surface> : <>
       <section className={list.metrics} aria-label={t('summaryLabel')}>
         <SummaryMetricCard variant="documents" title={t('total')} value={workspace.employees.length} note={t('totalDescription')} icon="users" tone="blue"/>
-        <SummaryMetricCard variant="documents" title={t('attention')} value={null} note={t('notConfigured')} unavailable={t('documentsDeferred')} icon="warning" tone="amber"/>
-        <SummaryMetricCard variant="documents" title={t('expiring')} value={null} note={t('notConfigured')} unavailable={t('documentsDeferred')} icon="clock" tone="amber"/>
+        <SummaryMetricCard variant="documents" title={t('attention')} value={privateMetricsAvailable ? activeMetrics.attention : null} note={documentsT('attentionNote')} unavailable={privateMetricsAvailable ? undefined : documentsT(access.manage ? 'unavailableDescription' : 'restrictedDescription')} icon="warning" tone="amber"/>
+        <SummaryMetricCard variant="documents" title={t('expiring')} value={privateMetricsAvailable ? activeMetrics.expiring : null} note={documentsT('expiringNote')} unavailable={privateMetricsAvailable ? undefined : documentsT(access.manage ? 'unavailableDescription' : 'restrictedDescription')} icon="clock" tone="amber"/>
       </section>
       <section className={styles.toolbar} aria-label={t('filters')}>
         <SearchInput label={t('search')} placeholder={t('searchPlaceholder')} value={query} onChange={(event) => {setQuery(event.target.value); setPage(1);}}/>
@@ -82,18 +89,18 @@ function EmployeesWorkspace({companyId, locale}: {companyId: string; locale: str
         {!workspace.employees.length ? <EmptyState icon={<AppIcon name="users" size={28}/>} title={t('empty')} description={t('emptyDescription')} action={access.manage && <Button onClick={() => setEditing({})}>{t('add')}</Button>}/> : !filtered.length ? <EmptyState title={t('noMatches')} action={<Button variant="secondary" onClick={reset}>{t('resetFilters')}</Button>}/> : <>
           <div className={list.tableScroll} role="region" aria-label={t('tableRegion')} tabIndex={0}><table className={`${table.table} ${styles.table}`}>
             <thead><tr><th scope="col">{selectPage(t('selectPageHeader'))}</th>{sortable('name')}{sortable('jobTitle')}{sortable('department')}<th scope="col">{t('table.documents')}</th><th scope="col">{t('table.deadline')}</th>{sortable('employmentStatus')}<th scope="col">{t('table.actions')}</th></tr></thead>
-            <tbody>{visible.map((employee) => <tr key={employee.id} data-selected={selected.includes(employee.id) ? 'true' : undefined}>
+            <tbody>{visible.map((employee) => {const metrics = documentMetrics.get(employee.id); return <tr key={employee.id} data-selected={selected.includes(employee.id) ? 'true' : undefined}>
               <td><Selection label={t('selectEmployee', {name: employeeName(employee)})} checked={selected.includes(employee.id)} onChange={() => setSelected((current) => current.includes(employee.id) ? current.filter((id) => id !== employee.id) : [...current, employee.id])}/></td>
               <td><div className={list.identity}><Avatar initials={`${employee.firstName[0]}${employee.lastName[0]}`}/><span><Link className={`${styles.name} ${table.primary}`} href={`/company/employees/${encodeURIComponent(employee.id)}`}>{employeeName(employee)}</Link><small>{employee.email}</small></span></div></td>
-              <td>{employee.jobTitle}</td><td>{departmentName(workspace, employee) || '—'}</td><td><StatusBadge size="document" tone="neutral" indicator="none">{t('notConfigured')}</StatusBadge></td><td>—</td>
-              <td><StatusBadge size="document" tone={employee.employmentStatus === 'active' ? 'success' : 'neutral'}>{t(employee.employmentStatus)}</StatusBadge></td>
+              <td>{employee.jobTitle}</td><td>{departmentName(workspace, employee) || '—'}</td><td>{metrics?.total ? <span className={styles.documentProgress}><span>{documentsT('progress', {uploaded: metrics.uploaded, total: metrics.total})}</span><span className={progress.progressTrack} aria-hidden="true"><span className={progress.progressFill} style={{width: `${metrics.uploaded / metrics.total * 100}%`}}/></span></span> : <StatusBadge size="document" tone="neutral" indicator="none">{documentsT(!access.manage ? 'restricted' : metrics ? 'tracking.not_configured' : 'unavailable')}</StatusBadge>}</td><td>{metrics?.nextDeadline ? new Intl.DateTimeFormat(locale === 'en' ? 'en-GB' : 'ro-RO', {dateStyle: 'medium', timeZone: 'UTC'}).format(new Date(`${metrics.nextDeadline}T12:00:00Z`)) : '—'}</td>
+              <td><span className={styles.documentProgress}><StatusBadge size="document" tone={metrics?.tracking === 'complete' ? 'success' : metrics?.tracking === 'attention' ? 'warning' : 'neutral'}>{documentsT(!access.manage ? 'restricted' : metrics ? `tracking.${metrics.tracking}` : 'unavailable')}</StatusBadge><small>{t(employee.employmentStatus)}</small></span></td>
               <td><div className={list.rowActions}><Button variant="ghost" size="icon" aria-label={t('viewEmployee', {name: employeeName(employee)})} onClick={() => router.push(`/company/employees/${encodeURIComponent(employee.id)}`)}><AppIcon name="eye" size={18}/></Button>
                 {access.manage && <RowActionMenu label={t('employeeActions', {name: employeeName(employee)})} open={menu === employee.id} onOpenChange={(open) => setMenu(open ? employee.id : null)} items={[
                   {label: t('edit'), onSelect: () => setEditing({id: employee.id})},
                   {label: t(employee.employmentStatus === 'active' ? 'markInactive' : 'markActive'), onSelect: () => {const result = setEmployeeStatus(companyId, employee.id, employee.employmentStatus === 'active' ? 'inactive' : 'active'); setFailure(!result.ok); if (result.ok) setFeedback(t('success.updated'));}}
                 ]}/>}
               </div></td>
-            </tr>)}</tbody>
+            </tr>;})}</tbody>
           </table></div>
           <Pagination page={currentPage} pageCount={pageCount} pageSize={pageSize} total={filtered.length} pageSizeLabel={t('pageSize')} totalLabel={t('ofTotal', {count: filtered.length})} onPage={setPage} onPageSize={(size) => {setPageSize(size); setPage(1);}}/>
         </>}

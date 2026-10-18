@@ -1,0 +1,24 @@
+.page {min-width: 0;}
+.headerActions {align-items: center; display: flex; flex-wrap: wrap; gap: 12px;}
+.profile {display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr) minmax(190px, .3fr); margin-top: 24px; padding: 22px;}
+.identity {display: flex; gap: 20px; min-width: 0;}
+.identity > div {flex: 1; min-width: 0;}
+.identity h2 {font-size: var(--text-section-title); line-height: 1.2; margin-bottom: 6px; overflow-wrap: anywhere;}
+.identity p {align-items: center; color: var(--color-text-secondary); display: flex; flex-wrap: wrap; font-size: var(--text-body-small); gap: 6px; margin-bottom: 18px;}
+.contacts {display: grid; gap: 16px; grid-template-columns: minmax(0, .9fr) minmax(0, 1.7fr) minmax(0, 1fr) minmax(0, 1fr); margin: 0;}
+.contacts > div {min-width: 0;}
+.contacts svg {color: var(--color-action-primary); flex: 0 0 auto;}
+.contacts > div + div {border-left: 1px solid var(--color-border); padding-left: 12px;}
+.contacts dt {align-items: center; color: var(--color-text-secondary); display: flex; font-size: var(--text-caption); gap: 10px; margin-bottom: 5px;}
+.contacts dd {font-size: var(--text-body-small); margin: 0; overflow-wrap: anywhere; padding-left: 31px;}
+.tracking {align-content: start; border-left: 1px solid var(--color-border); display: grid; gap: 12px; justify-items: start; padding-left: 24px;}
+.tracking h3 {color: var(--color-text-secondary); font-size: var(--text-body-small); font-weight: 400;}
+.metrics {display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 14px;}
+.metrics [data-tone] p {white-space: normal;}
+.documentFilters {align-items: center; display: grid; gap: 12px; grid-template-columns: minmax(200px, 1fr) minmax(320px, .8fr) auto; padding: 16px 18px;}
+.documentFilters label {clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px;}
+.documents {margin-top: 0;}
+.feedback {font-size: var(--text-body-small); padding: 12px 18px;}
+@media (max-width: 1399px) {.contacts {grid-template-columns: repeat(2, minmax(0, 1fr));} .contacts > div + div {border: 0; padding-left: 0;}}
+@media (max-width: 1199px) {.profile {grid-template-columns: minmax(0, 1fr);} .tracking {border-left: 0; border-top: 1px solid var(--color-border); padding: 16px 0 0;} .metrics {grid-template-columns: repeat(2, minmax(0, 1fr));} .documentFilters {grid-template-columns: minmax(0, 1fr) auto;} .documentFilters > :first-child {grid-column: 1 / -1;}}
+@media (max-width: 600px) {.headerActions {align-items: stretch; flex-direction: column; width: 100%;} .profile {padding: 18px;} .identity {flex-direction: column; gap: 14px;} .contacts {grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));} .documentFilters {padding: 14px;} .documentFilters > div:nth-child(2) {grid-template-columns: minmax(0, 1fr);} .metrics {gap: 10px;}}

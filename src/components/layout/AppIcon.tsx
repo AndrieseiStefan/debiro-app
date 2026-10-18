@@ -6,10 +6,11 @@ export type AppIconName =
   | 'check' | 'clock' | 'close' | 'more' | 'calendar' | 'info'
   | 'building' | 'arrowRight' | 'userPlus' | 'fileX' | 'filter' | 'upload'
   | 'crown' | 'eye' | 'mail' | 'send' | 'creditCard' | 'edit' | 'download' | 'sort'
-  | 'user' | 'external' | 'logout' | 'clipboard' | 'trash' | 'filePdf' | 'mapPin'
+  | 'user' | 'phone' | 'external' | 'logout' | 'clipboard' | 'trash' | 'filePdf' | 'mapPin'
   | 'box' | 'construction' | 'tools' | 'safety' | 'truck' | 'computer' | 'briefcase' | 'layers' | 'warning' | 'globe' | 'share';
 
 const paths: Record<AppIconName, ReactNode> = {
+  phone: <path d="M5 3h4l2 5-2 2a15 15 0 0 0 5 5l2-2 5 2v4a2 2 0 0 1-2 2C10 21 3 14 3 5a2 2 0 0 1 2-2Z"/>,
   share: <><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></>,
   globe: <><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></>,
   mapPin: <><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></>,

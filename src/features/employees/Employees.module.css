@@ -7,6 +7,7 @@
 .table td:first-child, .table th:first-child {padding-left: 18px; width: 46px;}
 .table td:nth-child(2) {min-width: 230px;}
 .table td:last-child {width: 100px;}
+.documentProgress {display: grid; gap: 5px; justify-items: start;}
 .table input {accent-color: var(--color-action-primary); height: 18px; width: 18px;}
 .table input:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 2px;}
 .name {color: inherit; text-decoration: none;}
