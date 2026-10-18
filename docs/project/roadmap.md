@@ -4,7 +4,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 
 ## Phase 0 — Product & Repository Foundation
 
-- E1C-006A2 Employee reminder composition — implemented temporary Administrator-only email draft and local preview through the existing action/shared Drawer, independent of documents; Resend/job delivery and the documented server contract remain E2 work
+- E1C-006A2/A3 Employee reminder composition — implemented temporary Administrator-only email draft through the existing action/shared Drawer, independent of documents; compact recipient card and Cancel/Send-only footer replace the reminder preview flow. Resend/job delivery and the unchanged documented server contract remain E2 work
 
 - E1C-006A Employees directory consistency — implemented Vendor presentation reuse, removal of directory selection/View controls, client row navigation/independent menus, shared filters and document-only bulk actions. Employee Reminder opens local composition; only final email sending remains unavailable until E2
 

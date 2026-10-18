@@ -152,7 +152,7 @@ for (const english of [false, true]) {
     await page.setViewportSize({width: 1448, height: 900}); await employeeList(page, english); const filters = await openFilters(page); await filters.getByRole('combobox', {name: copy.EmployeeDocuments.trackingLabel}).selectOption('attention'); await expect(page.locator('tbody tr')).toHaveCount(1); await expect(page.locator('tbody')).toContainText('Andrei Popescu'); await page.keyboard.press('Escape'); await expect(main.getByRole('button', {name: copy.EmployeeDocuments.sendReminder, exact: true})).toHaveCount(0);
   });
 
-  test(`${english ? 'EN' : 'RO'} reminder validation, local email preview and close never send or retain a draft`, async ({page}) => {
+  test(`${english ? 'EN' : 'RO'} direct reminder composition, validation and close never send or retain a draft`, async ({page}) => {
     await page.goto(prefix + '/company/employees/employee%3Aandrei-popescu');
     const trigger = page.getByRole('button', {name: copy.EmployeeDocuments.sendReminder, exact: true});
     const before = await page.evaluate(() => JSON.stringify({employee: Reflect.get(window, Symbol.for('debiro.employees-session')).state, audit: Reflect.get(window, Symbol.for('debiro.local-audit-session')).events, read: [...Reflect.get(window, Symbol.for('debiro.notification-session')).readIds]}));
@@ -162,13 +162,13 @@ for (const english of [false, true]) {
     const subject = dialog.locator('#employee-reminder-subject'), message = dialog.locator('#employee-reminder-message');
     await expect(subject).toHaveValue(copy.EmployeeReminder.defaultSubject.replace('{company}', 'Demo Company SRL')); await expect(message).toHaveValue('');
     await expect(subject).toHaveAttribute('maxlength', '150'); await expect(message).toHaveAttribute('maxlength', '5000'); await expect(dialog.locator('input[type=email], input[type=file]')).toHaveCount(0);
-    await subject.fill('  '); await message.fill('\n \t'); await dialog.getByRole('button', {name: copy.EmployeeReminder.preview, exact: true}).click(); await expect(dialog.getByRole('alert')).toHaveCount(2); await expect(subject).toBeFocused();
+    await expect(dialog.locator('form').getByRole('button')).toHaveText([copy.DocumentManagement.cancel, copy.EmployeeReminder.send]); await expect(dialog).not.toContainText(/Previzual|Preview|Înapoi la editare|Back to Editing/);
+    await subject.fill('  '); await message.fill('\n \t'); await subject.focus(); await subject.press('Enter'); await expect(dialog.getByRole('alert')).toHaveCount(2); await expect(subject).toBeFocused();
     const text = 'Bună, Andrei!\n\nAdministrative update.\n<script>not executable</script>\n';
-    await subject.fill('  Administrative notice  '); await message.fill(text); await dialog.getByRole('button', {name: copy.EmployeeReminder.preview, exact: true}).click();
-    const preview = dialog.getByRole('region', {name: copy.EmployeeReminder.preview}); await expect(preview).toBeFocused(); await expect(preview.getByText('Administrative notice', {exact: true})).toBeVisible(); expect(await preview.textContent()).toContain(text); await expect(preview.locator('script')).toHaveCount(0);
+    await subject.fill('  Administrative notice  '); await message.fill(text); await message.press('Tab'); await expect(subject).toHaveValue('Administrative notice'); await expect(message).toHaveValue(text); await expect(dialog.getByRole('alert')).toHaveCount(0); await expect(dialog.locator('script')).toHaveCount(0);
     const send = dialog.getByRole('button', {name: copy.EmployeeReminder.send, exact: true}); await send.hover(); await expect(page.getByRole('tooltip')).toHaveText(copy.EmployeeReminder.sendUnavailable); await send.focus(); await expect(send).toHaveAttribute('aria-describedby', (await page.getByRole('tooltip').getAttribute('id'))!); await page.keyboard.press('Enter'); await send.click({force: true});
     expect(await page.evaluate(() => JSON.stringify({employee: Reflect.get(window, Symbol.for('debiro.employees-session')).state, audit: Reflect.get(window, Symbol.for('debiro.local-audit-session')).events, read: [...Reflect.get(window, Symbol.for('debiro.notification-session')).readIds]}))).toBe(before); expect(requests).toEqual([]);
-    await dialog.getByRole('button', {name: copy.EmployeeReminder.back, exact: true}).click(); await expect(subject).toHaveValue('Administrative notice'); await expect(message).toHaveValue(text); await dialog.getByRole('button', {name: copy.DocumentManagement.cancel, exact: true}).click(); await expect(dialog).toHaveCount(0); await expect(trigger).toBeFocused();
+    await expect(subject).toHaveValue('Administrative notice'); await expect(message).toHaveValue(text); await dialog.getByRole('button', {name: copy.DocumentManagement.cancel, exact: true}).click(); await expect(dialog).toHaveCount(0); await expect(trigger).toBeFocused();
     await trigger.click(); await expect(message).toHaveValue(''); await expect(subject).toHaveValue(copy.EmployeeReminder.defaultSubject.replace('{company}', 'Demo Company SRL')); await dialog.getByRole('button', {name: copy.DocumentManagement.close, exact: true}).click(); await expect(dialog).toHaveCount(0); await expect(trigger).toBeFocused();
   });
 
@@ -182,22 +182,23 @@ for (const english of [false, true]) {
 }
 
 for (const english of [false, true]) for (const [width, height] of [[1448, 900], [1280, 800], [768, 900], [400, 812], [376, 812], [375, 812], [320, 720]]) {
-  test(`${english ? 'EN' : 'RO'} reminder drawer edit/errors/preview visual containment at ${width}x${height}`, async ({page}) => {
+  test(`${english ? 'EN' : 'RO'} reminder drawer recipient/form/errors visual containment at ${width}x${height}`, async ({page}) => {
     const copy = english ? en : ro, locale = english ? 'en' : 'ro'; await page.setViewportSize({width, height}); await page.goto(`${english ? '/en' : ''}/company/employees/employee%3Aandrei-popescu`);
     const trigger = page.getByRole('button', {name: copy.EmployeeDocuments.sendReminder, exact: true}); await trigger.click(); const dialog = page.getByRole('dialog', {name: copy.EmployeeDocuments.sendReminder});
     await expect(dialog).toBeVisible(); await expect(page.locator('body')).toHaveCSS('overflow', 'hidden');
+    const recipient = dialog.getByRole('region', {name: copy.EmployeeReminder.recipient}); await expect(recipient).toHaveCSS('background-color', 'rgb(255, 255, 255)'); await expect(recipient.locator('[data-size="normal"]')).toHaveText('AP'); await expect(recipient.locator('svg')).toHaveCount(1);
+    await expect(dialog.locator('form').getByRole('button')).toHaveText([copy.DocumentManagement.cancel, copy.EmployeeReminder.send]); await expect(dialog).not.toContainText(/Previzual|Preview|Înapoi la editare|Back to Editing/);
     // Check text/icon bounds too: page containment alone misses labels spilling into adjacent buttons.
     for (const button of await dialog.locator('form button').all()) expect(await button.evaluate((element) => {const outer = element.getBoundingClientRect(), inner = element.querySelector('span')!.getBoundingClientRect(); return inner.left >= outer.left && inner.right <= outer.right;})).toBe(true);
     const subject = dialog.locator('#employee-reminder-subject'), message = dialog.locator('#employee-reminder-message');
     const style = (control: Locator) => control.evaluate((element) => {const s = getComputedStyle(element); return {size: s.fontSize, weight: s.fontWeight, family: s.fontFamily, radius: s.borderRadius, border: s.borderColor, left: s.paddingLeft, right: s.paddingRight};}); expect(await style(message)).toEqual(await style(subject));
-    await page.screenshot({path: `artifacts/visual/e1c-006a2/edit-${locale}-${width}.png`}); await dialog.getByRole('button', {name: copy.EmployeeReminder.preview, exact: true}).click(); await expect(message).toBeFocused(); await page.screenshot({path: `artifacts/visual/e1c-006a2/errors-${locale}-${width}.png`});
-    await subject.fill('Informare administrativă / Administrative notice'); await message.fill('Bună!\n\nThis is a personalized administrative reminder.\nMulțumim.'); await dialog.getByRole('button', {name: copy.EmployeeReminder.preview, exact: true}).click();
-    const preview = dialog.getByRole('region', {name: copy.EmployeeReminder.preview}); await expect(preview).toBeFocused(); await expect(preview.locator('p').last()).toHaveCSS('white-space', 'pre-wrap');
-    const send = dialog.getByRole('button', {name: copy.EmployeeReminder.send, exact: true}); await send.scrollIntoViewIfNeeded(); await expect(send).toBeInViewport(); await page.screenshot({path: `artifacts/visual/e1c-006a2/preview-${locale}-${width}.png`}); await send.focus();
+    await page.screenshot({path: `artifacts/visual/e1c-006a3/edit-${locale}-${width}.png`}); await message.focus(); await message.press('Tab'); await expect(message).toHaveAttribute('aria-invalid', 'true'); await page.screenshot({path: `artifacts/visual/e1c-006a3/errors-${locale}-${width}.png`});
+    await subject.fill('Informare administrativă / Administrative notice'); await message.fill('Bună!\n\nThis is a personalized administrative reminder.\nMulțumim.'); await message.press('Tab');
+    const send = dialog.getByRole('button', {name: copy.EmployeeReminder.send, exact: true}); await send.scrollIntoViewIfNeeded(); await expect(send).toBeInViewport(); await send.focus();
     const explanation = page.getByRole('tooltip'); await expect(explanation).toHaveText(copy.EmployeeReminder.sendUnavailable); await expect(explanation).toBeInViewport();
     // Visibility/text assertions alone do not detect a tooltip painted behind the modal drawer.
     await expect.poll(() => explanation.evaluate((element) => {const rect = element.getBoundingClientRect(); return element.contains(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2));})).toBe(true);
-    await explanation.hover(); await expect(explanation).toBeVisible(); await page.screenshot({path: `artifacts/visual/e1c-006a2/unavailable-${locale}-${width}.png`});
+    await explanation.hover(); await expect(explanation).toBeVisible(); await page.screenshot({path: `artifacts/visual/e1c-006a3/unavailable-${locale}-${width}.png`});
     expect(await dialog.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.keyboard.press('Escape'); await expect(dialog).toHaveCount(0); await expect(trigger).toBeFocused();
   });

@@ -6,11 +6,8 @@
     "defaultSubject": "Informare din partea {company}",
     "message": "Mesaj",
     "messagePlaceholder": "Scrie mesajul pe care dorești să îl trimiți angajatului...",
-    "preview": "Previzualizează",
-    "back": "Înapoi la editare",
     "send": "Trimite email",
     "sendUnavailable": "Trimiterea emailurilor va fi disponibilă după activarea serviciului de notificări.",
-    "note": "Previzualizarea nu trimite emailuri și nu atașează documente.",
     "noEmail": "Email indisponibil",
     "invalidRecipient": "Angajatul nu are o adresă de email validă. Editează datele angajatului înainte de trimitere.",
     "errors": {

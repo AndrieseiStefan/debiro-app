@@ -6,11 +6,8 @@
     "defaultSubject": "Notification from {company}",
     "message": "Message",
     "messagePlaceholder": "Write the message you want to send to the employee...",
-    "preview": "Preview",
-    "back": "Back to Editing",
     "send": "Send Email",
     "sendUnavailable": "Email sending will be available once the notification service is enabled.",
-    "note": "Preview does not send emails or attach documents.",
     "noEmail": "Email unavailable",
     "invalidRecipient": "This employee does not have a valid email address. Edit the employee details before sending.",
     "errors": {

@@ -19,20 +19,24 @@ afterEach(() => {owner().state = initial; companyOwner().state = companies; vi.r
 const page = (locale: 'ro' | 'en' = 'en', id = employeeId) => <NextIntlClientProvider locale={locale} messages={locale === 'ro' ? ro : en}><EmployeeDetailsPage locale={locale} employeeId={id}/></NextIntlClientProvider>;
 
 describe('Employee reminder drawer', () => {
-  it.each(['ro', 'en'] as const)('validates, previews escaped multiline text, preserves editing and discards on close in %s', async (locale) => {
+  it.each(['ro', 'en'] as const)('composes directly, validates fields and discards on close without preview in %s', async (locale) => {
     const copy = locale === 'ro' ? ro : en; companyOwner().state.companies[0].company.name = 'Actual Workspace'; render(page(locale));
     const trigger = screen.getByRole('button', {name: copy.EmployeeDocuments.sendReminder}); act(() => trigger.focus()); fireEvent.click(trigger);
     let dialog = screen.getByRole('dialog'); expect(within(dialog).getByText('Andrei Popescu')).toBeVisible(); expect(within(dialog).getByText('andrei.popescu@demo.ro')).toBeVisible();
     const subject = within(dialog).getByLabelText(new RegExp(copy.EmployeeReminder.subject)), message = within(dialog).getByLabelText(new RegExp(`^${copy.EmployeeReminder.message}`));
     expect(subject).toHaveValue(copy.EmployeeReminder.defaultSubject.replace('{company}', 'Actual Workspace')); expect(message).toHaveValue(''); expect(within(dialog).queryByRole('textbox', {name: /email/i})).toBeNull();
-    fireEvent.change(subject, {target: {value: '   '}}); fireEvent.change(message, {target: {value: '\n '}}); fireEvent.click(within(dialog).getByRole('button', {name: copy.EmployeeReminder.preview}));
+    const recipient = within(dialog).getByRole('region', {name: copy.EmployeeReminder.recipient}); expect(recipient.querySelector('[aria-hidden="true"]')).toHaveTextContent('AP'); expect(recipient.querySelector('svg')).not.toBeNull(); expect(within(recipient).queryByRole('textbox')).toBeNull();
+    const form = subject.closest('form')!; expect(within(form).getAllByRole('button').map((button) => button.textContent)).toEqual([copy.DocumentManagement.cancel, copy.EmployeeReminder.send]);
+    expect(dialog).not.toHaveTextContent(/Previzual|Preview|Back to Editing|Înapoi la editare/);
+    expect(subject).toHaveAttribute('maxlength', '150'); expect(message).toHaveAttribute('maxlength', '5000');
+    fireEvent.change(subject, {target: {value: '   '}}); fireEvent.blur(subject); fireEvent.change(message, {target: {value: '\n '}}); fireEvent.blur(message);
+    expect(within(dialog).getAllByRole('alert')).toHaveLength(2); fireEvent.submit(form);
     expect(within(dialog).getAllByRole('alert')).toHaveLength(2); await waitFor(() => expect(subject).toHaveFocus());
     fireEvent.change(subject, {target: {value: '  Custom administrative note  '}}); const text = 'Bună!\n\n<script>alert("not HTML")</script>\nMulțumim.\n'; fireEvent.change(message, {target: {value: text}});
-    const before = employees.readEmployeeState(); fireEvent.click(within(dialog).getByRole('button', {name: copy.EmployeeReminder.preview}));
-    const preview = within(dialog).getByRole('region', {name: copy.EmployeeReminder.preview}); expect(preview).toHaveTextContent('Custom administrative note'); expect(preview.textContent).toContain(text); expect(preview.querySelector('script')).toBeNull();
-    expect(within(preview).getByText('andrei.popescu@demo.ro')).toBeVisible(); expect(within(dialog).queryByRole('textbox')).toBeNull();
+    const before = employees.readEmployeeState(); fireEvent.blur(subject); fireEvent.blur(message); fireEvent.submit(form);
+    expect(within(dialog).queryByRole('alert')).toBeNull(); expect(subject).toHaveValue('Custom administrative note'); expect(message).toHaveValue(text); expect(dialog.querySelector('script')).toBeNull();
     const send = within(dialog).getByRole('button', {name: copy.EmployeeReminder.send}); fireEvent.focus(send); expect(screen.getByRole('tooltip')).toHaveTextContent(copy.EmployeeReminder.sendUnavailable); fireEvent.click(send); expect(employees.readEmployeeState()).toBe(before);
-    fireEvent.click(within(dialog).getByRole('button', {name: copy.EmployeeReminder.back})); expect(subject.isConnected).toBe(false); expect(within(dialog).getByLabelText(new RegExp(copy.EmployeeReminder.subject))).toHaveValue('Custom administrative note'); expect(within(dialog).getByLabelText(new RegExp(`^${copy.EmployeeReminder.message}`))).toHaveValue(text);
+    expect(subject).toHaveValue('Custom administrative note'); expect(message).toHaveValue(text);
     fireEvent.click(within(dialog).getByRole('button', {name: copy.DocumentManagement.cancel})); await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull()); await waitFor(() => expect(trigger).toHaveFocus());
     fireEvent.click(trigger); dialog = screen.getByRole('dialog'); expect(within(dialog).getByLabelText(new RegExp(`^${copy.EmployeeReminder.message}`))).toHaveValue(''); expect(within(dialog).getByLabelText(new RegExp(copy.EmployeeReminder.subject))).toHaveValue(copy.EmployeeReminder.defaultSubject.replace('{company}', 'Actual Workspace'));
   });
