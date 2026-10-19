@@ -654,3 +654,72 @@
 }
 .donut[data-empty] {background: var(--color-border);}
 .firstRun {margin-top: 20px;}
+
+/* Company-wide overview composes the established shell, surfaces, metrics and chart. */
+.dashboardContext {font-size: var(--text-body-small); line-height: 1.4;}
+.overviewMetrics, .domainGrid {display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4);}
+.domainGrid, .overviewBottom {margin-top: var(--space-4);}
+.overviewBottom {display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4);}
+.overviewMetric {display: grid; grid-template-columns: 56px minmax(0, 1fr) 18px; align-items: center; gap: var(--space-3) var(--space-4); min-height: 136px; padding: var(--space-4);}
+.overviewMetricCopy h2 {font-size: var(--text-body-small); line-height: 1.3; font-weight: 650;}
+.overviewMetricCopy strong {display: block; margin-top: var(--space-1); font-size: 32px; line-height: 1.1; font-weight: 700;}
+.overviewMetricNote {grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); color: var(--color-text-secondary); font-size: var(--text-caption); line-height: 1.4;}
+.overviewMetricNote > span {display: inline-flex; align-items: center; gap: var(--space-1);}
+.overviewMetricNote i {width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%; background: var(--color-text-muted);}
+.overviewMetricNote [data-tone='success'] i {background: var(--color-success);}
+.overviewMetricNote [data-tone='warning'] i {background: var(--color-warning);}
+.overviewMetricNote [data-tone='danger'] i {background: var(--color-danger);}
+.overviewPanel {container-type: inline-size; min-width: 0; padding: var(--space-4);}
+.overviewPanelHeading {display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2);}
+.overviewPanelHeading h2 {display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-body); font-weight: 700; line-height: 1.35;}
+.overviewPanelHeading h2 > svg {color: var(--color-action-primary); flex-shrink: 0;}
+.overviewPanelHeading a {white-space: normal; text-align: left;}
+.overviewPanelDescription {margin-block: var(--space-3); color: var(--color-text-secondary); font-size: var(--text-caption); line-height: 1.5;}
+.vendorChart {display: flex; align-items: center; gap: var(--space-4); margin-block: var(--space-4);}
+.vendorChart .donut {flex: 0 0 124px; height: 124px; background: conic-gradient(#0ca56d 0 var(--compliant-stop), #f0a511 var(--compliant-stop) var(--attention-stop), #e6344b var(--attention-stop) var(--noncompliant-stop), #9cacc1 var(--noncompliant-stop) 100%);}
+.vendorChart .donut[data-empty] {background: var(--color-border);}
+.vendorChart .donut > span {height: 86px; width: 86px;}
+.chartLegend {flex: 1; min-width: 0; display: grid; gap: var(--space-3); list-style: none; padding: 0; margin: 0;}
+.chartLegend li {display: grid; align-items: center; gap: var(--space-2); grid-template-columns: 9px minmax(0, 1fr) auto; font-size: var(--text-caption);}
+.chartLegend .legendDot {width: 9px; height: 9px;}
+.chartLegend .green {background: #0ca56d;}
+.chartLegend .amber {background: #f0a511;}
+.chartLegend .red {background: #e6344b;}
+.chartLegend .gray {background: #9cacc1;}
+.previewSubheading {font-size: var(--text-body-small); font-weight: 650; margin-block: var(--space-4) var(--space-2);}
+.previewList {list-style: none; padding: 0; margin: 0;}
+.previewList > li + li {border-top: 1px solid var(--color-border-subtle);}
+.previewRow {display: flex; align-items: center; gap: var(--space-2); min-width: 0; width: 100%; min-height: 66px; padding: var(--space-2) 0; border: 0; background: none; color: inherit; text-decoration: none; text-align: left; font: inherit;}
+a.previewRow:hover, button.previewRow:hover {background: var(--color-surface-soft);}
+button.previewRow {cursor: pointer;}
+.previewRow:focus-visible {outline: 3px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-field);}
+.previewIcon {display: inline-flex; flex: 0 0 32px; height: 36px; align-items: center; justify-content: center; border-radius: var(--radius-field); background: var(--color-info-soft); color: var(--color-action-primary);}
+.previewCopy {flex: 1; min-width: 0; display: grid; gap: var(--space-1); overflow-wrap: anywhere;}
+.previewCopy strong {font-size: var(--text-caption); font-weight: 650; line-height: 1.4;}
+.previewCopy small {font-size: var(--text-caption); color: var(--color-text-secondary); line-height: 1.4;}
+.previewTrailing {max-width: 46%; display: flex; align-items: flex-end; flex-direction: column; gap: var(--space-1); flex-shrink: 0;}
+.previewTrailing > [data-tone] {max-width: 100%; white-space: normal;}
+.previewTrailing time {font-size: var(--text-caption); color: var(--color-text-secondary);}
+.previewChevron {color: var(--color-text-muted); flex-shrink: 0;}
+.compactRow {min-height: 48px;}
+.compactRow .previewIcon {height: 30px; flex-basis: 28px;}
+.compactRow .previewTrailing {flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--space-2);}
+@media (max-width: 1199px) {
+  .overviewMetrics, .domainGrid {grid-template-columns: repeat(2, minmax(0, 1fr));}
+  .overviewMetrics > :last-child, .domainGrid > :last-child {grid-column: 1 / -1;}
+  .overviewBottom {grid-template-columns: minmax(0, 1fr);}
+}
+@media (max-width: 767px) {
+  .overviewMetrics, .domainGrid {grid-template-columns: minmax(0, 1fr);}
+  .overviewMetric {min-height: 124px;}
+  .vendorChart {gap: var(--space-3);}
+  .vendorChart .donut {height: 110px; flex-basis: 110px;}
+  .vendorChart .donut > span {height: 74px; width: 74px;}
+}
+/* A narrow desktop column needs the same readable row treatment as a phone. */
+@container (max-width: 300px) {
+  .previewRow {flex-wrap: wrap;}
+  .previewCopy {flex-basis: calc(100% - 60px);}
+  .previewTrailing {margin-left: 40px; max-width: calc(100% - 60px); flex: 1; flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--space-2);}
+  .previewChevron {margin-left: auto;}
+}

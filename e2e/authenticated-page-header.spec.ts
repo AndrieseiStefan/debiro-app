@@ -75,7 +75,7 @@ test('shares authenticated page-header anchors while Dashboard has no CTA', asyn
       expect(dashboard.headingStyle).toEqual(vendors.headingStyle);
       expect(dashboard.descriptionStyle).toEqual(vendors.descriptionStyle);
       expect(dashboard.action).toBeNull();
-      expect(dashboard.support).not.toBeNull();
+      expect(dashboard.support).toBeNull();
       expect(vendors.action).not.toBeNull();
       expect(vendors.support).toBeNull();
     });

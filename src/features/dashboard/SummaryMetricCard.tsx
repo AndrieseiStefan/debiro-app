@@ -1,3 +1,4 @@
+import type {ReactNode} from 'react';
 import {AppIcon, type AppIconName} from '@/components/layout/AppIcon';
 import {Surface} from '@/components/ui/Surface';
 import {Link} from '@/i18n/navigation';
@@ -6,7 +7,11 @@ import styles from './DashboardPage.module.css';
 import documentStyles from '@/components/ui/DocumentSummary.module.css';
 import directory from '@/features/vendors/VendorsListPage.module.css';
 
-export function SummaryMetricCard({title, value, note, icon, tone, chevron = false, href, variant = 'dashboard', unavailable}: {title: string; value: number | null; note: string; icon: AppIconName; tone: 'blue' | 'green' | 'amber' | 'red' | 'gray'; chevron?: boolean; href?: string; variant?: 'dashboard' | 'documents' | 'directory'; unavailable?: string}) {
+export function SummaryMetricCard({title, value, note, icon, tone, chevron = false, href, variant = 'dashboard', unavailable}: {title: string; value: number | null; note: ReactNode; icon: AppIconName; tone: 'blue' | 'green' | 'amber' | 'red' | 'gray'; chevron?: boolean; href?: string; variant?: 'dashboard' | 'documents' | 'directory' | 'overview'; unavailable?: string}) {
+  if (variant === 'overview') return <Link href={href!} className={styles.metricLink}><Surface className={styles.overviewMetric} data-tone={tone}>
+    <span className={`${styles.metricIcon} ${styles[tone]}`}><AppIcon name={icon} size={25}/></span><div className={styles.overviewMetricCopy}><h2>{title}</h2><strong>{value ?? '—'}</strong></div><AppIcon name="chevronRight" size={18} className={styles.metricChevron}/>
+    <p className={styles.overviewMetricNote}>{note}</p>
+  </Surface></Link>;
   if (variant === 'directory') {
     const content = <><span className={directory.summaryIcon}><AppIcon name={icon} size={25}/></span><span className={directory.summaryCopy}><span>{title}</span><strong>{value ?? '—'}</strong></span></>;
     return <Surface className={directory.summaryCard} data-status={tone === 'amber' ? 'attention' : tone === 'red' ? 'noncompliant' : tone === 'green' ? 'compliant' : 'all'}>

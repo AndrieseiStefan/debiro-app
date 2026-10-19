@@ -930,6 +930,22 @@
     }
   },
   "Dashboard": {
+    "overview": {
+      "title": "Bun venit în DEBIRO!",
+      "description": "O privire de ansamblu asupra documentelor și conformității companiei tale.",
+      "summary": "Privire de ansamblu asupra companiei",
+      "vendorsDescription": "Furnizori cu documente care necesită atenție sau expiră curând.",
+      "companyDescription": "Documente ale companiei care necesită atenție sau expiră curând.",
+      "employeesDescription": "Situația documentelor angajaților din compania ta.",
+      "vendorAttention": "Furnizori care necesită atenție",
+      "activityDescription": "Activitate înregistrată pentru furnizori și angajații pe care îi poți accesa.",
+      "expirationsTitle": "Documente care expiră în curând",
+      "expirationsDescription": "Documente curente ale furnizorilor, companiei și angajaților autorizați care expiră în perioada următoare.",
+      "noExpirations": "Nu există documente care expiră în curând.",
+      "daysRemaining": "{count, plural, one {În # zi} few {În # zile} other {În # de zile}}",
+      "viewAllPeople": "Vezi toți",
+      "viewAllActivity": "Vezi toată activitatea"
+    },
     "welcomeEyebrow": "BINE AI REVENIT ÎN DEBIRO",
     "welcomeTitle": "Bun venit, {name}!",
     "welcomeDescription": "Ai {count} de furnizori înregistrați. Iată o privire de ansamblu asupra stării lor de conformitate.",

@@ -125,7 +125,7 @@ test('switcher closes accessibly, enters Dashboard, and prevents demo data leaka
     await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: path === '/dashboard' ? 'Dashboard' : path === '/documents' ? 'Documente' : path === '/requirements' ? 'Șabloane' : 'Notificări'}).click();
     await expect(page).toHaveURL(new RegExp(`${path}$`));
     if (path === '/requirements') await expect(page.getByText('Nu există șabloane pentru această companie')).toBeVisible();
-    else await expect(page.getByText(path === '/dashboard' ? 'Începe cu primul furnizor' : path === '/documents' ? 'Nu există documente încă' : 'Nu există notificări sau activități.')).toBeVisible();
+    else await expect(page.getByText(path === '/dashboard' ? 'Nu ai furnizori încă' : path === '/documents' ? 'Nu există documente încă' : 'Nu există notificări sau activități.')).toBeVisible();
     await expect(page.getByText('Construct Pro SRL')).toHaveCount(0);
   }
   await page.getByRole('button', {name: 'Global Clean Services'}).click();

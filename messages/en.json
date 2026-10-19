@@ -926,6 +926,22 @@
     }
   },
   "Dashboard": {
+    "overview": {
+      "title": "Welcome to DEBIRO!",
+      "description": "An overview of your company's documents and compliance.",
+      "summary": "Company overview",
+      "vendorsDescription": "Vendors with documents needing attention or approaching expiry.",
+      "companyDescription": "Company documents needing attention or approaching expiry.",
+      "employeesDescription": "Employee document tracking within your company.",
+      "vendorAttention": "Vendors needing attention",
+      "activityDescription": "Recorded activity from vendors and authorized employee records.",
+      "expirationsTitle": "Upcoming document expirations",
+      "expirationsDescription": "Current vendor, company and authorized employee documents approaching expiry.",
+      "noExpirations": "No upcoming document expirations.",
+      "daysRemaining": "{count, plural, one {In # day} other {In # days}}",
+      "viewAllPeople": "View all",
+      "viewAllActivity": "View all activity"
+    },
     "welcomeEyebrow": "WELCOME BACK TO DEBIRO",
     "welcomeTitle": "Welcome, {name}!",
     "welcomeDescription": "You have {count} registered suppliers. Here's an overview of their compliance status.",

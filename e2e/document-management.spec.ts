@@ -394,7 +394,11 @@ for (const english of [false, true]) {
     await sidebar(page, english, english ? 'Notifications' : 'Notificări');
     await expect(page.locator('[data-audit-id^="local-audit-"]').filter({hasText: english ? 'Document replaced / renewed' : 'Document înlocuit / reînnoit'})).toHaveCount(2);
     await sidebar(page, english, 'Dashboard');
-    await expect(page.getByRole('row', {name: english ? /Construct Pro SRL Registration certificate Expired/ : /Construct Pro SRL Certificat de înregistrare Expirat/})).toHaveCount(1);
+    const attentionVendor = page.locator('[data-dashboard-vendor="construct-pro"]');
+    await expect(attentionVendor).toHaveCount(1);
+    await expect(attentionVendor).toContainText(english ? 'Noncompliant' : 'Neconform');
+    await attentionVendor.getByRole('link').click();
+    await expect(page.locator('[data-requirement-id="vendor-requirement:construct-pro:registration"]')).toContainText(english ? 'Expired' : 'Expirat');
   });
 
   for (const vendorContext of [false, true]) {

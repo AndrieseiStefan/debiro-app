@@ -26,6 +26,8 @@ The final logo is not yet designed and must not be invented.
 
 ## Implemented
 
+- E1C-007A company-wide Dashboard — approved three-domain overview, reused Vendor donut, Company Document and Employee previews, latest-five actual activity and current upcoming expirations. Existing directory metrics/statuses, personnel privacy, company isolation and locale-aware destinations are reused. Company document rows open the existing manager; Notifications/Search layouts and recording logic are unchanged. Company audit recording and Notifications' employee/unified-expiry coverage remain explicit E1C-007B gaps; see [Dashboard](../features/dashboard.md).
+
 - E1C-006B employee document lifecycle — Administrator uploads/replacements immediately become current without review, using existing expiry/manual-expiry utilities. Employee metadata edits do not reintroduce review; legacy pending decisions project date status without rewriting, real approved/rejected history remains, and rejected files are never resurrected. Vendor/Company review rules, templates and private ownership/file boundaries are unchanged. Shared Details groups View File then Download inside its compact wrapping file card for all three owner contexts, reusing the existing viewer; see [Employees](../features/employees.md).
 
 - E1C-006A4 workspace breadcrumbs — Company Documents, Employees and Employee Details now use the existing shared Dashboard root, with Company as a non-interactive intermediate group. All thirteen workspace routes are audited; existing section links, non-interactive current pages, locale/company context and global Profile roots remain unchanged. No new routes, dependencies or domain/state changes; see [UI foundation](../design/ui-foundation.md).
@@ -64,9 +66,9 @@ The final logo is not yet designed and must not be invented.
 
 - E1-032Bc reusable primary/nested navigation availability — Reports alone uses the inactive Coming Soon state with accessible RO/EN hover/focus/touch help; no route, history or active-state changes, and no Reports page; reporting is post-MVP
 
-- E1-032Bb/Bb2 Dashboard secondary navigation — company-owned uploaded-document attention (Review/Expiring/Expired), five-row urgency-ordered preview with full footer/filter totals and no preview-limit suffix, transient Documents entry filters, Recent Activity to normal Notifications, and informational-only vendor chart/attention footer; see [Dashboard](../features/dashboard.md)
+- Documents attention entry intent remains available at `/documents?attention=1`, with complete current Review/Expiring/Expired results and transient route-entry filters. E1C-007A replaces the former Dashboard uploaded-document table/footer with domain-specific previews and existing Notifications section destinations; see [Dashboard](../features/dashboard.md).
 
-- E1-032Ba secondary actions: whole-card Dashboard vendor-filter navigation, independent Notifications expansion/collapse without summary links, Administrator member/invitation management with ownership/last-admin guards, canonical invitation history, and invoice overflow cleanup with explicitly approved local sample CSV downloads; no backend/email/payment integration
+- Secondary actions: existing Vendor status-entry filters, independent Notifications expansion/collapse without summary links, Administrator member/invitation management with ownership/last-admin guards, canonical invitation history, and invoice overflow cleanup with explicitly approved local sample CSV downloads; no backend/email/payment integration. Dashboard domain-card navigation follows the current E1C-007A contract.
 
 - E1-032A/E1-032A1 global My Profile and My Invitations — shared user identity/preferences, locale synchronization, atomic received-invitation accept/reject with shared company access and no automatic activation, live profile menu links/pending badge, Profile-root breadcrumbs and in-place company switching that retains global page state, and reused shell/control treatments; tab memory only; see [profile and invitations](../features/my-profile-invitations.md)
 

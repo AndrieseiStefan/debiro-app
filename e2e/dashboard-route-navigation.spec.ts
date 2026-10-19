@@ -30,13 +30,12 @@ async function dashboardGeometry(page: Page) {
     const header = pageContent.firstElementChild!;
     const title = header.querySelector('h1')!;
     const kpiGrid = header.nextElementSibling!;
-    const kpiCard = kpiGrid.firstElementChild!;
+    const kpiCard = kpiGrid.firstElementChild!.firstElementChild!;
     const dashboardGrid = kpiGrid.nextElementSibling!;
-    const documents = dashboardGrid.firstElementChild!;
-    const documentBadge = documents.querySelector('table tbody tr td:nth-child(3) > span')!;
-    const rightColumn = dashboardGrid.lastElementChild!;
-    const status = rightColumn.firstElementChild!;
-    const activity = rightColumn.lastElementChild!;
+    const documents = dashboardGrid.children[1];
+    const documentBadge = documents.querySelector('[data-dashboard-company-document] [data-tone]')!;
+    const status = dashboardGrid.firstElementChild!;
+    const activity = dashboardGrid.nextElementSibling!.firstElementChild!;
     const rect = (element: Element) => {
       const {x, y, width, height} = element.getBoundingClientRect();
       return {x, y, width, height};

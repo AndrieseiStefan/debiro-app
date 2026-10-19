@@ -15,12 +15,9 @@ async function changeRole(page: Page, name: string, role: string, english: boole
 
 for (const english of [false, true]) {
   const prefix = english ? '/en' : '';
-  test(`${english ? 'EN' : 'RO'} whole Dashboard KPI cards enter the existing Vendor filter and Total clears stale filters`, async ({page}) => {
-    for (const [label, status] of [[english ? 'Total suppliers' : 'Total furnizori', 'all'], [english ? 'In order' : 'În regulă', 'compliant'], [english ? 'Needs attention' : 'Necesită atenție', 'attention'], [english ? 'Noncompliant' : 'Neconformi', 'noncompliant']]) {
-      await page.goto(prefix + '/dashboard');
-      const link = page.locator('main section[aria-label]').first().getByRole('link').filter({hasText: label});
-      await expect(link).toHaveAttribute('href', prefix + '/vendors' + (status === 'all' ? '' : `?status=${status}`));
-      await link.focus(); await page.keyboard.press('Enter');
+  test(`${english ? 'EN' : 'RO'} existing Vendor status entry filters work and the Dashboard domain card clears stale filters`, async ({page}) => {
+    for (const status of ['all', 'compliant', 'attention', 'noncompliant']) {
+      await page.goto(prefix + '/vendors' + (status === 'all' ? '' : `?status=${status}`));
       await expect(page).toHaveURL(prefix + '/vendors' + (status === 'all' ? '' : `?status=${status}`));
       await openFilters(page); await expect(page.locator('#vendor-status-filter')).toHaveValue(status); await page.keyboard.press('Escape');
       const rows = page.locator('tbody [data-vendor-id]');
@@ -28,13 +25,13 @@ for (const english of [false, true]) {
       else {await expect(rows.first()).toBeVisible(); if (status === 'attention') await expect(rows).toHaveCount(1);}
     }
     await page.getByRole('navigation', {name: english ? 'Application navigation' : 'Navigare în aplicație'}).getByRole('link', {name: 'Dashboard', exact: true}).click();
-    await page.locator('main').getByRole('link').filter({hasText: english ? 'Total suppliers' : 'Total furnizori'}).click();
+    await page.getByRole('region', {name: english ? 'Company overview' : 'Privire de ansamblu asupra companiei'}).getByRole('link').first().click();
     await expect(page).toHaveURL(prefix + '/vendors'); await openFilters(page); await expect(page.locator('#vendor-status-filter')).toHaveValue('all'); await page.keyboard.press('Escape'); await expect(page.locator('tbody [data-vendor-id]')).toHaveCount(8);
     // A manually changed filter on the plain route must not survive Total navigation either.
     await openFilters(page); await page.locator('#vendor-status-filter').selectOption('attention'); await page.keyboard.press('Escape');
     await expect(page.locator('tbody [data-vendor-id]')).toHaveCount(1);
     await page.getByRole('navigation', {name: english ? 'Application navigation' : 'Navigare în aplicație'}).getByRole('link', {name: 'Dashboard', exact: true}).click();
-    await page.locator('main').getByRole('link').filter({hasText: english ? 'Total suppliers' : 'Total furnizori'}).click();
+    await page.getByRole('region', {name: english ? 'Company overview' : 'Privire de ansamblu asupra companiei'}).getByRole('link').first().click();
     await openFilters(page); await expect(page.locator('#vendor-status-filter')).toHaveValue('all'); await page.keyboard.press('Escape');
     await expect(page.locator('tbody [data-vendor-id]')).toHaveCount(8);
     await page.goto(prefix + '/vendors?status=invalid'); await openFilters(page); await expect(page.locator('#vendor-status-filter')).toHaveValue('all');

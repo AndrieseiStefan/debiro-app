@@ -22,8 +22,8 @@ for (const english of [false, true]) {
       await expect(page.getByText('Construct Pro SRL', {exact: true})).toHaveCount(0);
       if (path === 'dashboard') {
         await expect(page.getByRole('button', {name: english ? 'Add your first vendor' : 'Adaugă primul furnizor'})).toBeVisible();
-        const cards = page.locator('section[aria-label] [data-tone] strong');
-        await expect(cards).toHaveCount(4); expect(await cards.allTextContents()).toEqual(['0', '0', '0', '0']);
+        const cards = page.getByRole('region', {name: english ? 'Company overview' : 'Privire de ansamblu asupra companiei'}).locator('strong');
+        await expect(cards).toHaveCount(3); expect(await cards.allTextContents()).toEqual(['0', '0', '0']);
       } else if (path === 'vendors') {
         await expect(page.getByText(english ? 'You have no vendors yet' : 'Nu ai furnizori încă')).toBeVisible();
         await expect(page.getByRole('table')).toHaveCount(0);
@@ -97,7 +97,7 @@ for (const english of [false, true]) {
     await expect(page.locator('[data-audit-id]')).toHaveCount(4);
     await expect(page.getByText('Construct Pro SRL', {exact: true})).toHaveCount(0);
     await workspaceSection(page, 'dashboard', english);
-    await expect(page.locator('section[aria-label] [data-tone] strong').first()).toHaveText('1');
+    await expect(page.getByRole('region', {name: english ? 'Company overview' : 'Privire de ansamblu asupra companiei'}).locator('strong').first()).toHaveText('1');
     await workspaceSection(page, 'vendors', english);
     await page.getByRole('link', {name: english ? 'Details for B Vendor' : 'Detalii pentru B Vendor'}).click();
     await expect(page).toHaveURL(new RegExp(vendorPath));

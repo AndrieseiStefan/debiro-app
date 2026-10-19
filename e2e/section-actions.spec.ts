@@ -61,14 +61,14 @@ for (const english of [false, true]) {
     await expect(page.getByRole('button', {name: /Show more|Vezi mai multe/})).toHaveCount(0);
 
     await workspaceSection(page, 'dashboard', english);
-    const attention = page.getByRole('heading', {name: english ? 'Documents needing attention' : 'Documente care necesită atenție', exact: true}).locator('..');
+    const attention = page.locator('[data-dashboard-panel="company-documents"]');
     const link = attention.getByRole('link', {name: all, exact: true});
     await page.mouse.move(0, 0); expect(await treatment(link)).toEqual(canonical);
     await expect(link).not.toHaveAttribute('aria-expanded');
-    await expect(link).toHaveAttribute('href', prefix + '/documents?attention=1');
+    await expect(link).toHaveAttribute('href', prefix + '/company/documents');
     await expect(link.locator('svg path').first()).toHaveAttribute('d', 'M4 12h16');
     const before = await link.boundingBox(); await link.hover(); expect(await link.boundingBox()).toEqual(before);
-    await link.focus(); await page.keyboard.press('Enter'); await expect(page).toHaveURL(prefix + '/documents?attention=1');
+    await link.focus(); await page.keyboard.press('Enter'); await expect(page).toHaveURL(prefix + '/company/documents');
   });
 
   test(`${language} section actions remain contained across desktop/tablet/mobile`, async ({page}) => {
