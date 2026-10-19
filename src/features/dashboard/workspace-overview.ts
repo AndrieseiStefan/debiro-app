@@ -57,7 +57,20 @@ export function workspaceOverview(companyId: string, locale: 'ro' | 'en', input:
     return {employee, name: employeeName(employee), href: `/company/employees/${encodeURIComponent(employee.id)}`, rows: projected?.rows ?? [], metrics: projected && !projected.error ? employeeDocumentMetrics(projected.rows) : null};
   });
   const employeeMetrics = employeeListDocumentMetrics(staff.employees, new Map(employeeEntries.map((entry) => [entry.employee.id, entry.metrics])));
-  const employeePreview = employeeEntries.toSorted((a, b) => Number(b.employee.employmentStatus === 'active') - Number(a.employee.employmentStatus === 'active') || Number(b.metrics?.tracking === 'attention') - Number(a.metrics?.tracking === 'attention') || (a.metrics?.nextDeadline ?? '\uffff').localeCompare(b.metrics?.nextDeadline ?? '\uffff') || collator.compare(a.name, b.name) || a.employee.id.localeCompare(b.employee.id)).slice(0, dashboardPreviewLimit);
+  const activeEmployees = employeeEntries.filter((entry) => entry.employee.employmentStatus === 'active');
+  const employeeTracking = personnel.manage && !staff.error && !employeeMetrics.error ? {
+    total: activeEmployees.length,
+    complete: activeEmployees.filter((entry) => entry.metrics?.tracking === 'complete').length,
+    attention: activeEmployees.filter((entry) => entry.metrics?.tracking === 'attention').length,
+    not_configured: activeEmployees.filter((entry) => entry.metrics?.tracking === 'not_configured').length
+  } : null;
+  // Presentation urgency uses projected required-row statuses, never another tracking/expiry rule.
+  const attentionStatuses = ['expired', 'missing', 'expiring_soon'] as const;
+  const employeePreview = activeEmployees.filter((entry) => entry.metrics?.tracking === 'attention').map((entry) => {
+    const status = attentionStatuses.find((status) => entry.rows.some((row) => row.required && row.status === status));
+    const issues = entry.rows.filter((row) => row.required && row.status === status);
+    return {...entry, attention: status ? {status, count: issues.length, deadline: issues.flatMap((row) => row.expiresAt ? [row.expiresAt] : []).sort()[0] ?? null} : null};
+  }).toSorted((a, b) => attentionStatuses.indexOf(a.attention?.status ?? 'expiring_soon') - attentionStatuses.indexOf(b.attention?.status ?? 'expiring_soon') || (a.attention?.deadline ?? '\uffff').localeCompare(b.attention?.deadline ?? '\uffff') || collator.compare(a.name, b.name) || a.employee.id.localeCompare(b.employee.id)).slice(0, dashboardPreviewLimit);
   const current = access.visible && !vendorError ? activeDocuments(documents, companyId) : [];
   const activity: OverviewActivity[] = [];
   if (access.visible) for (const event of companyAuditEvents(companyId, input.events.filter((event) => event && event.companyId === companyId))) {
@@ -86,7 +99,7 @@ export function workspaceOverview(companyId: string, locale: 'ro' | 'en', input:
   }
   return {available: access.visible, canManage: access.replace, vendorView, vendorError, vendorPreview, inactiveVendors: vendors.filter((vendor) => vendor.lifecycleStatus === 'inactive').length,
     company: {...company, metrics: companyMetrics, preview: companyPreview, expiring: company.rows.filter((row) => row.status === 'expiring_soon').length, valid: company.rows.filter((row) => row.status === 'valid').length},
-    employees: {total: staff.employees.length, metrics: employeeMetrics, restricted: !personnel.manage, error: staff.error || personnel.manage && employeeMetrics.error, preview: employeePreview},
+    employees: {total: staff.employees.length, metrics: employeeMetrics, tracking: employeeTracking, restricted: !personnel.manage, error: staff.error || personnel.manage && employeeMetrics.error, preview: employeePreview},
     activity: [...new Map(activity.map((event) => [event.id, event])).values()].toSorted((a, b) => b.occurredAt.localeCompare(a.occurredAt) || a.id.localeCompare(b.id)).slice(0, dashboardPreviewLimit),
     expirations: expirations.toSorted((a, b) => a.expiresAt.localeCompare(b.expiresAt) || a.id.localeCompare(b.id)).slice(0, dashboardPreviewLimit)};
 }

@@ -21,10 +21,16 @@ describe.each(['ro', 'en'] as const)('%s company-wide Dashboard', (locale) => {
     const panels = document.querySelectorAll('[data-dashboard-panel]'); expect(panels).toHaveLength(5);
     for (const attribute of ['vendor', 'company-document', 'employee', 'event', 'expiration']) expect(document.querySelectorAll(`[data-dashboard-${attribute}]`).length).toBeLessThanOrEqual(5);
     expect(screen.getByRole('img', {name: `${copy.Dashboard.supplierStatusTitle}: 24 ${copy.Dashboard.suppliersLower}`})).toBeVisible();
-    expect(screen.getAllByText(copy.EmployeeDocuments.tracking.not_configured)).toHaveLength(5);
+    const employeePanel = document.querySelector('[data-dashboard-panel="employees"]') as HTMLElement;
+    expect(within(employeePanel).getByRole('img')).toHaveAccessibleName(`${copy.EmployeeDocuments.trackingLabel}: 7 ${copy.Dashboard.overview.activeEmployees}`);
+    expect(within(employeePanel).getByText(copy.EmployeeDocuments.tracking.not_configured)).toBeVisible();
+    expect(within(employeePanel).getByText(copy.Dashboard.overview.noEmployeeAttention)).toBeVisible();
+    expect(employeePanel.querySelectorAll('[data-dashboard-employee]')).toHaveLength(0);
+    expect(employeePanel.querySelectorAll('[data-chart-segment] strong')).toHaveLength(3);
     expect(screen.queryByRole('table')).toBeNull(); expect(screen.queryByRole('button', {name: copy.Dashboard.addSupplier})).toBeNull();
     expect(screen.getByRole('link', {name: copy.Dashboard.overview.viewAllActivity})).toHaveAttribute('href', '/notifications#audit-title');
     const company = document.querySelector('[data-dashboard-panel="company-documents"]') as HTMLElement;
+    expect(within(company).getByText('Demo Company SRL')).toBeVisible();
     fireEvent.click(within(company).getByRole('button', {name: /Cazier fiscal|Tax clearance record/}));
     const dialog = screen.getByRole('dialog'); expect(within(dialog).getByText(/Cazier fiscal|Tax clearance record/, {selector: 'dd'})).toBeVisible();
     expect(within(dialog).getByRole('button', {name: copy.CompanyDocumentManagement.addTitle})).toBeEnabled();

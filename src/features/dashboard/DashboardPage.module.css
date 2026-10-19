@@ -673,12 +673,18 @@
 .overviewPanelHeading {display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2);}
 .overviewPanelHeading h2 {display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-body); font-weight: 700; line-height: 1.35;}
 .overviewPanelHeading h2 > svg {color: var(--color-action-primary); flex-shrink: 0;}
+.panelTitle {min-width: 0;}
+.panelCompany {display: block; margin-top: var(--space-1); color: var(--color-text-secondary); font-size: var(--text-caption); font-weight: 400; line-height: 1.4; overflow-wrap: anywhere;}
+.employeeIssue {display: block; color: var(--color-text-secondary); margin-top: var(--space-1);}
+.compactEmpty > div {min-height: 0; padding: var(--space-3);}
+.compactEmpty strong {font-size: var(--text-body-small); font-weight: 400;}
 .overviewPanelHeading a {white-space: normal; text-align: left;}
 .overviewPanelDescription {margin-block: var(--space-3); color: var(--color-text-secondary); font-size: var(--text-caption); line-height: 1.5;}
 .vendorChart {display: flex; align-items: center; gap: var(--space-4); margin-block: var(--space-4);}
-.vendorChart .donut {flex: 0 0 124px; height: 124px; background: conic-gradient(#0ca56d 0 var(--compliant-stop), #f0a511 var(--compliant-stop) var(--attention-stop), #e6344b var(--attention-stop) var(--noncompliant-stop), #9cacc1 var(--noncompliant-stop) 100%);}
+.vendorChart .donut {flex: 0 0 124px; height: 124px; background: conic-gradient(var(--chart-stops));}
 .vendorChart .donut[data-empty] {background: var(--color-border);}
 .vendorChart .donut > span {height: 86px; width: 86px;}
+.vendorChart .donut small {text-align: center;}
 .chartLegend {flex: 1; min-width: 0; display: grid; gap: var(--space-3); list-style: none; padding: 0; margin: 0;}
 .chartLegend li {display: grid; align-items: center; gap: var(--space-2); grid-template-columns: 9px minmax(0, 1fr) auto; font-size: var(--text-caption);}
 .chartLegend .legendDot {width: 9px; height: 9px;}

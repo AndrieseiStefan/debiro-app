@@ -4,6 +4,7 @@ import {useLayoutEffect, useRef, useSyncExternalStore} from 'react';
 import {useTranslations} from 'next-intl';
 import {BrandWordmark} from '@/components/brand/BrandWordmark';
 import type {NotificationActivityItem} from '@/features/notifications/types';
+import {getActiveCompany, useCompanyState} from '@/features/companies/company-state';
 import {usePathname} from '@/i18n/navigation';
 import {AppIcon, type AppIconName} from './AppIcon';
 import {AppUtilities} from './AppUtilities';
@@ -47,6 +48,7 @@ export function AppSidebar({locale, currentPath, notificationCount, notification
   notificationReferenceTime: string;
 }) {
   const t = useTranslations('AppShell');
+  const companyName = getActiveCompany(useCompanyState())?.company.name;
   const pathname = usePathname().replace(/^\/(?:en|ro)(?=\/|$)/, '').replace(/\/+$/, '') || '/';
   const activeSection = pathname === '/' || pathname === '/dashboard' ? 'dashboard' :
     pathname === '/vendors' || pathname.startsWith('/vendors/') ? 'suppliers' :
@@ -104,7 +106,7 @@ export function AppSidebar({locale, currentPath, notificationCount, notification
           if (item.id === 'company') return <div key={item.id} className={styles.settingsGroup} data-company-group data-expanded={companyExpanded}>
             <button type="button" className={`${styles.navItem} ${styles.settingsToggle} ${activeSection === 'company' ? styles.active : ''}`} aria-label={t('navigation.company')} aria-expanded={companyExpanded} aria-controls={companyExpanded ? 'company-subnav' : undefined} onClick={() => setCompanyExpansion(!companyExpanded)}>{content}<AppIcon name="chevronDown" size={17}/></button>
             {companyExpanded && <div id="company-subnav" className={styles.settingsSubnav}>
-              <SidebarNavigationItem href="/company/documents" active={pathname === '/company/documents' || pathname.startsWith('/company/documents/')} nested><AppIcon name="file" size={18}/>{t('navigation.companyDocuments')}</SidebarNavigationItem>
+              <SidebarNavigationItem href="/company/documents" active={pathname === '/company/documents' || pathname.startsWith('/company/documents/')} nested label={t('navigation.companyDocuments')} describedBy={companyName ? 'company-documents-workspace' : undefined}><AppIcon name="file" size={18}/><span className={styles.companyItemText}><span>{t('navigation.companyDocuments')}</span>{companyName && <small id="company-documents-workspace" title={companyName}>{companyName}</small>}</span></SidebarNavigationItem>
               <SidebarNavigationItem href="/company/employees" active={pathname === '/company/employees' || pathname.startsWith('/company/employees/')} nested><AppIcon name="users" size={18}/>{t('navigation.employees')}</SidebarNavigationItem>
             </div>}
           </div>;

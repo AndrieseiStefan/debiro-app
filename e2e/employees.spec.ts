@@ -100,7 +100,10 @@ test('employee isolation, empty company, no department, pagination and company-s
   const employeeHref = await page.locator('tbody a').first().getAttribute('href');
   await switchWorkspaceCompany(page, 'Employee Workspace', 'Global Clean Services'); await employeeNavigation(page); await expect(page.getByText(ro.Employees.empty)).toBeVisible(); await expect(page.getByRole('button', {name: ro.Employees.add, exact: true})).toHaveCount(0);
   await switchWorkspaceCompany(page, 'Global Clean Services', 'Employee Workspace'); await employeeNavigation(page); await expect(page.getByRole('checkbox')).toHaveCount(0);
-  await page.locator(`a[href="${employeeHref}"]`).click(); await switchWorkspaceCompany(page, 'Employee Workspace', 'Demo Company SRL'); await expect(page).toHaveURL('/dashboard');
+  await page.locator(`a[href="${employeeHref}"]`).click();
+  // Wait for the destination shell; opening the old page's switcher races its unmount.
+  await expect(page).toHaveURL(employeeHref!); await expect(page.getByRole('heading', {level: 1, name: ro.EmployeeDocuments.title})).toBeVisible();
+  await switchWorkspaceCompany(page, 'Employee Workspace', 'Demo Company SRL'); await expect(page).toHaveURL('/dashboard');
   await employeeNavigation(page); await expect(page.locator('tbody')).not.toContainText('Person 00');
   await page.getByRole('button', {name: ro.Employees.add, exact: true}).click(); await page.getByRole('dialog').locator('#employee-firstName').fill('Discard me');
   // The existing modal intentionally prevents interaction with the inert shell; external switches must still clear it.

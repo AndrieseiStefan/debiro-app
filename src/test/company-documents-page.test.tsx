@@ -23,7 +23,9 @@ describe('Company Documents shared listing UI', () => {
   it.each(['ro', 'en'] as const)('renders derived metrics, truthful disabled files and sharing preparation in %s', async (locale) => {
     const copy = locale === 'ro' ? ro : en;
     view(locale);
-    expect(screen.getByRole('heading', {level: 1})).toHaveTextContent(copy.CompanyDocuments.title);
+    const heading = screen.getByRole('heading', {level: 1});
+    expect(heading).toHaveTextContent(copy.CompanyDocuments.title);
+    expect(heading.nextElementSibling).toHaveTextContent('Demo Company SRL');
     const templateAction = screen.getByRole('button', {name: copy.VendorTemplates.title});
     expect(templateAction).toBeVisible(); expect(templateAction).toHaveAttribute('data-size', 'compact');
     expect(templateAction.closest('[aria-labelledby="company-documents-title"]')).toBeNull();

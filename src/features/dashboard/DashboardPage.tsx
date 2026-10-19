@@ -1,6 +1,6 @@
 'use client';
 
-import {useCallback, useRef, useState, type CSSProperties, type ReactNode} from 'react';
+import {useCallback, useRef, useState, type ReactNode} from 'react';
 import {useTranslations} from 'next-intl';
 import {Link, useRouter} from '@/i18n/navigation';
 import {Button} from '@/components/ui/Button';
@@ -26,6 +26,7 @@ import {activityIcons} from '@/features/notifications/presentation';
 import {getActiveCompany, useCompanyState} from '@/features/companies/company-state';
 import {localizedDate} from '@/lib/fixture-clock';
 import {SummaryMetricCard} from './SummaryMetricCard';
+import {DashboardStatusChart} from './DashboardStatusChart';
 import {workspaceOverview} from './workspace-overview';
 import type {DashboardViewModel} from './types';
 import styles from './DashboardPage.module.css';
@@ -33,14 +34,13 @@ import styles from './DashboardPage.module.css';
 /** Existing CSS compliance chart and directory counts; inactive lifecycle is neutral, not noncompliant. */
 function VendorComplianceChart({view, inactive}: {view: DashboardViewModel; inactive: number}) {
   const t = useTranslations('Dashboard'), vendors = useTranslations('Vendors'), {suppliers: s} = view;
-  const style = {'--compliant-stop': `${s.total ? s.compliant / s.total * 100 : 0}%`, '--attention-stop': `${s.total ? (s.compliant + s.attention) / s.total * 100 : 0}%`, '--noncompliant-stop': `${s.total ? (s.compliant + s.attention + s.noncompliant) / s.total * 100 : 0}%`} as CSSProperties;
-  return <div className={styles.vendorChart}>
-    <div className={styles.donut} data-empty={!s.total || undefined} style={style} role="img" aria-label={`${t('supplierStatusTitle')}: ${s.total} ${t('suppliersLower')}`}><span><strong>{s.total}</strong><small>{t('suppliersLower')}</small></span></div>
-    <ul className={styles.chartLegend}>{([{id: 'compliant', tone: 'green'}, {id: 'attention', tone: 'amber'}, {id: 'noncompliant', tone: 'red'}] as const).map(({id, tone}) => <li key={id}><i className={`${styles.legendDot} ${styles[tone]}`} aria-hidden="true"/><span>{t(`supplierStatus.${id}`)}</span><strong>{s[id]}</strong></li>)}{inactive > 0 && <li><i className={`${styles.legendDot} ${styles.gray}`} aria-hidden="true"/><span>{vendors('inactive')}</span><strong>{inactive}</strong></li>}</ul>
-  </div>;
+  return <DashboardStatusChart total={s.total} label={t('suppliersLower')} description={`${t('supplierStatusTitle')}: ${s.total} ${t('suppliersLower')}`} segments={[
+    ...([{id: 'compliant', tone: 'green'}, {id: 'attention', tone: 'amber'}, {id: 'noncompliant', tone: 'red'}] as const).map(({id, tone}) => ({id, tone, count: s[id], label: t(`supplierStatus.${id}`)})),
+    ...(inactive > 0 ? [{id: 'inactive', tone: 'gray' as const, count: inactive, label: vendors('inactive')}] : [])
+  ]}/>;
 }
-function Panel({id, title, icon, description, href, action, children}: {id: string; title: string; icon: AppIconName; description: string; href: string; action: string; children: ReactNode}) {
-  return <Surface className={styles.overviewPanel} role="region" aria-labelledby={`${id}-title`} data-dashboard-panel={id}><div className={styles.overviewPanelHeading}><h2 id={`${id}-title`}><AppIcon name={icon} size={23}/>{title}</h2><SectionAction mode="navigate" href={href}>{action}</SectionAction></div><p className={styles.overviewPanelDescription}>{description}</p>{children}</Surface>;
+function Panel({id, title, companyName, icon, description, href, action, children}: {id: string; title: string; companyName?: string; icon: AppIconName; description: string; href: string; action: string; children: ReactNode}) {
+  return <Surface className={styles.overviewPanel} role="region" aria-labelledby={`${id}-title`} data-dashboard-panel={id}><div className={styles.overviewPanelHeading}><div className={styles.panelTitle}><h2 id={`${id}-title`}><AppIcon name={icon} size={23}/>{title}</h2>{companyName && <small className={styles.panelCompany}>{companyName}</small>}</div><SectionAction mode="navigate" href={href}>{action}</SectionAction></div><p className={styles.overviewPanelDescription}>{description}</p>{children}</Surface>;
 }
 function Note({count, children, tone}: {count: number; children: ReactNode; tone: string}) {return <span data-tone={tone}><i aria-hidden="true"/>{count} {children}</span>;}
 function PreviewRow({href, onClick, icon = 'file', avatar, title, description, trailing, compact = false}: {href?: string; onClick?: () => void; icon?: AppIconName; avatar?: string; title: string; description?: ReactNode; trailing?: ReactNode; compact?: boolean}) {
@@ -77,11 +77,17 @@ export function DashboardPage({locale, view: base}: {locale: string; view: Dashb
               {!s.total ? <EmptyState title={empty('vendorsTitle')} description={empty('vendorsDescription')} action={overview.canManage && <Button ref={addTrigger} onClick={() => setAddPhase('open')}>{empty('firstVendor')}</Button>}/> : !overview.vendorPreview.length ? <EmptyState title={empty('noAttention')}/> : <ul className={styles.previewList}>{overview.vendorPreview.map((vendor) => <li key={vendor.id} data-dashboard-vendor={vendor.id}><PreviewRow href={`/vendors/${vendor.id}`} icon="building" title={vendor.name} description={`${vendorsT('table.documents')}: ${vendor.documentCount}/${vendor.documentTarget}`} trailing={<VendorComplianceBadge status={vendor.status}/>}/></li>)}</ul>}
             </>}
           </Panel>
-          <Panel id="company-documents" title={companyT('title')} icon="file" description={t('overview.companyDescription')} href="/company/documents" action={t('viewAll')}>
+          <Panel id="company-documents" title={companyT('title')} companyName={company?.company.name || undefined} icon="file" description={t('overview.companyDescription')} href="/company/documents" action={t('viewAll')}>
             {overview.company.error ? error : !overview.company.preview.length ? <EmptyState title={overview.company.rows.length ? empty('noAttention') : companyT('empty')}/> : <ul className={styles.previewList}>{overview.company.preview.map((row) => <li key={row.id} data-dashboard-company-document={row.id}><PreviewRow href={!row.requirementId ? '/company/documents' : undefined} onClick={row.requirementId ? () => openDocument(row.requirementId!, row.currentDocumentId ?? undefined) : undefined} title={row.name} description={row.issuer ?? companyT(`types.${row.documentType}`)} trailing={<><StatusBadge size="document" tone={row.status === 'expired' || row.status === 'missing' ? 'danger' : 'warning'}>{companyT(`status.${row.status}`)}</StatusBadge>{row.expiresAt && <time dateTime={row.expiresAt}>{date(row.expiresAt)}</time>}</>}/></li>)}</ul>}
           </Panel>
           <Panel id="employees" title={employeesT('title')} icon="users" description={t('overview.employeesDescription')} href="/company/employees" action={t('overview.viewAllPeople')}>
-            {overview.employees.error ? error : !overview.employees.preview.length ? <EmptyState title={employeesT('empty')}/> : <ul className={styles.previewList}>{overview.employees.preview.map((entry) => <li key={entry.employee.id} data-dashboard-employee={entry.employee.id}><PreviewRow href={entry.href} avatar={`${entry.employee.firstName[0]}${entry.employee.lastName[0]}`} title={entry.name} description={entry.employee.jobTitle} trailing={<StatusBadge size="document" tone={entry.metrics?.tracking === 'attention' ? 'warning' : entry.metrics?.tracking === 'complete' ? 'success' : 'neutral'}>{employeeDocs(overview.employees.restricted ? 'restricted' : entry.metrics ? `tracking.${entry.metrics.tracking}` : 'unavailable')}</StatusBadge>}/></li>)}</ul>}
+            {overview.employees.error ? error : overview.employees.restricted ? <EmptyState title={employeeDocs('restricted')} description={employeeDocs('restrictedDescription')}/> : <>
+              {overview.employees.tracking && <DashboardStatusChart total={overview.employees.tracking.total} label={t('overview.activeEmployees')} description={`${employeeDocs('trackingLabel')}: ${overview.employees.tracking.total} ${t('overview.activeEmployees')}`} segments={([
+                {id: 'complete', tone: 'green'}, {id: 'attention', tone: 'amber'}, {id: 'not_configured', tone: 'gray'}
+              ] as const).map(({id, tone}) => ({id, tone, count: overview.employees.tracking![id], label: id === 'complete' ? t('overview.employeeComplete') : employeeDocs(`tracking.${id}`)}))}/>}
+              <h3 className={styles.previewSubheading}>{t('overview.employeeAttention')}</h3>
+              {!overview.employees.preview.length ? <div className={styles.compactEmpty}><EmptyState title={t('overview.noEmployeeAttention')}/></div> : <ul className={styles.previewList}>{overview.employees.preview.map((entry) => <li key={entry.employee.id} data-dashboard-employee={entry.employee.id}><PreviewRow href={entry.href} avatar={`${entry.employee.firstName[0]}${entry.employee.lastName[0]}`} title={entry.name} description={<>{entry.employee.jobTitle}{entry.attention && <span className={styles.employeeIssue}>{t(`overview.employeeIssues.${entry.attention.status}`, {count: entry.attention.count})}</span>}</>} trailing={<StatusBadge size="document" tone="warning">{employeeDocs('tracking.attention')}</StatusBadge>}/></li>)}</ul>}
+            </>}
           </Panel>
         </div>
         <div className={styles.overviewBottom}>

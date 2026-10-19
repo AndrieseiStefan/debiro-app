@@ -933,6 +933,15 @@
       "vendorsDescription": "Vendors with documents needing attention or approaching expiry.",
       "companyDescription": "Company documents needing attention or approaching expiry.",
       "employeesDescription": "Employee document tracking within your company.",
+      "activeEmployees": "active employees",
+      "employeeComplete": "Complete",
+      "employeeAttention": "Employees Needing Attention",
+      "noEmployeeAttention": "No employees need attention.",
+      "employeeIssues": {
+        "expired": "{count, plural, one {# expired document} other {# expired documents}}",
+        "missing": "{count, plural, one {# missing document} other {# missing documents}}",
+        "expiring_soon": "{count, plural, one {# document expiring soon} other {# documents expiring soon}}"
+      },
       "vendorAttention": "Vendors needing attention",
       "activityDescription": "Recorded activity from vendors and authorized employee records.",
       "expirationsTitle": "Upcoming document expirations",

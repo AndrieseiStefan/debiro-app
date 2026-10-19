@@ -3,10 +3,11 @@ import {AppIcon, type AppIconName} from './AppIcon';
 import {Button, type ButtonProps} from '@/components/ui/Button';
 import styles from './AuthenticatedPageHeader.module.css';
 
-export function AuthenticatedPageHeader({context, title, titleId, description, supportingContent, actions, className}: {
+export function AuthenticatedPageHeader({context, title, titleId, subtitle, description, supportingContent, actions, className}: {
   context: ReactNode;
   title: ReactNode;
   titleId: string;
+  subtitle?: ReactNode;
   description: ReactNode;
   supportingContent?: ReactNode;
   actions?: ReactNode;
@@ -17,6 +18,7 @@ export function AuthenticatedPageHeader({context, title, titleId, description, s
     <div className={styles.body}>
       <div className={styles.copy}>
         <h1 id={titleId}>{title}</h1>
+        {subtitle && <span className={styles.subtitle}>{subtitle}</span>}
         <p>{description}</p>
       </div>
       {(supportingContent || actions) && <div className={styles.side}>

@@ -937,6 +937,15 @@
       "vendorsDescription": "Furnizori cu documente care necesită atenție sau expiră curând.",
       "companyDescription": "Documente ale companiei care necesită atenție sau expiră curând.",
       "employeesDescription": "Situația documentelor angajaților din compania ta.",
+      "activeEmployees": "angajați activi",
+      "employeeComplete": "În regulă",
+      "employeeAttention": "Angajați care necesită atenție",
+      "noEmployeeAttention": "Niciun angajat nu necesită atenție.",
+      "employeeIssues": {
+        "expired": "{count, plural, one {# document expirat} few {# documente expirate} other {# de documente expirate}}",
+        "missing": "{count, plural, one {# document lipsă} few {# documente lipsă} other {# de documente lipsă}}",
+        "expiring_soon": "{count, plural, one {# document expiră curând} few {# documente expiră curând} other {# de documente expiră curând}}"
+      },
       "vendorAttention": "Furnizori care necesită atenție",
       "activityDescription": "Activitate înregistrată pentru furnizori și angajații pe care îi poți accesa.",
       "expirationsTitle": "Documente care expiră în curând",

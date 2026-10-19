@@ -87,7 +87,7 @@ for (const locale of ['ro', 'en'] as const) {
     await capture(page, `${locale}-vendor-template-reference`);
 
     await page.goto(`${prefix}/company/documents`);
-    expect(await computed(page.locator('main h1'))).toEqual(header); expect(await computed(page.locator('main h1 + p'))).toEqual(description);
+    expect(await computed(page.locator('main h1'))).toEqual(header); expect(await computed(page.locator('main h1 ~ p'))).toEqual(description);
     expect(await computed(page.locator('[data-page-primary-action]'), controls)).toEqual(primary);
     expect(await computed(page.locator('main input[type=search]'))).toEqual(search);
     const companySummary = page.getByRole('region', {name: copy.CompanyDocuments.summaryLabel});

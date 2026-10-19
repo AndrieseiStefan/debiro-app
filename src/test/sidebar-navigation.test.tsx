@@ -48,6 +48,17 @@ describe('shared sidebar navigation availability', () => {
     fireEvent.pointerEnter(link); expect(screen.queryByRole('tooltip')).toBeNull();
   });
 
+  it.each(['ro', 'en'] as const)('keeps the Company Documents destination label stable and describes its workspace in %s', (locale) => {
+    const copy = locale === 'ro' ? ro : en;
+    render(localized(<AppSidebar locale={locale} currentPath="/dashboard" notificationCount={0} notifications={[]} notificationReferenceTime="2026-10-02T12:00:00.000Z"/>, locale));
+    const navigation = screen.getByRole('navigation', {name: copy.AppShell.navigationLabel});
+    const toggle = within(navigation).getByRole('button', {name: copy.AppShell.navigation.company});
+    if (toggle.getAttribute('aria-expanded') !== 'true') fireEvent.click(toggle);
+    const link = within(navigation).getByRole('link', {name: copy.AppShell.navigation.companyDocuments});
+    expect(link).toHaveAttribute('href', '/company/documents'); expect(link).toHaveAccessibleDescription('Demo Company SRL');
+    expect(within(link).getByTitle('Demo Company SRL')).toHaveTextContent('Demo Company SRL');
+  });
+
   it('keeps hover help reachable across the trigger/tooltip gap and closes after leaving both', () => {
     vi.useFakeTimers();
     render(localized(<SidebarNavigationItem href="/future-section" availability="comingSoon">Future section</SidebarNavigationItem>));
