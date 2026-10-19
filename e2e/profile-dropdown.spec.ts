@@ -42,7 +42,7 @@ test('toggles, closes on outside and Escape, and preserves focus', async ({page}
   await trigger.click();
   await expect(menu).not.toBeVisible();
   await trigger.click();
-  await page.getByRole('heading', {name: 'Bun venit în DEBIRO!'}).click();
+  await page.locator('#dashboard-title').click();
   await expect(menu).not.toBeVisible();
 });
 

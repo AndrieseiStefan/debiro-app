@@ -28,6 +28,7 @@ import {localizedDate} from '@/lib/fixture-clock';
 import {SummaryMetricCard} from './SummaryMetricCard';
 import {DashboardStatusChart} from './DashboardStatusChart';
 import {workspaceOverview} from './workspace-overview';
+import {useDashboardGreeting} from './greeting-session';
 import type {DashboardViewModel} from './types';
 import styles from './DashboardPage.module.css';
 
@@ -52,6 +53,7 @@ function PreviewRow({href, onClick, icon = 'file', avatar, title, description, t
 export function DashboardPage({locale, view: base}: {locale: string; view: DashboardViewModel}) {
   const language = locale === 'en' ? 'en' : 'ro', t = useTranslations('Dashboard'), app = useTranslations('AppShell'), vendorsT = useTranslations('Vendors'), companyT = useTranslations('CompanyDocuments'), employeesT = useTranslations('Employees'), employeeDocs = useTranslations('EmployeeDocuments'), empty = useTranslations('CompanyWorkspace'), foundation = useTranslations('Foundation');
   const company = getActiveCompany(useCompanyState()), companyId = company?.company.id ?? '';
+  const greeting = useDashboardGreeting();
   const overview = workspaceOverview(companyId, language, {base, vendorState: useVendorState(), requirements: useVendorRequirements(), documents: useDocumentRecords(), companyDocuments: useCompanyDocumentsState(), employees: useEmployeeState(), events: useLocalAuditEvents()});
   const router = useRouter(), addTrigger = useRef<HTMLButtonElement>(null);
   const [addPhase, setAddPhase] = useState<'closed' | 'open' | 'closing'>('closed');
@@ -67,7 +69,7 @@ export function DashboardPage({locale, view: base}: {locale: string; view: Dashb
   const date = (value: string) => localizedDate(value)[language];
   return <AuthenticatedAppShell locale={locale} currentPath="/dashboard" organizationName={company?.company.name ?? ''} userName={base.user.fullName} userInitials={base.user.initials} notificationCount={base.notificationCount}>
     <div className={styles.pageContent}>
-      <AuthenticatedPageHeader context={<span className={styles.dashboardContext}>{app('navigation.dashboard')}</span>} title={t('overview.title')} titleId="dashboard-title" description={t('overview.description')}/>
+      <AuthenticatedPageHeader className={styles.greetingHeader} context={<span className={styles.dashboardContext}>{app('navigation.dashboard')}</span>} title={greeting.title} titleId="dashboard-title" description={greeting.subtitle}/>
       {!overview.available ? error : <>
         <section className={styles.overviewMetrics} aria-label={t('overview.summary')}>
           <SummaryMetricCard variant="overview" title={vendorsT('title')} value={overview.vendorError ? null : s.total} icon="users" tone="blue" href="/vendors" note={overview.vendorError ? foundation('errorTitle') : <><Note tone="success" count={s.compliant}>{vendorsT('status.compliant')}</Note><Note tone="warning" count={s.attention}>{vendorsT('status.attention')}</Note><Note tone="danger" count={s.noncompliant}>{vendorsT('status.noncompliant')}</Note></>}/>

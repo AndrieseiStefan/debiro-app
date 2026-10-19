@@ -12,8 +12,8 @@ describe.each(['ro', 'en'] as const)('%s company-wide Dashboard', (locale) => {
   it('composes three linked domain KPIs and five accessible previews using the existing shell', () => {
     const copy = locale === 'ro' ? ro : en;
     render(<NextIntlClientProvider locale={locale} messages={copy}><DashboardPage locale={locale} view={dashboardFixture}/></NextIntlClientProvider>);
-    expect(screen.getByRole('heading', {level: 1})).toHaveTextContent(copy.Dashboard.overview.title);
-    expect(screen.getByText(copy.Dashboard.overview.description)).toBeVisible();
+    expect(screen.getByRole('heading', {level: 1})).toHaveTextContent(locale === 'ro' ? 'Salut, Andrei!' : 'Hey, Andrei!');
+    expect(screen.getByText(copy.Dashboard.greetings.hello.subtitle)).toBeVisible();
     expect(screen.queryByRole('navigation', {name: copy.CompanyDocuments.breadcrumbLabel})).toBeNull();
     const summary = screen.getByRole('region', {name: copy.Dashboard.overview.summary});
     expect(within(summary).getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(['/vendors', '/company/documents', '/company/employees']);

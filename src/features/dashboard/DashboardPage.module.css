@@ -657,6 +657,7 @@
 
 /* Company-wide overview composes the established shell, surfaces, metrics and chart. */
 .dashboardContext {font-size: var(--text-body-small); line-height: 1.4;}
+.greetingHeader h1 {overflow-wrap: anywhere;}
 .overviewMetrics, .domainGrid {display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4);}
 .domainGrid, .overviewBottom {margin-top: var(--space-4);}
 .overviewBottom {display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4);}

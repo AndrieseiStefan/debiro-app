@@ -930,6 +930,32 @@
     }
   },
   "Dashboard": {
+    "greetings": {
+      "hello": {"title": "{name, select, named {Salut, {firstName}!} other {Salut!}}", "subtitle": "Hai să vedem ce merită atenția ta astăzi."},
+      "welcome_back": {"title": "{name, select, named {Bine ai revenit, {firstName}!} other {Bine ai revenit!}}", "subtitle": "Mai puțină birocrație, mai mult timp pentru lucrurile importante."},
+      "good_day": {"title": "{name, select, named {O zi frumoasă, {firstName}!} other {O zi frumoasă!}}", "subtitle": "Ia lucrurile pe rând, în ritmul tău."},
+      "productive_day": {"title": "{name, select, named {Spor la treabă, {firstName}!} other {Spor la treabă!}}", "subtitle": "Începe cu lucrurile care contează cel mai mult."},
+      "good_to_see_you": {"title": "{name, select, named {Ne bucurăm să te revedem, {firstName}!} other {Ne bucurăm să te revedem!}}", "subtitle": "O privire de ansamblu te ajută să alegi următorul pas."},
+      "smooth_day": {"title": "{name, select, named {O zi fără complicații, {firstName}!} other {O zi fără complicații!}}", "subtitle": "Păstrează la îndemână documentele de care ai nevoie."},
+      "steady_progress": {"title": "{name, select, named {Spor la ce ți-ai propus, {firstName}!} other {Spor la ce ți-ai propus!}}", "subtitle": "Pașii mici fac diferența în fiecare zi."},
+      "fresh_start": {"title": "{name, select, named {Un nou început, {firstName}!} other {Un nou început!}}", "subtitle": "Alege un punct de pornire și continuă de acolo."},
+      "focus": {"title": "{name, select, named {Cu spor și claritate, {firstName}!} other {Cu spor și claritate!}}", "subtitle": "Fă loc priorităților, nu hârtiilor."},
+      "less_paperwork": {"title": "{name, select, named {Mai puțină birocrație, {firstName}!} other {Mai puțină birocrație!}}", "subtitle": "Lasă mai mult timp pentru oameni și proiecte."},
+      "welcome": {"title": "{name, select, named {Bun venit, {firstName}!} other {Bun venit!}}", "subtitle": "Începe cu o privire asupra documentelor companiei."},
+      "lets_begin": {"title": "{name, select, named {Să începem, {firstName}!} other {Să începem!}}", "subtitle": "Următorul pas poate fi unul simplu."},
+      "important_things": {"title": "{name, select, named {Timp pentru ce contează, {firstName}!} other {Timp pentru ce contează!}}", "subtitle": "Privește imaginea de ansamblu înainte de detalii."},
+      "organized_day": {"title": "{name, select, named {O zi bine organizată, {firstName}!} other {O zi bine organizată!}}", "subtitle": "Un pic de ordine poate simplifica munca de zi cu zi."},
+      "simple_steps": {"title": "{name, select, named {Lucrurile pot fi mai simple, {firstName}!} other {Lucrurile pot fi mai simple!}}", "subtitle": "Ia documentele și sarcinile pe rând."},
+      "nice_return": {"title": "{name, select, named {Bine te-am regăsit, {firstName}!} other {Bine te-am regăsit!}}", "subtitle": "Continuă cu lucrurile importante pentru echipa ta."},
+      "hello_there": {"title": "{name, select, named {Salutare, {firstName}!} other {Salutare!}}", "subtitle": "O pauză pentru organizare poate face ziua mai ușoară."},
+      "calm_day": {"title": "{name, select, named {O zi cu mai multă liniște, {firstName}!} other {O zi cu mai multă liniște!}}", "subtitle": "Fă loc unui ritm de lucru care ți se potrivește."},
+      "morning": {"title": "{name, select, named {Bună dimineața, {firstName}!} other {Bună dimineața!}}", "subtitle": "Începe ziua cu o privire asupra priorităților."},
+      "morning_start": {"title": "{name, select, named {Un început de zi cu spor, {firstName}!} other {Un început de zi cu spor!}}", "subtitle": "Alege primul lucru căruia vrei să-i acorzi atenție."},
+      "afternoon": {"title": "{name, select, named {O după-amiază plăcută, {firstName}!} other {O după-amiază plăcută!}}", "subtitle": "Ia-ți un moment să vezi ce urmează."},
+      "afternoon_progress": {"title": "{name, select, named {Spor în continuare, {firstName}!} other {Spor în continuare!}}", "subtitle": "Păstrează după-amiaza pentru prioritățile tale."},
+      "evening": {"title": "{name, select, named {Seară bună, {firstName}!} other {Seară bună!}}", "subtitle": "Privește în liniște ce merită atenție în continuare."},
+      "quiet_evening": {"title": "{name, select, named {O seară liniștită, {firstName}!} other {O seară liniștită!}}", "subtitle": "Ia lucrurile pe rând, fără grabă."}
+    },
     "overview": {
       "title": "Bun venit în DEBIRO!",
       "description": "O privire de ansamblu asupra documentelor și conformității companiei tale.",

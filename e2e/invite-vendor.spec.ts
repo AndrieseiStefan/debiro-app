@@ -20,7 +20,7 @@ test('keeps Vendor Details behind the right-hand drawer and restores focus on X,
     expect(await dialog.evaluate((element) => getComputedStyle(element).animationName)).toContain('slideIn');
     expect(await page.evaluate(() => document.querySelector('main')?.parentElement?.inert)).toBe(true);
     await expect(page.locator('#vendor-details-title')).toContainText('Construct Pro SRL');
-    await expect(page.getByRole('heading', {name: 'Bun venit în DEBIRO!'})).toHaveCount(0);
+    await expect(page.locator('#dashboard-title')).toHaveCount(0);
     expect(await dialog.evaluate((element) => ({right: element.getBoundingClientRect().right, width: element.getBoundingClientRect().width, height: element.getBoundingClientRect().height, viewportHeight: innerHeight}))).toEqual({right: 1448, width: 502, height: 1086, viewportHeight: 1086});
     if (close === 'X') await dialog.getByRole('button', {name: 'Închide invitația'}).click();
     else if (close === 'Cancel') await dialog.getByRole('button', {name: 'Anulează'}).click();

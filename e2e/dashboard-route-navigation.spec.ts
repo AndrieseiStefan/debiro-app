@@ -11,6 +11,7 @@ const viewports = [
 
 async function waitForDashboard(page: Page) {
   await expect(page.locator('#dashboard-title')).toBeVisible();
+  await expect(page.locator('#dashboard-title')).toContainText('Andrei');
   await page.evaluate(async () => { await document.fonts.ready; window.scrollTo(0, 0); });
 }
 

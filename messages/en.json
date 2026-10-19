@@ -926,6 +926,32 @@
     }
   },
   "Dashboard": {
+    "greetings": {
+      "hello": {"title": "{name, select, named {Hey, {firstName}!} other {Hey!}}", "subtitle": "Let's see what deserves your attention today."},
+      "welcome_back": {"title": "{name, select, named {Welcome back, {firstName}!} other {Welcome back!}}", "subtitle": "Less paperwork, more time for what matters."},
+      "good_day": {"title": "{name, select, named {Have a great day, {firstName}!} other {Have a great day!}}", "subtitle": "Take things one step at a time, at your own pace."},
+      "productive_day": {"title": "{name, select, named {Have a productive day, {firstName}!} other {Have a productive day!}}", "subtitle": "Start with the things that matter most."},
+      "good_to_see_you": {"title": "{name, select, named {Good to see you, {firstName}!} other {Good to see you!}}", "subtitle": "An overview can help you choose your next step."},
+      "smooth_day": {"title": "{name, select, named {Here's to a smooth day, {firstName}!} other {Here's to a smooth day!}}", "subtitle": "Keep the documents you need close at hand."},
+      "steady_progress": {"title": "{name, select, named {Here's to steady progress, {firstName}!} other {Here's to steady progress!}}", "subtitle": "Small steps make a difference every day."},
+      "fresh_start": {"title": "{name, select, named {Here's to a fresh start, {firstName}!} other {Here's to a fresh start!}}", "subtitle": "Pick a starting point and take it from there."},
+      "focus": {"title": "{name, select, named {Here's to a focused day, {firstName}!} other {Here's to a focused day!}}", "subtitle": "Make room for priorities, not paperwork."},
+      "less_paperwork": {"title": "{name, select, named {Less paperwork, {firstName}!} other {Less paperwork!}}", "subtitle": "Leave more time for people and projects."},
+      "welcome": {"title": "{name, select, named {Welcome, {firstName}!} other {Welcome!}}", "subtitle": "Start with an overview of your company's documents."},
+      "lets_begin": {"title": "{name, select, named {Let's get started, {firstName}!} other {Let's get started!}}", "subtitle": "The next step can be a simple one."},
+      "important_things": {"title": "{name, select, named {Time for what matters, {firstName}!} other {Time for what matters!}}", "subtitle": "Look at the bigger picture before the details."},
+      "organized_day": {"title": "{name, select, named {Here's to an organized day, {firstName}!} other {Here's to an organized day!}}", "subtitle": "A little organization can simplify everyday work."},
+      "simple_steps": {"title": "{name, select, named {Let's keep things simple, {firstName}!} other {Let's keep things simple!}}", "subtitle": "Take documents and tasks one at a time."},
+      "nice_return": {"title": "{name, select, named {Nice to have you here, {firstName}!} other {Nice to have you here!}}", "subtitle": "Continue with what matters to your team."},
+      "hello_there": {"title": "{name, select, named {Hello there, {firstName}!} other {Hello there!}}", "subtitle": "A moment to organize can make the day easier."},
+      "calm_day": {"title": "{name, select, named {Here's to a calmer day, {firstName}!} other {Here's to a calmer day!}}", "subtitle": "Make room for a pace of work that suits you."},
+      "morning": {"title": "{name, select, named {Good morning, {firstName}!} other {Good morning!}}", "subtitle": "Start the day with a look at your priorities."},
+      "morning_start": {"title": "{name, select, named {Have a productive morning, {firstName}!} other {Have a productive morning!}}", "subtitle": "Choose the first thing you want to focus on."},
+      "afternoon": {"title": "{name, select, named {Good afternoon, {firstName}!} other {Good afternoon!}}", "subtitle": "Take a moment to see what's next."},
+      "afternoon_progress": {"title": "{name, select, named {Have a productive afternoon, {firstName}!} other {Have a productive afternoon!}}", "subtitle": "Keep the afternoon for your priorities."},
+      "evening": {"title": "{name, select, named {Good evening, {firstName}!} other {Good evening!}}", "subtitle": "Take a quiet look at what needs attention next."},
+      "quiet_evening": {"title": "{name, select, named {Have a lovely evening, {firstName}!} other {Have a lovely evening!}}", "subtitle": "Take things one step at a time, without rushing."}
+    },
     "overview": {
       "title": "Welcome to DEBIRO!",
       "description": "An overview of your company's documents and compliance.",

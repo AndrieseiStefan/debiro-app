@@ -10,6 +10,8 @@ import {Surface} from '@/components/ui/Surface';
 import {Link, useRouter} from '@/i18n/navigation';
 import {OnboardingIcon} from '@/features/onboarding/OnboardingIcon';
 import type {LoginFixture} from './fixtures';
+import {readUserProfile} from '@/features/profile/user-profile-state';
+import {beginDashboardGreetingSession} from '@/features/dashboard/greeting-session';
 import styles from './LoginPage.module.css';
 
 function validEmail(value: string) {
@@ -33,6 +35,7 @@ export function LoginPage({locale, fixture}: {locale: string; fixture: LoginFixt
     setEmailTouched(true);
     setPasswordTouched(true);
     if (!canSubmit) return;
+    beginDashboardGreetingSession(readUserProfile().userId);
     router.push(fixture.successPath);
   }
 

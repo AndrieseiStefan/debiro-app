@@ -9,8 +9,8 @@ for (const english of [false, true]) {
   const copy = english ? en : ro, prefix = english ? '/en' : '';
   test(`${english ? 'EN' : 'RO'} canonical unified Dashboard uses three domain cards, five panels and the existing shell`, async ({page}) => {
     const response = await page.goto(prefix + '/dashboard'); expect(response?.status()).toBe(200);
-    await expect(page.getByRole('heading', {level: 1})).toHaveText(copy.Dashboard.overview.title);
-    await expect(page.getByText(copy.Dashboard.overview.description)).toBeVisible();
+    await expect(page.getByRole('heading', {level: 1})).toHaveText(english ? 'Hey, Andrei!' : 'Salut, Andrei!');
+    await expect(page.getByText(copy.Dashboard.greetings.hello.subtitle)).toBeVisible();
     const summary = page.getByRole('region', {name: copy.Dashboard.overview.summary});
     await expect(summary.getByRole('link')).toHaveCount(3); await expect(summary.locator('strong')).toHaveText(['24', '5', '8']);
     await expect(page.locator('[data-dashboard-panel]')).toHaveCount(5); await expect(page.getByRole('table')).toHaveCount(0);
@@ -20,7 +20,7 @@ for (const english of [false, true]) {
     await expect(page.getByRole('button', {name: copy.Dashboard.addSupplier, exact: true})).toHaveCount(0);
     const search = page.getByRole('combobox'); await search.fill('Construct Pro'); await expect(page.getByRole('listbox')).toContainText('Construct Pro'); await page.keyboard.press('Escape');
     await page.getByRole('link', {name: english ? 'RO' : 'EN', exact: true}).filter({visible: true}).click();
-    await expect(page.getByRole('heading', {level: 1})).toHaveText((english ? ro : en).Dashboard.overview.title);
+    await expect(page.getByRole('heading', {level: 1})).toHaveText(english ? 'Salut, Andrei!' : 'Hey, Andrei!');
   });
   test(`${english ? 'EN' : 'RO'} Dashboard desktop tablet mobile visual containment and keyboard navigation`, async ({page}) => {
     test.setTimeout(60_000); await page.goto(prefix + '/dashboard');
