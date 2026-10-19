@@ -48,15 +48,22 @@ describe('shared sidebar navigation availability', () => {
     fireEvent.pointerEnter(link); expect(screen.queryByRole('tooltip')).toBeNull();
   });
 
-  it.each(['ro', 'en'] as const)('keeps the Company Documents destination label stable and describes its workspace in %s', (locale) => {
+  it.each(['ro', 'en'] as const)('describes the Company parent while expanded or collapsed, without duplicating its identity in children in %s', (locale) => {
     const copy = locale === 'ro' ? ro : en;
     render(localized(<AppSidebar locale={locale} currentPath="/dashboard" notificationCount={0} notifications={[]} notificationReferenceTime="2026-10-02T12:00:00.000Z"/>, locale));
     const navigation = screen.getByRole('navigation', {name: copy.AppShell.navigationLabel});
     const toggle = within(navigation).getByRole('button', {name: copy.AppShell.navigation.company});
+    expect(toggle).toHaveAccessibleDescription('Demo Company SRL');
+    expect(within(toggle).getByTitle('Demo Company SRL')).toBeVisible();
     if (toggle.getAttribute('aria-expanded') !== 'true') fireEvent.click(toggle);
     const link = within(navigation).getByRole('link', {name: copy.AppShell.navigation.companyDocuments});
-    expect(link).toHaveAttribute('href', '/company/documents'); expect(link).toHaveAccessibleDescription('Demo Company SRL');
-    expect(within(link).getByTitle('Demo Company SRL')).toHaveTextContent('Demo Company SRL');
+    expect(link).toHaveAttribute('href', '/company/documents'); expect(link).not.toHaveAttribute('aria-describedby');
+    expect(link.querySelector('small')).toBeNull();
+    fireEvent.click(toggle); expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(within(toggle).getByTitle('Demo Company SRL')).toBeVisible();
+    expect(within(navigation).queryByRole('link', {name: copy.AppShell.navigation.companyDocuments})).toBeNull();
+    fireEvent.click(toggle); expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(within(navigation).getByRole('link', {name: copy.AppShell.navigation.companyDocuments})).toHaveAttribute('href', '/company/documents');
   });
 
   it('keeps hover help reachable across the trigger/tooltip gap and closes after leaving both', () => {

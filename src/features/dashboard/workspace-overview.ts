@@ -99,7 +99,7 @@ export function workspaceOverview(companyId: string, locale: 'ro' | 'en', input:
   }
   return {available: access.visible, canManage: access.replace, vendorView, vendorError, vendorPreview, inactiveVendors: vendors.filter((vendor) => vendor.lifecycleStatus === 'inactive').length,
     company: {...company, metrics: companyMetrics, preview: companyPreview, expiring: company.rows.filter((row) => row.status === 'expiring_soon').length, valid: company.rows.filter((row) => row.status === 'valid').length},
-    employees: {total: staff.employees.length, metrics: employeeMetrics, tracking: employeeTracking, restricted: !personnel.manage, error: staff.error || personnel.manage && employeeMetrics.error, preview: employeePreview},
+    employees: {total: staff.employees.length, active: activeEmployees.length, inactive: staff.employees.length - activeEmployees.length, metrics: employeeMetrics, tracking: employeeTracking, restricted: !personnel.manage, error: staff.error || personnel.manage && employeeMetrics.error, preview: employeePreview},
     activity: [...new Map(activity.map((event) => [event.id, event])).values()].toSorted((a, b) => b.occurredAt.localeCompare(a.occurredAt) || a.id.localeCompare(b.id)).slice(0, dashboardPreviewLimit),
     expirations: expirations.toSorted((a, b) => a.expiresAt.localeCompare(b.expiresAt) || a.id.localeCompare(b.id)).slice(0, dashboardPreviewLimit)};
 }

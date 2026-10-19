@@ -41,6 +41,18 @@ async function renameCompany(page: Page, name: string) {
     owner.listeners.forEach((notify) => notify());
   }, name);
 }
+async function expectEmployeeKpi(page: Page, copy: typeof ro | typeof en, counts: readonly string[], active: number, inactive: number) {
+  const kpi = page.getByRole('region', {name: copy.Dashboard.overview.summary}).getByRole('link').nth(2);
+  const labels = [copy.Dashboard.overview.employeeComplete, copy.EmployeeDocuments.tracking.attention, copy.EmployeeDocuments.tracking.not_configured];
+  await expect(kpi.getByRole('heading')).toHaveText(copy.Dashboard.overview.totalEmployees);
+  await expect(kpi.locator('strong')).toHaveText(String(active + inactive));
+  await expect(kpi.locator('p > span')).toHaveText(counts.map((count, index) => `${count} ${labels[index]}`));
+  await expect(kpi.locator('small')).toHaveText(copy === ro ? `${active} ${active === 1 ? 'activ' : 'activi'} · ${inactive} ${inactive === 1 ? 'inactiv' : 'inactivi'}` : `${active} Active · ${inactive} Inactive`);
+  await expect(page.locator('[data-dashboard-panel="employees"] [data-chart-segment] strong')).toHaveText([...counts]);
+  await expect(kpi).not.toContainText(copy.Employees.expiring);
+  expect(counts.reduce((total, count) => total + Number(count), 0)).toBe(active);
+  if (!active) await expect(kpi).not.toContainText('%');
+}
 
 for (const english of [false, true]) {
   const c = english ? en : ro, prefix = english ? '/en' : '', lang = english ? 'en' : 'ro';
@@ -50,6 +62,7 @@ for (const english of [false, true]) {
     await expect(summary.locator('strong')).toHaveText(['24', '5', '10']);
     const chart = panel.getByRole('img'); await expect(chart).toHaveAccessibleName(`${c.EmployeeDocuments.trackingLabel}: 9 ${c.Dashboard.overview.activeEmployees}`);
     await expect(panel.locator('[data-chart-segment] strong')).toHaveText(['2', '6', '1']);
+    await expectEmployeeKpi(page, c, ['2', '6', '1'], 9, 1);
     const rows = panel.locator('[data-dashboard-employee]'); await expect(rows).toHaveCount(5);
     expect(await rows.evaluateAll((items) => items.map((item) => item.getAttribute('data-dashboard-employee')))).toEqual(['employee:overview-1', 'employee:overview-0', 'employee:overview-2', 'employee:overview-3', 'employee:overview-5']);
     await expect(panel).not.toContainText('Inactive expired'); await expect(panel).not.toContainText('Optional expired'); await expect(panel).not.toContainText('Not configured Person');
@@ -63,7 +76,7 @@ for (const english of [false, true]) {
       await page.setViewportSize({width, height}); await page.evaluate(async () => {await document.fonts.ready; window.scrollTo(0, 0);});
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       for (const image of [chart, vendor]) expect(await image.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
-      await page.screenshot({path: `artifacts/visual/e1c-007a1/dashboard-attention-${lang}-${width}.png`, fullPage: true});
+      await page.screenshot({path: `artifacts/visual/e1c-007a2/dashboard-attention-${lang}-${width}.png`, fullPage: true});
     }
     await rows.first().getByRole('link').focus(); await expect(rows.first().getByRole('link')).toHaveCSS('outline-style', 'solid'); await page.keyboard.press('Enter');
     await expect(page).toHaveURL(prefix + '/company/employees/employee%3Aoverview-1'); await expect(page.getByRole('heading', {name: 'Z Expired earlier Person', exact: true})).toBeVisible();
@@ -72,13 +85,16 @@ for (const english of [false, true]) {
   test(`${lang} all Not Configured, complete, no active employees and no employees retain truthful empty previews`, async ({page}) => {
     await page.goto(prefix + '/dashboard'); const panel = page.locator('[data-dashboard-panel="employees"]');
     await expect(panel.locator('[data-chart-segment] strong')).toHaveText(['0', '0', '7']);
+    await expectEmployeeKpi(page, c, ['0', '0', '7'], 7, 1);
     await expect(panel.getByText(c.Dashboard.overview.noEmployeeAttention)).toBeVisible(); await expect(panel.locator('[data-dashboard-employee]')).toHaveCount(0);
-    await page.screenshot({path: `artifacts/visual/e1c-007a1/dashboard-not-configured-${lang}.png`, fullPage: true});
+    await page.screenshot({path: `artifacts/visual/e1c-007a2/dashboard-not-configured-${lang}.png`, fullPage: true});
     for (const [scenario, total, counts] of [[[{name: 'Complete', status: 'valid'}], '1', ['1', '0', '0']], [[{name: 'Inactive', status: 'expired', inactive: true}], '1', ['0', '0', '0']], [[], '0', ['0', '0', '0']]] as const) {
       await configureStaff(page, [...scenario]); await expect(page.getByRole('region', {name: c.Dashboard.overview.summary}).locator('strong').last()).toHaveText(total);
       await expect(panel.locator('[data-chart-segment] strong')).toHaveText([...counts]); await expect(panel.getByText(c.Dashboard.overview.noEmployeeAttention)).toBeVisible(); await expect(panel.locator('[data-dashboard-employee]')).toHaveCount(0);
+      const active = counts.reduce((sum, count) => sum + Number(count), 0);
+      await expectEmployeeKpi(page, c, counts, active, Number(total) - active);
       if (counts.every((count) => count === '0')) await expect(panel.getByRole('img')).toHaveAttribute('data-empty');
-      await page.screenshot({path: `artifacts/visual/e1c-007a1/empty-preview-${lang}-${total}-${counts.join('-')}.png`, fullPage: true});
+      await page.screenshot({path: `artifacts/visual/e1c-007a2/empty-preview-${lang}-${total}-${counts.join('-')}.png`, fullPage: true});
     }
     await panel.getByRole('link', {name: c.Dashboard.overview.viewAllPeople, exact: true}).click(); await expect(page).toHaveURL(prefix + '/company/employees');
   });
@@ -91,6 +107,8 @@ for (const english of [false, true]) {
       await expect(panel.getByRole('img')).toHaveCount(0); await expect(panel.locator('[data-chart-segment], [data-dashboard-employee]')).toHaveCount(0);
       await expect(page.locator('main')).not.toContainText(/Personnel proof|Document personal|Z Expired earlier/);
       await expect(page.getByRole('region', {name: c.Dashboard.overview.summary}).locator('strong').last()).toHaveText('10');
+      const kpi = page.getByRole('region', {name: c.Dashboard.overview.summary}).getByRole('link').nth(2);
+      await expect(kpi.locator('p')).toHaveText(c.EmployeeDocuments.restricted); await expect(kpi.locator('p [data-tone]')).toHaveCount(0);
     }
   });
 
@@ -99,45 +117,70 @@ for (const english of [false, true]) {
     const navigation = page.getByRole('navigation', {name: c.AppShell.navigationLabel}), group = navigation.getByRole('button', {name: c.AppShell.navigation.company, exact: true});
     if (await group.getAttribute('aria-expanded') !== 'true') await group.click();
     const link = navigation.getByRole('link', {name: c.CompanyDocuments.title, exact: true}), companyPanel = page.locator('[data-dashboard-panel="company-documents"]');
-    await expect(companyPanel.getByText('Demo Company SRL', {exact: true})).toBeVisible(); await expect(link).toHaveAccessibleDescription('Demo Company SRL');
+    await expect(companyPanel.getByText('Demo Company SRL', {exact: true})).toBeVisible(); await expect(group).toHaveAccessibleDescription('Demo Company SRL');
+    await expect(link.locator('small')).toHaveCount(0); await expect(link).not.toHaveAttribute('aria-describedby');
     const longName = 'Compania de servicii administrative și operaționale internaționale cu o denumire foarte lungă SRL';
-    await renameCompany(page, longName); await expect(companyPanel.getByText(longName, {exact: true})).toBeVisible(); await expect(link).toHaveAccessibleDescription(longName);
-    await page.screenshot({path: `artifacts/visual/e1c-007a1/dashboard-company-identity-${lang}.png`, fullPage: true});
+    await renameCompany(page, longName); await expect(companyPanel.getByText(longName, {exact: true})).toBeVisible(); await expect(group).toHaveAccessibleDescription(longName);
+    await page.screenshot({path: `artifacts/visual/e1c-007a2/dashboard-company-identity-${lang}.png`, fullPage: true});
     await page.keyboard.press('Tab'); await link.focus(); await expect(link).toHaveCSS('outline-style', 'solid'); await page.keyboard.press('Enter');
     await expect(page).toHaveURL(prefix + '/company/documents');
     const heading = page.getByRole('heading', {level: 1, name: c.CompanyDocuments.title, exact: true});
     await expect(heading.locator('..').getByText(longName, {exact: true})).toBeVisible(); await expect(heading.locator('..').getByText(c.CompanyDocuments.description, {exact: true})).toBeVisible();
     await expect(page.getByRole('region', {name: c.CompanyDocuments.summaryLabel}).locator('strong')).toHaveText(['5', '4', '0']);
     await expect(page.getByRole('button', {name: c.CompanyDocuments.addDocuments, exact: true})).toBeEnabled(); await expect(page.getByRole('button', {name: c.CompanyDocuments.shareDocuments, exact: true})).toBeEnabled();
-    const secondary = link.locator('small'); await expect(secondary).toHaveAttribute('title', longName); await expect(secondary).toHaveCSS('text-overflow', 'ellipsis');
+    const secondary = group.locator('small'); await expect(secondary).toHaveAttribute('title', longName); await expect(secondary).toHaveCSS('text-overflow', 'ellipsis');
     const contrast = await secondary.evaluate((element) => {
       const luminance = (color: string) => {const rgb = color.match(/[\d.]+/g)!.slice(0, 3).map(Number).map((value) => value / 255).map((value) => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4); return .2126 * rgb[0] + .7152 * rgb[1] + .0722 * rgb[2];};
-      return (luminance(getComputedStyle(element).color) + .05) / (luminance(getComputedStyle(element.closest('a')!).backgroundColor) + .05);
+      const background = getComputedStyle(element.closest('button')!);
+      const colors = background.backgroundImage.match(/rgb\([^)]+\)/g) ?? [background.backgroundColor];
+      return (luminance(getComputedStyle(element).color) + .05) / (Math.max(...colors.map(luminance)) + .05);
     }); expect(contrast).toBeGreaterThanOrEqual(4.5);
     for (const [width, height] of sizes) {
-      await page.setViewportSize({width, height}); await link.scrollIntoViewIfNeeded(); await link.focus();
+      await page.setViewportSize({width, height}); await group.scrollIntoViewIfNeeded(); await group.focus();
+      await group.locator('svg').last().evaluate(async (element) => {await Promise.all(element.getAnimations().map((animation) => animation.finished));});
       expect(await secondary.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      const geometry = await link.evaluate((element) => {const link = element.getBoundingClientRect(), nav = element.parentElement!.getBoundingClientRect(); return {width: link.width, available: nav.width, height: link.height, textHeight: element.querySelector('span')!.getBoundingClientRect().height};});
+      const geometry = await group.evaluate((element) => {const link = element.getBoundingClientRect(), nav = element.parentElement!.getBoundingClientRect(); return {width: link.width, available: nav.width, height: link.height, textHeight: element.querySelector('span')!.getBoundingClientRect().height};});
       expect(geometry.width).toBeLessThanOrEqual(geometry.available + 1); expect(geometry.textHeight).toBeLessThanOrEqual(geometry.height);
-      await page.screenshot({path: `artifacts/visual/e1c-007a1/company-identity-${lang}-${width}.png`, fullPage: true});
+      const textGeometry = await group.evaluate((element) => {
+        const text = element.querySelector('span')!.getBoundingClientRect(), label = element.querySelector('span > span')!.getBoundingClientRect(), name = element.querySelector('small')!.getBoundingClientRect(), chevron = element.querySelector('svg:last-child')!.getBoundingClientRect();
+        return {textRight: text.right, labelRight: label.right, nameRight: name.right, chevronLeft: chevron.left};
+      });
+      expect(textGeometry.labelRight).toBeLessThanOrEqual(textGeometry.textRight + 1); expect(textGeometry.nameRight).toBeLessThanOrEqual(textGeometry.textRight + 1);
+      expect(textGeometry.textRight).toBeLessThanOrEqual(textGeometry.chevronLeft - 4);
+      await expect(secondary).toBeInViewport(); await expect(group).toHaveCSS('outline-style', 'solid');
+      await page.screenshot({path: `artifacts/visual/e1c-007a2/company-identity-expanded-${lang}-${width}.png`, fullPage: true});
+      await page.keyboard.press('Space'); await expect(group).toHaveAttribute('aria-expanded', 'false');
+      await group.locator('svg').last().evaluate(async (element) => {await Promise.all(element.getAnimations().map((animation) => animation.finished));});
+      await expect(link).toHaveCount(0); await expect(secondary).toBeVisible(); await expect(secondary).toBeInViewport();
+      await page.screenshot({path: `artifacts/visual/e1c-007a2/company-identity-collapsed-${lang}-${width}.png`, fullPage: true});
+      await page.keyboard.press('Enter'); await expect(group).toHaveAttribute('aria-expanded', 'true'); await expect(link).toBeVisible();
     }
     await page.getByRole('link', {name: english ? 'RO' : 'EN', exact: true}).filter({visible: true}).click();
     await expect(page.getByRole('heading', {level: 1, name: (english ? ro : en).CompanyDocuments.title, exact: true}).locator('..').getByText(longName, {exact: true})).toBeVisible();
     await page.getByRole('link', {name: english ? 'EN' : 'RO', exact: true}).filter({visible: true}).click(); await expect(heading).toBeVisible();
-    await renameCompany(page, ''); await expect(secondary).toHaveCount(0); await expect(heading.locator('..').locator('span')).toHaveCount(0);
+    await renameCompany(page, ''); await expect(secondary).toHaveCount(0); await expect(group).not.toHaveAttribute('aria-describedby'); await expect(heading.locator('..').locator('span')).toHaveCount(0);
     await navigation.getByRole('link', {name: 'Dashboard', exact: true}).click(); await expect(companyPanel.getByRole('heading', {level: 2, name: c.CompanyDocuments.title, exact: true}).locator('..').locator('small')).toHaveCount(0);
     await link.click();
     await renameCompany(page, longName);
     await page.getByRole('button', {name: longName, exact: true}).click(); await page.getByRole('dialog', {name: c.Companies.switchTitle}).locator('[data-company-switch-id="global-clean-services"]').click();
-    await expect(page).toHaveURL(prefix + '/dashboard'); await expect(companyPanel.getByText('Global Clean Services', {exact: true})).toBeVisible(); await expect(link).toHaveAccessibleDescription('Global Clean Services');
+    await expect(page).toHaveURL(prefix + '/dashboard'); await expect(companyPanel.getByText('Global Clean Services', {exact: true})).toBeVisible(); await expect(group).toHaveAccessibleDescription('Global Clean Services');
     await expect(page.locator('main')).not.toContainText(longName);
     // This workspace membership is Reviewer: even an empty private population is not inferred.
     await expect(page.locator('[data-dashboard-panel="employees"]')).toContainText(c.EmployeeDocuments.restricted); await expect(page.locator('[data-dashboard-panel="employees"] [data-chart-segment]')).toHaveCount(0);
     await link.click(); await expect(heading.locator('..').getByText('Global Clean Services', {exact: true})).toBeVisible(); await expect(page.getByRole('table')).toHaveCount(0);
     await expect(navigation.locator('[aria-current="page"]')).toHaveCount(1);
     await page.getByRole('button', {name: 'Global Clean Services', exact: true}).click(); await page.getByRole('dialog', {name: c.Companies.switchTitle}).locator('[data-company-switch-id="demo-company"]').click();
-    await expect(page).toHaveURL(prefix + '/dashboard'); await expect(companyPanel.getByText(longName, {exact: true})).toBeVisible(); await expect(link).toHaveAccessibleDescription(longName);
+    await expect(page).toHaveURL(prefix + '/dashboard'); await expect(companyPanel.getByText(longName, {exact: true})).toBeVisible(); await expect(group).toHaveAccessibleDescription(longName);
     await expect(page.locator('[data-dashboard-panel="employees"] [data-chart-segment] strong')).toHaveText(['0', '0', '7']); await expect(page.getByRole('region', {name: c.Dashboard.overview.summary}).locator('strong')).toHaveText(['24', '5', '8']);
+    await expectEmployeeKpi(page, c, ['0', '0', '7'], 7, 1);
+    // A missing active workspace must not retain the previous identity or fabricate employee metrics.
+    await page.evaluate(() => {
+      const owner = Reflect.get(window, Symbol.for('debiro.company-session')) as {state: ReturnType<typeof readCompanyState>; listeners: Set<() => void>};
+      owner.state = {...owner.state, activeCompanyId: 'missing-company'}; owner.listeners.forEach((notify) => notify());
+    });
+    await expect(secondary).toHaveCount(0); await expect(group).not.toHaveAttribute('aria-describedby');
+    await expect(page.locator('main')).not.toContainText(longName);
+    await expect(page.getByRole('region', {name: c.Dashboard.overview.summary})).toHaveCount(0);
   });
 }

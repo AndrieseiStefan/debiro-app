@@ -7,9 +7,9 @@ import styles from './DashboardPage.module.css';
 import documentStyles from '@/components/ui/DocumentSummary.module.css';
 import directory from '@/features/vendors/VendorsListPage.module.css';
 
-export function SummaryMetricCard({title, value, note, icon, tone, chevron = false, href, variant = 'dashboard', unavailable}: {title: string; value: number | null; note: ReactNode; icon: AppIconName; tone: 'blue' | 'green' | 'amber' | 'red' | 'gray'; chevron?: boolean; href?: string; variant?: 'dashboard' | 'documents' | 'directory' | 'overview'; unavailable?: string}) {
+export function SummaryMetricCard({title, value, detail, note, icon, tone, chevron = false, href, variant = 'dashboard', unavailable}: {title: string; value: number | null; detail?: ReactNode; note: ReactNode; icon: AppIconName; tone: 'blue' | 'green' | 'amber' | 'red' | 'gray'; chevron?: boolean; href?: string; variant?: 'dashboard' | 'documents' | 'directory' | 'overview'; unavailable?: string}) {
   if (variant === 'overview') return <Link href={href!} className={styles.metricLink}><Surface className={styles.overviewMetric} data-tone={tone}>
-    <span className={`${styles.metricIcon} ${styles[tone]}`}><AppIcon name={icon} size={25}/></span><div className={styles.overviewMetricCopy}><h2>{title}</h2><strong>{value ?? '—'}</strong></div><AppIcon name="chevronRight" size={18} className={styles.metricChevron}/>
+    <span className={`${styles.metricIcon} ${styles[tone]}`}><AppIcon name={icon} size={25}/></span><div className={styles.overviewMetricCopy}><h2>{title}</h2><strong>{value ?? '—'}</strong>{detail && <small className={styles.metricDetail}>{detail}</small>}</div><AppIcon name="chevronRight" size={18} className={styles.metricChevron}/>
     <p className={styles.overviewMetricNote}>{note}</p>
   </Surface></Link>;
   if (variant === 'directory') {

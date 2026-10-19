@@ -938,6 +938,8 @@
       "companyDescription": "Documente ale companiei care necesită atenție sau expiră curând.",
       "employeesDescription": "Situația documentelor angajaților din compania ta.",
       "activeEmployees": "angajați activi",
+      "totalEmployees": "Total angajați",
+      "employeePopulation": "{active, plural, one {# activ} other {# activi}} · {inactive, plural, one {# inactiv} other {# inactivi}}",
       "employeeComplete": "În regulă",
       "employeeAttention": "Angajați care necesită atenție",
       "noEmployeeAttention": "Niciun angajat nu necesită atenție.",

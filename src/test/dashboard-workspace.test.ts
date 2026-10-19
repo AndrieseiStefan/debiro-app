@@ -55,6 +55,7 @@ describe('read-only company-wide Dashboard composition', () => {
     expect(view.company.metrics).toEqual(companyDocumentMetrics(companyDocumentList(readCompanyDocumentsState(), companyId, locale).rows));
     expect(view.employees.total).toBe(employeeWorkspace(companyId).employees.length); expect(view.employees.preview).toEqual([]);
     expect(view.employees.tracking).toEqual({total: 7, complete: 0, attention: 0, not_configured: 7});
+    expect(view.employees).toMatchObject({total: 8, active: 7, inactive: 1});
     expect(view.company.preview.every((row) => row.status !== 'valid' && (row.status !== 'missing' || row.required))).toBe(true);
     expect(input()).toEqual(before);
   });
@@ -73,6 +74,8 @@ describe('read-only company-wide Dashboard composition', () => {
     expect(view.employees.total).toBe(10);
     expect(view.employees.tracking).toEqual({total: 9, complete: 2, attention: 6, not_configured: 1});
     const {total, ...categories} = view.employees.tracking!; expect(Object.values(categories).reduce((sum, count) => sum + count, 0)).toBe(total);
+    expect(view.employees.active + view.employees.inactive).toBe(view.employees.total);
+    expect(view.employees.active).toBe(total);
     expect(view.employees.preview.map((entry) => entry.employee.id)).toEqual(['employee:case-1', 'employee:case-0', 'employee:case-2', 'employee:case-3', 'employee:case-5']);
     expect(view.employees.preview.every((entry) => entry.employee.employmentStatus === 'active' && entry.metrics?.tracking === 'attention')).toBe(true);
     expect(view.employees.preview[0].attention).toEqual({status: 'expired', count: 1, deadline: '2026-09-01'});
@@ -86,9 +89,9 @@ describe('read-only company-wide Dashboard composition', () => {
   });
   it('uses a truthful empty active chart while the total KPI still includes inactive people', () => {
     configureStaff([{name: 'Inactive', status: 'expired', inactive: true}]);
-    expect(project().employees).toMatchObject({total: 1, tracking: {total: 0, complete: 0, attention: 0, not_configured: 0}, preview: []});
+    expect(project().employees).toMatchObject({total: 1, active: 0, inactive: 1, tracking: {total: 0, complete: 0, attention: 0, not_configured: 0}, preview: []});
     configureStaff([]);
-    expect(project().employees).toMatchObject({total: 0, tracking: {total: 0, complete: 0, attention: 0, not_configured: 0}, preview: []});
+    expect(project().employees).toMatchObject({total: 0, active: 0, inactive: 0, tracking: {total: 0, complete: 0, attention: 0, not_configured: 0}, preview: []});
   });
   it('reuses immediate employee tracking and actual activity, not new approval records', () => {
     const saved = employeeDocumentEngine(companyId, employeeId).addCompanyDocument(companyId, {...upload, required: true}); expect(saved.ok).toBe(true);

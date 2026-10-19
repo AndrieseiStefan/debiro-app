@@ -27,6 +27,14 @@ describe.each(['ro', 'en'] as const)('%s company-wide Dashboard', (locale) => {
     expect(within(employeePanel).getByText(copy.Dashboard.overview.noEmployeeAttention)).toBeVisible();
     expect(employeePanel.querySelectorAll('[data-dashboard-employee]')).toHaveLength(0);
     expect(employeePanel.querySelectorAll('[data-chart-segment] strong')).toHaveLength(3);
+    const employeeKpi = within(summary).getAllByRole('link')[2];
+    expect(within(employeeKpi).getByRole('heading')).toHaveTextContent(copy.Dashboard.overview.totalEmployees);
+    expect(employeeKpi.querySelector('strong')).toHaveTextContent('8');
+    expect(within(employeeKpi).getByText(locale === 'ro' ? '7 activi · 1 inactiv' : '7 Active · 1 Inactive')).toBeVisible();
+    expect(within(employeeKpi).getByText(`0 ${copy.Dashboard.overview.employeeComplete}`)).toBeVisible();
+    expect(within(employeeKpi).getByText(`0 ${copy.EmployeeDocuments.tracking.attention}`)).toBeVisible();
+    expect(within(employeeKpi).getByText(`7 ${copy.EmployeeDocuments.tracking.not_configured}`)).toBeVisible();
+    expect(employeeKpi).not.toHaveTextContent(copy.Employees.expiring);
     expect(screen.queryByRole('table')).toBeNull(); expect(screen.queryByRole('button', {name: copy.Dashboard.addSupplier})).toBeNull();
     expect(screen.getByRole('link', {name: copy.Dashboard.overview.viewAllActivity})).toHaveAttribute('href', '/notifications#audit-title');
     const company = document.querySelector('[data-dashboard-panel="company-documents"]') as HTMLElement;
