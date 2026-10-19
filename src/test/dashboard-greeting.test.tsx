@@ -10,11 +10,12 @@ import {beginDashboardGreetingSession, endDashboardGreetingSession, resolveDashb
 const user = vi.hoisted(() => ({profile: {userId: 'user-a', firstName: 'Ștefan', fullName: 'Ștefan Andriesei'} as {userId?: string; firstName?: string; fullName?: string} | null}));
 vi.mock('@/features/profile/user-profile-state', () => ({useUserProfile: () => user.profile}));
 const key = 'debiro.dashboard-greeting.v1';
-const memory = () => Reflect.get(window, Symbol.for('debiro.dashboard-greeting')) as {current: DashboardGreetingSelection | null; previous: Map<string, string>};
-beforeEach(() => {sessionStorage.clear(); localStorage.clear(); memory().current = null; memory().previous.clear(); user.profile = {userId: 'user-a', firstName: 'Ștefan', fullName: 'Ștefan Andriesei'};});
+const memory = () => Reflect.get(window, Symbol.for('debiro.dashboard-greeting')) as {current: DashboardGreetingSelection | null; resolvedUserId: string | null; previous: Map<string, string>};
+beforeEach(() => {sessionStorage.clear(); localStorage.clear(); memory().current = null; memory().resolvedUserId = null; memory().previous.clear(); user.profile = {userId: 'user-a', firstName: 'Ștefan', fullName: 'Ștefan Andriesei'};});
 afterEach(() => {vi.restoreAllMocks(); vi.useRealTimers(); vi.unstubAllGlobals();});
 const seen: string[] = [];
-function Probe() {const greeting = useDashboardGreeting(); seen.push(greeting.title); return <><h1>{greeting.title}</h1><p>{greeting.subtitle}</p></>;}
+const pairs: ReturnType<typeof useDashboardGreeting>[] = [];
+function Probe() {const greeting = useDashboardGreeting(); seen.push(greeting.title); pairs.push(greeting); return <><h1 aria-hidden={greeting.pending || undefined}>{greeting.title}</h1><p aria-hidden={greeting.pending || undefined}>{greeting.subtitle}</p></>;}
 function content(locale: 'ro' | 'en' = 'ro', messages: typeof ro | typeof en = locale === 'ro' ? ro : en) {return <NextIntlClientProvider locale={locale} messages={messages}><Probe/></NextIntlClientProvider>;}
 
 describe('curated Dashboard greetings', () => {
@@ -111,11 +112,32 @@ describe('SSR-safe localized greeting presentation', () => {
     expect(beginDashboardGreetingSession('user-a')).toBeNull(); expect(resolveDashboardGreetingSession('user-a')).toBeNull();
     expect(endDashboardGreetingSession('user-a')).toBeUndefined(); expect(clock).not.toHaveBeenCalled();
   });
-  it('renders the neutral fallback on the server without storage/time access or mutations', () => {
+  it('reserves neutral text lines on the server without fallback copy, storage/time access or mutations', () => {
     beginDashboardGreetingSession('user-a'); const before = sessionStorage.getItem(key);
     const storage = vi.spyOn(Storage.prototype, 'getItem'), clock = vi.spyOn(Date.prototype, 'getHours');
-    const html = renderToString(content()); expect(html).toContain(ro.Dashboard.overview.title); expect(html).toContain(ro.Dashboard.overview.description);
+    const html = renderToString(content()); expect(html).not.toContain(ro.Dashboard.overview.title); expect(html).not.toContain(ro.Dashboard.overview.description);
+    expect(html).toBe('<h1 aria-hidden="true">\u00a0</h1><p aria-hidden="true">\u00a0</p>');
     expect(storage).not.toHaveBeenCalled(); expect(clock).not.toHaveBeenCalled(); storage.mockRestore(); expect(sessionStorage.getItem(key)).toBe(before);
+  });
+  it.each(['ro', 'en'] as const)('hydrates the stored %s title/subtitle together without rendering fallback copy or rotating', (locale) => {
+    const messages = locale === 'ro' ? ro : en;
+    const selected = beginDashboardGreetingSession('user-a')!;
+    const stored = {...selected, variantId: 'welcome_back'};
+    sessionStorage.setItem(key, JSON.stringify(stored)); memory().current = null;
+    const container = document.createElement('div'); container.innerHTML = renderToString(content(locale)); document.body.append(container);
+    seen.length = 0; pairs.length = 0;
+    const errors = vi.spyOn(console, 'error'), clock = vi.spyOn(Date.prototype, 'getHours');
+    const view = render(content(locale), {container, hydrate: true});
+    expect(screen.getByRole('heading')).toHaveTextContent(locale === 'ro' ? 'Bine ai revenit, Ștefan!' : 'Welcome back, Ștefan!');
+    expect(screen.getByText(messages.Dashboard.greetings.welcome_back.subtitle)).toBeVisible();
+    expect(pairs[0]).toMatchObject({title: '\u00a0', subtitle: '\u00a0', pending: true});
+    for (const pair of pairs) {
+      expect(pair.title).not.toBe(messages.Dashboard.overview.title); expect(pair.subtitle).not.toBe(messages.Dashboard.overview.description);
+      if (pair.pending) expect([pair.title, pair.subtitle]).toEqual(['\u00a0', '\u00a0']);
+      else {expect(pair.title).toContain('Ștefan'); expect(pair.subtitle).toBe(messages.Dashboard.greetings.welcome_back.subtitle);}
+    }
+    expect(clock).not.toHaveBeenCalled(); expect(JSON.parse(sessionStorage.getItem(key)!)).toEqual(stored); expect(errors).not.toHaveBeenCalled();
+    view.unmount(); container.remove();
   });
   it('reuses the same variant on rerender/remount/locale changes, with the live profile name', () => {
     const view = render(content()); const selection = JSON.parse(sessionStorage.getItem(key)!);

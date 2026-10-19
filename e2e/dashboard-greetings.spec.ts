@@ -10,7 +10,7 @@ import {switchWorkspaceCompany, workspaceSection} from './support/company-worksp
 const key = 'debiro.dashboard-greeting.v1';
 async function selected(page: Page, locale: 'ro' | 'en', firstName = 'Andrei') {
   // An opener can prepopulate storage before hydration replaces its copied selection.
-  await expect(page.locator('#dashboard-title')).not.toHaveText((locale === 'ro' ? ro : en).Dashboard.overview.title);
+  await expect(page.locator('#dashboard-title [data-greeting-pending]')).toHaveAttribute('data-greeting-pending', 'false');
   await expect.poll(() => page.evaluate((key) => sessionStorage.getItem(key), key)).not.toBeNull();
   const selection = await page.evaluate((key) => JSON.parse(sessionStorage.getItem(key)!) as DashboardGreetingSelection, key);
   const t = createTranslator({locale, messages: locale === 'ro' ? ro : en, namespace: 'Dashboard'});
@@ -45,7 +45,73 @@ for (const locale of ['ro', 'en'] as const) {
     await page.getByRole('link', {name: locale === 'ro' ? 'EN' : 'RO', exact: true}).filter({visible: true}).click();
     const translated = await selected(page, locale === 'ro' ? 'en' : 'ro'); expect(translated.selection).toEqual(first.selection); expect(translated.title).not.toBe(first.title);
     expect(hydration).toEqual([]);
-    const ssr = await page.request.get(prefix + '/dashboard'); expect(await ssr.text()).toContain(c.Dashboard.overview.title);
+    const ssr = await page.request.get(prefix + '/dashboard'); const html = await ssr.text();
+    expect(html).toMatch(/id="dashboard-title">.*?<span data-greeting-pending="true" aria-hidden="true">\s*<\/span>/);
+  });
+
+  test(`${locale} saved greeting never paints fallback copy on repeated and hard refresh at desktop/mobile widths`, async ({page, context}) => {
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (message) => {if (/hydration|did not match|server rendered/i.test(message.text())) errors.push(message.text());});
+    await page.addInitScript(() => {
+      const frames: {pending: boolean; title: string; subtitle: string}[] = [];
+      Reflect.set(window, '__greetingPaints', frames);
+      function inspect() {
+        const title = document.querySelector('#dashboard-title'), state = title?.querySelector('[data-greeting-pending]');
+        if (state) frames.push({pending: state.getAttribute('data-greeting-pending') === 'true', title: title!.textContent!.trim(), subtitle: title!.nextElementSibling!.textContent!.trim()});
+        requestAnimationFrame(inspect);
+      }
+      requestAnimationFrame(inspect);
+    });
+    await page.goto(prefix + '/dashboard'); const original = await selected(page, locale);
+    const cdp = await context.newCDPSession(page);
+    for (const width of [1448, 375, 320]) {
+      await page.setViewportSize({width, height: 900});
+      for (const variantId of ['hello', 'welcome_back', 'productive_day'] as const) {
+        const stored = {...original.selection, variantId};
+        await page.evaluate(({key, stored}) => sessionStorage.setItem(key, JSON.stringify(stored)), {key, stored});
+        if (variantId === 'productive_day') await Promise.all([page.waitForEvent('load'), cdp.send('Page.reload', {ignoreCache: true})]);
+        else await page.reload();
+        const greeting = await selected(page, locale); expect(greeting.selection).toEqual(stored);
+        await page.evaluate(() => document.fonts.ready);
+        await expect.poll(() => page.evaluate(() => (Reflect.get(window, '__greetingPaints') as {pending: boolean}[]).some((frame) => !frame.pending))).toBe(true);
+        await page.screenshot({path: `artifacts/visual/e1c-007a3a/dashboard-${locale}-${width}-${variantId}.png`, fullPage: true});
+        const paints = await page.evaluate(() => Reflect.get(window, '__greetingPaints') as {pending: boolean; title: string; subtitle: string}[]);
+        for (const frame of paints) expect([frame.title, frame.subtitle]).toEqual(frame.pending ? ['', ''] : [greeting.title, greeting.subtitle]);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        await expect(page.locator('[data-dashboard-panel]')).toHaveCount(5);
+      }
+    }
+    await cdp.detach(); expect(errors).toEqual([]);
+  });
+
+  test(`${locale} SSR placeholder and hydrated greeting have identical geometry at desktop, tablet and mobile widths`, async ({page}) => {
+    // Hold only application JS: inspect real SSR/CSS after fonts settle, then isolate
+    // greeting hydration from the existing page-wide cold-font swap/reflow.
+    let release = () => {};
+    let gate = Promise.resolve();
+    await page.route('**/_next/static/**/*.js', async (route) => {await gate; await route.continue();});
+    await page.addInitScript((key) => sessionStorage.setItem(key, JSON.stringify({version: 1, userId: 'andrei-popescu', selectionId: 'hydration-layout-check', variantId: 'welcome_back'})), key);
+    const title = page.locator('#dashboard-title'), header = page.locator('section[aria-labelledby="dashboard-title"]');
+    const geometry = () => page.evaluate(() => {
+      const header = document.querySelector('#dashboard-title')!.closest('section')!;
+      return [header.getBoundingClientRect().height, header.nextElementSibling!.getBoundingClientRect().y];
+    });
+    for (const width of [1448, 768, 375, 320]) {
+      await page.setViewportSize({width, height: 900}); gate = new Promise<void>((resolve) => {release = resolve;});
+      try {
+        await page.goto(prefix + '/dashboard', {waitUntil: 'commit'});
+        await expect(title.locator('[data-greeting-pending]')).toHaveAttribute('data-greeting-pending', 'true');
+        await expect(title).toHaveCSS('font-size', width < 768 ? '34px' : '42px'); await page.evaluate(() => document.fonts.ready);
+        await expect(title).toHaveText(''); await expect(page.locator('#dashboard-title + p')).toHaveText('');
+        const before = await geometry(); await header.screenshot({path: `artifacts/visual/e1c-007a3a/placeholder-${locale}-${width}.png`});
+        release(); await selected(page, locale);
+        const after = await geometry(); expect(after).toEqual(before);
+        expect(await title.evaluate((element) => element.nextElementSibling!.getBoundingClientRect().top - element.getBoundingClientRect().bottom)).toBe(4);
+        await expect(title).toHaveAccessibleName(locale === 'ro' ? 'Bine ai revenit, Andrei!' : 'Welcome back, Andrei!');
+        await header.screenshot({path: `artifacts/visual/e1c-007a3a/resolved-${locale}-${width}.png`});
+      } finally {release();}
+    }
   });
 
   test(`${locale} valid demo Login rotates without credential storage; invalid submission and unavailable Logout do not`, async ({page}) => {

@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useSyncExternalStore} from 'react';
+import {useLayoutEffect, useSyncExternalStore} from 'react';
 import {useTranslations} from 'next-intl';
 import {browserSession} from '@/lib/browser-session';
 import {useUserProfile} from '@/features/profile/user-profile-state';
@@ -10,7 +10,7 @@ import {greetingFirstName, isDashboardGreetingId, nextDashboardGreeting, type Da
 export type DashboardGreetingSelection = {version: 1; userId: string; selectionId: string; variantId: DashboardGreetingId};
 const storageKey = 'debiro.dashboard-greeting.v1';
 const previousKey = (userId: string) => `debiro.dashboard-greeting.previous:${encodeURIComponent(userId)}`;
-const owner = browserSession(Symbol.for('debiro.dashboard-greeting'), () => ({current: null as DashboardGreetingSelection | null, previous: new Map<string, DashboardGreetingId>(), sequence: 0, listeners: new Set<() => void>()}));
+const owner = browserSession(Symbol.for('debiro.dashboard-greeting'), () => ({current: null as DashboardGreetingSelection | null, resolvedUserId: null as string | null, previous: new Map<string, DashboardGreetingId>(), sequence: 0, listeners: new Set<() => void>()}));
 function read(key: string, persistent = false) {
   try {return (persistent ? window.localStorage : window.sessionStorage).getItem(key);} catch {return null;}
 }
@@ -27,7 +27,7 @@ function inheritedFromOpener(selection: DashboardGreetingSelection) {
   // Same-origin window.open copies sessionStorage once. Do not inherit the opener's greeting.
   try {return window.opener && JSON.parse(window.opener.sessionStorage.getItem(storageKey) ?? 'null')?.selectionId === selection.selectionId;} catch {return false;}
 }
-function publish(selection: DashboardGreetingSelection | null) {owner.current = selection; owner.listeners.forEach((notify) => notify());}
+function publish(selection: DashboardGreetingSelection | null) {owner.current = selection; if (selection) owner.resolvedUserId = selection.userId; owner.listeners.forEach((notify) => notify());}
 function remember(selection: DashboardGreetingSelection) {
   owner.previous.set(selection.userId, selection.variantId);
   write(previousKey(selection.userId), selection.variantId, true);
@@ -63,14 +63,17 @@ export function endDashboardGreetingSession(userId: string) {
   write(storageKey, null); publish(null);
 }
 function subscribe(notify: () => void) {owner.listeners.add(notify); return () => {owner.listeners.delete(notify);};}
-const serverSnapshot = () => null;
+const serverSnapshot = () => undefined;
 
 export function useDashboardGreeting() {
   const profile = useUserProfile(), userId = profile?.userId ?? '', t = useTranslations('Dashboard');
-  const selection = useSyncExternalStore(subscribe, () => owner.current?.userId === userId ? owner.current : null, serverSnapshot);
-  useEffect(() => {if (userId) resolveDashboardGreetingSession(userId);}, [userId]);
-  const fallback = {title: t('overview.title'), subtitle: t('overview.description')};
-  if (!selection || !t.has(`greetings.${selection.variantId}.title`) || !t.has(`greetings.${selection.variantId}.subtitle`)) return fallback;
   const firstName = greetingFirstName(profile);
-  return {title: t(`greetings.${selection.variantId}.title`, {name: firstName ? 'named' : 'generic', firstName}), subtitle: t(`greetings.${selection.variantId}.subtitle`)};
+  const selection = useSyncExternalStore(subscribe, () => owner.current?.userId === userId ? owner.current : !userId || owner.resolvedUserId === userId ? null : undefined, serverSnapshot);
+  // Undefined is unresolved, null is the existing missing-identity/ended-session fallback.
+  // SSR and the first hydration render reserve text lines; resolution publishes both strings.
+  useLayoutEffect(() => {if (userId) resolveDashboardGreetingSession(userId);}, [userId]);
+  if (selection === undefined) return {title: '\u00a0', subtitle: '\u00a0', pending: true, firstName};
+  const fallback = {title: t('overview.title'), subtitle: t('overview.description'), pending: false, firstName};
+  if (!selection || !t.has(`greetings.${selection.variantId}.title`) || !t.has(`greetings.${selection.variantId}.subtitle`)) return fallback;
+  return {title: t(`greetings.${selection.variantId}.title`, {name: firstName ? 'named' : 'generic', firstName}), subtitle: t(`greetings.${selection.variantId}.subtitle`), pending: false, firstName};
 }

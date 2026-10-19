@@ -29,6 +29,7 @@ import {SummaryMetricCard} from './SummaryMetricCard';
 import {DashboardStatusChart} from './DashboardStatusChart';
 import {workspaceOverview} from './workspace-overview';
 import {useDashboardGreeting} from './greeting-session';
+import {dashboardGreetings} from './greetings';
 import type {DashboardViewModel} from './types';
 import styles from './DashboardPage.module.css';
 
@@ -54,6 +55,7 @@ export function DashboardPage({locale, view: base}: {locale: string; view: Dashb
   const language = locale === 'en' ? 'en' : 'ro', t = useTranslations('Dashboard'), app = useTranslations('AppShell'), vendorsT = useTranslations('Vendors'), companyT = useTranslations('CompanyDocuments'), employeesT = useTranslations('Employees'), employeeDocs = useTranslations('EmployeeDocuments'), empty = useTranslations('CompanyWorkspace'), foundation = useTranslations('Foundation');
   const company = getActiveCompany(useCompanyState()), companyId = company?.company.id ?? '';
   const greeting = useDashboardGreeting();
+  const greetingSpace = dashboardGreetings.flatMap(({id}) => t.has(`greetings.${id}.title`) && t.has(`greetings.${id}.subtitle`) ? [{title: t(`greetings.${id}.title`, {name: greeting.firstName ? 'named' : 'generic', firstName: greeting.firstName}), description: t(`greetings.${id}.subtitle`)}] : []);
   const overview = workspaceOverview(companyId, language, {base, vendorState: useVendorState(), requirements: useVendorRequirements(), documents: useDocumentRecords(), companyDocuments: useCompanyDocumentsState(), employees: useEmployeeState(), events: useLocalAuditEvents()});
   const router = useRouter(), addTrigger = useRef<HTMLButtonElement>(null);
   const [addPhase, setAddPhase] = useState<'closed' | 'open' | 'closing'>('closed');
@@ -69,7 +71,7 @@ export function DashboardPage({locale, view: base}: {locale: string; view: Dashb
   const date = (value: string) => localizedDate(value)[language];
   return <AuthenticatedAppShell locale={locale} currentPath="/dashboard" organizationName={company?.company.name ?? ''} userName={base.user.fullName} userInitials={base.user.initials} notificationCount={base.notificationCount}>
     <div className={styles.pageContent}>
-      <AuthenticatedPageHeader className={styles.greetingHeader} context={<span className={styles.dashboardContext}>{app('navigation.dashboard')}</span>} title={greeting.title} titleId="dashboard-title" description={greeting.subtitle}/>
+      <AuthenticatedPageHeader className={styles.greetingHeader} context={<span className={styles.dashboardContext}>{app('navigation.dashboard')}</span>} title={<span data-greeting-pending={greeting.pending} aria-hidden={greeting.pending || undefined}>{greeting.title}</span>} titleId="dashboard-title" description={<span aria-hidden={greeting.pending || undefined}>{greeting.subtitle}</span>} reserveCopy={greetingSpace}/>
       {!overview.available ? error : <>
         <section className={styles.overviewMetrics} aria-label={t('overview.summary')}>
           <SummaryMetricCard variant="overview" title={vendorsT('title')} value={overview.vendorError ? null : s.total} icon="users" tone="blue" href="/vendors" note={overview.vendorError ? foundation('errorTitle') : <><Note tone="success" count={s.compliant}>{vendorsT('status.compliant')}</Note><Note tone="warning" count={s.attention}>{vendorsT('status.attention')}</Note><Note tone="danger" count={s.noncompliant}>{vendorsT('status.noncompliant')}</Note></>}/>
