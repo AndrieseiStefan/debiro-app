@@ -92,7 +92,7 @@ function employeeEvent(companyId: string, employeeId: string, type: EmployeeActi
 }
 export function employeeDocumentAccess(companyId: string, employeeId: string) {
   const company = managedCompany(companyId), member = company && getCurrentMembership(company), visible = Boolean(member && getEmployee(companyId, employeeId));
-  return {visible, replace: visible, review: visible, member: visible ? member : null};
+  return {visible, replace: visible, review: false, member: visible ? member : null};
 }
 export function employeeDocumentWorkspace(companyId: string, employeeId: string, snapshot = session.state) {
   if (!employeeDocumentAccess(companyId, employeeId).visible) return null;

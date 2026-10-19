@@ -22,9 +22,10 @@
     "title": "Employee Details",
     "description": "Manage the employee's documents, information and activity within the company.",
     "add": "Add Document",
-    "addDescription": "Upload a document for this employee. New documents require human confirmation.",
+    "addDescription": "Upload a document for this employee. Status is calculated from the recorded expiry date.",
     "replaceTitle": "Upload New Version",
-    "replaceDescription": "The new file requires human confirmation. Previous versions and their original files remain in history.",
+    "replaceDescription": "The new version becomes current immediately. Previous versions and their original files remain in history.",
+    "metadataNotice": "Original upload information and historical versions are preserved. Status is calculated from the recorded expiry date.",
     "templateDescription": "Select an employee template and review its documents before applying it. Applying creates requirements, not uploaded files.",
     "noTemplates": "There are no employee templates in this company.",
     "documents": "Documents",
@@ -75,11 +76,9 @@
       "document_marked_expired": "Document marked as expired"
     },
     "success": {
-      "added": "Document uploaded. Human confirmation required.",
-      "replaced": "New version uploaded. Human confirmation required.",
-      "approved": "Document confirmed.",
-      "rejected": "Document rejected. The version remains in history.",
-      "metadata": "Information updated. The document requires reconfirmation.",
+      "added": "Document uploaded.",
+      "replaced": "New version uploaded.",
+      "metadata": "Information updated.",
       "expired": "Document marked as expired."
     }
   },

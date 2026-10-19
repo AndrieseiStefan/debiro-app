@@ -5,7 +5,7 @@ import styles from './DocumentManagementDrawer.module.css';
 /** Shared details/history presentation only; no vendor/company selectors or authorization. */
 export function DocumentFileCard({filename, fileType, fileSize, action}: {filename: string; fileType?: string; fileSize?: number; action: ReactNode}) {
   const type = ({'application/pdf': 'PDF', 'image/jpeg': 'JPG', 'image/png': 'PNG'} as Record<string, string>)[fileType ?? ''] ?? (fileType || '—');
-  return <div className={styles.fileCard}><AppIcon name={type === 'PDF' ? 'filePdf' : 'file'} size={32}/><span><strong>{filename}</strong><small>{type}{fileSize && fileSize > 0 ? ` · ${Math.ceil(fileSize / 1024)} KB` : ''}</small></span>{action}</div>;
+  return <div className={styles.fileCard} data-document-file-card><AppIcon name={type === 'PDF' ? 'filePdf' : 'file'} size={32}/><span><strong>{filename}</strong><small>{type}{fileSize && fileSize > 0 ? ` · ${Math.ceil(fileSize / 1024)} KB` : ''}</small></span><div className={styles.fileActions} data-document-file-actions>{action}</div></div>;
 }
 export type HistoryPresentation = {id: string; version: number; state: 'current' | 'rejected' | 'superseded'; dateTime: string; date: string; actor: string; summary: ReactNode; context?: ReactNode; menu?: ReactNode; filename?: string};
 export function DocumentVersionHistory({entries}: {entries: HistoryPresentation[]}) {

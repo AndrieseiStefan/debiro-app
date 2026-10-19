@@ -30,6 +30,19 @@ function open(english = false, documentAction?: string) {
 }
 
 describe('canonical document details and internal drawer navigation', () => {
+  it.each([false, true])('groups View File before Download and reuses the existing preview and Back in the same drawer (EN=%s)', (english) => {
+    access.downloadable = true; const copy = english ? en : ro, drawer = open(english);
+    const card = drawer.querySelector('[data-document-file-card]') as HTMLElement;
+    expect(within(card).getAllByRole('button').map((button) => button.textContent)).toEqual([copy.CompanyDocumentManagement.preview, copy.DocumentManagement.download]);
+    expect(within(drawer).getAllByRole('button', {name: copy.CompanyDocumentManagement.preview})).toHaveLength(1);
+    fireEvent.click(within(card).getByRole('button', {name: copy.CompanyDocumentManagement.preview}));
+    expect(screen.getByRole('dialog')).toBe(drawer); expect(within(drawer).getByRole('heading', {name: copy.CompanyDocumentManagement.previewTitle})).toBeVisible();
+    fireEvent.click(within(drawer).getByRole('button', {name: copy.DocumentManagement.backToDetails}));
+    expect(drawer.querySelector('[data-document-file-actions]')).toBeVisible();
+    fireEvent.click(within(drawer).getByRole('button', {name: copy.DocumentManagement.download}));
+    expect(download).toHaveBeenCalledWith('demo-company', 'version-4', 'construct-pro');
+  });
+
   it.each([false, true])('shows only approved information and a three-version preview (EN=%s)', (english) => {
     const drawer = open(english);
     expect(within(drawer).getAllByRole('term').map((item) => item.textContent)).toEqual(english

@@ -1,12 +1,13 @@
 import type {CreatedDocument} from '@/features/documents/created-documents';
-import type {DocumentComplianceStatus, DocumentType} from '@/features/documents/types';
+import type {DocumentComplianceStatus, DocumentReviewApplicability, DocumentReviewOutcome, DocumentType} from '@/features/documents/types';
 import type {ExpiryWarningDays, LocalizedText} from '@/features/requirements/types';
 
 /** Listing foundation only, not a second upload/review/version implementation. */
 export type CompanyDocumentRecord = Pick<CreatedDocument,
   'id' | 'companyId' | 'documentName' | 'documentType' | 'filename' | 'uploadedAt' | 'expiresAt' |
-  'reviewOutcome' | 'supersededById' | 'previousDocumentId' | 'versionGroupId' | 'version' | 'manuallyExpiredAt'
+  'supersededById' | 'previousDocumentId' | 'versionGroupId' | 'version' | 'manuallyExpiredAt'
 > & {issuer: string | null; updatedAt: string | null; updatedByDisplayName: string | null;
+  reviewApplicability?: DocumentReviewApplicability; reviewOutcome: DocumentReviewOutcome | 'not_required';
   // Optional additions keep E1C-002 tab-memory records readable without a reset/migration.
   requirementId?: string; fileType?: string; fileSize?: number; createdAt?: string; uploadedBy?: string;
   reviewedAt?: string | null; reviewedBy?: string | null; rejectionReason?: string | null;

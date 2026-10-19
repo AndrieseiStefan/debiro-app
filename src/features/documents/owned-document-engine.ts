@@ -1,6 +1,6 @@
 'use client';
 
-import {approvedCompliance, canManuallyExpire} from '@/features/documents/compliance';
+import {canManuallyExpire} from '@/features/documents/compliance';
 import {reviewDateToIso} from '@/features/documents/created-documents';
 import {uploadFileError} from '@/features/documents/upload-file';
 import {downloadFile} from '@/features/documents/download-file';
@@ -8,7 +8,7 @@ import {getRequirementTemplate, getCompanyDocumentTypes, readRequirementsState} 
 import {templateAppliesToTarget} from '@/features/requirements/template-scope';
 import {templateDocumentType} from '@/features/requirements/document-types';
 import {fixtureReferenceTime} from '@/lib/fixture-clock';
-import {companyDocumentTypes} from '@/features/company-documents/projections';
+import {companyDocumentTypes, ownedDocumentStatus} from '@/features/company-documents/projections';
 import type {CompanyDocumentRecord, CompanyDocumentRequirement, CompanyDocumentWorkspace} from '@/features/company-documents/types';
 import type {DocumentType} from '@/features/documents/types';
 
@@ -33,6 +33,7 @@ export type CompanyDocumentInput = {requirementId?: string; name: string; docume
 
 export function createOwnedDocumentEngine(context: DocumentOwnerContext) {
   const workspace = context.read;
+  const reviewApplicability = context.scope === 'employee' ? 'not_required' : 'required';
   function listCompanyRequirements(companyId: string) {return workspace(companyId)?.requirements ?? [];}
 
   /** Read-compatible chain discovery for E1C-002 records; never rewrites old tab-memory metadata. */
@@ -65,7 +66,7 @@ export function createOwnedDocumentEngine(context: DocumentOwnerContext) {
     if (!owned || !requirement) return null;
     const history = companyDocumentHistory(companyId, requirementId);
     const current = history.find((item) => item.id === requirement.currentDocumentId && !item.supersededById && item.reviewOutcome !== 'rejected') ?? null;
-    return {requirement, current, history, status: current ? current.reviewOutcome === 'pending' ? 'needs_review' as const : approvedCompliance(current.expiresAt, requirement.expiryWarningDays, fixtureReferenceTime, current.manuallyExpiredAt) : 'missing' as const};
+    return {requirement, current, history, status: ownedDocumentStatus(current, requirement.expiryWarningDays, fixtureReferenceTime, reviewApplicability)};
   }
 
   function applyCompanyTemplate(companyId: string, templateId: string) {
@@ -135,7 +136,8 @@ export function createOwnedDocumentEngine(context: DocumentOwnerContext) {
       fileType: input.file.type || ({pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png'} as Record<string, string>)[input.file.name.split('.').pop()!.toLowerCase()], fileSize: input.file.size,
       uploadedAt: now, createdAt: now, uploadedBy: access.member!.fullName, issuer: input.issuer.trim() || null,
       expiresAt: input.expiresAt.trim() ? reviewDateToIso(input.expiresAt)! : null,
-      reviewOutcome: 'pending', reviewedAt: null, reviewedBy: null, rejectionReason: null, updatedAt: now, updatedByDisplayName: access.member!.fullName};
+      reviewOutcome: reviewApplicability === 'not_required' ? 'not_required' : 'pending',
+      ...(reviewApplicability === 'not_required' ? {reviewApplicability} : {reviewedAt: null, reviewedBy: null, rejectionReason: null}), updatedAt: now, updatedByDisplayName: access.member!.fullName};
     const storedRecord = context.record?.(record) ?? record;
     const next = {...owned, requirements: requirement ? owned.requirements.map((item) => item.id === target.id ? {...item, currentDocumentId: record.id} : item) : [...owned.requirements, {...target, currentDocumentId: record.id}],
       documents: [storedRecord, ...owned.documents.map((item) => item.id === previousId ? {...item, supersededById: record.id} : item)]};
@@ -148,7 +150,7 @@ export function createOwnedDocumentEngine(context: DocumentOwnerContext) {
   }
 
   function reviewCompanyDocument(companyId: string, requirementId: string, documentId: string, decision: 'approved' | 'rejected', reason = '') {
-    if (!context.access().review) return fail('access');
+    if (reviewApplicability === 'not_required' || !context.access().review) return fail('access');
     const owned = workspace(companyId), details = getCompanyDocumentDetails(companyId, requirementId);
     if (!owned || !details?.current || details.current.id !== documentId) return fail('unavailable');
     if (details.current.reviewOutcome !== 'pending') return fail('conflict');
@@ -175,7 +177,8 @@ export function createOwnedDocumentEngine(context: DocumentOwnerContext) {
     const sameName = current.documentName[input.language ?? 'ro'] === name;
     if (sameName && current.issuer === issuer && current.expiresAt === expiresAt) return {ok: true} as const;
     const saved = context.commit(companyId, {...owned, documents: owned.documents.map((item) => item.id === documentId ? {...item,
-      documentName: sameName ? item.documentName : {ro: name, en: name}, issuer, expiresAt, reviewOutcome: 'pending', reviewedAt: null, reviewedBy: null, rejectionReason: null,
+      documentName: sameName ? item.documentName : {ro: name, en: name}, issuer, expiresAt,
+      ...(reviewApplicability === 'required' ? {reviewOutcome: 'pending' as const, reviewedAt: null, reviewedBy: null, rejectionReason: null} : {}),
       updatedAt: context.now(), updatedByDisplayName: access.member!.fullName} : item)}, undefined, 'replace', {type: 'metadata_updated', requirementId, documentId});
     if (!saved) return fail('unavailable');
     return {ok: true} as const;
@@ -183,7 +186,7 @@ export function createOwnedDocumentEngine(context: DocumentOwnerContext) {
   function markCompanyDocumentExpired(companyId: string, requirementId: string, documentId: string) {
     if (!context.access().replace) return fail('access');
     const owned = workspace(companyId), details = getCompanyDocumentDetails(companyId, requirementId);
-    if (!owned || !details?.current || details.current.id !== documentId || details.status === 'missing' || !canManuallyExpire({...details.current, complianceStatus: details.status})) return fail('conflict');
+    if (!owned || !details?.current || details.current.id !== documentId || details.status === 'missing' || !canManuallyExpire({...details.current, complianceStatus: details.status}, reviewApplicability)) return fail('conflict');
     const saved = context.commit(companyId, {...owned, documents: owned.documents.map((item) => item.id === documentId ? {...item, manuallyExpiredAt: context.now(),
       updatedAt: context.now(), updatedByDisplayName: context.access().member!.fullName} : item)}, undefined, 'replace', {type: 'document_marked_expired', requirementId, documentId});
     if (!saved) return fail('unavailable');

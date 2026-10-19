@@ -2,6 +2,7 @@ import {approvedCompliance} from '@/features/documents/compliance';
 import {normalizeDocumentName} from '@/features/requirements/catalog';
 import {fixtureReferenceTime} from '@/lib/fixture-clock';
 import type {CompanyDocumentListRow, CompanyDocumentRecord, CompanyDocumentRequirement, CompanyDocumentSort, CompanyDocumentsState} from './types';
+import type {DocumentReviewApplicability} from '@/features/documents/types';
 
 export const companyDocumentTypes = ['tax', 'registration', 'fire', 'insurance', 'inspector', 'financial', 'environment', 'safety', 'iso', 'permit', 'custom'] as const;
 const documentTypes: readonly string[] = companyDocumentTypes;
@@ -14,10 +15,12 @@ function validRequirement(value: CompanyDocumentRequirement, companyId: string) 
     nullableText(value.issuer) && typeof value.required === 'boolean' && [7, 15, 30, 60, 90].includes(value.expiryWarningDays) && nullableText(value.currentDocumentId) &&
     (value.templateId === undefined || nullableText(value.templateId)) && (value.templateRequirementId === undefined || nullableText(value.templateRequirementId)) && (value.createdAt === undefined || isoDate(value.createdAt));
 }
-function validDocument(value: CompanyDocumentRecord, companyId: string) {
+function validDocument(value: CompanyDocumentRecord, companyId: string, reviewApplicability: DocumentReviewApplicability) {
   return value && typeof value.id === 'string' && value.companyId === companyId && localizedText(value.documentName) && documentTypes.includes(value.documentType) &&
     typeof value.filename === 'string' && isoDate(value.uploadedAt) && nullableDate(value.expiresAt) && nullableDate(value.updatedAt) &&
-    nullableText(value.issuer) && nullableText(value.updatedByDisplayName) && ['approved', 'pending', 'rejected'].includes(value.reviewOutcome) &&
+    nullableText(value.issuer) && nullableText(value.updatedByDisplayName) &&
+    (value.reviewApplicability === undefined || value.reviewApplicability === 'required' || reviewApplicability === 'not_required' && value.reviewApplicability === 'not_required') &&
+    (['approved', 'pending', 'rejected'].includes(value.reviewOutcome) || reviewApplicability === 'not_required' && value.reviewApplicability === 'not_required' && value.reviewOutcome === 'not_required') &&
     (value.supersededById === undefined || typeof value.supersededById === 'string') && (value.manuallyExpiredAt === undefined || isoDate(value.manuallyExpiredAt)) &&
     (value.requirementId === undefined || typeof value.requirementId === 'string') && (value.version === undefined || Number.isInteger(value.version) && value.version > 0) &&
     (value.fileSize === undefined || Number.isFinite(value.fileSize) && value.fileSize >= 0) && (value.fileType === undefined || typeof value.fileType === 'string') &&
@@ -27,13 +30,13 @@ function validDocument(value: CompanyDocumentRecord, companyId: string) {
 const uniqueIds = (values: {id: string}[]) => new Set(values.map((value) => value.id)).size === values.length;
 
 /** Pure company-owned projection. The page/session boundary separately enforces active membership. */
-export function projectCompanyDocuments(snapshot: CompanyDocumentsState, companyId: string, locale: 'ro' | 'en', files: ReadonlyMap<string, Blob> = new Map(), referenceTime = fixtureReferenceTime) {
+export function projectCompanyDocuments(snapshot: CompanyDocumentsState, companyId: string, locale: 'ro' | 'en', files: ReadonlyMap<string, Blob> = new Map(), referenceTime = fixtureReferenceTime, reviewApplicability: DocumentReviewApplicability = 'required') {
   const empty = {rows: [] as CompanyDocumentListRow[], error: false};
   if (!snapshot?.byCompany || typeof snapshot.byCompany !== 'object' || Array.isArray(snapshot.byCompany)) return {...empty, error: true};
   const workspace = snapshot.byCompany[companyId];
   if (workspace === undefined) return empty;
   if (!workspace || !Array.isArray(workspace.requirements) || !Array.isArray(workspace.documents) ||
-    !workspace.requirements.every((item) => validRequirement(item, companyId)) || !workspace.documents.every((item) => validDocument(item, companyId)) ||
+    !workspace.requirements.every((item) => validRequirement(item, companyId)) || !workspace.documents.every((item) => validDocument(item, companyId, reviewApplicability)) ||
     !uniqueIds(workspace.requirements) || !uniqueIds(workspace.documents) ||
     workspace.documents.some((document) => document.requirementId && !workspace.requirements.some((requirement) => requirement.id === document.requirementId)) ||
     workspace.requirements.some((requirement) => workspace.documents.some((document) => document.id === requirement.currentDocumentId && document.requirementId && document.requirementId !== requirement.id))) return {...empty, error: true};
@@ -46,13 +49,18 @@ export function projectCompanyDocuments(snapshot: CompanyDocumentsState, company
     return {id: requirement?.id ?? document!.id, companyId, requirementId: requirement?.id ?? null,
       name: (document?.documentName ?? requirement!.name)[locale], documentType: document?.documentType ?? requirement!.documentType,
       issuer: document ? document.issuer : requirement?.issuer ?? null, required: requirement?.required ?? false, currentDocumentId: document?.id ?? null,
-      status: !document ? 'missing' : document.reviewOutcome === 'pending' ? 'needs_review' : approvedCompliance(document.expiresAt, requirement?.expiryWarningDays ?? 30, referenceTime, document.manuallyExpiredAt),
+      status: ownedDocumentStatus(document, requirement?.expiryWarningDays ?? 30, referenceTime, reviewApplicability),
       expiresAt: document?.expiresAt ?? null, updatedAt: document?.updatedAt ?? null, updatedByDisplayName: document?.updatedByDisplayName ?? null,
       hasDownloadableFile: Boolean(file instanceof Blob && file.size > 0)};
   }
   const rows = workspace.requirements.map((item) => row(item, current.find((document) => document.id === item.currentDocumentId)));
   rows.push(...current.filter((document) => !linked.has(document.id)).map((document) => row(null, document)));
   return {rows, error: false};
+}
+
+/** Ownership supplies policy; old employee pending records are projected, never rewritten. */
+export function ownedDocumentStatus(document: CompanyDocumentRecord | undefined | null, warningDays: number, referenceTime = fixtureReferenceTime, reviewApplicability: DocumentReviewApplicability = 'required'): CompanyDocumentListRow['status'] {
+  return !document ? 'missing' : reviewApplicability === 'required' && document.reviewOutcome === 'pending' ? 'needs_review' : approvedCompliance(document.expiresAt, warningDays, referenceTime, document.manuallyExpiredAt);
 }
 
 export function companyDocumentMetrics(rows: CompanyDocumentListRow[]) {

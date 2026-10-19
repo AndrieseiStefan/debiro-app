@@ -34,8 +34,7 @@ describe('Employee ownership adaptation of shared document lifecycle', () => {
   it('aggregates active employee attention once and current expiring requirements without counting inactive history', () => {
     const configured = template(); engine().applyCompanyTemplate(companyId, configured.id);
     const requirementId = rows()[0].requirementId!;
-    const record = upload({requirementId, expiresAt: '01.11.2026'});
-    engine().reviewCompanyDocument(companyId, requirementId, record.document.id, 'approved');
+    upload({requirementId, expiresAt: '01.11.2026'});
     const staff = employeeWorkspace(companyId).employees;
     const metrics = new Map<string, ReturnType<typeof employeeDocumentMetrics> | null>(staff.map((employee) => [employee.id, employeeDocumentMetrics(rows(employee.id))]));
     expect(employeeListDocumentMetrics(staff, metrics)).toEqual({attention: 1, expiring: 1, error: false});
@@ -78,42 +77,68 @@ describe('Employee ownership adaptation of shared document lifecycle', () => {
     }
     const before = readEmployeeState(); vi.spyOn(crypto, 'randomUUID').mockImplementationOnce(() => {throw new Error('save unavailable');});
     expect(engine().addCompanyDocument(companyId, input())).toEqual({ok: false, reason: 'unavailable'}); expect(readEmployeeState()).toBe(before);
-    const created = upload(); expect(created.document).toMatchObject({companyId, employeeId, version: 1, reviewOutcome: 'pending'});
+    const created = upload(); expect(created.document).toMatchObject({companyId, employeeId, version: 1, reviewApplicability: 'not_required', reviewOutcome: 'not_required'});
+    for (const key of ['reviewedAt', 'reviewedBy', 'rejectionReason']) expect(created.document).not.toHaveProperty(key);
     expect(employeeDocumentWorkspace(companyId, employeeId)!.requirements[0]).toMatchObject({employeeId, required: false, templateId: null, sourceTemplateIds: []});
   });
 
-  it('keeps pending/rejected/replacement history and exact files while only current versions affect metrics', () => {
+  it('makes replacements current atomically and keeps exact historical metadata/files without review events', () => {
     const first = upload({required: true}), file = employeeDocumentBytes(companyId, employeeId, first.document.id);
-    expect(employeeDocumentMetrics(rows())).toMatchObject({total: 1, uploaded: 1, valid: 0, tracking: 'attention'});
-    expect(engine().reviewCompanyDocument(companyId, first.requirementId, first.document.id, 'approved')).toEqual({ok: true});
+    expect(employeeDocumentMetrics(rows())).toMatchObject({total: 1, uploaded: 1, valid: 1, tracking: 'complete'});
+    expect(engine().reviewCompanyDocument(companyId, first.requirementId, first.document.id, 'approved')).toEqual({ok: false, reason: 'access'});
     expect(employeeDocumentMetrics(rows())).toMatchObject({valid: 1, tracking: 'complete'});
     const original = structuredClone(engine().getCompanyDocumentDetails(companyId, first.requirementId)!.current!);
+    const before = readEmployeeState();
+    for (const invalid of [{expiresAt: '31.02.2026'}, {file: new File([], 'empty.pdf', {type: 'application/pdf'})}]) {
+      expect(engine().replaceCompanyDocument(companyId, first.requirementId, first.document.id, input(invalid)).ok).toBe(false); expect(readEmployeeState()).toBe(before); expect(engine().companyDocumentHistory(companyId, first.requirementId)).toEqual([original]);
+    }
     const replacementFile = new File(['second bytes'], 'employment.pdf', {type: 'application/pdf'});
     const replacement = engine().replaceCompanyDocument(companyId, first.requirementId, first.document.id, input({file: replacementFile})); if (!replacement.ok) throw new Error(replacement.reason);
-    expect(replacement.document).toMatchObject({version: 2, employeeId, previousDocumentId: first.document.id, reviewOutcome: 'pending'});
-    expect(engine().reviewCompanyDocument(companyId, first.requirementId, replacement.document.id, 'rejected', ' ')).toMatchObject({ok: false, reason: 'rejectionReason'});
-    expect(engine().reviewCompanyDocument(companyId, first.requirementId, replacement.document.id, 'rejected', 'Wrong file')).toEqual({ok: true});
-    expect(employeeDocumentMetrics(rows())).toMatchObject({total: 1, uploaded: 0, missing: 1, valid: 0, tracking: 'attention'});
-    const third = upload({requirementId: first.requirementId}); expect(third.document.version).toBe(3);
-    const history = engine().companyDocumentHistory(companyId, first.requirementId); expect(history.map((record) => record.version)).toEqual([3, 2, 1]);
-    expect(history[2]).toMatchObject({...original, supersededById: replacement.document.id}); expect(history[1]).toMatchObject({rejectionReason: 'Wrong file', reviewOutcome: 'rejected'});
+    expect(replacement.document).toMatchObject({version: 2, employeeId, previousDocumentId: first.document.id, reviewOutcome: 'not_required', reviewApplicability: 'not_required'});
+    expect(engine().reviewCompanyDocument(companyId, first.requirementId, replacement.document.id, 'rejected', 'Wrong file')).toEqual({ok: false, reason: 'access'});
+    expect(engine().getCompanyDocumentDetails(companyId, first.requirementId)?.current?.id).toBe(replacement.document.id);
+    expect(employeeDocumentMetrics(rows())).toMatchObject({total: 1, uploaded: 1, missing: 0, valid: 1, tracking: 'complete'});
+    const history = engine().companyDocumentHistory(companyId, first.requirementId); expect(history.map((record) => record.version)).toEqual([2, 1]);
+    expect(history[1]).toMatchObject({...original, supersededById: replacement.document.id});
     expect(engine().companyDocumentFile(companyId, first.requirementId, first.document.id)).toBe(file); expect(engine().companyDocumentFile(companyId, first.requirementId, replacement.document.id)).toBe(replacementFile);
     expect(engine().replaceCompanyDocument(companyId, first.requirementId, first.document.id, input()).ok).toBe(false);
+    expect(getEmployeeActivity(companyId, employeeId).map((event) => event.type).sort()).toEqual(['document_replaced', 'document_upload']);
   });
 
-  it('reuses expiry boundaries and manual expiry, preserves original metadata and resets human review on current edits only', () => {
+  it('reuses expiry boundaries and manual expiry and never resets employee metadata edits to pending review', () => {
     const first = upload({required: true, expiresAt: '01.11.2026'}); // 30 days from the shared E1 clock.
-    expect(engine().reviewCompanyDocument(companyId, first.requirementId, first.document.id, 'approved').ok).toBe(true);
     expect(employeeDocumentMetrics(rows())).toMatchObject({total: 1, expiring: 1, tracking: 'attention', nextDeadline: '2026-11-01'});
     expect(engine().markCompanyDocumentExpired(companyId, first.requirementId, first.document.id)).toEqual({ok: true});
     const current = engine().getCompanyDocumentDetails(companyId, first.requirementId)!.current!;
     expect(current.expiresAt).toBe('2026-11-01'); expect(current.manuallyExpiredAt).toBeTruthy(); expect(engine().companyDocumentHistory(companyId, first.requirementId)).toHaveLength(1); expect(rows()[0].status).toBe('expired');
     expect(engine().markCompanyDocumentExpired(companyId, first.requirementId, first.document.id).ok).toBe(false);
     const second = engine().replaceCompanyDocument(companyId, first.requirementId, first.document.id, input({expiresAt: '01.12.2026'})); if (!second.ok) throw new Error(second.reason);
-    expect(second.document.manuallyExpiredAt).toBeUndefined(); engine().reviewCompanyDocument(companyId, first.requirementId, second.document.id, 'approved');
+    expect(second.document.manuallyExpiredAt).toBeUndefined();
     const old = structuredClone(engine().companyDocumentHistory(companyId, first.requirementId)[1]);
     expect(engine().updateCompanyDocumentMetadata(companyId, first.requirementId, second.document.id, {name: 'Updated', issuer: '', expiresAt: '', language: 'en'})).toEqual({ok: true});
-    expect(rows()[0].status).toBe('needs_review'); expect(engine().companyDocumentHistory(companyId, first.requirementId)[1]).toEqual(old);
+    expect(rows()[0].status).toBe('valid'); expect(engine().companyDocumentHistory(companyId, first.requirementId)[1]).toEqual(old);
+    expect(getEmployeeActivity(companyId, employeeId).some((event) => ['document_confirmed', 'document_rejected'].includes(event.type))).toBe(false);
+  });
+
+  it.each([['', 'valid'], ['01.12.2026', 'valid'], ['01.11.2026', 'expiring_soon'], ['02.10.2026', 'expiring_soon'], ['01.10.2026', 'expired']] as const)('derives %s immediately as %s without review', (expiresAt, expected) => {
+    const first = upload({required: true, expiresAt}); expect(rows()[0].status).toBe(expected); expect(engine().getCompanyDocumentDetails(companyId, first.requirementId)?.status).toBe(expected);
+    expect(employeeDocumentMetrics(rows()).tracking).toBe(expected === 'valid' ? 'complete' : 'attention'); expect(getEmployeeActivity(companyId, employeeId).map((event) => event.type)).toEqual(['document_upload']);
+  });
+
+  it.each(['pending', 'approved', 'rejected'] as const)('preserves legacy %s records and historical activity without inventing a decision', (outcome) => {
+    const first = upload({required: true}), stored = owner().state.byCompany[companyId].documentWorkspaces![employeeId], record = stored.documents[0];
+    delete record.reviewApplicability; record.reviewOutcome = outcome;
+    if (outcome !== 'pending') {record.reviewedBy = 'Historical reviewer'; record.reviewedAt = '2026-09-01T10:00:00Z';}
+    if (outcome === 'rejected') {record.rejectionReason = 'Historical rejection'; stored.requirements[0].currentDocumentId = null;}
+    const historicalEvent = outcome === 'pending' ? null : {...getEmployeeActivity(companyId, employeeId)[0], id: 'legacy-review-event', type: outcome === 'approved' ? 'document_confirmed' as const : 'document_rejected' as const, actorName: 'Historical reviewer', occurredAt: '2026-09-01T10:00:00Z'};
+    if (historicalEvent) owner().state.byCompany[companyId].activity!.push(historicalEvent);
+    const before = structuredClone(readEmployeeState()), file = employeeDocumentBytes(companyId, employeeId, record.id);
+    expect(rows()[0].status).toBe(outcome === 'rejected' ? 'missing' : 'valid'); expect(readEmployeeState()).toEqual(before);
+    expect(engine().companyDocumentHistory(companyId, first.requirementId)[0]).toEqual(record);
+    if (outcome === 'rejected') {const next = upload({requirementId: first.requirementId}); expect(next.document.version).toBe(2); expect(engine().companyDocumentHistory(companyId, first.requirementId)[1]).toMatchObject({reviewOutcome: 'rejected', rejectionReason: 'Historical rejection', reviewedBy: 'Historical reviewer'});}
+    else {expect(engine().updateCompanyDocumentMetadata(companyId, first.requirementId, record.id, {name: 'Updated', issuer: 'Office', expiresAt: '', language: 'en'}).ok).toBe(true); expect(engine().getCompanyDocumentDetails(companyId, first.requirementId)?.current).toMatchObject({reviewOutcome: outcome, ...(record.reviewedBy ? {reviewedBy: record.reviewedBy, reviewedAt: record.reviewedAt} : {})});}
+    expect(engine().companyDocumentFile(companyId, first.requirementId, record.id)).toBe(file);
+    expect(getEmployeeActivity(companyId, employeeId).filter((event) => ['document_confirmed', 'document_rejected'].includes(event.type))).toEqual(historicalEvent ? [historicalEvent] : []);
   });
 
   it.each(['reviewer', 'viewer'] as const)('denies all personnel document access to %s without changing basic profile or company-document permissions', (role) => {
@@ -144,6 +169,8 @@ describe('Employee ownership adaptation of shared document lifecycle', () => {
       (state: EmployeeState) => {state.byCompany[companyId].documentWorkspaces![employeeId].documents[0].employeeId = otherId;},
       (state: EmployeeState) => {state.byCompany[companyId].documentWorkspaces![employeeId].requirements[0].currentDocumentId = 'not-owned';},
       (state: EmployeeState) => {state.byCompany[companyId].documentWorkspaces![employeeId].documents[0].previousDocumentId = first.document.id;},
+      (state: EmployeeState) => {state.byCompany[companyId].documentWorkspaces![employeeId].documents[0].reviewOutcome = 'corrupt' as never;},
+      (state: EmployeeState) => {state.byCompany[companyId].documentWorkspaces![employeeId].documents[0].reviewApplicability = 'corrupt' as never;},
       (state: EmployeeState) => {state.byCompany[companyId].documentWorkspaces![employeeId] = null as never;}
     ]) {const state = structuredClone(before); corrupt(state); owner().state = state; expect(employeeDocumentWorkspace(companyId, employeeId)).toBeNull(); expect(engine().addCompanyDocument(companyId, input()).ok).toBe(false); expect(readEmployeeState()).toBe(state);}
   });

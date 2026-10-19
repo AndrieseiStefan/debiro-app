@@ -6,7 +6,7 @@ import type {Employee} from './types';
 export const emptyEmployeeDocuments: EmployeeDocumentWorkspace = {requirements: [], documents: []};
 /** Reuses the existing document validator/status engine, then adds strict employee references. */
 export function projectEmployeeDocuments(workspace: EmployeeDocumentWorkspace, companyId: string, employeeId: string, locale: 'ro' | 'en', files?: ReadonlyMap<string, Blob>) {
-  const result = projectCompanyDocuments({byCompany: {[companyId]: workspace}}, companyId, locale, files);
+  const result = projectCompanyDocuments({byCompany: {[companyId]: workspace}}, companyId, locale, files, undefined, 'not_required');
   if (result.error || !workspace.requirements.every((item) => item.employeeId === employeeId && Array.isArray(item.sourceTemplateIds) && item.sourceTemplateIds.every((id) => typeof id === 'string') &&
     (!item.typeSnapshot || (item.typeSnapshot.documentTypeSource === 'catalog' ? typeof item.typeSnapshot.catalogDocumentTypeId === 'string' : item.typeSnapshot.documentTypeSource === 'company' && typeof item.typeSnapshot.companyDocumentTypeId === 'string'))) ||
     !workspace.documents.every((item) => item.employeeId === employeeId && typeof item.requirementId === 'string' && Number.isInteger(item.version) && item.version > 0 && workspace.requirements.some((requirement) => requirement.id === item.requirementId) &&

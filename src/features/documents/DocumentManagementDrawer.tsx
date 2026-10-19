@@ -21,6 +21,7 @@ import {uploadFileError} from './upload-file';
 import styles from './DocumentManagementDrawer.module.css';
 import {DocumentComplianceBadge} from './DocumentComplianceBadge';
 import {DocumentFileCard, DocumentVersionHistory} from './DocumentManagementViews';
+import {DocumentFilePreview} from './DocumentFilePreview';
 
 export function DocumentManagementDrawer({documentId, documentAction, contextPath, vendorId}: DocumentSelection & {contextPath: string; vendorId?: string}) {
   const triggerRef = useRef<HTMLElement>(null);
@@ -32,7 +33,7 @@ export function DocumentManagementDrawer({documentId, documentAction, contextPat
   return <DocumentDrawer documentId={documentId} action={documentAction} contextPath={contextPath} vendorId={vendorId} triggerRef={triggerRef}/>;
 }
 
-type DrawerScreen = {type: 'details' | 'history' | 'replace' | 'success'; documentId: string};
+type DrawerScreen = {type: 'details' | 'history' | 'replace' | 'success' | 'preview'; documentId: string};
 function initialScreens(documentId: string, action?: string): DrawerScreen[] {
   const details: DrawerScreen = {type: 'details', documentId};
   if (action === 'history') return [details, {type: 'history', documentId}];
@@ -41,6 +42,7 @@ function initialScreens(documentId: string, action?: string): DrawerScreen[] {
 
 function DocumentDrawer({documentId, action, contextPath, vendorId, triggerRef}: {documentId: string; action?: string; contextPath: string; vendorId?: string; triggerRef: RefObject<HTMLElement | null>}) {
   const t = useTranslations('DocumentManagement');
+  const viewer = useTranslations('CompanyDocumentManagement');
   const language = useLocale() === 'en' ? 'en' : 'ro';
   const router = useRouter();
   const [navigation, setNavigation] = useState(() => ({entryId: documentId, entryAction: action, screens: initialScreens(documentId, action)}));
@@ -110,12 +112,12 @@ function DocumentDrawer({documentId, action, contextPath, vendorId, triggerRef}:
     })}/>;
   }
   function fileCard(item: CreatedDocument) {
-    return <DocumentFileCard filename={item.filename} fileType={item.fileType} fileSize={item.fileSize} action={details ? <Button variant="secondary" className={styles.fileDownload} disabled={!documentFile(companyId, item.id)} onClick={() => startDownload(item)}><AppIcon name="download" size={16}/>{t('download')}</Button> : download(item)}/>;
+    return <DocumentFileCard filename={item.filename} fileType={item.fileType} fileSize={item.fileSize} action={details ? <>{documentFile(companyId, item.id) && <Button variant="secondary" onClick={() => navigate(item, 'preview')}>{viewer('preview')}</Button>}<Button variant="secondary" className={styles.fileDownload} disabled={!documentFile(companyId, item.id)} onClick={() => startDownload(item)}><AppIcon name="download" size={16}/>{t('download')}</Button></> : download(item)}/>;
   }
-  return <><Drawer phase={phase} onClose={close} onExited={exited} triggerRef={triggerRef} titleId="document-management-title" descriptionId="document-management-description" closeLabel={t('close')} size={details ? 'wide' : 'standard'} contentClassName={styles.content}>
-    <DrawerHeader titleRef={headingRef} titleId="document-management-title" title={t(!available ? 'unavailableTitle' : mode === 'replace' ? 'replaceTitle' : mode === 'history' ? 'historyTitle' : mode === 'success' ? 'successTitle' : 'detailsTitle')} onBack={screens.length > 1 ? back : undefined} backLabel={t(screens[screens.length - 2]?.type === 'history' ? 'backToHistory' : 'backToDetails')}/>
+  return <><Drawer phase={phase} onClose={close} onExited={exited} triggerRef={triggerRef} titleId="document-management-title" descriptionId="document-management-description" closeLabel={t('close')} size={details || mode === 'preview' ? 'wide' : 'standard'} contentClassName={styles.content}>
+    <DrawerHeader titleRef={headingRef} titleId="document-management-title" title={available && mode === 'preview' ? viewer('previewTitle') : t(!available ? 'unavailableTitle' : mode === 'replace' ? 'replaceTitle' : mode === 'history' ? 'historyTitle' : mode === 'success' ? 'successTitle' : 'detailsTitle')} onBack={screens.length > 1 ? back : undefined} backLabel={t(screens[screens.length - 2]?.type === 'history' ? 'backToHistory' : 'backToDetails')}/>
     <p id="document-management-description" className={available && (details || mode === 'history') ? styles.srOnly : styles.intro}>{t(!available ? 'unavailableDescription' : mode === 'replace' ? 'replaceDescription' : mode === 'history' ? 'historyDescription' : mode === 'success' ? 'successDescription' : 'detailsDescription')}</p>
-    {!available || !record ? <Button variant="secondary" onClick={close}>{t('close')}</Button> : mode === 'replace' ? <ReplacementForm key={record.id} document={record} companyId={companyId} onCancel={close} onSuccess={(replacement) => router.replace(documentManagementHref(replacement, contextPath, 'success'), {scroll: false})}/> : mode === 'success' ? <div className={styles.success} role="status"><span className={styles.successIcon}><AppIcon name="check" size={32}/></span>{fileCard(record)}<section className={styles.currentStatus}><strong>{t('currentStatus')}</strong><DocumentComplianceBadge status={record.status}/></section><Button onClick={close}>{t('close')}</Button></div> : mode === 'history' ? historyTimeline() : <div className={styles.detailsGrid}>
+    {!available || !record ? <Button variant="secondary" onClick={close}>{t('close')}</Button> : mode === 'preview' ? <DocumentFilePreview file={documentFile(companyId, record.id) ?? null} mime={record.fileType} title={record.filename} unavailable={viewer('previewUnavailable')} unsupported={viewer('previewUnsupported')} action={download(record)}/> : mode === 'replace' ? <ReplacementForm key={record.id} document={record} companyId={companyId} onCancel={close} onSuccess={(replacement) => router.replace(documentManagementHref(replacement, contextPath, 'success'), {scroll: false})}/> : mode === 'success' ? <div className={styles.success} role="status"><span className={styles.successIcon}><AppIcon name="check" size={32}/></span>{fileCard(record)}<section className={styles.currentStatus}><strong>{t('currentStatus')}</strong><DocumentComplianceBadge status={record.status}/></section><Button onClick={close}>{t('close')}</Button></div> : mode === 'history' ? historyTimeline() : <div className={styles.detailsGrid}>
       <section>{fileCard(record)}{!documentFile(companyId, record.id) && <p className={styles.fileNotice}>{t('downloadUnavailable')}</p>}<h3>{t('information')}</h3><dl className={styles.metadata}>
         {([
           [t('name'), record.documentName[language]],

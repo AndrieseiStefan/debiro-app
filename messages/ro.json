@@ -22,9 +22,10 @@
     "title": "Detalii angajat",
     "description": "Gestionează documentele, datele și activitatea angajatului în companie.",
     "add": "Adaugă document",
-    "addDescription": "Încarcă un document pentru acest angajat. Documentele noi necesită confirmare umană.",
+    "addDescription": "Încarcă un document pentru acest angajat. Statusul este calculat din data de expirare înregistrată.",
     "replaceTitle": "Încarcă versiune nouă",
-    "replaceDescription": "Fișierul nou va necesita confirmare umană. Versiunile anterioare și fișierele lor originale rămân în istoric.",
+    "replaceDescription": "Versiunea nouă devine curentă imediat. Versiunile anterioare și fișierele lor originale rămân în istoric.",
+    "metadataNotice": "Informațiile originale de încărcare și versiunile istorice sunt păstrate. Statusul este calculat din data de expirare înregistrată.",
     "templateDescription": "Selectează un șablon pentru angajați și verifică documentele înainte de aplicare. Aplicarea configurează cerințe, nu încarcă fișiere.",
     "noTemplates": "Nu există șabloane pentru angajați în această companie.",
     "documents": "Documente",
@@ -75,11 +76,9 @@
       "document_marked_expired": "Document marcat ca expirat"
     },
     "success": {
-      "added": "Document încărcat. Necesită confirmare umană.",
-      "replaced": "Versiune nouă încărcată. Necesită confirmare umană.",
-      "approved": "Document confirmat.",
-      "rejected": "Document respins. Versiunea a fost păstrată în istoric.",
-      "metadata": "Date actualizate. Documentul necesită reconfirmare.",
+      "added": "Document încărcat.",
+      "replaced": "Versiune nouă încărcată.",
+      "metadata": "Date actualizate.",
       "expired": "Document marcat ca expirat."
     }
   },

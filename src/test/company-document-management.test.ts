@@ -31,6 +31,14 @@ beforeEach(() => {switchActiveCompany(companyId); owner().state = structuredClon
 afterEach(() => {role('administrator'); switchActiveCompany(companyId); owner().state = companyDocumentsFixture; owner().files = new Map(); templateOwner().state = originalTemplates; vi.restoreAllMocks();});
 
 describe('company document authorized transactions', () => {
+  it('does not accept an employee no-review policy in a Company workspace', () => {
+    const result = upload(), record = owner().state.byCompany[companyId].documents.find((item) => item.id === result.document.id)!;
+    record.reviewApplicability = 'not_required'; record.reviewOutcome = 'not_required';
+    expect(companyDocumentList(readCompanyDocumentsState(), companyId, 'en').error).toBe(true);
+    expect(getCompanyDocumentDetails(companyId, result.requirementId)).toBeNull();
+    expect(reviewCompanyDocument(companyId, result.requirementId, record.id, 'approved').ok).toBe(false);
+  });
+
   it('creates an optional standalone requirement and pending v1 with exact bytes and real provenance', () => {
     const file = input().file, result = upload({file});
     const details = getCompanyDocumentDetails(companyId, result.requirementId)!;

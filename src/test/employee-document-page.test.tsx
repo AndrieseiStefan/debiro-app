@@ -39,7 +39,7 @@ describe('Employee Details shared document UI', () => {
     expect(within(screen.getByRole('dialog')).queryByRole('note')).toBeNull(); fireEvent.keyDown(document, {key: 'Escape'}); await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull()); await waitFor(() => expect(edit).toHaveFocus());
   });
 
-  it('uses the scoped picker/preview/source colors and existing upload, review, replacement, history and metadata forms', async () => {
+  it('uses the scoped picker/source colors and immediate upload, replacement, history and metadata forms without review', async () => {
     const base = templateOwner().state.byCompany[companyId].templates[0];
     templateOwner().state.byCompany[companyId].templates.push({...base, id: 'employee-file', scope: 'employee', categoryId: null, title: {ro: 'Dosar standard', en: 'Standard file'}, accentToken: 'violet', documents: [{id: 'employee-rule', templateId: 'employee-file', catalogDocumentTypeId: 'safety', required: true, expiryWarningDays: 30, validityMonths: 12}]});
     view(); fireEvent.click(screen.getAllByRole('button', {name: en.VendorTemplates.title})[0]); let dialog = screen.getByRole('dialog');
@@ -50,9 +50,11 @@ describe('Employee Details shared document UI', () => {
     fireEvent.click(within(row).getByRole('button', {name: en.CompanyDocuments.upload})); dialog = screen.getByRole('dialog'); expect(dialog.querySelector('#company-upload-name')).toHaveAttribute('readonly'); expect(dialog.querySelector('#company-upload-type')).toHaveAttribute('readonly');
     fireEvent.change(dialog.querySelector('input[type=file]')!, {target: {files: [new File(['actual test file'], 'safety.pdf', {type: 'application/pdf'})]}}); fireEvent.click(within(dialog).getByRole('button', {name: en.AddDocument.submit})); await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     const requirement = employeeDocumentWorkspace(companyId, employeeId)!.requirements[0]; expect(employeeDocumentWorkspace(companyId, employeeId)!.requirements).toHaveLength(1);
-    row = screen.getByRole('row', {name: /Occupational safety declaration/}); expect(row).toHaveTextContent(en.CompanyDocuments.status.needs_review);
+    row = screen.getByRole('row', {name: /Occupational safety declaration/}); expect(row).toHaveTextContent(en.CompanyDocuments.status.valid);
     fireEvent.click(within(row).getByRole('button', {name: 'Occupational safety declaration'})); dialog = screen.getByRole('dialog'); expect(within(dialog).getByText('Template: Standard file')).toBeVisible();
-    fireEvent.click(within(dialog).getByRole('button', {name: en.CompanyDocumentManagement.confirm})); expect(within(dialog).getByText(en.CompanyDocumentManagement.success.approved)).toBeVisible();
+    for (const label of [en.CompanyDocumentManagement.confirm, en.CompanyDocumentManagement.reject, en.CompanyDocumentManagement.reviewStatus]) expect(within(dialog).queryByText(label)).toBeNull();
+    expect(within(dialog.querySelector('[data-document-file-card]') as HTMLElement).getAllByRole('button').map((button) => button.textContent)).toEqual([en.CompanyDocumentManagement.preview, en.DocumentManagement.download]);
+    expect(document.querySelector('#employee-document-status option[value="needs_review"]')).toBeNull();
     fireEvent.click(within(dialog).getByRole('button', {name: en.CompanyDocumentManagement.replaceTitle})); dialog = screen.getByRole('dialog'); fireEvent.change(dialog.querySelector('input[type=file]')!, {target: {files: [new File(['second file'], 'safety-new.pdf', {type: 'application/pdf'})]}}); fireEvent.click(within(dialog).getByRole('button', {name: en.AddDocument.submit})); await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(employeeDocumentEngine(companyId, employeeId).companyDocumentHistory(companyId, requirement.id)).toHaveLength(2);
     fireEvent.click(screen.getByRole('tab', {name: en.EmployeeDocuments.activity})); expect(screen.getAllByText(en.EmployeeDocuments.events.document_upload)).toHaveLength(1); expect(screen.getByText(en.EmployeeDocuments.events.document_replaced)).toBeVisible();
@@ -67,7 +69,7 @@ describe('Employee Details shared document UI', () => {
 
   it('activates list progress/current dates/attention rollups, excludes inactive employees, and keeps document bytes when editing', () => {
     const engine = employeeDocumentEngine(companyId, employeeId), value = engine.addCompanyDocument(companyId, {name: 'Active requirement', documentType: 'custom', issuer: '', expiresAt: '01.11.2026', required: true, file: new File(['actual'], 'active.pdf', {type: 'application/pdf'})}); if (!value.ok) throw new Error(value.reason);
-    engine.reviewCompanyDocument(companyId, value.requirementId, value.document.id, 'approved'); view('en', true);
+    view('en', true);
     expect(screen.getByRole('row', {name: /Andrei Popescu/})).toHaveTextContent('1/1 documents'); expect(screen.getByRole('row', {name: /Andrei Popescu/})).toHaveTextContent(en.EmployeeDocuments.tracking.attention);
     const summary = screen.getByRole('region', {name: en.Employees.summaryLabel}); expect([...summary.querySelectorAll('strong')].map((item) => item.textContent)).toEqual(['8', '1', '1']);
     fireEvent.click(screen.getByRole('button', {name: 'Actions for Andrei Popescu'})); fireEvent.click(screen.getByRole('menuitem', {name: en.Employees.markInactive}));
@@ -100,10 +102,29 @@ describe('Employee Details shared document UI', () => {
   });
 
   it('filters the directory by existing tracking projections without exposing the filter or document data to ordinary members', () => {
-    employeeDocumentEngine(companyId, employeeId).addCompanyDocument(companyId, {name: 'Needs internal review', documentType: 'custom', required: true, issuer: '', expiresAt: '', file: new File(['synthetic'], 'proof.pdf', {type: 'application/pdf'})});
+    employeeDocumentEngine(companyId, employeeId).addCompanyDocument(companyId, {name: 'Expired document', documentType: 'custom', required: true, issuer: '', expiresAt: '01.10.2026', file: new File(['synthetic'], 'proof.pdf', {type: 'application/pdf'})});
     view('en', true); fireEvent.click(screen.getByRole('button', {name: en.DataFilters.trigger}));
     fireEvent.change(screen.getByRole('combobox', {name: en.EmployeeDocuments.trackingLabel}), {target: {value: 'attention'}}); expect(screen.getAllByRole('row')).toHaveLength(2); expect(screen.getByRole('row', {name: /Andrei Popescu/})).toBeVisible();
     act(() => {companyOwner().state.companies[0].members.find((member) => member.isCurrentUser)!.role = 'viewer'; companyOwner().state = {...companyOwner().state}; companyOwner().listeners.forEach((notify) => notify());});
-    expect(screen.queryByRole('combobox', {name: en.EmployeeDocuments.trackingLabel})).toBeNull(); expect(screen.getAllByRole('row')).toHaveLength(9); expect(screen.queryByText('Needs internal review')).toBeNull();
+    expect(screen.queryByRole('combobox', {name: en.EmployeeDocuments.trackingLabel})).toBeNull(); expect(screen.getAllByRole('row')).toHaveLength(9); expect(screen.queryByText('Expired document')).toBeNull();
+  });
+
+  it.each(['pending', 'approved', 'rejected'] as const)('shows legacy %s history without employee review controls or changing stored decisions', async (outcome) => {
+    const engine = employeeDocumentEngine(companyId, employeeId), result = engine.addCompanyDocument(companyId, {name: 'Legacy personnel file', documentType: 'custom', required: true, issuer: '', expiresAt: '', file: new File(['legacy bytes'], 'legacy.pdf', {type: 'application/pdf'})});
+    if (!result.ok) throw new Error(result.reason);
+    const workspace = owner().state.byCompany[companyId].documentWorkspaces![employeeId], record = workspace.documents[0];
+    delete record.reviewApplicability; record.reviewOutcome = outcome;
+    if (outcome !== 'pending') {record.reviewedBy = 'Historical reviewer'; record.reviewedAt = '2026-09-01T10:00:00Z';}
+    if (outcome === 'rejected') {record.rejectionReason = 'Historical rejection'; workspace.requirements[0].currentDocumentId = null;}
+    const before = structuredClone(readEmployeeState());
+    view(); fireEvent.click(screen.getByRole('button', {name: 'Legacy personnel file'})); const dialog = screen.getByRole('dialog');
+    for (const label of [en.CompanyDocumentManagement.confirm, en.CompanyDocumentManagement.reject, en.CompanyDocumentManagement.reviewStatus, en.DocumentManagement.reviewedBy]) expect(within(dialog).queryByText(label)).toBeNull();
+    expect(within(dialog).getByText(en.CompanyDocuments.status[outcome === 'rejected' ? 'missing' : 'valid'], {exact: true})).toBeVisible();
+    fireEvent.click(within(dialog).getByRole('button', {name: en.DocumentManagement.viewAll}));
+    if (outcome === 'pending') expect(within(dialog).queryByText(en.DocumentManagement.outcome.pending)).toBeNull();
+    else {expect(within(dialog).getByText(en.DocumentManagement.outcome[outcome])).toBeVisible(); expect(within(dialog).getByText(/Historical reviewer/)).toBeVisible();}
+    if (outcome === 'rejected') expect(within(dialog).getByText(/Historical rejection/)).toBeVisible();
+    expect(within(dialog).getByRole('button', {name: en.DocumentManagement.download})).toBeEnabled();
+    expect(readEmployeeState()).toEqual(before);
   });
 });

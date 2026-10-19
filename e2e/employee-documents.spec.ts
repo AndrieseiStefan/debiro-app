@@ -28,9 +28,10 @@ async function createTemplate(page: Page, english = false, scope: 'company' | 'e
   return (await page.locator('[data-template-id][data-selected="true"]').getAttribute('data-template-id'))!;
 }
 async function close(page: Page) {await page.keyboard.press('Escape'); await expect(page.getByRole('dialog')).toHaveCount(0);}
-async function add(page: Page, english = false, name = 'Document individual') {
+async function add(page: Page, english = false, name = 'Document individual', expiresAt = '') {
   const copy = english ? en : ro; await page.getByRole('button', {name: copy.EmployeeDocuments.add, exact: true}).first().click(); const dialog = page.getByRole('dialog');
   await dialog.locator('#company-upload-name').fill(name); await dialog.locator('#company-upload-type').selectOption('custom'); await dialog.locator('input[type=file]').setInputFiles(await file());
+  await dialog.locator('#company-upload-expires').fill(expiresAt);
   await dialog.getByRole('button', {name: copy.AddDocument.submit, exact: true}).click(); await expect(dialog).toHaveCount(0); return page.getByRole('row', {name: new RegExp(name)});
 }
 async function details(page: Page, row: Locator, name: string) {await row.getByRole('button', {name, exact: true}).click(); await expect(page.getByRole('dialog')).toBeVisible(); return page.getByRole('dialog');}
@@ -38,8 +39,87 @@ async function role(page: Page, role: 'administrator' | 'reviewer' | 'viewer') {
   await page.evaluate((role) => {const owner = Reflect.get(window, Symbol.for('debiro.company-session')) as {state: ReturnType<typeof readCompanyState>; listeners: Set<() => void>}; owner.state = {...owner.state, companies: owner.state.companies.map((company) => company.company.id === owner.state.activeCompanyId ? {...company, members: company.members.map((member) => member.isCurrentUser ? {...member, role} : member)} : company)}; owner.listeners.forEach((notify) => notify());}, role);
 }
 
+for (const english of [false, true]) for (const scope of ['employee', 'company', 'vendor'] as const) {
+  test(`${english ? 'EN' : 'RO'} shared ${scope} file actions at all required widths`, async ({page}) => {
+    test.setTimeout(90_000);
+    const copy = english ? en : ro, prefix = english ? '/en' : '';
+    if (scope === 'vendor') await page.goto(`${prefix}/documents?document=construct-pro-fire-2024`);
+    else if (scope === 'employee') {
+      await page.goto(`${prefix}/company/employees/employee%3Aandrei-popescu`); await details(page, await add(page, english), 'Document individual');
+    } else {
+      await page.goto(`${prefix}/company/documents`); await page.getByRole('button', {name: copy.CompanyDocuments.addDocuments, exact: true}).click();
+      let dialog = page.getByRole('dialog'); await dialog.locator('#company-upload-name').fill('Company file actions'); await dialog.locator('#company-upload-type').selectOption('custom'); await dialog.locator('input[type=file]').setInputFiles(await file()); await dialog.getByRole('button', {name: copy.AddDocument.submit, exact: true}).click(); await expect(dialog).toHaveCount(0);
+      await page.getByRole('button', {name: 'Company file actions', exact: true}).click(); dialog = page.getByRole('dialog'); await expect(dialog.getByRole('button', {name: copy.CompanyDocumentManagement.confirm, exact: true})).toBeVisible();
+    }
+    const dialog = page.getByRole('dialog'), card = dialog.locator('[data-document-file-card]'), actions = card.locator('[data-document-file-actions]');
+    await expect(actions.getByRole('button')).toHaveText([copy.CompanyDocumentManagement.preview, copy.DocumentManagement.download]);
+    await expect(dialog.getByRole('button', {name: copy.CompanyDocumentManagement.preview, exact: true})).toHaveCount(1);
+    for (const [width, height] of [[1920, 1080], [1448, 900], [1280, 800], [1024, 768], [768, 900], [375, 812], [320, 720]]) {
+      await page.setViewportSize({width, height}); await actions.scrollIntoViewIfNeeded();
+      await dialog.evaluate(async (element) => {await Promise.all(element.getAnimations().map((animation) => animation.finished));});
+      await expect(actions).toHaveCSS('gap', '8px');
+      const geometry = await actions.getByRole('button').evaluateAll((buttons) => buttons.map((button) => {const rect = button.getBoundingClientRect(), style = getComputedStyle(button); return {x: rect.x, y: rect.y, right: rect.right, bottom: rect.bottom, height: rect.height, size: style.fontSize, weight: style.fontWeight};}));
+      expect(geometry[0].height).toBe(geometry[1].height); expect(geometry[0].size).toBe(geometry[1].size); expect(geometry[0].weight).toBe(geometry[1].weight);
+      expect(geometry[0].right <= geometry[1].x + 1 || geometry[0].bottom <= geometry[1].y + 1).toBe(true);
+      if (width >= 768) expect(Math.abs(geometry[0].y - geometry[1].y)).toBeLessThan(1);
+      for (const button of await actions.getByRole('button').all()) {await expect(button).toBeInViewport(); expect(await button.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);}
+      expect(await dialog.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.screenshot({path: `artifacts/visual/e1c-006b/${scope}-file-actions-${english ? 'en' : 'ro'}-${width}.png`});
+    }
+    await actions.getByRole('button', {name: copy.CompanyDocumentManagement.preview}).focus(); await page.keyboard.press('Enter'); await expect(dialog.getByRole('heading', {name: copy.CompanyDocumentManagement.previewTitle})).toBeVisible();
+    await expect(dialog.locator('iframe')).toHaveAttribute('src', /^blob:/);
+    await dialog.getByRole('button', {name: copy.DocumentManagement.backToDetails, exact: true}).click(); await expect(card).toBeVisible();
+    const pending = page.waitForEvent('download'); await actions.getByRole('button', {name: copy.DocumentManagement.download, exact: true}).click(); const saved = await pending;
+    if (scope !== 'vendor') expect(await readFile((await saved.path())!)).toEqual((await file()).buffer);
+    else {expect(saved.suggestedFilename()).toBe('Autorizatie_ISU.pdf'); expect((await readFile((await saved.path())!)).length).toBeGreaterThan(0);}
+  });
+}
+
+for (const english of [false, true]) test(`${english ? 'EN' : 'RO'} employee legacy decisions remain historical while current status uses expiry`, async ({page}) => {
+  const copy = english ? en : ro;
+  await page.goto(`${english ? '/en' : ''}/company/employees/employee%3Aandrei-popescu`);
+  for (const name of ['Legacy pending', 'Legacy approved', 'Legacy rejected']) await add(page, english, name);
+  const before = await page.evaluate((employeeId) => {
+    const owner = Reflect.get(window, Symbol.for('debiro.employees-session')) as {state: EmployeeState; listeners: Set<() => void>}; owner.state = structuredClone(owner.state);
+    const workspace = owner.state.byCompany['demo-company'], documents = workspace.documentWorkspaces![employeeId];
+    for (const record of documents.documents) {
+      const outcome = record.documentName.en.split(' ')[1] as 'pending' | 'approved' | 'rejected'; delete record.reviewApplicability; record.reviewOutcome = outcome;
+      if (outcome !== 'pending') {
+        record.reviewedBy = 'Historical reviewer'; record.reviewedAt = '2026-09-01T10:00:00Z';
+        workspace.activity!.push({...workspace.activity![0], id: `legacy-${outcome}`, type: outcome === 'approved' ? 'document_confirmed' : 'document_rejected', documentId: record.id, requirementId: record.requirementId, actorName: 'Historical reviewer', occurredAt: record.reviewedAt});
+      }
+      if (outcome === 'rejected') {record.rejectionReason = 'Historical rejection'; documents.requirements.find((requirement) => requirement.id === record.requirementId)!.currentDocumentId = null;}
+    }
+    owner.listeners.forEach((notify) => notify()); return JSON.stringify(owner.state);
+  }, employeeId);
+  for (const outcome of ['pending', 'approved', 'rejected']) {
+    const name = `Legacy ${outcome}`, row = page.getByRole('row', {name: new RegExp(name)}); await expect(row.locator('[data-tone][data-status]')).toHaveAttribute('data-status', outcome === 'rejected' ? 'missing' : 'valid');
+    const dialog = await details(page, row, name);
+    for (const label of [copy.CompanyDocumentManagement.confirm, copy.CompanyDocumentManagement.reject]) await expect(dialog.getByRole('button', {name: label, exact: true})).toHaveCount(0);
+    await expect(dialog.getByText(copy.CompanyDocumentManagement.reviewStatus, {exact: true})).toHaveCount(0);
+    await dialog.getByRole('button', {name: copy.DocumentManagement.viewAll, exact: true}).click();
+    if (outcome === 'pending') await expect(dialog.getByText(copy.DocumentManagement.outcome.pending, {exact: true})).toHaveCount(0);
+    else {await expect(dialog.getByText(copy.DocumentManagement.outcome[outcome as 'approved' | 'rejected'], {exact: true})).toBeVisible(); await expect(dialog.getByText(/Historical reviewer/)).toBeVisible();}
+    await expect(dialog.getByRole('button', {name: copy.DocumentManagement.download, exact: true})).toBeEnabled();
+    await page.screenshot({path: `artifacts/visual/e1c-006b/legacy-${outcome}-${english ? 'en' : 'ro'}.png`}); await close(page);
+  }
+  expect(await page.evaluate(() => JSON.stringify(Reflect.get(window, Symbol.for('debiro.employees-session')).state))).toBe(before);
+  await page.getByRole('tab', {name: copy.EmployeeDocuments.activity, exact: true}).click(); await expect(page.locator('[data-event-type="document_confirmed"]')).toHaveCount(1); await expect(page.locator('[data-event-type="document_rejected"]')).toHaveCount(1);
+});
+
 for (const english of [false, true]) {
   const prefix = english ? '/en' : '', copy = english ? en : ro;
+  test(`${english ? 'EN' : 'RO'} employee uploads derive no-expiry, valid, expiring and expired statuses immediately`, async ({page}) => {
+    await page.goto(prefix + '/company/employees/employee%3Aandrei-popescu');
+    for (const [name, expiry, status] of [['No expiry', '', 'valid'], ['Distant expiry', '01.12.2026', 'valid'], ['Soon expiry', '01.11.2026', 'expiring_soon'], ['Past expiry', '01.10.2026', 'expired']] as const) {
+      const row = await add(page, english, name, expiry); await expect(row.locator('[data-tone][data-status]')).toHaveAttribute('data-status', status);
+      const dialog = await details(page, row, name); await expect(dialog.getByText(copy.CompanyDocuments.status[status], {exact: true})).toBeVisible();
+      await expect(dialog.getByRole('button', {name: copy.CompanyDocumentManagement.confirm, exact: true})).toHaveCount(0);
+      await page.screenshot({path: `artifacts/visual/e1c-006b/employee-${name.replaceAll(' ', '-')}-${english ? 'en' : 'ro'}.png`}); await close(page);
+    }
+    await expect(page.getByRole('region', {name: copy.EmployeeDocuments.summaryLabel}).locator('strong')).toHaveText(['4', '2', '1', '0']);
+  });
+
   test(`${english ? 'EN' : 'RO'} reminder stays visible in empty, configured and uploaded document states at every toolbar breakpoint`, async ({page}) => {
     test.setTimeout(60_000);
     const templateId = await createTemplate(page, english); await employeeDetails(page, english);
@@ -97,8 +177,8 @@ for (const english of [false, true]) {
     await row.getByRole('button', {name: copy.CompanyDocuments.upload, exact: true}).click(); let dialog = page.getByRole('dialog'); await expect(dialog.locator('#company-upload-name')).toHaveAttribute('readonly'); await expect(dialog.locator('#company-upload-type')).toHaveAttribute('readonly'); await expect(dialog.locator('#company-template, input[type=checkbox]')).toHaveCount(0);
     await dialog.locator('input[type=file]').setInputFiles({name: 'blocked.exe', mimeType: 'application/octet-stream', buffer: Buffer.from('blocked')}); await expect(dialog.getByRole('alert')).toBeVisible();
     await dialog.locator('input[type=file]').setInputFiles(await file()); await dialog.getByRole('button', {name: copy.AddDocument.submit, exact: true}).click(); await expect(dialog).toHaveCount(0);
-    row = page.locator('tbody tr'); await expect(row).toHaveCount(1); await expect(row.locator('[data-tone][data-status]')).toHaveText(copy.CompanyDocuments.status.needs_review);
-    const name = await row.locator('td').nth(1).getByRole('button').innerText(); dialog = await details(page, row, name); await expect(dialog).toContainText('Dosar standard angajat'); await dialog.getByRole('button', {name: copy.CompanyDocumentManagement.confirm, exact: true}).click(); await close(page);
+    row = page.locator('tbody tr'); await expect(row).toHaveCount(1); await expect(row.locator('[data-tone][data-status]')).toHaveText(copy.CompanyDocuments.status.valid);
+    const name = await row.locator('td').nth(1).getByRole('button').innerText(); dialog = await details(page, row, name); await expect(dialog).toContainText('Dosar standard angajat'); await expect(dialog.getByRole('button', {name: copy.CompanyDocumentManagement.confirm, exact: true})).toHaveCount(0); await close(page);
     await expect(page.getByRole('region', {name: copy.EmployeeDocuments.summaryLabel}).locator('strong')).toHaveText(['1', '1', '0', '0']);
     await page.getByRole('button', {name: copy.EmployeeDocuments.sendReminder, exact: true}).click(); await expect(page.getByRole('dialog').locator('#employee-reminder-message')).toHaveValue(''); await expect(page.getByRole('dialog').locator('input[type=file]')).toHaveCount(0); await close(page);
     await employeeList(page, english); const employee = page.getByRole('row', {name: /Andrei Popescu/}); await expect(employee).toContainText(english ? '1/1 documents' : '1/1 documente'); await expect(employee).toContainText(copy.EmployeeDocuments.tracking.complete);
@@ -107,23 +187,25 @@ for (const english of [false, true]) {
     await expect(page).toHaveURL(new RegExp(`${prefix}/company/employees/employee%3Aandrei-popescu`));
   });
 
-  test(`${english ? 'EN' : 'RO'} standalone review, exact downloads, replacement rejection/history, metadata and manual expiry`, async ({page}) => {
+  test(`${english ? 'EN' : 'RO'} immediate standalone status, exact files, atomic replacements/history, metadata and manual expiry`, async ({page}) => {
     await page.goto(prefix + '/company/employees/employee%3Aandrei-popescu'); const row = await add(page, english); await expect(row).toContainText(copy.VendorTemplates.manualSource);
     let dialog = await details(page, row, 'Document individual'); const download = page.waitForEvent('download'); await dialog.getByRole('button', {name: copy.DocumentManagement.download, exact: true}).click(); const saved = await download; expect(await readFile((await saved.path())!)).toEqual((await file()).buffer);
     await dialog.getByRole('button', {name: copy.CompanyDocumentManagement.preview, exact: true}).click();
     if (!(await page.evaluate(() => navigator.pdfViewerEnabled))) await expect(dialog.getByText(copy.CompanyDocumentManagement.previewUnsupported, {exact: true})).toBeVisible();
-    await dialog.getByRole('button', {name: copy.DocumentManagement.backToDetails, exact: true}).click(); await dialog.getByRole('button', {name: copy.CompanyDocumentManagement.confirm, exact: true}).click();
+    await dialog.getByRole('button', {name: copy.DocumentManagement.backToDetails, exact: true}).click(); await expect(dialog.getByRole('button', {name: copy.CompanyDocumentManagement.confirm, exact: true})).toHaveCount(0);
     await dialog.getByRole('button', {name: copy.CompanyDocumentManagement.replaceTitle, exact: true}).click(); dialog = page.getByRole('dialog');
     await dialog.locator('input[type=file]').setInputFiles(await file(2)); await dialog.locator('#company-upload-expires').fill('31.02.2026'); await dialog.getByRole('button', {name: copy.AddDocument.submit, exact: true}).click(); await expect(dialog.getByRole('alert')).toBeVisible(); await expect(dialog.locator('#company-upload-expires')).toHaveValue('31.02.2026');
     await dialog.locator('#company-upload-expires').fill('01.11.2026'); await dialog.getByRole('button', {name: copy.AddDocument.submit, exact: true}).click(); await expect(dialog).toHaveCount(0);
-    dialog = await details(page, row, 'Document individual'); await dialog.getByRole('button', {name: copy.CompanyDocumentManagement.reject, exact: true}).click(); const rejection = dialog.getByRole('form', {name: copy.CompanyDocumentManagement.reject}); await rejection.getByRole('button').click(); await expect(dialog.getByRole('alert')).toContainText(copy.CompanyDocumentManagement.errors.rejectionReason);
-    await rejection.getByRole('textbox').fill('Wrong version'); await rejection.getByRole('button').click(); await expect(dialog.getByText(copy.CompanyDocumentManagement.noCurrent, {exact: true})).toBeVisible(); await dialog.getByRole('button', {name: copy.DocumentManagement.viewAll, exact: true}).click(); await expect(dialog.locator('[data-version]')).toHaveCount(2); await expect(dialog).toContainText('Wrong version');
+    await expect(row.locator('[data-tone][data-status]')).toHaveAttribute('data-status', 'expiring_soon');
+    dialog = await details(page, row, 'Document individual'); await expect(dialog.getByRole('button', {name: copy.CompanyDocumentManagement.reject, exact: true})).toHaveCount(0);
+    await expect(dialog.getByText(copy.CompanyDocuments.status.expiring_soon, {exact: true})).toBeVisible(); await dialog.getByRole('button', {name: copy.DocumentManagement.viewAll, exact: true}).click(); await expect(dialog.locator('[data-version]')).toHaveCount(2); await expect(dialog.locator('[data-version="2"]')).toHaveAttribute('data-version-state', 'current');
+    await page.screenshot({path: `artifacts/visual/e1c-006b/employee-replacement-history-${english ? 'en' : 'ro'}.png`});
     const historyDownload = page.waitForEvent('download'); await dialog.locator('[data-version="1"]').getByRole('button', {name: copy.DocumentManagement.download, exact: true}).click(); expect(await readFile((await (await historyDownload).path())!)).toEqual((await file()).buffer); await close(page);
-    await row.getByRole('button', {name: copy.CompanyDocuments.upload, exact: true}).click(); dialog = page.getByRole('dialog'); await dialog.locator('input[type=file]').setInputFiles(await file(3)); await dialog.locator('#company-upload-expires').fill('01.12.2026'); await dialog.getByRole('button', {name: copy.AddDocument.submit, exact: true}).click(); await expect(dialog).toHaveCount(0);
-    dialog = await details(page, row, 'Document individual'); await dialog.getByRole('button', {name: copy.CompanyDocumentManagement.confirm, exact: true}).click(); await dialog.getByRole('button', {name: copy.CompanyDocumentManagement.metadataTitle, exact: true}).click(); await dialog.locator('#company-metadata-issuer').fill('Internal administration'); await dialog.getByRole('button', {name: copy.CompanyDocumentManagement.save, exact: true}).click(); await dialog.getByRole('button', {name: copy.CompanyDocumentManagement.confirm, exact: true}).click();
-    await dialog.getByRole('button', {name: copy.DocumentManagement.markExpired, exact: true}).click(); await page.getByRole('alertdialog').getByRole('button', {name: copy.DocumentManagement.markExpired, exact: true}).click(); await expect(dialog).toContainText(copy.CompanyDocuments.status.expired); await close(page);
+    dialog = await details(page, row, 'Document individual'); await dialog.getByRole('button', {name: copy.CompanyDocumentManagement.replaceTitle, exact: true}).click(); dialog = page.getByRole('dialog'); await dialog.locator('input[type=file]').setInputFiles(await file(3)); await dialog.locator('#company-upload-expires').fill('01.12.2026'); await dialog.getByRole('button', {name: copy.AddDocument.submit, exact: true}).click(); await expect(dialog).toHaveCount(0);
+    dialog = await details(page, row, 'Document individual'); await dialog.getByRole('button', {name: copy.CompanyDocumentManagement.metadataTitle, exact: true}).click(); await dialog.locator('#company-metadata-issuer').fill('Internal administration'); await dialog.getByRole('button', {name: copy.CompanyDocumentManagement.save, exact: true}).click(); await expect(dialog.getByRole('button', {name: copy.CompanyDocumentManagement.confirm, exact: true})).toHaveCount(0);
+    await dialog.getByRole('button', {name: copy.DocumentManagement.markExpired, exact: true}).click(); await page.getByRole('alertdialog').getByRole('button', {name: copy.DocumentManagement.markExpired, exact: true}).click(); await expect(dialog).toContainText(copy.CompanyDocuments.status.expired); await page.screenshot({path: `artifacts/visual/e1c-006b/employee-manually-expired-${english ? 'en' : 'ro'}.png`}); await close(page);
     await expect(page.getByRole('region', {name: copy.EmployeeDocuments.summaryLabel}).locator('strong')).toHaveText(['1', '0', '0', '0']); // Standalone is optional.
-    await page.getByRole('tab', {name: copy.EmployeeDocuments.activity, exact: true}).click(); await expect(page.locator('[data-event-type="document_replaced"]')).toHaveCount(1); await expect(page.locator('[data-event-type="document_marked_expired"]')).toHaveCount(1);
+    await page.getByRole('tab', {name: copy.EmployeeDocuments.activity, exact: true}).click(); await expect(page.locator('[data-event-type="document_replaced"]')).toHaveCount(2); await expect(page.locator('[data-event-type="document_marked_expired"]')).toHaveCount(1); await expect(page.locator('[data-event-type="document_confirmed"], [data-event-type="document_rejected"]')).toHaveCount(0);
   });
 
   test(`${english ? 'EN' : 'RO'} document-only selection, exact bulk download and independent reminder composition stay inside the employee workspace`, async ({page}) => {
@@ -219,7 +301,7 @@ test('employee document privacy, stale owner/permission boundaries and company s
 test('employee list counts active attention/current expiring requirements and preserves inactive history through edit', async ({page}) => {
   const templateId = await createTemplate(page, true); await employeeDetails(page, true); await page.getByRole('button', {name: en.VendorTemplates.title, exact: true}).first().click(); await page.locator('#company-template').selectOption(templateId); await page.getByRole('dialog').getByRole('button', {name: en.CompanyDocumentManagement.applyTemplate, exact: true}).click(); await close(page);
   const row = page.locator('tbody tr'); await row.getByRole('button', {name: en.CompanyDocuments.upload, exact: true}).click(); let dialog = page.getByRole('dialog'); await dialog.locator('input[type=file]').setInputFiles(await file()); await dialog.locator('#company-upload-expires').fill('01.11.2026'); await dialog.getByRole('button', {name: en.AddDocument.submit, exact: true}).click(); await expect(dialog).toHaveCount(0);
-  const name = await row.locator('td').nth(1).getByRole('button').innerText(); dialog = await details(page, row, name); await dialog.getByRole('button', {name: en.CompanyDocumentManagement.confirm, exact: true}).click(); await close(page);
+  const name = await row.locator('td').nth(1).getByRole('button').innerText(); dialog = await details(page, row, name); await expect(dialog.getByRole('button', {name: en.CompanyDocumentManagement.confirm, exact: true})).toHaveCount(0); await close(page);
   await employeeList(page, true); const summary = page.getByRole('region', {name: en.Employees.summaryLabel}); await expect(summary.locator('strong')).toHaveText(['8', '1', '1']); await page.getByRole('row', {name: /Andrei Popescu/}).getByRole('button', {name: 'Actions for Andrei Popescu'}).click(); await page.getByRole('menuitem', {name: en.Employees.markInactive}).click(); await expect(summary.locator('strong')).toHaveText(['8', '0', '0']);
   await page.getByRole('link', {name: 'Andrei Popescu', exact: true}).click(); await page.getByRole('button', {name: en.Employees.edit, exact: true}).click(); dialog = page.getByRole('dialog'); await expect(dialog.getByRole('note')).toHaveCount(0); await dialog.locator('#employee-status').selectOption('active'); await dialog.getByRole('button', {name: en.Employees.save, exact: true}).click(); await expect(dialog).toHaveCount(0); await expect(page.locator('tbody tr')).toHaveCount(1); await employeeList(page, true); await expect(summary.locator('strong')).toHaveText(['8', '1', '1']);
 });
