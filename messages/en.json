@@ -210,8 +210,8 @@
   },
   "GlobalSearch": {
     "resultsFor": "Results for “{query}”", "total": "Found {count, plural, one {# result} other {# results}}",
-    "groups": {"vendors": "Vendors", "documents": "Documents", "requirements": "Templates"},
-    "counts": {"vendors": "{count, plural, one {# vendor} other {# vendors}}", "documents": "{count, plural, one {# document} other {# documents}}", "requirements": "{count, plural, one {# template} other {# templates}}"},
+    "groups": {"vendors": "Vendors", "documents": "Vendor Documents", "requirements": "Templates", "companyDocuments": "Company Documents", "employees": "Employees", "employeeDocuments": "Employee Documents"},
+    "counts": {"vendors": "{count, plural, one {# vendor} other {# vendors}}", "documents": "{count, plural, one {# vendor document} other {# vendor documents}}", "requirements": "{count, plural, one {# template} other {# templates}}", "companyDocuments": "{count, plural, one {# company document} other {# company documents}}", "employees": "{count, plural, one {# employee} other {# employees}}", "employeeDocuments": "{count, plural, one {# employee document} other {# employee documents}}"},
     "readyTitle": "Search your company", "readyDescription": "Search vendors, documents or templates.",
     "emptyTitle": "No results found", "emptyDescription": "No vendors, documents or templates match your search.",
     "clear": "Clear search", "close": "Close search", "draft": "Draft",

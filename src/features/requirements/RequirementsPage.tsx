@@ -22,7 +22,7 @@ import {defaultAppearance, validColorKey, validIconKey} from './appearance';
 import {documentDisplay} from './document-presentation';
 import {previewSupplier, supplierPreviewDocuments} from './supplier-preview';
 import {SupplierRequirementContext, SupplierRequirementList} from '@/features/supplier-requirements/SupplierRequirements';
-import {readWorkspaceSearchData, searchResultHref} from '@/features/global-search/search-workspace';
+import {isSearchResultType, readWorkspaceSearchData, searchResultHref} from '@/features/global-search/search-workspace';
 import {
   addRequirementDocument, cloneStarterTemplate, deleteRequirementTemplate, discardExistingRequirementEdit, discardRequirementDraft, duplicateRequirementTemplate, getRequirementsWorkspace,
   removeRequirementDocument, saveExistingRequirementEdit, saveRequirementDraft, selectRequirementTemplate, startRequirementDraft,
@@ -163,7 +163,7 @@ export function RequirementsPage({locale, view, templateId}: {locale: string; vi
       const resultKey = target.getAttribute('data-search-result');
       const separator = resultKey?.indexOf(':') ?? -1;
       const resultType = resultKey?.slice(0, separator);
-      const result = separator > 0 && (resultType === 'vendor' || resultType === 'document' || resultType === 'requirement') ? {type: resultType, id: resultKey!.slice(separator + 1), companyId} as const : null;
+      const result = separator > 0 && isSearchResultType(resultType) ? {type: resultType, id: resultKey!.slice(separator + 1), companyId} as const : null;
       pendingAction.current = nextCompanyId
         ? () => switchActiveCompany(nextCompanyId)
         // Search rows unmount when confirmation takes focus. Retain/revalidate identity, not a detached link.

@@ -53,7 +53,7 @@ for (const en of [false, true]) {
       await page.keyboard.press('Escape'); await expect(panel(page)).toHaveCount(0); await expect(search).toBeFocused();
     }
     await query(page, '  a  ', en); await expect(page).toHaveURL(url);
-    const groups = panel(page).getByRole('group'); await expect(groups).toHaveCount(3);
+    const groups = panel(page).getByRole('group'); await expect(groups).toHaveCount(5);
     let count = 0;
     for (const group of await groups.all()) {
       const rows = await group.getByRole('option').count(); count += rows;
@@ -206,7 +206,7 @@ test('responsive RO/EN visual captures keep shell geometry and panel inside the 
     await page.goto(en ? '/en/dashboard' : '/dashboard');
     for (const width of [1672, 1024, 768, 600, 375, 320]) {
       await page.setViewportSize({width, height: width === 1672 ? 1086 : 812});
-      await query(page, 'a', en); await expect(panel(page).getByRole('group')).toHaveCount(3);
+      await query(page, 'a', en); await expect(panel(page).getByRole('group')).toHaveCount(5);
       const box = await panel(page).boundingBox(); expect(box!.x).toBeGreaterThanOrEqual(0); expect(box!.x + box!.width).toBeLessThanOrEqual(width);
       expect(box!.y + box!.height).toBeLessThanOrEqual(width === 1672 ? 1086 : 812);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);

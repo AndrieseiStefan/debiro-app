@@ -8,7 +8,7 @@ This roadmap records direction only. Detailed requirements are created by the ta
 
 - E1C-006A Employees directory consistency — implemented Vendor presentation reuse, removal of directory selection/View controls, client row navigation/independent menus, shared filters and document-only bulk actions. Employee Reminder opens local composition; only final email sending remains unavailable until E2
 
-- E1C-006 Employee Details and Documents — implemented Administrator-only employee document requirements/templates, shared upload/review/versions/history/viewer, exact files, metadata/manual expiry, current-only tracking/list KPIs and actual activity; company/employee isolation and existing Company/Vendor behavior preserved. E1C-007 Dashboard/Notifications/Search integration and production personnel privacy/retention remain deferred
+- E1C-006 Employee Details and Documents — implemented Administrator-only employee document requirements/templates, shared upload/review/versions/history/viewer, exact files, metadata/manual expiry, current-only tracking/list KPIs and actual activity; company/employee isolation and existing Company/Vendor behavior preserved. E1C-007 Dashboard/Notifications/Search integration is implemented locally; production personnel privacy/retention remains deferred
 
 - E1C-005 Employee Management — implemented company-owned personnel list/create/edit, suggestions/departments, permissions, filtering/sorting/pagination. Full Details and document metrics are enabled by E1C-006; creation remains optional-document and compact
 

@@ -5,10 +5,11 @@ import {defaultAppearance} from '@/features/requirements/appearance';
 import {activeDocuments} from '@/features/documents/created-documents';
 import {getVendorRequirements} from '@/features/vendors/vendor-requirements';
 import {projectVendorDocuments} from '@/features/vendors/projections';
-import {normalizeSearchQuery, readWorkspaceSearchData, searchHighlightParts, searchResultHref, searchWorkspace, type SearchLabels, type WorkspaceSearchData} from '@/features/global-search/search-workspace';
+import type {EmployeeDocumentRequirement, EmployeeDocumentVersion, EmployeeDocumentWorkspace} from '@/features/employees/employee-document-types';
+import {normalizeSearchQuery, readWorkspaceSearchData, searchGroups, searchHighlightParts, searchResultDestination, searchResultHref, searchWorkspace, type SearchLabels, type WorkspaceSearchData} from '@/features/global-search/search-workspace';
 
 const companyId = 'demo-company';
-const labels = (language: 'ro' | 'en'): SearchLabels => ({categories: (language === 'ro' ? ro : en).Vendors.category, documentTypes: (language === 'ro' ? ro : en).Documents.documentType, draftTitle: (language === 'ro' ? ro : en).Requirements.creation.draftListTitle});
+const labels = (language: 'ro' | 'en'): SearchLabels => ({categories: (language === 'ro' ? ro : en).Vendors.category, documentTypes: (language === 'ro' ? ro : en).Documents.documentType, draftTitle: (language === 'ro' ? ro : en).Requirements.creation.draftListTitle, companyDocuments: (language === 'ro' ? ro : en).GlobalSearch.groups.companyDocuments, employeeDocuments: (language === 'ro' ? ro : en).GlobalSearch.groups.employeeDocuments});
 const snapshot = () => structuredClone(readWorkspaceSearchData());
 const search = (data: WorkspaceSearchData, query: unknown, language: 'ro' | 'en' = 'ro') => searchWorkspace(data, companyId, query, language, labels(language));
 
@@ -101,7 +102,7 @@ describe('canonical scoped result projection', () => {
     data.vendors.fixtureVendors = Array.from({length: 51}, (_, index) => ({...vendor, id: `v${index}`, name: `Needle ${index}`}));
     const before = JSON.stringify(data), result = search(data, 'needle');
     expect(result.vendors).toHaveLength(51);
-    expect(result.totalCount).toBe(result.vendors.length + result.documents.length + result.requirements.length);
+    expect(result.totalCount).toBe(searchGroups.reduce((count, group) => count + result[group].length, 0));
     expect(search(data, 'needle')).toEqual(result);
     expect(JSON.stringify(data)).toBe(before);
   });
@@ -121,6 +122,101 @@ describe('canonical scoped result projection', () => {
     data.companies.activeCompanyId = companyId;
     data.companies.companies.find((item) => item.company.id === companyId)!.members.forEach((member) => {member.status = 'invited';});
     expect(search(data, 'a').totalCount).toBe(0);
+  });
+});
+
+function personnelDocuments(data: WorkspaceSearchData, index = 0) {
+  const employee = data.employees.byCompany[companyId].employees[index];
+  const base = data.companyDocuments.byCompany[companyId];
+  const requirement: EmployeeDocumentRequirement = {...base.requirements[0], id: 'shared-rule', name: {ro: 'Fișă de aptitudine', en: 'Fitness certificate'}, employeeId: employee.id, sourceTemplateIds: [], currentDocumentId: 'shared-file'};
+  const document: EmployeeDocumentVersion = {...base.documents.find((item) => item.id === 'company-document:registration')!, id: 'shared-file', requirementId: requirement.id, employeeId: employee.id, documentName: requirement.name, filename: 'personnel-current.pdf', issuer: 'Private Authority', version: 1, previousDocumentId: undefined, supersededById: undefined, reviewApplicability: 'not_required', reviewOutcome: 'not_required'};
+  const owned: EmployeeDocumentWorkspace = {requirements: [requirement], documents: [document]};
+  data.employees.byCompany[companyId].documentWorkspaces = {...data.employees.byCompany[companyId].documentWorkspaces, [employee.id]: owned};
+  return {employee, owned, requirement, document};
+}
+
+describe('all-domain search uses existing authorized operational projections', () => {
+  it.each(['ro', 'en'] as const)('matches Employee names, email, job title and department without copying or translating user data (%s)', (locale) => {
+    const data = snapshot(), staff = data.employees.byCompany[companyId], employee = staff.employees[0];
+    const department = staff.departments.find((item) => item.id === employee.departmentId)!;
+    const before = structuredClone(data);
+    for (const query of [employee.firstName, employee.lastName, `${employee.firstName} ${employee.lastName}`, employee.email, employee.jobTitle, department.name]) {
+      expect(search(data, query, locale).employees.map((item) => item.id)).toContain(employee.id);
+    }
+    expect(search(data, employee.email, locale).employees).toMatchObject([{title: `${employee.firstName} ${employee.lastName}`, subtitle: `${employee.jobTitle} · ${department.name}`}]);
+    expect(data).toEqual(before);
+  });
+  it('matches Company current name, requirement name, type, issuer and filename, not historical versions', () => {
+    const data = snapshot(), owned = data.companyDocuments.byCompany[companyId], record = owned.documents.find((item) => item.id === 'company-document:registration')!;
+    const requirement = owned.requirements.find((item) => item.currentDocumentId === record.id)!;
+    record.documentName = {ro: 'Denumire actualizată', en: 'Updated name'}; record.issuer = 'Authority Needle';
+    for (const query of [record.documentName.ro, requirement.name.ro, labels('ro').documentTypes[record.documentType], record.issuer, record.filename]) {
+      expect(search(data, query).companyDocuments.map((item) => item.id)).toContain(requirement.id);
+    }
+    expect(search(data, 'registration-v1').companyDocuments).toEqual([]);
+    expect(search(data, record.filename).companyDocuments).toHaveLength(1);
+    expect(searchResultDestination({type: 'company_document', id: requirement.id, companyId}, data)).toEqual({href: '/company/documents', companyDocument: {requirementId: requirement.id, documentId: record.id}});
+  });
+  it('uses actual company names and keeps missing requirements truthful without unsupported focus URLs', () => {
+    const data = snapshot(); data.companies.companies.find((item) => item.company.id === companyId)!.company.name = 'Owned Organization';
+    const result = search(data, 'cazier').companyDocuments[0];
+    expect(result).toMatchObject({status: 'missing', subtitle: 'Documente companie · Owned Organization'});
+    expect(searchResultDestination(result, data)).toEqual({href: '/company/documents'});
+  });
+  it('indexes each Employee current row once, including owner/type/issuer and missing requirements, without historical metadata', () => {
+    const data = snapshot(), {employee, owned, document} = personnelDocuments(data);
+    for (const query of ['fisa de aptitudine', 'Private Authority', 'personnel-current.pdf', `${employee.firstName} ${employee.lastName}`, labels('ro').documentTypes[document.documentType]]) expect(search(data, query).employeeDocuments).toHaveLength(1);
+    owned.documents.push({...document, id: 'rejected-history', version: 2, filename: 'forbidden-history.pdf', documentName: {ro: 'History Ghost', en: 'History Ghost'}, reviewOutcome: 'rejected'});
+    expect(search(data, 'forbidden-history').employeeDocuments).toEqual([]); expect(search(data, 'History Ghost').employeeDocuments).toEqual([]);
+    expect(searchResultHref(search(data, 'aptitudine').employeeDocuments[0], data)).toBe(`/company/employees/${encodeURIComponent(employee.id)}`);
+    owned.documents = []; owned.requirements[0].currentDocumentId = null;
+    const missing = search(data, 'aptitudine').employeeDocuments[0]; expect(missing).toMatchObject({status: 'missing'});
+    expect(searchResultHref(missing, data)).toBe(`/company/employees/${encodeURIComponent(employee.id)}`);
+  });
+  it('keeps identical document/requirement IDs distinct across employees with deterministic identities and destinations', () => {
+    const data = snapshot(), first = personnelDocuments(data), second = personnelDocuments(data, 1);
+    const found = search(data, 'aptitudine').employeeDocuments;
+    expect(found).toHaveLength(2); expect(new Set(found.map((item) => item.id)).size).toBe(2);
+    expect(new Set(found.map((item) => searchResultHref(item, data)))).toEqual(new Set([first, second].map(({employee}) => `/company/employees/${encodeURIComponent(employee.id)}`)));
+    expect(search(data, 'aptitudine').employeeDocuments).toEqual(found);
+  });
+  it.each(['viewer', 'reviewer'] as const)('allows directory profiles but never reads personnel document sources for %s', (role) => {
+    const data = snapshot(), {employee} = personnelDocuments(data);
+    data.companies.companies[0].members.find((item) => item.isCurrentUser)!.role = role;
+    Object.defineProperty(data.employees.byCompany[companyId], 'documentWorkspaces', {get() {throw new Error('Private document metadata must not be read');}});
+    const result = search(data, 'Private Authority'); expect(result.employeeDocuments).toEqual([]); expect(result.totalCount).toBe(0);
+    expect(search(data, employee.email).employees).toHaveLength(1);
+    expect(searchResultHref({type: 'employee', id: employee.id, companyId}, data)).toBe(`/company/employees/${encodeURIComponent(employee.id)}`);
+    expect(searchResultHref({type: 'employee_document', id: `${encodeURIComponent(employee.id)}:shared-rule`, companyId}, data)).toBeNull();
+  });
+  it('refreshes Employee edits/department/status and Company document versions from the canonical snapshot', () => {
+    const data = snapshot(), {employee} = personnelDocuments(data), department = data.employees.byCompany[companyId].departments[0];
+    employee.firstName = 'Alexandra'; employee.jobTitle = 'Engineer Needle'; employee.departmentId = department.id; employee.employmentStatus = 'inactive';
+    expect(search(data, 'Engineer Needle').employees).toMatchObject([{id: employee.id, title: `Alexandra ${employee.lastName}`}]);
+    expect(search(data, department.name).employees.map((item) => item.id)).toContain(employee.id);
+    const current = search(data, 'aptitudine').employeeDocuments[0]; expect(current.subtitle).toContain('Alexandra');
+    const owned = data.companyDocuments.byCompany[companyId], requirement = owned.requirements[0], old = owned.documents.find((item) => item.id === requirement.currentDocumentId)!;
+    const identity = {companyId, type: 'company_document' as const, id: requirement.id};
+    owned.documents.push({...old, id: 'replacement-current', documentName: {ro: 'New Current Needle', en: 'New Current Needle'}, filename: 'new-current.pdf', previousDocumentId: old.id}); old.supersededById = 'replacement-current'; requirement.currentDocumentId = 'replacement-current';
+    expect(search(data, 'New Current Needle').companyDocuments).toHaveLength(1);
+    expect(searchResultDestination(identity, data)?.companyDocument?.documentId).toBe('replacement-current');
+  });
+  it('isolates malformed/foreign sources and revalidates deleted entities, current rows, roles and company switches', () => {
+    const data = snapshot(), {employee, owned} = personnelDocuments(data);
+    const identity = search(data, 'aptitudine').employeeDocuments[0];
+    owned.documents[0].employeeId = 'another-employee'; expect(search(data, 'Private Authority').employeeDocuments).toEqual([]); expect(searchResultHref(identity, data)).toBeNull();
+    data.companyDocuments.byCompany[companyId].documents[0].expiresAt = 'invalid'; expect(search(data, 'certificat').companyDocuments).toEqual([]); expect(search(data, 'Construct Pro').vendors).toHaveLength(1);
+    data.employees.byCompany[companyId].employees = data.employees.byCompany[companyId].employees.filter((item) => item.id !== employee.id); expect(searchResultHref({type: 'employee', id: employee.id, companyId}, data)).toBeNull();
+    data.companies.activeCompanyId = 'global-clean-services';
+    expect(search(data, 'a').totalCount).toBe(0);
+    expect(searchWorkspace(data, 'global-clean-services', 'Private Authority', 'ro', labels('ro')).totalCount).toBe(0);
+    expect(searchResultDestination(identity, data)).toBeNull();
+  });
+  it('tolerates incomplete legacy type labels without parsing or inventing document metadata', () => {
+    const data = snapshot(), {requirement} = personnelDocuments(data);
+    requirement.typeSnapshot = {documentTypeSource: 'catalog', catalogDocumentTypeId: 'tax'} as NonNullable<typeof requirement.typeSnapshot>;
+    expect(search(data, 'aptitudine').employeeDocuments).toHaveLength(1);
+    expect(search(data, labels('ro').documentTypes[requirement.documentType]).employeeDocuments).toHaveLength(1);
   });
 });
 

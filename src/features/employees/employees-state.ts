@@ -33,13 +33,13 @@ function validWorkspace(value: EmployeeWorkspace, companyId: string) {
     (item.departmentId === null || departments.some((department) => department.id === item.departmentId)) && timestamp(item.createdAt) && timestamp(item.updatedAt))) return false;
   return new Set(employees.map((item) => item.id)).size === employees.length && new Set(employees.map((item) => normalizedEmployeeKey(item.email))).size === employees.length;
 }
-export function employeeWorkspace(companyId: string, state = session.state) {
-  if (!employeeAccess(companyId).visible) return {...empty, error: false};
+export function employeeWorkspace(companyId: string, state = session.state, companies = readCompanyState()) {
+  if (!employeeAccess(companyId, companies).visible) return {...empty, error: false};
   if (!state?.byCompany || typeof state.byCompany !== 'object' || Array.isArray(state.byCompany)) return {...empty, error: true};
   const workspace = state.byCompany[companyId];
   if (workspace === undefined) return {...empty, error: false};
   if (!validWorkspace(workspace, companyId)) return {...empty, error: true};
-  const permitted: EmployeeWorkspace = employeeAccess(companyId).manage ? workspace : {employees: workspace.employees, departments: workspace.departments};
+  const permitted: EmployeeWorkspace = employeeAccess(companyId, companies).manage ? workspace : {employees: workspace.employees, departments: workspace.departments};
   return {...permitted, error: false};
 }
 export const listEmployees = (companyId: string) => employeeWorkspace(companyId).employees;

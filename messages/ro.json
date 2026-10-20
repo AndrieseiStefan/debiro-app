@@ -210,8 +210,8 @@
   },
   "GlobalSearch": {
     "resultsFor": "Rezultate pentru „{query}”", "total": "Am găsit {count, plural, one {# rezultat} few {# rezultate} other {# de rezultate}}",
-    "groups": {"vendors": "Furnizori", "documents": "Documente", "requirements": "Șabloane"},
-    "counts": {"vendors": "{count, plural, one {# furnizor} few {# furnizori} other {# de furnizori}}", "documents": "{count, plural, one {# document} few {# documente} other {# de documente}}", "requirements": "{count, plural, one {# șablon} few {# șabloane} other {# de șabloane}}"},
+    "groups": {"vendors": "Furnizori", "documents": "Documente furnizori", "requirements": "Șabloane", "companyDocuments": "Documente companie", "employees": "Angajați", "employeeDocuments": "Documente angajați"},
+    "counts": {"vendors": "{count, plural, one {# furnizor} few {# furnizori} other {# de furnizori}}", "documents": "{count, plural, one {# document furnizor} few {# documente furnizori} other {# de documente furnizori}}", "requirements": "{count, plural, one {# șablon} few {# șabloane} other {# de șabloane}}", "companyDocuments": "{count, plural, one {# document companie} few {# documente companie} other {# de documente companie}}", "employees": "{count, plural, one {# angajat} few {# angajați} other {# de angajați}}", "employeeDocuments": "{count, plural, one {# document angajat} few {# documente angajați} other {# de documente angajați}}"},
     "readyTitle": "Caută în compania ta", "readyDescription": "Caută furnizori, documente sau șabloane.",
     "emptyTitle": "Nu am găsit rezultate", "emptyDescription": "Nu există furnizori, documente sau șabloane care să corespundă căutării.",
     "clear": "Șterge căutarea", "close": "Închide căutarea", "draft": "Ciornă",
