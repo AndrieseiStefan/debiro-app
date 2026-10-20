@@ -20,16 +20,16 @@ export function filterNotifications(items: NotificationActivityItem[], category:
     (category === 'reminders' && item.type === 'reminder') ||
     (category === 'uploads' && item.type === 'document_upload') ||
     (category === 'status' && item.type === 'status_changed')
-  )).sort((a, b) => b.occurredAt.localeCompare(a.occurredAt));
+  )).sort((a, b) => Date.parse(b.occurredAt) - Date.parse(a.occurredAt) || a.id.localeCompare(b.id));
 }
 
-export function filterAuditEvents(events: AuditEvent[], range: ActivityRange, referenceTime: string) {
-  return events.filter((event) => withinRange(event.occurredAt, range, referenceTime)).sort((a, b) => b.occurredAt.localeCompare(a.occurredAt));
+export function filterAuditEvents<T extends AuditEvent>(events: T[], range: ActivityRange, referenceTime: string) {
+  return events.filter((event) => withinRange(event.occurredAt, range, referenceTime)).sort((a, b) => Date.parse(b.occurredAt) - Date.parse(a.occurredAt) || a.id.localeCompare(b.id));
 }
 
 export function auditEventsToCsv(events: AuditEvent[], locale: 'ro' | 'en') {
-  const header = ['id', 'eventType', 'actorType', 'actorName', 'action', 'description', 'vendorId', 'documentId', 'occurredAt'];
+  const header = ['id', 'eventType', 'actorType', 'actorName', 'action', 'description', 'vendorId', 'documentId', 'occurredAt', 'domain', 'entityId', 'entityName', 'requirementId'];
   return [header.join(','), ...events.map((event) => [
-    event.id, event.eventType, event.actorType, event.actorName ?? '', event.action[locale], event.description[locale], event.vendorId ?? '', event.documentId ?? '', event.occurredAt
+    event.id, event.eventType, event.actorType, event.actorName ?? '', event.action[locale], event.description[locale], event.vendorId ?? '', event.documentId ?? '', event.occurredAt, event.domain ?? 'vendor', event.entityId ?? event.vendorId ?? '', event.entityName ?? '', event.requirementId ?? ''
   ].map(csvCell).join(','))].join('\r\n') + '\r\n';
 }

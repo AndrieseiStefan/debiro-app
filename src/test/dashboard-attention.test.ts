@@ -47,7 +47,7 @@ describe('Dashboard uploaded-document attention', () => {
     const valid = records.map((document) => ({...document, status: 'valid' as const, complianceStatus: 'valid' as const, reviewOutcome: 'approved' as const}));
     expect(project(valid)).toEqual([]);
     const missing = notificationDocuments(companyId, vendors, workspaces, valid).missingDocuments;
-    expect(missing.map((document) => document.id)).toContain('vendor-requirement:construct-pro:iso');
+    expect(missing.map((document) => document.id)).not.toContain('vendor-requirement:construct-pro:iso'); // Optional, not mandatory missing attention.
     expect(project().some((document) => document.id.startsWith('vendor-requirement:'))).toBe(false);
   });
   it('excludes superseded, rejected and foreign records without fabricating dates for pending files', () => {

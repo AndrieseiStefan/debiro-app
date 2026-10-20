@@ -4,9 +4,7 @@ import type {ReactNode} from 'react';
 import {useTranslations} from 'next-intl';
 import {notificationsFixture} from '@/features/notifications/fixtures';
 import {getCurrentMembership} from '@/features/companies/company-state';
-import {companyNotifications} from '@/features/notifications/company-projections';
-import {useLocalAuditEvents} from '@/features/notifications/local-audit';
-import {useVendorState, vendorListItems} from '@/features/vendors/created-vendors';
+import {useNotificationWorkspace} from '@/features/notifications/use-notification-workspace';
 import {getActiveCompany, useCompanyState} from '@/features/companies/company-state';
 import {useNotificationItems} from '@/features/notifications/local-state';
 import type {NotificationActivityItem} from '@/features/notifications/types';
@@ -30,11 +28,10 @@ export function AuthenticatedAppShell({locale, currentPath, notificationItems, n
   const t = useTranslations('AppShell');
   const companies = useCompanyState();
   const active = getActiveCompany(companies);
-  const companyId = active?.company.id ?? '';
-  const notifications = companyNotifications(companyId, useLocalAuditEvents(), vendorListItems(useVendorState(), companyId), notificationItems ?? notificationsFixture.notifications);
-  const visibleNotifications = useNotificationItems(notifications);
+  const workspace = useNotificationWorkspace(locale, {notifications: notificationItems ?? notificationsFixture.notifications, auditEvents: notificationsFixture.auditEvents});
+  const visibleNotifications = useNotificationItems(workspace.notifications);
   const unreadCount = visibleNotifications.filter((item) => item.isUnread).length;
-  const referenceTime = notificationReferenceTime ?? notificationsFixture.referenceTime;
+  const referenceTime = notificationReferenceTime ?? workspace.referenceTime;
   const accessible = scope === 'global' || Boolean(active && getCurrentMembership(active));
 
   return (

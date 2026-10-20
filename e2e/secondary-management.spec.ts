@@ -44,11 +44,11 @@ for (const english of [false, true]) {
     const audit = page.getByRole('region', {name: english ? 'Audit journal' : 'Jurnal de audit'});
     const summaries = page.locator(`section[aria-label="${english ? 'Activity summary' : 'Rezumat activitate'}"]`); await expect(summaries).toBeVisible(); await expect(summaries.getByRole('button')).toHaveCount(0);
     await expect(expiring.locator('tbody tr')).toHaveCount(3); await expect(missing.getByRole('button', {name: all})).toHaveCount(0);
-    await expiring.getByRole('button', {name: all}).click(); await expect(expiring.locator('tbody tr')).toHaveCount(4); await expect(expiring.getByRole('button', {name: less})).toHaveAttribute('aria-expanded', 'true');
+    await expiring.getByRole('button', {name: all}).click(); await expect(expiring.locator('tbody tr')).toHaveCount(5); await expect(expiring.getByRole('button', {name: less})).toHaveAttribute('aria-expanded', 'true');
     await expect(recent.locator('tbody tr')).toHaveCount(5); await expect(audit.locator('ol li')).toHaveCount(6);
-    await recent.getByRole('button', {name: all}).click(); await expect(recent.locator('tbody tr')).toHaveCount(8);
+    await recent.getByRole('button', {name: all}).click(); await expect(recent.locator('tbody tr')).toHaveCount(26);
     await recent.getByRole('button', {name: less}).click(); await expect(recent.locator('tbody tr')).toHaveCount(5);
-    await audit.getByRole('button', {name: all}).click(); await expect(audit.locator('ol li')).toHaveCount(28); await audit.getByRole('button', {name: less}).click(); await expect(audit.locator('ol li')).toHaveCount(6);
+    await audit.getByRole('button', {name: all}).click(); await expect(audit.locator('ol li')).toHaveCount(26); await audit.getByRole('button', {name: less}).click(); await expect(audit.locator('ol li')).toHaveCount(6);
     const categories = page.getByRole('navigation', {name: english ? 'Activity filters' : 'Filtre activitate'});
     await categories.getByRole('button', {name: english ? /^Unread/ : /^Necitite/}).click();
     const range = page.getByRole('combobox', {name: english ? 'Activity and audit period' : 'Perioadă activitate și audit'}); await range.selectOption('all');

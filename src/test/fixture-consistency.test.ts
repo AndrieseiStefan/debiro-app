@@ -112,15 +112,17 @@ describe('coherent E1 fixture timeline and current projections', () => {
       expect(expiry.expiresAt).toBe(source.expiresAt);
       expect(expiry.daysRemaining).toBe(calendarDaysUntil(source.expiresAt!));
     }
-    expect(projection.missingDocuments.map((document) => document.id)).toEqual(['vendor-requirement:construct-pro:iso']);
-    expect(projection.missingDocuments[0].dueAt).toBeNull();
+    expect(projection.missingDocuments).toEqual([]); // The unfilled ISO requirement is optional.
     expect(notificationDocuments(companyId, [], {}, []).expiringDocuments).toEqual([]);
     expect(notificationDocuments('other-company', vendors, workspaces, records)).toEqual({expiringDocuments: [], missingDocuments: []});
     for (const notice of notificationsFixture.notifications) {
       const event = notificationsFixture.auditEvents.find((event) => event.id === notice.id.replace('notice-', 'audit-'))!;
       expect(event).toMatchObject({occurredAt: notice.occurredAt, actorName: notice.actorName, vendorId: notice.vendorId, documentId: notice.documentId, description: notice.description});
       expect(event.occurredAt <= fixtureReferenceTime).toBe(true);
-      if (event.vendorId) expect(vendorActivity(companyId, event.vendorId, [])).toContainEqual(event);
+      if (event.vendorId) {
+        if (event.eventType === 'reminder') expect(vendorActivity(companyId, event.vendorId, [])).not.toContainEqual(event);
+        else expect(vendorActivity(companyId, event.vendorId, [])).toContainEqual(event);
+      }
     }
     for (const event of notificationsFixture.auditEvents.filter((event) => event.eventType === 'document_upload' && event.documentId)) {
       const document = records.find((document) => document.id === event.documentId)!;
@@ -140,7 +142,8 @@ describe('coherent E1 fixture timeline and current projections', () => {
     const rejected = records.map((document) => document.id === tax.id ? {...document, reviewOutcome: 'rejected' as const} : document);
     expect(activeDocuments(rejected, companyId)).toHaveLength(24);
     expect(activeDocuments(rejected, companyId).filter((document) => document.status === 'review')).toHaveLength(3);
-    expect(notificationDocuments(companyId, vendors, workspaces, rejected).missingDocuments.map((document) => document.id)).toEqual(['vendor-requirement:construct-pro:tax', 'vendor-requirement:construct-pro:iso']);
+    expect(notificationDocuments(companyId, vendors, workspaces, rejected).missingDocuments.map((document) => document.id)).toEqual(['vendor-requirement:construct-pro:tax']);
+    expect(notificationDocuments(companyId, vendors, workspaces, rejected).missingDocuments[0].dueAt).toBeNull();
     expect(project(vendors[0], rejected)).toMatchObject({status: 'noncompliant', documentCount: 3, documentTarget: 5});
     const replacement = {...tax, id: 'replacement-tax'};
     const workspace = getVendorRequirements(workspaces, companyId, tax.vendorId);
@@ -149,7 +152,7 @@ describe('coherent E1 fixture timeline and current projections', () => {
     const reuploaded = [...rejected, replacement];
     expect(activeDocuments(reuploaded, companyId)).toHaveLength(25);
     expect(activeDocuments(reuploaded, companyId).filter((document) => document.status === 'review')).toHaveLength(4);
-    expect(notificationDocuments(companyId, vendors, replacementWorkspaces, reuploaded).missingDocuments).toHaveLength(1);
+    expect(notificationDocuments(companyId, vendors, replacementWorkspaces, reuploaded).missingDocuments).toHaveLength(0);
     const confirmed = reuploaded.map((document) => document.id === replacement.id ? {...document, reviewOutcome: 'approved' as const, status: 'expiring' as const, complianceStatus: approvedCompliance(document.expiresAt, 30, fixtureReferenceTime)} : document);
     const confirmedWorkspace = {...replacementWorkspace, requirements: replacementWorkspace.requirements.map((requirement) => requirement.id === tax.vendorRequirementId ? {...requirement, status: 'uploaded' as const} : requirement)};
     const current = activeDocuments(confirmed, companyId);

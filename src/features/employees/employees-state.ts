@@ -124,10 +124,13 @@ export function employeeDocumentBytes(companyId: string, employeeId: string, doc
   const file = files instanceof Map ? files.get(documentId) : null;
   return file instanceof Blob && file.size > 0 ? file : null;
 }
-export function getEmployeeActivity(companyId: string, employeeId: string) {
-  if (!employeeDocumentAccess(companyId, employeeId).visible) return [];
-  const events = employeeWorkspace(companyId).activity;
-  return Array.isArray(events) ? events.filter((event) => event && event.companyId === companyId && event.employeeId === employeeId && typeof event.id === 'string' && typeof event.actorName === 'string' &&
+export function companyEmployeeActivity(companyId: string, snapshot = session.state) {
+  if (!employeeAccess(companyId).manage) return [];
+  const events = employeeWorkspace(companyId, snapshot).activity;
+  return Array.isArray(events) ? events.filter((event) => event && event.companyId === companyId && typeof event.employeeId === 'string' && typeof event.id === 'string' && typeof event.actorName === 'string' &&
     ['employee_created', 'employee_edited', 'template_applied', 'document_upload', 'document_replaced', 'document_confirmed', 'document_rejected', 'metadata_updated', 'document_marked_expired'].includes(event.type) && typeof event.occurredAt === 'string' && Number.isFinite(Date.parse(event.occurredAt)))
     .toSorted((a, b) => b.occurredAt.localeCompare(a.occurredAt) || a.id.localeCompare(b.id)) : [];
+}
+export function getEmployeeActivity(companyId: string, employeeId: string) {
+  return employeeDocumentAccess(companyId, employeeId).visible ? companyEmployeeActivity(companyId).filter((event) => event.employeeId === employeeId) : [];
 }

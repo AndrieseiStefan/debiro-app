@@ -46,10 +46,11 @@ for (const english of [false, true]) {
     await expect(expiry).toContainText(english ? '5 days' : '5 zile');
     const missing = page.locator('#missing-section tbody tr');
     await expect(missing).toHaveCount(1);
-    await expect(missing).toContainText('ISO 9001');
+    await expect(missing).toHaveAttribute('data-notification-document', 'company:company-requirement:criminal-record');
+    await expect(missing).not.toContainText('ISO 9001'); // The existing Vendor ISO obligation is optional, not mandatory missing.
     await expect(missing.locator('td').nth(3)).toHaveText('—');
     await expect(page.locator('[data-audit-id^="local-audit-"]').filter({hasText: english ? 'Document confirmed' : 'Document confirmat'})).toHaveCount(1);
-    await expect(page.locator('#recent-section tbody tr[data-notification-id^="local-audit-"]').filter({hasText: english ? 'Document confirmed' : 'Document confirmat'})).toHaveCount(1);
+    await expect(page.locator('#recent-section tbody tr[data-activity-id^="vendor:local-audit-"]').filter({hasText: english ? 'Document confirmed' : 'Document confirmat'})).toHaveCount(1);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(english ? 375 : 1448);
   });
 }

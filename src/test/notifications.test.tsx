@@ -33,7 +33,7 @@ describe('notifications and audit activity', () => {
     // Empty operational notices do not erase the shared current document data.
     expect(screen.getAllByRole('region', {name: 'Expiră curând'})[0].querySelector('tbody tr')).not.toBeNull();
     unmount();
-    renderPage({...notificationsFixture, notifications: notificationsFixture.notifications.filter((item) => item.type === 'reminder')});
+    renderPage({...notificationsFixture, notifications: notificationsFixture.notifications.filter((item) => item.type === 'reminder'), auditEvents: notificationsFixture.auditEvents.filter((item) => item.eventType === 'status_changed')});
     fireEvent.click(within(screen.getByRole('navigation', {name: 'Filtre activitate'})).getByRole('button', {name: /Încărcări/}));
     expect(screen.getByText('Nicio activitate nu corespunde filtrului ales.')).toBeVisible();
     fireEvent.click(screen.getByRole('button', {name: 'Resetează filtrele'}));

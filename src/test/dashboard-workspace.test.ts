@@ -7,7 +7,7 @@ import {projectVendorDocuments} from '@/features/vendors/projections';
 import {readDocumentRecords} from '@/features/documents/created-documents';
 import {companyDocumentList, readCompanyDocumentsState} from '@/features/company-documents/company-documents-state';
 import {companyDocumentMetrics} from '@/features/company-documents/projections';
-import {addCompanyDocument} from '@/features/company-documents/management';
+import {addCompanyDocument, reviewCompanyDocument} from '@/features/company-documents/management';
 import {employeeDocumentEngine} from '@/features/employees/employee-documents';
 import {employeeDocumentWorkspace, employeeWorkspace, readEmployeeState} from '@/features/employees/employees-state';
 import {employeeDocumentMetrics, employeeListDocumentMetrics, projectEmployeeDocuments} from '@/features/employees/employee-document-projections';
@@ -101,8 +101,10 @@ describe('read-only company-wide Dashboard composition', () => {
     const event = view.activity.find((item) => item.domain === 'employee'); expect(event).toMatchObject({domain: 'employee', event: {type: 'document_upload'}, href: `/company/employees/${encodeURIComponent(employeeId)}`});
     expect(view.activity.some((item) => item.domain === 'employee' && item.event.type === 'document_confirmed')).toBe(false);
   });
-  it('merges actual current upcoming expirations, including pending Company review, with stable five-item ordering', () => {
-    expect(addCompanyDocument(companyId, {...upload, expiresAt: '03.10.2026'}).ok).toBe(true);
+  it('merges classified current upcoming expirations, keeping pending Company review separate, with stable five-item ordering', () => {
+    const saved = addCompanyDocument(companyId, {...upload, expiresAt: '03.10.2026'}); if (!saved.ok) throw new Error(saved.reason);
+    expect(project().expirations.some((item) => item.documentId === saved.document.id)).toBe(false);
+    expect(reviewCompanyDocument(companyId, saved.requirementId, saved.document.id, 'approved').ok).toBe(true);
     expect(employeeDocumentEngine(companyId, employeeId).addCompanyDocument(companyId, upload).ok).toBe(true);
     const view = project(); expect(view.expirations).toHaveLength(5);
     expect(view.expirations.slice(0, 2).map((item) => item.domain)).toEqual(['company_document', 'employee']);
@@ -136,9 +138,11 @@ describe('read-only company-wide Dashboard composition', () => {
     const replaced = employeeDocumentEngine(companyId, employeeId).replaceCompanyDocument(companyId, result.requirementId, result.document.id, {...upload, expiresAt: '01.12.2026'}); expect(replaced.ok).toBe(true);
     expect(project().expirations.some((row) => row.domain === 'employee')).toBe(false);
     const saved = addCompanyDocument(companyId, {...upload, expiresAt: '15.11.2026'}); if (!saved.ok) throw new Error(saved.reason);
+    expect(reviewCompanyDocument(companyId, saved.requirementId, saved.document.id, 'approved').ok).toBe(true);
     const source = input(), owned = source.companyDocuments.byCompany[companyId];
     const requirement = {...owned.requirements.find((item) => item.id === saved.requirementId)!, expiryWarningDays: 60 as const};
-    const view = workspaceOverview(companyId, 'en', {...source, documents: [], companyDocuments: {byCompany: {[companyId]: {requirements: [requirement], documents: [saved.document]}}}});
+    const record = owned.documents.find((item) => item.id === saved.document.id)!;
+    const view = workspaceOverview(companyId, 'en', {...source, documents: [], companyDocuments: {byCompany: {[companyId]: {requirements: [requirement], documents: [record]}}}});
     expect(view.expirations).toHaveLength(1); expect(view.expirations[0]).toMatchObject({domain: 'company_document', daysRemaining: 44});
   });
   it('deduplicates real audit IDs, orders newest first, ignores invalid/delivery claims, and keeps unavailable entities non-interactive', () => {

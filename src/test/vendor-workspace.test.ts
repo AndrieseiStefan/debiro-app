@@ -58,12 +58,12 @@ describe('vendor workspace contracts', () => {
   it('projects existing audit concepts without duplicate notice/audit events and composes activity filters', () => {
     const events = vendorActivity(company, 'construct-pro', []);
     expect(events.every((event) => event.vendorId === 'construct-pro')).toBe(true);
-    expect(events.filter((event) => event.eventType === 'reminder')).toHaveLength(1);
+    expect(events.filter((event) => event.eventType === 'reminder')).toHaveLength(0);
     expect(events).toEqual([...events].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt) || a.id.localeCompare(b.id)));
     expect(vendorActivity('other', 'construct-pro', [])).toEqual([]);
     const found = filterVendorActivity(events, '  FISCAL ', {type: 'document_upload', range: 'all', actor: 'all'}, 'ro', '2026-10-02T12:00:00Z');
     expect(found).toHaveLength(1);
-    expect(filterVendorActivity(events, '', {type: 'all', range: 'last7', actor: 'Andrei Popescu'}, 'ro', '2026-10-02T12:00:00Z')).toHaveLength(4);
+    expect(filterVendorActivity(events, '', {type: 'all', range: 'last7', actor: 'Andrei Popescu'}, 'ro', '2026-10-02T12:00:00Z')).toHaveLength(3);
   });
   it('records only successful local lifecycle/edit/template actions by vendor and company', () => {
     const vendor = createLocalVendor({name: 'Events', cui: 'RO-EVENTS', category: 'construction', email: 'events@example.test'});
@@ -88,6 +88,6 @@ describe('vendor workspace contracts', () => {
     const local = [base, {...base, id: 'second-template', templateId: 'maintenance'}, {...base, id: 'first-edit', eventType: 'vendor_edited' as const}, {...base, id: 'second-edit', eventType: 'vendor_edited' as const}];
     const events = vendorActivity(company, 'construct-pro', local);
     expect(events.filter((event) => local.some((record) => record.id === event.id))).toHaveLength(4);
-    expect(events.filter((event) => event.eventType === 'reminder')).toHaveLength(1);
+    expect(events.filter((event) => event.eventType === 'reminder')).toHaveLength(0);
   });
 });

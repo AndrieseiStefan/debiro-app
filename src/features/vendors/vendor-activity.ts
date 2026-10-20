@@ -1,4 +1,4 @@
-import {notificationsFixture} from '@/features/notifications/fixtures';
+import {companyAuditEvents} from '@/features/notifications/company-projections';
 import type {AuditEvent, AuditEventType} from '@/features/notifications/types';
 import type {LocalAuditEvent} from '@/features/notifications/local-audit';
 import {vendorOwnedByCompany} from './created-vendors';
@@ -6,17 +6,9 @@ import {vendorOwnedByCompany} from './created-vendors';
 /** One audit projection: merge existing audit/notices, without repeating the same event. */
 export function vendorActivity(companyId: string, vendorId: string, local: LocalAuditEvent[]): AuditEvent[] {
   if (!vendorOwnedByCompany(companyId, vendorId)) return [];
-  const fixtures: AuditEvent[] = notificationsFixture.auditEvents.filter((event) => event.companyId === companyId);
-  const seen = new Set<string>();
-  const uniqueFixtures = fixtures.filter((event) => {
-    if (event.vendorId !== vendorId) return false;
-    const key = `${event.eventType}:${event.vendorId}:${event.documentId ?? ''}:${event.occurredAt}`;
-    if (seen.has(key)) return false;
-    seen.add(key); return true;
-  });
   // Local audit records have distinct identities. Separate successful actions
   // (including applying several templates) can share a timestamp.
-  return [...uniqueFixtures, ...local.filter((event) => event.companyId === companyId && event.vendorId === vendorId)]
+  return [...new Map(companyAuditEvents(companyId, local).filter((event) => event.vendorId === vendorId && Number.isFinite(Date.parse(event.occurredAt))).map((event) => [event.id, event])).values()]
     .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt) || a.id.localeCompare(b.id));
 }
 export type VendorActivityFilters = {type: AuditEventType | 'all'; range: 'all' | 'last7' | 'last30'; actor: string};

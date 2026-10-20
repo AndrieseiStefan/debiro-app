@@ -39,6 +39,8 @@
 .table td strong {color: #153761; font-weight: 700;}
 .table td small {color: #6681a6; display: block; font-weight: 400; margin-top: 3px;}
 .table td time {white-space: nowrap;}
+.textAction {background: none; border: 0; color: inherit; cursor: pointer; font: inherit; padding: 0; text-align: left; text-decoration: none;}
+.textAction:hover {color: #075ceb;}
 .table .days {background: #fff0cb; border-radius: 6px; color: #c87700; display: inline-block; min-width: 60px; padding: 5px; text-align: center; white-space: nowrap;}
 .unread {background: #e1efff; border-radius: 5px; color: #075ceb; font-size: 10px; margin-left: 6px; padding: 2px 5px; white-space: nowrap;}
 .auditPanel {display: flex; flex-direction: column; min-height: 795px; padding: 16px 12px 12px;}
@@ -55,6 +57,7 @@
 .timelineMeta time {color: #7992b4; flex: 0 0 auto; font-size: 10px; white-space: nowrap;}
 .timelineCopy b {color: #1b3d70; display: block; font-size: 11px; margin-top: 3px;}
 .timelineCopy p {color: #5d7aa3; font-size: 11px; line-height: 1.4; margin-top: 4px; overflow-wrap: anywhere;}
+.timelineCopy small {font-size: 10px; margin-left: 5px;}
 .auditCallout {align-items: start; background: #eaf3ff; border-radius: 9px; color: #075acb; display: flex; gap: 12px; margin-top: auto; padding: 12px;}
 .auditCallout > span {align-items: center; background: #d2e6ff; border-radius: 50%; display: flex; flex: 0 0 45px; height: 45px; justify-content: center;}
 .auditCallout div {min-width: 0;}

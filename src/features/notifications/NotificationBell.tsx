@@ -5,6 +5,8 @@ import {useTranslations} from 'next-intl';
 import {AppIcon} from '@/components/layout/AppIcon';
 import {Link} from '@/i18n/navigation';
 import {getDocumentReviewFixture} from '@/features/document-review/fixtures';
+import {documentAccess} from '@/features/documents/document-access';
+import {CompanyDocumentManager, type CompanyManagementSelection} from '@/features/company-documents/CompanyDocumentManager';
 import {markAllNotificationsRead} from './local-state';
 import {activityIcons, activityTones} from './presentation';
 import type {NotificationActivityItem} from './types';
@@ -31,14 +33,16 @@ export function NotificationBell({locale, items, referenceTime, compact = false}
 }) {
   const t = useTranslations('NotificationCenter');
   const app = useTranslations('AppShell');
+  const notice = useTranslations('Notifications');
   const panelId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const firstActionRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
+  const [activeDocument, setDocument] = useState<{companyId: string; selection: CompanyManagementSelection} | null>(null);
   const [position, setPosition] = useState({left: 0, top: 0, width: 0, maxHeight: 0});
   const unreadCount = items.filter((item) => item.isUnread).length;
-  const recent = [...items].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt)).slice(0, PREVIEW_LIMIT);
+  const recent = [...items].sort((a, b) => Number(b.sourceKind === 'attention') - Number(a.sourceKind === 'attention') || b.occurredAt.localeCompare(a.occurredAt) || a.id.localeCompare(b.id)).slice(0, PREVIEW_LIMIT);
 
   useLayoutEffect(() => {
     if (!open) return;
@@ -90,17 +94,18 @@ export function NotificationBell({locale, items, referenceTime, compact = false}
       </div>
       {recent.length === 0 ? <p className={styles.empty}>{t('empty')}</p> : <ol className={styles.list}>
         {recent.map((item) => {
-          const destination = item.documentId && getDocumentReviewFixture(item.documentId) ? `/documents/${item.documentId}/review` : null;
+          const destination = item.href ?? (!item.domain && item.documentId && getDocumentReviewFixture(item.documentId) ? `/documents/${item.documentId}/review` : null);
           const content = <>
             <span className={styles.unreadSlot}>{item.isUnread && <span className={styles.unreadDot} role="img" aria-label={t('unread')} />}</span>
             <span className={styles.icon} data-tone={activityTones[item.type]}><AppIcon name={activityIcons[item.type]} size={23} /></span>
-            <span className={styles.copy}><strong>{item.title[locale === 'en' ? 'en' : 'ro']}</strong><span>{item.description[locale === 'en' ? 'en' : 'ro']}</span></span>
-            <time dateTime={item.occurredAt}>{relativeTime(item.occurredAt, referenceTime, locale, (count) => t('minutesAgo', {count}), (count) => t('hoursAgo', {count}), (time) => t('yesterday', {time}))}</time>
+            <span className={styles.copy}><strong>{item.title[locale === 'en' ? 'en' : 'ro']}</strong><span>{item.description[locale === 'en' ? 'en' : 'ro']}</span>{item.type === 'reminder' && <small>{notice('demoNotification')}</small>}</span>
+            {item.sourceKind === 'attention' ? <span className={styles.stateLabel}>{notice('currentState')}</span> : <time dateTime={item.occurredAt}>{relativeTime(item.occurredAt, referenceTime, locale, (count) => t('minutesAgo', {count}), (count) => t('hoursAgo', {count}), (time) => t('yesterday', {time}))}</time>}
           </>;
-          return <li key={item.id} data-notification-id={item.id} data-unread={item.isUnread} className={styles.item}>{destination ? <Link href={destination} onClick={() => setOpen(false)} className={styles.itemContent}>{content}</Link> : <div className={styles.itemContent}>{content}</div>}</li>;
+          return <li key={item.id} data-notification-id={item.id} data-unread={item.isUnread} className={styles.item}>{item.domain === 'company_document' && item.requirementId && item.documentId ? <button type="button" className={styles.itemContent} onClick={() => {triggerRef.current?.focus({preventScroll: true}); setOpen(false); setDocument({companyId: item.companyId, selection: {mode: 'details', requirementId: item.requirementId, documentId: item.documentId}});}}>{content}</button> : destination ? <Link href={destination} onClick={() => setOpen(false)} className={styles.itemContent}>{content}</Link> : <div className={styles.itemContent}>{content}</div>}</li>;
         })}
       </ol>}
       <Link href="/notifications" onClick={() => setOpen(false)} className={styles.footer}>{t('viewAll')} <AppIcon name="arrowRight" size={17} /></Link>
     </div>}
+    {activeDocument && documentAccess(activeDocument.companyId).visible && <CompanyDocumentManager companyId={activeDocument.companyId} locale={locale === 'en' ? 'en' : 'ro'} selection={activeDocument.selection} onClose={() => setDocument(null)} onSuccess={() => {}}/>}
   </div>;
 }

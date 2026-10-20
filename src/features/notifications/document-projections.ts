@@ -10,7 +10,7 @@ export function notificationDocuments(companyId: string, vendors: VendorListItem
     .map((document) => ({id: document.id, vendorId: document.vendorId, vendorName: vendors.find((vendor) => vendor.id === document.vendorId)?.name ?? document.vendorName,
       documentName: document.documentName, expiresAt: document.expiresAt!, daysRemaining: calendarDaysUntil(document.expiresAt!), status: 'expiring'}));
   const missingDocuments: MissingDocumentSummary[] = vendors.flatMap((vendor) => getVendorRequirements(workspaces, companyId, vendor.id).requirements
-    .filter((requirement) => !current.some((document) => document.vendorId === vendor.id && document.id === requirement.uploadedDocumentId))
+    .filter((requirement) => requirement.required && !current.some((document) => document.vendorId === vendor.id && document.id === requirement.uploadedDocumentId))
     .map((requirement) => ({id: requirement.id, vendorId: vendor.id, vendorName: vendor.name, documentName: requirement.name,
       requirement: requirement.sourceTemplateIds.length ? requirement.sourceTemplateNames[requirement.sourceTemplateIds[0]] ?? requirement.name : requirement.description ?? requirement.name,
       dueAt: null, status: 'missing' as const})));

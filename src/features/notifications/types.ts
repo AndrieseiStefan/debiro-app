@@ -1,4 +1,5 @@
 export type LocalizedText = {ro: string; en: string};
+export type NotificationDomain = 'vendor' | 'company_document' | 'employee';
 
 /** Operational, potentially actionable activity. Reusable by the later bell center. */
 export type NotificationActivityType = 'reminder' | 'document_upload' | 'document_replaced' | 'document_confirmed' | 'document_rejected' | 'document_expiring' | 'document_missing' | 'status_changed' | 'vendor_added' | 'other';
@@ -16,6 +17,13 @@ export type NotificationActivityItem = {
   isUnread: boolean;
   actor: 'user' | 'system';
   actorName?: string;
+  domain?: NotificationDomain;
+  entityId?: string;
+  entityName?: string;
+  href?: string;
+  sourceKind?: 'activity' | 'attention';
+  dateOnly?: boolean;
+  requirementId?: string;
 };
 
 /** Read-only history: a distinct contract from notifications. */
@@ -36,8 +44,12 @@ export type AuditEvent = {
   previousDocumentVersion?: number;
   occurredAt: string;
   dateOnly?: boolean;
+  domain?: NotificationDomain;
+  entityId?: string;
+  actorId?: string | null;
+  entityName?: string;
 };
-export type AuditEventType = NotificationActivityType | 'document_marked_expired' | 'template_applied' | 'vendor_invited' | 'vendor_edited' | 'vendor_active' | 'vendor_inactive' | 'requirement_removed';
+export type AuditEventType = NotificationActivityType | 'document_marked_expired' | 'template_applied' | 'vendor_invited' | 'vendor_edited' | 'vendor_active' | 'vendor_inactive' | 'requirement_removed' | 'employee_created' | 'employee_edited' | 'metadata_updated';
 
 export type ExpiringDocumentSummary = {
   id: string;

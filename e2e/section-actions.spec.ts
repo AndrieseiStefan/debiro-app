@@ -27,14 +27,14 @@ for (const english of [false, true]) {
     expect(await action.evaluate((element) => getComputedStyle(element).outlineStyle)).toBe('solid');
     await page.keyboard.press('Enter');
     await expect(action).toHaveText(less); await expect(action).toHaveAttribute('aria-expanded', 'true');
-    await expect(action).toBeFocused(); await expect(expiring.locator('tbody tr')).toHaveCount(4);
+    await expect(action).toBeFocused(); await expect(expiring.locator('tbody tr')).toHaveCount(5);
     expect(await action.locator('svg').evaluate((element) => getComputedStyle(element).transform)).toBe('matrix(-1, 0, 0, -1, 0, 0)');
     await recent.getByRole('button', {name: all, exact: true}).click();
-    await expect(recent.locator('tbody tr')).toHaveCount(8);
+    await expect(recent.locator('tbody tr')).toHaveCount(26);
     await action.focus(); await page.keyboard.press('Space');
     await expect(expiring.locator('tbody tr')).toHaveCount(3); await expect(action).toHaveText(all);
-    await expect(recent.locator('tbody tr')).toHaveCount(8);
-    await audit.getByRole('button', {name: all, exact: true}).click(); await expect(audit.locator('ol li')).toHaveCount(28);
+    await expect(recent.locator('tbody tr')).toHaveCount(26);
+    await audit.getByRole('button', {name: all, exact: true}).click(); await expect(audit.locator('ol li')).toHaveCount(26);
     await audit.getByRole('button', {name: less, exact: true}).click(); await expect(audit.locator('ol li')).toHaveCount(6);
     const categories = page.getByRole('navigation', {name: english ? 'Activity filters' : 'Filtre activitate'});
     await categories.getByRole('button', {name: english ? /^Unread/ : /^Necitite/}).click();
