@@ -14,6 +14,7 @@ export function companyNotifications(companyId: string, local: AuditEvent[], ven
     id: event.id, companyId,
     type: event.eventType === 'document_marked_expired' ? 'status_changed' : ['template_applied', 'vendor_invited', 'vendor_edited', 'vendor_active', 'vendor_inactive', 'requirement_removed'].includes(event.eventType) ? 'other' : event.eventType as NotificationActivityItem['type'],
     title: event.action, description: event.description, vendorId: event.vendorId, documentId: event.documentId,
+    domain: event.domain, entityId: event.entityId, entityName: event.entityName, requirementId: event.requirementId,
     vendorName: vendors.find((vendor) => vendor.id === event.vendorId)?.name, documentName: event.description,
     occurredAt: event.occurredAt, isUnread: false, actor: event.actorType, actorName: event.actorName
   }))];

@@ -160,7 +160,8 @@ for (const english of [false, true]) {
     await expect(page.locator('#recent-section').getByText(c.Notifications.demoNotification)).toHaveCount(2);
     expect(await page.evaluate(() => (Reflect.get(window, Symbol.for('debiro.employees-session')) as {state: EmployeeState}).state.byCompany['demo-company'].activity?.length)).toBe(1);
     const bell = page.getByRole('button', {name: c.AppShell.notificationLabel, exact: true}).last(); await bell.click();
-    const center = page.getByRole('dialog', {name: c.NotificationCenter.title}); await expect(center.getByText(c.Notifications.currentState)).not.toHaveCount(0);
+    const center = page.getByRole('dialog', {name: c.NotificationCenter.title}); await expect(center.getByText(c.Notifications.currentState)).toHaveCount(0);
+    await expect(center.locator('[data-notification-id^="attention:"]')).toHaveCount(0);
     await center.getByRole('button', {name: c.NotificationCenter.markAllRead}).click(); await page.keyboard.press('Escape');
     await expect(filters.getByRole('button', {name: new RegExp(`^${c.Notifications.categories.unread} 0$`)})).toBeVisible();
     const other = english ? ro : en;
@@ -175,21 +176,21 @@ for (const english of [false, true]) {
     expect(failures).toEqual([]);
   });
 
-  test(`${english ? 'EN' : 'RO'} Company attention opens existing review and bell restores keyboard focus without inventing audit`, async ({page}) => {
+  test(`${english ? 'EN' : 'RO'} Company attention keeps existing review outside notification records without inventing audit`, async ({page}) => {
     await page.goto(prefix + '/notifications');
     const auditIds = await page.locator('[data-audit-id]').evaluateAll((rows) => rows.map((row) => row.getAttribute('data-audit-id')));
     const expand = page.locator('#attention-section').getByRole('button', {name: c.SectionActions.viewAll}); if (await expand.count()) await expand.click();
     const row = page.locator('#attention-section tr').filter({hasText: c.CompanyDocuments.status.needs_review}).filter({has: page.locator('button')}).first(); const id = await row.getAttribute('data-notification-document');
-    await row.getByRole('button').focus(); await page.keyboard.press('Enter'); let dialog = page.getByRole('dialog');
+    await row.getByRole('button').focus(); await page.keyboard.press('Enter'); const dialog = page.getByRole('dialog');
     await expect(dialog.getByRole('button', {name: c.CompanyDocumentManagement.confirm, exact: true})).toBeVisible();
     await dialog.getByRole('button', {name: c.CompanyDocumentManagement.confirm, exact: true}).click(); await page.keyboard.press('Escape'); await expect(dialog).toHaveCount(0);
     await expect(page.locator(`#attention-section [data-notification-document="${id}"]`)).toHaveCount(0);
     expect(await page.locator('[data-audit-id]').evaluateAll((rows) => rows.map((row) => row.getAttribute('data-audit-id')))).toEqual(auditIds); // Company has no event recorder in E1.
     const bell = page.getByRole('button', {name: c.AppShell.notificationLabel, exact: true}).last(); await bell.focus(); await page.keyboard.press('Enter');
-    const current = page.getByRole('dialog', {name: c.NotificationCenter.title}).locator('[data-notification-id^="attention:company:"]').filter({has: page.locator('button')}).first();
-    await current.getByRole('button').focus(); await page.keyboard.press('Enter'); dialog = page.getByRole('dialog');
-    await expect(dialog.getByRole('heading', {name: c.DocumentManagement.detailsTitle, exact: true})).toBeVisible();
-    await page.keyboard.press('Escape'); await expect(dialog).toHaveCount(0); await expect(bell).toBeFocused();
+    const center = page.getByRole('dialog', {name: c.NotificationCenter.title});
+    await expect(center.locator('[data-notification-id^="attention:"]')).toHaveCount(0);
+    await expect(center.locator('[data-notification-id]')).toHaveCount(6);
+    await page.keyboard.press('Escape'); await expect(center).toHaveCount(0); await expect(bell).toBeFocused();
   });
 
   test(`${english ? 'EN' : 'RO'} personnel permissions filter metadata, counts, date reference, bell and CSV before presentation`, async ({page}) => {
@@ -210,12 +211,12 @@ for (const english of [false, true]) {
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${width}px page containment`).toBe(true);
       for (const table of await page.locator('main [role="region"][tabindex="0"]').all()) {await table.focus(); await expect(table).toBeFocused(); expect(await table.evaluate((element) => element.clientWidth <= innerWidth)).toBe(true);}
       await page.evaluate(() => window.scrollTo(0, 0));
-      await page.screenshot({path: `artifacts/visual/e1c-007b/after-${english ? 'en' : 'ro'}-${width}.png`, fullPage: true});
+      await page.screenshot({path: `artifacts/visual/e1c-007b1/after-${english ? 'en' : 'ro'}-${width}.png`, fullPage: true});
       await page.getByRole('button', {name: c.AppShell.notificationLabel, exact: true}).last().click();
       const bell = page.getByRole('dialog', {name: c.NotificationCenter.title});
-      await expect(bell.locator('[data-notification-id^="attention:"] time')).toHaveCount(0);
+      await expect(bell.locator('[data-notification-id^="attention:"]')).toHaveCount(0);
       expect(await bell.evaluate((element) => {const box = element.getBoundingClientRect(); return box.left >= 0 && box.right <= innerWidth && box.bottom <= innerHeight;})).toBe(true);
-      await page.screenshot({path: `artifacts/visual/e1c-007b/bell-${english ? 'en' : 'ro'}-${width}.png`});
+      await page.screenshot({path: `artifacts/visual/e1c-007b1/bell-${english ? 'en' : 'ro'}-${width}.png`});
       await page.keyboard.press('Escape'); await expect(bell).toHaveCount(0);
     }
   });

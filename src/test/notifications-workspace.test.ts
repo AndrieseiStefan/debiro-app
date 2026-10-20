@@ -16,6 +16,7 @@ import {vendorActivity} from '@/features/vendors/vendor-activity';
 import {workspaceOverview} from '@/features/dashboard/workspace-overview';
 import {dashboardFixture} from '@/features/dashboard/fixtures';
 import {fixtureReferenceTime} from '@/lib/fixture-clock';
+import type {NotificationActivityItem} from '@/features/notifications/types';
 
 const companyId = 'demo-company', employeeId = 'employee:andrei-popescu';
 const owner = (key: string) => Reflect.get(window, Symbol.for(key));
@@ -60,7 +61,7 @@ describe('authorized company-wide notification read projections', () => {
     expect(view.attention.find((item) => item.documentId === result.document.id)).toMatchObject({status: 'expiring_soon', daysRemaining: 16});
     const activity = view.activity.find((item) => item.domain === 'employee')!;
     expect(activity.occurredAt).toBe(view.referenceTime); expect(activity.sourceId).toBe(getEmployeeActivity(companyId, employeeId)[0].id);
-    expect(view.notifications.filter((item) => item.sourceKind === 'attention').every((item) => !item.isUnread && item.occurredAt === '')).toBe(true);
+    expect(view.notifications.some((item) => item.sourceKind === 'attention')).toBe(false);
     expect(view.notifications.filter((item) => item.isUnread)).toHaveLength(3);
     expect(view.notifications.some((item) => item.id === activity.sourceId || item.id === activity.id)).toBe(false); // An Employee operation is not a new user notification.
   });
@@ -137,5 +138,60 @@ describe('authorized company-wide notification read projections', () => {
     expect(notificationWorkspace('global-clean-services', 'en', input()).attention).toEqual([]);
     owner('debiro.company-session').state.activeCompanyId = 'global-clean-services';
     expect(notificationWorkspace('global-clean-services', 'en', input())).toMatchObject({attention: [], activity: [], notifications: [], referenceTime: fixtureReferenceTime});
+  });
+
+  const notice = (overrides: Partial<NotificationActivityItem> = {}): NotificationActivityItem => ({id: 'actual-notice', companyId, domain: 'company_document', type: 'document_missing', title: {ro: 'Notificare înregistrată', en: 'Recorded notification'}, description: {ro: 'Context înregistrat', en: 'Recorded context'}, occurredAt: '2026-10-20T09:00:00Z', isUnread: true, actor: 'system', ...overrides});
+  const records = (notifications: NotificationActivityItem[]) => notificationWorkspace(companyId, 'en', input(), {notifications, auditEvents: notificationsFixture.auditEvents}).notifications;
+  it('keeps passive attention outside an empty notification source without writing or losing attention/activity', () => {
+    employeeDocument(); const before = structuredClone(input());
+    const view = notificationWorkspace(companyId, 'en', input(), {notifications: [], auditEvents: notificationsFixture.auditEvents});
+    expect(view.attention.map((item) => item.domain)).toEqual(expect.arrayContaining(['vendor', 'company_document', 'employee']));
+    expect(view.notifications).toEqual([]); expect(view.activity.length).toBeGreaterThan(0); expect(input()).toEqual(before);
+    expect(records([notice({sourceKind: 'attention'})])).toEqual([]);
+  });
+  it('resolves owned Company records to existing Details/History and missing requirements to the existing page', () => {
+    const source = [notice({id: 'current', documentId: 'company-document:iso'}), notice({id: 'missing', requirementId: 'company-requirement:criminal-record'}), notice({id: 'history', documentId: 'company-document:registration-v1', requirementId: 'company-requirement:registration'})];
+    const view = records(source);
+    expect(view[0]).toMatchObject({...source[0], companyDocument: {mode: 'details', requirementId: 'company-requirement:iso', documentId: 'company-document:iso'}});
+    expect(view[1]).toMatchObject({...source[1], href: '/company/documents'});
+    expect(view[2].companyDocument).toEqual({mode: 'history', requirementId: 'company-requirement:registration', documentId: 'company-document:registration-v1'});
+    expect(view[0].href).toBeUndefined();
+  });
+  it('leaves unavailable Company targets readable and ignores arbitrary hrefs or untrusted drawer contexts', () => {
+    const view = records([
+      notice({id: 'deleted', documentId: 'removed', requirementId: 'company-requirement:iso'}),
+      notice({id: 'foreign', entityId: 'global-clean-services', documentId: 'company-document:iso'}),
+      notice({id: 'wrong-requirement', documentId: 'company-document:iso', requirementId: 'company-requirement:tax'}),
+      notice({id: 'missing-requirement', requirementId: 'removed'}),
+      notice({id: 'forged', href: '/company/employees/private', companyDocument: {mode: 'details', requirementId: 'forged', documentId: 'forged'}})
+    ]);
+    expect(view).toHaveLength(5); expect(view.every((item) => !item.href && !item.companyDocument)).toBe(true);
+  });
+  it('routes authorized Employee notices only to their actual owned Employee Details, not Vendor or arbitrary routes', () => {
+    const result = employeeDocument();
+    const item = notice({id: 'notice-reminder-1', domain: 'employee', entityId: employeeId, documentId: result.document.id, requirementId: result.requirementId, href: '/vendors/construct-pro'});
+    expect(records([item])[0]).toMatchObject({...item, domain: 'employee', href: `/company/employees/${encodeURIComponent(employeeId)}`});
+    expect(records([notice({domain: 'employee', entityId: employeeId})])[0].href).toBe(`/company/employees/${encodeURIComponent(employeeId)}`);
+    const unavailable = [
+      {...item, id: 'wrong-employee', entityId: 'employee:ioana-radu'},
+      {...item, id: 'removed-employee', entityId: 'removed'},
+      {...item, id: 'removed-document', documentId: 'removed'},
+      {...item, id: 'removed-requirement', requirementId: 'removed'},
+      {...item, id: 'wrong-owner-field', entityId: undefined, vendorId: employeeId}
+    ];
+    expect(records(unavailable).every((entry) => !entry.href && !entry.companyDocument)).toBe(true);
+  });
+  it.each(['reviewer', 'viewer'] as const)('excludes actual Employee notice metadata before unread aggregation for %s', (role) => {
+    const item = notice({domain: 'employee', entityId: employeeId, title: {ro: 'Private proof', en: 'Private proof'}});
+    owner('debiro.company-session').state.companies[0].members.find((member: {isCurrentUser: boolean}) => member.isCurrentUser).role = role;
+    expect(records([item, notice({id: 'company-record'})]).map((entry) => entry.id)).toEqual(['company-record']);
+  });
+  it('retains source IDs, category, timestamp, references and read state while safely isolating malformed records', () => {
+    const item = notice({domain: 'employee', entityId: employeeId, isUnread: false});
+    expect(records([item, item, notice({id: 'bad-time', occurredAt: ''}), notice({id: 'bad-ref', documentId: 42 as unknown as string}), null!])).toHaveLength(1);
+    expect(records([item])[0]).toMatchObject({...item, href: `/company/employees/${encodeURIComponent(employeeId)}`});
+    expect(records([{...item, companyId: 'global-clean-services'}])).toEqual([]);
+    owner('debiro.company-session').state.activeCompanyId = 'global-clean-services';
+    expect(records([item])).toEqual([]);
   });
 });

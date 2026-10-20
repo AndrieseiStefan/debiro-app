@@ -20,7 +20,7 @@ test('preview uses the E1-010 activity and closes accessibly', async ({page}) =>
   await expect(bell).toBeFocused();
 });
 
-test('mark all read updates bell, sidebar, and full history across client navigation', async ({page}) => {
+test('mark all read survives client navigation while full browser reload retains the E1 reset boundary', async ({page}) => {
   await page.goto('/vendors');
   const bell = page.getByRole('button', {name: 'Notificări', exact: true});
   const sidebar = page.getByRole('navigation', {name: 'Navigare în aplicație'});
@@ -38,6 +38,8 @@ test('mark all read updates bell, sidebar, and full history across client naviga
   await expect(page.getByRole('region', {name: 'Activitate recentă'}).getByText('Necitit')).toHaveCount(0);
   await page.getByRole('navigation', {name: 'Navigare în aplicație'}).getByRole('link', {name: 'Furnizori'}).click();
   await expect(page.getByRole('button', {name: 'Notificări', exact: true}).locator('span')).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole('button', {name: 'Notificări', exact: true})).toContainText('3');
 });
 
 test('English footer preserves locale and known document notification navigates to review', async ({page}) => {

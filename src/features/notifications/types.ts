@@ -24,6 +24,8 @@ export type NotificationActivityItem = {
   sourceKind?: 'activity' | 'attention';
   dateOnly?: boolean;
   requirementId?: string;
+  /** Authorized read-side context, never taken directly from a notification record. */
+  companyDocument?: {mode: 'details' | 'history'; requirementId: string; documentId: string};
 };
 
 /** Read-only history: a distinct contract from notifications. */

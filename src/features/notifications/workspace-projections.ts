@@ -2,6 +2,7 @@ import {getActiveCompany, readCompanyState} from '@/features/companies/company-s
 import {documentAccess} from '@/features/documents/document-access';
 import {activeDocuments, type CreatedDocument} from '@/features/documents/created-documents';
 import {documentDetailsHref, documentManagementHref} from '@/features/documents/document-management';
+import {createOwnedDocumentEngine} from '@/features/documents/owned-document-engine';
 import {companyDocumentList} from '@/features/company-documents/company-documents-state';
 import type {CompanyDocumentsState, CompanyDocumentWorkspace} from '@/features/company-documents/types';
 import {employeeAccess, employeeWorkspace, employeeDocumentWorkspace, companyEmployeeActivity} from '@/features/employees/employees-state';
@@ -13,7 +14,7 @@ import {vendorListItems, type getVendorState} from '@/features/vendors/created-v
 import {getVendorRequirements, type VendorRequirementsWorkspace} from '@/features/vendors/vendor-requirements';
 import {calendarDaysUntil, fixtureReferenceTime} from '@/lib/fixture-clock';
 import {companyAuditEvents, companyNotifications} from './company-projections';
-import {activityIcons, attentionCopy, employeeEventCopy} from './presentation';
+import {activityIcons, employeeEventCopy} from './presentation';
 import {notificationsFixture} from './fixtures';
 import type {AuditEvent, LocalizedText, NotificationActivityItem, NotificationDomain, NotificationsViewModel} from './types';
 
@@ -98,15 +99,38 @@ export function notificationWorkspace(companyId: string, locale: 'ro' | 'en', in
   const currentAttention = distinct(attention).toSorted((a, b) => (a.expiresAt ?? '\uffff').localeCompare(b.expiresAt ?? '\uffff') || `${a.domain}:${a.entityId}`.localeCompare(`${b.domain}:${b.entityId}`) || (a.requirementId ?? a.id).localeCompare(b.requirementId ?? b.id));
   const events = distinct(activity).toSorted(orderedActivity);
   const referenceTime = events.reduce((latest, event) => Date.parse(event.occurredAt) > Date.parse(latest) ? event.occurredAt : latest, fixtureReferenceTime);
-  const notifications: NotificationActivityItem[] = access.visible ? companyNotifications(companyId, input.events, vendors, fixtures.notifications).filter((item) => item && (item.domain !== 'employee' || personnel.manage) && (item.domain === undefined || ['vendor', 'company_document', 'employee'].includes(item.domain)) && typeof item.id === 'string' && item.id.trim() && typeof item.isUnread === 'boolean' && validTime(item.occurredAt) && localized(item.title) && localized(item.description) && Object.hasOwn(activityIcons, item.type) && (item.entityName === undefined || typeof item.entityName === 'string') && (item.vendorName === undefined || typeof item.vendorName === 'string') && (item.documentName === undefined || localized(item.documentName))).map((item) => {
-    const owner = events.find((event) => event.sourceId === item.id || event.id === item.id || event.sourceId === item.id.replace(/^notice-/, 'audit-'));
-    const record = documents.find((record) => record.id === item.documentId && record.vendorId === item.vendorId);
-    return {...item, domain: owner?.domain ?? item.domain ?? 'vendor', entityId: owner?.entityId ?? item.entityId ?? item.vendorId, entityName: owner?.entityName ?? item.entityName ?? item.vendorName, href: owner?.href ?? (record ? record.complianceStatus === 'needs_review' && !access.review ? documentManagementHref(record, `/vendors/${record.vendorId}`) : documentDetailsHref(record, `/vendors/${record.vendorId}`) : vendors.some((vendor) => vendor.id === item.vendorId) ? `/vendors/${item.vendorId}` : undefined)};
+  // Reuse existing version ownership/history rules against this authorized
+  // snapshot. This read-side adapter cannot commit, fetch bytes or record events.
+  const companyReader = createOwnedDocumentEngine({scope: 'company', access: () => access, now: () => fixtureReferenceTime,
+    read: (id) => id === companyId && access.visible && !errors.company ? input.companyDocuments.byCompany[id] ?? null : null,
+    commit: () => false, file: () => null});
+  // Notification records and passive attention are separate sources. Resolving a
+  // destination never creates a notice, timestamp, unread state or delivery event.
+  const notifications: NotificationActivityItem[] = access.visible ? companyNotifications(companyId, input.events, vendors, fixtures.notifications).filter((item) => item && item.sourceKind !== 'attention' && (item.domain !== 'employee' || personnel.manage) && (item.domain === undefined || ['vendor', 'company_document', 'employee'].includes(item.domain)) && typeof item.id === 'string' && item.id.trim() && typeof item.isUnread === 'boolean' && validTime(item.occurredAt) && localized(item.title) && localized(item.description) && Object.hasOwn(activityIcons, item.type) && ['entityId', 'entityName', 'vendorId', 'vendorName', 'documentId', 'requirementId'].every((key) => item[key as keyof NotificationActivityItem] === undefined || typeof item[key as keyof NotificationActivityItem] === 'string') && (item.documentName === undefined || localized(item.documentName))).map((item) => {
+    const owner = events.find((event) => (!item.domain || item.domain === event.domain) && (event.sourceId === item.id || event.id === item.id || event.sourceId === item.id.replace(/^notice-/, 'audit-')));
+    const domain = item.domain ?? (item.vendorId ? 'vendor' : owner?.domain) ?? 'vendor';
+    const notice: NotificationActivityItem = {...item, domain, entityId: item.entityId ?? (domain === 'vendor' ? item.vendorId : undefined) ?? owner?.entityId, entityName: item.entityName ?? (domain === 'vendor' ? item.vendorName : undefined) ?? owner?.entityName, href: undefined, companyDocument: undefined};
+    if (domain === 'vendor') {
+      const vendor = vendors.find((vendor) => vendor.id === (item.vendorId ?? notice.entityId));
+      const record = documents.find((record) => record.id === item.documentId && record.vendorId === vendor?.id);
+      if (vendor) notice.href = record ? record.complianceStatus === 'needs_review' && !access.review ? documentManagementHref(record, `/vendors/${vendor.id}`) : documentDetailsHref(record, `/vendors/${vendor.id}`) : `/vendors/${vendor.id}`;
+    } else if (domain === 'company_document' && !errors.company && (!notice.entityId || notice.entityId === companyId)) {
+      const owned = input.companyDocuments.byCompany[companyId];
+      const record = owned?.documents.find((record) => record.id === item.documentId && record.companyId === companyId);
+      const requirement = owned?.requirements.find((entry) => item.requirementId ? entry.id === item.requirementId : record && companyReader.companyDocumentHistory(companyId, entry.id).some((version) => version.id === record.id));
+      const details = requirement && companyReader.getCompanyDocumentDetails(companyId, requirement.id);
+      if (record && details?.history.some((version) => version.id === record.id)) {
+        notice.companyDocument = {mode: details.current?.id === record.id ? 'details' : 'history', requirementId: details.requirement.id, documentId: record.id};
+      } else if ((!item.documentId && requirement) || (record && !item.requirementId && !record.requirementId)) notice.href = '/company/documents';
+    } else if (domain === 'employee' && personnel.manage && !staff.error) {
+      const employee = staff.employees.find((employee) => employee.id === notice.entityId);
+      const owned = employee && employeeDocumentWorkspace(companyId, employee.id, input.employees);
+      const record = owned?.documents.find((record) => record.id === item.documentId);
+      const requirement = owned?.requirements.find((requirement) => requirement.id === item.requirementId);
+      if (employee && owned && (!item.documentId || record) && (!item.requirementId || requirement) && (!record || !item.requirementId || record.requirementId === item.requirementId || requirement?.currentDocumentId === record.id)) notice.href = `/company/employees/${encodeURIComponent(employee.id)}`;
+    }
+    return notice;
   }) : [];
-  // Employee operations remain actual Activity/Audit, not new user notifications.
-  // Current state is informational, not an event/delivery. It has no invented
-  // occurrence time or unread flag and is never admitted to Activity/Audit/CSV.
-  notifications.push(...currentAttention.filter((item) => item.domain === 'company_document' || item.domain === 'employee' && item.required).map((item): NotificationActivityItem => ({id: `attention:${item.id}:${item.status}:${item.documentId ?? 'missing'}`, companyId, domain: item.domain, entityId: item.entityId, entityName: item.entityName, documentId: item.documentId, requirementId: item.requirementId, documentName: item.documentName, type: 'status_changed', title: attentionCopy(item.status), description: {ro: `${item.documentName.ro} — ${item.entityName}`, en: `${item.documentName.en} — ${item.entityName}`}, isUnread: false, occurredAt: '', actor: 'system', sourceKind: 'attention', href: item.href})));
   return {attention: currentAttention, activity: events, notifications: distinct(notifications), referenceTime, errors};
 }
 

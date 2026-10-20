@@ -42,7 +42,7 @@ export function NotificationBell({locale, items, referenceTime, compact = false}
   const [activeDocument, setDocument] = useState<{companyId: string; selection: CompanyManagementSelection} | null>(null);
   const [position, setPosition] = useState({left: 0, top: 0, width: 0, maxHeight: 0});
   const unreadCount = items.filter((item) => item.isUnread).length;
-  const recent = [...items].sort((a, b) => Number(b.sourceKind === 'attention') - Number(a.sourceKind === 'attention') || b.occurredAt.localeCompare(a.occurredAt) || a.id.localeCompare(b.id)).slice(0, PREVIEW_LIMIT);
+  const recent = [...items].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt) || a.id.localeCompare(b.id)).slice(0, PREVIEW_LIMIT);
 
   useLayoutEffect(() => {
     if (!open) return;
@@ -99,9 +99,9 @@ export function NotificationBell({locale, items, referenceTime, compact = false}
             <span className={styles.unreadSlot}>{item.isUnread && <span className={styles.unreadDot} role="img" aria-label={t('unread')} />}</span>
             <span className={styles.icon} data-tone={activityTones[item.type]}><AppIcon name={activityIcons[item.type]} size={23} /></span>
             <span className={styles.copy}><strong>{item.title[locale === 'en' ? 'en' : 'ro']}</strong><span>{item.description[locale === 'en' ? 'en' : 'ro']}</span>{item.type === 'reminder' && <small>{notice('demoNotification')}</small>}</span>
-            {item.sourceKind === 'attention' ? <span className={styles.stateLabel}>{notice('currentState')}</span> : <time dateTime={item.occurredAt}>{relativeTime(item.occurredAt, referenceTime, locale, (count) => t('minutesAgo', {count}), (count) => t('hoursAgo', {count}), (time) => t('yesterday', {time}))}</time>}
+            <time dateTime={item.occurredAt}>{relativeTime(item.occurredAt, referenceTime, locale, (count) => t('minutesAgo', {count}), (count) => t('hoursAgo', {count}), (time) => t('yesterday', {time}))}</time>
           </>;
-          return <li key={item.id} data-notification-id={item.id} data-unread={item.isUnread} className={styles.item}>{item.domain === 'company_document' && item.requirementId && item.documentId ? <button type="button" className={styles.itemContent} onClick={() => {triggerRef.current?.focus({preventScroll: true}); setOpen(false); setDocument({companyId: item.companyId, selection: {mode: 'details', requirementId: item.requirementId, documentId: item.documentId}});}}>{content}</button> : destination ? <Link href={destination} onClick={() => setOpen(false)} className={styles.itemContent}>{content}</Link> : <div className={styles.itemContent}>{content}</div>}</li>;
+          return <li key={item.id} data-notification-id={item.id} data-unread={item.isUnread} className={styles.item}>{item.companyDocument ? <button type="button" className={styles.itemContent} onClick={() => {triggerRef.current?.focus({preventScroll: true}); setOpen(false); setDocument({companyId: item.companyId, selection: item.companyDocument!});}}>{content}</button> : destination ? <Link href={destination} onClick={() => setOpen(false)} className={styles.itemContent}>{content}</Link> : <div className={styles.itemContent}>{content}</div>}</li>;
         })}
       </ol>}
       <Link href="/notifications" onClick={() => setOpen(false)} className={styles.footer}>{t('viewAll')} <AppIcon name="arrowRight" size={17} /></Link>

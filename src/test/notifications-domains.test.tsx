@@ -1,6 +1,6 @@
 import {fireEvent, render, screen, within} from '@testing-library/react';
 import {NextIntlClientProvider} from 'next-intl';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import ro from '../../messages/ro.json';
 import en from '../../messages/en.json';
 import {NotificationsPage} from '@/features/notifications/NotificationsPage';
@@ -15,9 +15,11 @@ vi.mock('@/i18n/navigation', () => ({useRouter: () => ({push: vi.fn()}), usePath
 const companyId = 'demo-company', employeeId = 'employee:andrei-popescu', owner = (key: string) => Reflect.get(window, Symbol.for(key));
 const originals = {company: structuredClone(readCompanyState()), employees: structuredClone(readEmployeeState()), documents: structuredClone(readCompanyDocumentsState())};
 beforeEach(() => {
+  vi.useFakeTimers({toFake: ['Date']}); vi.setSystemTime(new Date('2026-10-20T09:00:00Z'));
   owner('debiro.company-session').state = structuredClone(originals.company); owner('debiro.employees-session').state = structuredClone(originals.employees); owner('debiro.employees-session').files = new Map();
   owner('debiro.company-documents-session').state = structuredClone(originals.documents); owner('debiro.local-audit-session').events = []; owner('debiro.notification-session').readIds = new Set();
 });
+afterEach(() => vi.useRealTimers());
 function page(locale: 'ro' | 'en') {return render(<NextIntlClientProvider locale={locale} messages={locale === 'ro' ? ro : en}><NotificationsPage locale={locale} view={notificationsFixture}/></NextIntlClientProvider>);}
 
 describe.each(['ro', 'en'] as const)('%s unified Notifications UI', (locale) => {
@@ -38,7 +40,9 @@ describe.each(['ro', 'en'] as const)('%s unified Notifications UI', (locale) => 
   });
   it('shares existing mark-read state without making document attention unread', () => {
     page(locale); const bell = screen.getAllByRole('button', {name: c.AppShell.notificationLabel}).at(-1)!; expect(bell).toHaveTextContent('3'); fireEvent.click(bell);
-    const center = screen.getByRole('dialog', {name: c.NotificationCenter.title}); expect(within(center).getAllByText(c.Notifications.currentState).length).toBeGreaterThan(0);
+    const center = screen.getByRole('dialog', {name: c.NotificationCenter.title}); expect(within(center).queryByText(c.Notifications.currentState)).toBeNull();
+    expect(center.querySelector('[data-notification-id^="attention:"]')).toBeNull();
+    expect(center.querySelectorAll('[data-notification-id]')).toHaveLength(6);
     fireEvent.click(within(center).getByRole('button', {name: c.NotificationCenter.markAllRead})); expect(bell).not.toHaveTextContent('3');
     expect(screen.getByRole('navigation', {name: c.Notifications.categoriesLabel})).toHaveTextContent(`${c.Notifications.categories.unread}0`);
     expect(readLocalAuditEvents()).toHaveLength(0);
